@@ -317,8 +317,10 @@ int main(int argc, char** argv) {
   HEPEnergyType const emcut = 1_GeV;
   HEPEnergyType const hadcut = 1_GeV;
   ParticleCut cut(emcut, emcut, hadcut, hadcut, true);
+
   corsika::proposal::Interaction emCascade(env);
-  InteractionCounter emCascadeCounted(emCascade);
+  // NOT available for PROPOSAL due to interface trouble:
+  //  InteractionCounter emCascadeCounted(emCascade);
   // corsika::proposal::ContinuousProcess emContinuous(env);
   BetheBlochPDG emContinuous(showerAxis);
 
@@ -335,7 +337,7 @@ int main(int argc, char** argv) {
     HEPEnergyType cutE_;
     EnergySwitch(HEPEnergyType cutE)
         : cutE_(cutE) {}
-    bool operator()(const Particle& p) { return (p.getKineticEnergy() < cutE_); }
+    bool operator()(const Particle& p) const { return (p.getKineticEnergy() < cutE_); }
   };
   auto hadronSequence = make_select(EnergySwitch(63.1_GeV), urqmdCounted, heModelCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
@@ -352,8 +354,8 @@ int main(int argc, char** argv) {
   output.add("particles", observationLevel);
 
   // assemble the final process sequence
-  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence,
-                                emCascadeCounted, cut, emContinuous, // trackWriter,
+  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, cut,
+                                emCascade, emContinuous, // trackWriter,
                                 observationLevel, longprof);
   /* === END: SETUP PROCESS LIST === */
 

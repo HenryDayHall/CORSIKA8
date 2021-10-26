@@ -50,111 +50,109 @@ namespace corsika {
   };
 
   /**
-    * @defgroup Processes Physics Processes and Modules
-    *
-    * Physics processes in CORSIKA 8 are clustered in ProcessSequence and
-    * SwitchProcessSequence containers. The former is a mere (ordered) collection, while
-    * the latter has the option to switch between two alternative ProcessSequences.
-    *
-    * Depending on the type of data to act on and on the allowed actions of processes
-  there
-    * are several interface options:
-    * - InteractionProcess
-    * - DecayProcess
-    * - ContinuousProcess
-    * - StackProcess
-    * - SecondariesProcess
-    * - BoundaryCrossingProcess
-    *
-    * And all processes (including ProcessSequence and SwitchProcessSequence) are derived
-    * from BaseProcess.
-    *
-    * Processes of any type (e.g. p1, p2, p3,...) can be assembled into a ProcessSequence
-    * using the `make_sequence` factory function.
-    *
-    * @code{.cpp}
-    *   auto sequence1 = make_sequence(p1, p2, p3);
-    *   auto sequence2 = make_sequence(p4, p5, p6, p7);
-    *   auto sequence3 = make_sequence(sequence1, sequemce2, p8, p9);
-    * @endcode
-    *
-    * Note, if the order of processes
-    * matters, the order of occurence
-    * in the ProcessSequence determines
-    * the executiion order.
-    *
-    * SecondariesProcess alyways act on
-    * new secondaries produced (i.e. in
-    * InteractionProcess and
-    * DecayProcess) in the scope of
-    * their ProcessSequence. For
-    * example if i1 and i2 are
-    * InteractionProcesses and s1 is a
-    * SecondariesProcess, then
-    *
-    * @code{.cpp}
-    *   auto sequence = make_sequence(i1, make_sequence(i2, s1))
-    * @endcode
-    *
-    * will result in s1 acting only on
-    * the particles produced by i2 and
-    * not by i1. This can be very
-    * useful, e.g. to fine tune thinning.
-    *
-    * A special type of ProcessSequence
-    * is SwitchProcessSequence, which
-    * has two branches and a functor
-    * that can select between these two
-    * branches.
-    *
-    * @code{.cpp}
-    *   auto sequence = make_switch(sequence1, sequence2, selector);
-    * @endcode
-    *
-    * where the only requirement to
-    * `selector` is that it
-    * provides a `SwitchResult operator()(Particle const& particle) const` method. Thus,
-    * based on the dynamic properties
-    * of `particle` the functor
-    * can make its decision. This is
-    * clearly important for switching
-    * between low-energy and
-    * high-energy models, but not
-    * limited to this. The selection
-    * can even be done with a lambda
-    * function.
-    *
-    *
-    * @class ProcessSequence
-    * @ingroup Processes
-    *
-    *   Definition of a static process list/sequence
-    *
-    *  A compile time static list of processes. The compiler will
-    *  generate a new type based on template logic containing all the
-    *  elements provided by the user.
-    *
-    *  TProcess1 and TProcess2 must both be derived from BaseProcess,
-    *  and are both references if possible (lvalue), otherwise (rvalue)
-    *  they are just classes. This allows us to handle both, rvalue as
-    *  well as lvalue Processes in the ProcessSequence.
-    *
-    *  (For your potential interest,
-    *  the static version of the
-    *  ProcessSequence and all Process
-    *  types are based on the CRTP C++
-    *  design pattern)
-    *
-    * Template parameters:
-    *   @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a
-    *           ProcessSequence.
-    *   @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a
-    *           ProcessSequence.
-    * @tparam IndexFirstProcess to count and index each Process in the entire
-    *         process-chain. The offset is the starting value for this ProcessSequence.
-    *  @tparam IndexOfProcess1 index of TProcess1 (counting of Process).
-    *  @tparam IndexOfProcess2 index of TProcess2 (counting of Process).
-  */
+   * @defgroup Processes Physics Processes and Modules
+   *
+   * Physics processes in CORSIKA 8 are clustered in ProcessSequence and
+   * SwitchProcessSequence containers. The former is a mere (ordered) collection, while
+   * the latter has the option to switch between two alternative ProcessSequences.
+   *
+   * Depending on the type of data to act on and on the allowed actions of
+   * processes there are several interface options:
+   * - InteractionProcess
+   * - DecayProcess
+   * - ContinuousProcess
+   * - StackProcess
+   * - SecondariesProcess
+   * - BoundaryCrossingProcess
+   *
+   * And all processes (including ProcessSequence and SwitchProcessSequence) are derived
+   * from BaseProcess.
+   *
+   * Processes of any type (e.g. p1, p2, p3,...) can be assembled into a ProcessSequence
+   * using the `make_sequence` factory function.
+   *
+   * @code{.cpp}
+   *   auto sequence1 = make_sequence(p1, p2, p3);
+   *   auto sequence2 = make_sequence(p4, p5, p6, p7);
+   *   auto sequence3 = make_sequence(sequence1, sequemce2, p8, p9);
+   * @endcode
+   *
+   * Note, if the order of processes
+   * matters, the order of occurence
+   * in the ProcessSequence determines
+   * the executiion order.
+   *
+   * SecondariesProcess alyways act on
+   * new secondaries produced (i.e. in
+   * InteractionProcess and
+   * DecayProcess) in the scope of
+   * their ProcessSequence. For
+   * example if i1 and i2 are
+   * InteractionProcesses and s1 is a
+   * SecondariesProcess, then:
+   *
+   * @code{.cpp}
+   *   auto sequence = make_sequence(i1, make_sequence(i2, s1))
+   * @endcode
+   *
+   * will result in s1 acting only on
+   * the particles produced by i2 and
+   * not by i1. This can be very
+   * useful, e.g. to fine tune thinning.
+   *
+   * A special type of ProcessSequence
+   * is SwitchProcessSequence, which
+   * has two branches and a functor
+   * that can select between these two
+   * branches.
+   *
+   * @code{.cpp}
+   *   auto sequence = make_switch(sequence1, sequence2, selector);
+   * @endcode
+   *
+   * where the only requirement to
+   * `selector` is that it
+   * provides a `SwitchResult operator()(Particle const& particle) const` method. Thus,
+   * based on the dynamic properties
+   * of `particle` the functor
+   * can make its decision. This is
+   * clearly important for switching
+   * between low-energy and
+   * high-energy models, but not
+   * limited to this. The selection
+   * can even be done with a lambda
+   * function.
+   *
+   * @class ProcessSequence
+   * @ingroup Processes
+   *
+   *   Definition of a static process list/sequence.
+   *
+   *  A compile time static list of processes. The compiler will
+   *  generate a new type based on template logic containing all the
+   *  elements provided by the user.
+   *
+   *  TProcess1 and TProcess2 must both be derived from BaseProcess,
+   *  and are both references if possible (lvalue), otherwise (rvalue)
+   *  they are just classes. This allows us to handle both, rvalue as
+   *  well as lvalue Processes in the ProcessSequence.
+   *
+   *  (For your potential interest,
+   *  the static version of the
+   *  ProcessSequence and all Process
+   *  types are based on the CRTP C++
+   *  design pattern)
+   *
+   * Template parameters:
+   *   @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a
+   *           ProcessSequence.
+   *   @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a
+   *           ProcessSequence.
+   * @tparam IndexFirstProcess to count and index each Process in the entire
+   *         process-chain. The offset is the starting value for this ProcessSequence.
+   *  @tparam IndexOfProcess1 index of TProcess1 (counting of Process).
+   *  @tparam IndexOfProcess2 index of TProcess2 (counting of Process).
+   */
 
   template <typename TProcess1, typename TProcess2 = NullModel,
             int ProcessIndexOffset = 0,
@@ -190,6 +188,15 @@ namespace corsika {
      */
     ProcessSequence(TProcess1 in_A, TProcess2 in_B);
 
+    /**
+     * List of all BoundaryProcess.
+     *
+     * @tparam TParticle
+     * @param particle The particle.
+     * @param from Volume the particle is exiting.
+     * @param to Volume the particle is entering.
+     * @return ProcessReturn
+     */
     template <typename TParticle>
     ProcessReturn doBoundaryCrossing(TParticle& particle,
                                      typename TParticle::node_type const& from,
@@ -199,6 +206,15 @@ namespace corsika {
     ProcessReturn doContinuous(TParticle& particle, TTrack& vT,
                                ContinuousProcessIndex const limitID);
 
+    /**
+     * Process all secondaries in TSecondaries.
+     *
+     * The seondaries produced by other processes and accessible via TSecondaries
+     * are processed by all SecondariesProcesse via a call here.
+     *
+     * @tparam TSecondaries
+     * @param vS
+     */
     template <typename TSecondaries>
     void doSecondaries(TSecondaries& vS);
 
@@ -243,6 +259,15 @@ namespace corsika {
     template <typename TParticle, typename TTrack>
     ContinuousProcessStepLength getMaxStepLength(TParticle&& particle, TTrack&& vTrack);
 
+    /**
+     * @brief Calculates the cross section of a projectile with a target.
+     *
+     * @tparam TParticle
+     * @param projectile
+     * @param targetId
+     * @param targetP4
+     * @return CrossSectionType
+     */
     template <typename TParticle>
     CrossSectionType getCrossSection(TParticle const& projectile, Code const targetId,
                                      FourMomentum const& targetP4) const;
@@ -253,7 +278,7 @@ namespace corsika {
     }
 
     /**
-     * @brief Selects one concrete InteractionProcess and samples a target nucleus from
+     * Selects one concrete InteractionProcess and samples a target nucleus from
      * the material.
      *
      * The selectInteraction method statically loops over all active InteractionProcess

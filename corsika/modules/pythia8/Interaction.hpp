@@ -28,23 +28,62 @@ namespace corsika::pythia8 {
     void setUnstable(const Code);
     void setStable(const Code);
 
-    bool isValidCoMEnergy(HEPEnergyType ecm) { return (10_GeV < ecm) && (ecm < 1_PeV); }
+    bool isValidCoMEnergy(HEPEnergyType const ecm) const {
+      return (10_GeV < ecm) && (ecm < 1_PeV);
+    }
 
-    bool canInteract(const Code);
+    bool canInteract(const Code) const;
     void configureLabFrameCollision(const Code, const Code, const HEPEnergyType);
 
-    std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
-        const Code BeamId, const Code TargetId, const HEPEnergyType CoMenergy);
-
-    template <typename TParticle>
-    GrammageType getInteractionLength(TParticle const&);
+    /**
+     * Returns inelastic AND elastic cross sections.
+     *
+     * These cross sections must correspond to the process described in doInteraction
+     * AND elastic scattering (sigma_tot = sigma_inel + sigma_el). Allowed targets are:
+     * nuclei or single nucleons (p,n,hydrogen). This "InelEla" method is used since
+     * Sibyll must be useful inside the NuclearInteraction model, which requires that.
+     *
+     * @param projectile is the Code of the projectile
+     * @param target is the Code of the target
+     * @param sqrtSnn is the center-of-mass energy (per nucleon pair)
+     * @param Aprojectil is the mass number of the projectils, if it is a nucleus
+     * @param Atarget is the mass number of the target, if it is a nucleus
+     *
+     * @return a tuple of: inelastic cross section, elastic cross section
+     */
+    std::tuple<CrossSectionType, CrossSectionType> getCrossSectionInelEla(
+        Code const projectile, Code const target, FourMomentum const& projectileP4,
+        FourMomentum const& targetP4) const;
 
     /**
-       In this function PYTHIA is called to produce one event. The
-       event is copied (and boosted) into the shower lab frame.
+     * Returns inelastic (production) cross section.
+     *
+     * This cross section must correspond to the process described in doInteraction.
+     * Allowed targets are: nuclei or single nucleons (p,n,hydrogen).
+     *
+     * @param projectile is the Code of the projectile
+     * @param target is the Code of the target
+     * @param sqrtSnn is the center-of-mass energy (per nucleon pair)
+     * @param Aprojectil is the mass number of the projectils, if it is a nucleus
+     * @param Atarget is the mass number of the target, if it is a nucleus
+     *
+     * @return inelastic cross section
+     * elastic cross section
+     */
+    CrossSectionType getCrossSection(Code const projectile, Code const target,
+                                     FourMomentum const& projectileP4,
+                                     FourMomentum const& targetP4) const {
+      return std::get<0>(
+          getCrossSectionInelEla(projectile, target, projectileP4, targetP4));
+    }
+
+    /**
+     * In this function PYTHIA is called to produce one event. The
+     * event is copied (and boosted) into the shower lab frame.
      */
     template <typename TView>
-    void doInteraction(TView&);
+    void doInteraction(TView& output, Code const projectileId, Code const targetId,
+                       FourMomentum const& projectileP4, FourMomentum const& targetP4);
 
   private:
     default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("pythia");

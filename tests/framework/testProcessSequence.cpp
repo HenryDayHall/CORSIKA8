@@ -50,9 +50,6 @@ struct DummyNode {
   int data_ = 0;
 };
 
-// The stack is non-existent for this example
-struct DummyStack {};
-
 // our data object (particle) is a simple arrary of doubles
 struct DummyData {
   double data_[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -65,6 +62,9 @@ struct DummyData {
   HEPEnergyType getEnergy() const { return 10_GeV; }
 };
 
+// The stack is non-existent for this example
+struct DummyStack {};
+
 // there is no real trajectory/track
 struct DummyTrajectory {};
 
@@ -75,6 +75,7 @@ struct DummyView {
       : p_(p) {}
   DummyData& p_;
   DummyData& parent() { return p_; }
+  // this is only needed because of PROPOSAL interface right now:
 };
 
 int globalCount = 0; // simple counter

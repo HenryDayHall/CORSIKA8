@@ -345,7 +345,8 @@ int main(int argc, char** argv) {
   HEPEnergyType const hadcut = 1_GeV;
   ParticleCut cut(emcut, emcut, hadcut, hadcut, true);
   corsika::proposal::Interaction emCascade(env);
-  InteractionCounter emCascadeCounted(emCascade);
+  // NOT possible right now, due to interface difference for PROPOSAL:
+  //  InteractionCounter emCascadeCounted(emCascade);
   // corsika::proposal::ContinuousProcess emContinuous(env);
   BetheBlochPDG emContinuous(showerAxis);
 
@@ -378,8 +379,8 @@ int main(int argc, char** argv) {
 
   // assemble the final process sequence
   auto sequence =
-      make_sequence(stackInspect, hadronSequence, decaySequence, emCascadeCounted,
-                    emContinuous, cut, trackWriter, observationLevel, longprof);
+      make_sequence(stackInspect, hadronSequence, decaySequence, emCascade, emContinuous,
+                    cut, trackWriter, observationLevel, longprof);
   /* === END: SETUP PROCESS LIST === */
 
   // create the cascade object using the default stack and tracking implementation

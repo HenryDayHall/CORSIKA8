@@ -5,13 +5,13 @@ set (test_modules_sources
   ## testExecTime.cpp --> needs to be fixed, see #326
   testObservationPlane.cpp
   testQGSJetII.cpp
-  #testPythia8.cpp
+  testPythia8.cpp
   testUrQMD.cpp
-  #testCONEX.cpp
+  testCONEX.cpp
   ## testOnShellCheck.cpp
   testParticleCut.cpp
   testSibyll.cpp
-  #testEpos.cpp
+  testEpos.cpp
   )
 
 CORSIKA_ADD_TEST (testModules SOURCES ${test_modules_sources})

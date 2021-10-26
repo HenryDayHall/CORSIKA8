@@ -322,9 +322,22 @@ namespace corsika {
     if constexpr (is_process_v<process1_type>) { // to protect from further compiler
                                                  // errors if process1_type is invalid
       if constexpr (is_interaction_process_v<process1_type>) {
-        tot += A_.getCrossSection(projectile.getPID(), targetId,
-                                  {projectile.getEnergy(), projectile.getMomentum()},
-                                  targetP4);
+
+        bool constexpr has_signature_cx1 =
+            has_method_getCrossSection_v<TProcess1,        // process object
+                                         CrossSectionType, // return type
+                                         Code, Code,       // parameters
+                                         FourMomentum const&, FourMomentum const&>;
+
+        if constexpr (has_signature_cx1) {
+          tot += A_.getCrossSection(projectile.getPID(), targetId,
+                                    {projectile.getEnergy(), projectile.getMomentum()},
+                                    targetP4);
+        } else { // for PROPOSAL
+          tot += A_.getCrossSection(projectile, projectile.getPID(),
+                                    {projectile.getEnergy(), projectile.getMomentum()});
+        }
+
       } else if constexpr (process1_type::is_process_sequence) {
         tot += A_.getCrossSection(projectile, targetId, targetP4);
       }
@@ -332,9 +345,22 @@ namespace corsika {
     if constexpr (is_process_v<process2_type>) { // to protect from further compiler
                                                  // errors if process2_type is invalid
       if constexpr (is_interaction_process_v<process2_type>) {
-        tot += B_.getCrossSection(projectile.getPID(), targetId,
-                                  {projectile.getEnergy(), projectile.getMomentum()},
-                                  targetP4);
+
+        bool constexpr has_signature_cx1 =
+            has_method_getCrossSection_v<TProcess2,        // process object
+                                         CrossSectionType, // return type
+                                         Code, Code,       // parameters
+                                         FourMomentum const&, FourMomentum const&>;
+
+        if constexpr (has_signature_cx1) {
+          tot += B_.getCrossSection(projectile.getPID(), targetId,
+                                    {projectile.getEnergy(), projectile.getMomentum()},
+                                    targetP4);
+        } else { // for PROPOSAL
+          tot += B_.getCrossSection(projectile, projectile.getPID(),
+                                    {projectile.getEnergy(), projectile.getMomentum()});
+        }
+
       } else if constexpr (process2_type::is_process_sequence) {
         tot += B_.getCrossSection(projectile, targetId, targetP4);
       }
@@ -443,52 +469,74 @@ namespace corsika {
 
         // get cross section vector for all material components
         // for selected process A
-        static_assert(
+
+        bool constexpr has_signature_cx1 =
             has_method_getCrossSection_v<TProcess1,        // process object
                                          CrossSectionType, // return type
                                          Code, Code,       // parameters
-                                         FourMomentum const&, FourMomentum const&>,
-            "TProcess1 has no method with correct signature \"CrossSectionType "
-            "getCrossSection(Code, Code, FourMomentum const&, FourMomentum "
-            "const&)\" required by "
-            "InteractionProcess<TProcess1>. ");
+                                         FourMomentum const&, FourMomentum const&>;
+        bool constexpr has_signature_cx2 = // needed for PROPOSAL interface
+            has_method_getCrossSectionTemplate_v<
+                TProcess1,                   // process object
+                CrossSectionType,            // return type
+                decltype(projectile) const&, // template argument
+                decltype(projectile) const&, // parameters
+                Code, FourMomentum const&>;
+        static_assert((has_signature_cx1 || has_signature_cx2),
+                      "TProcess1 has no method with correct signature \"CrossSectionType "
+                      "getCrossSection(Code, Code, FourMomentum const&, FourMomentum "
+                      "const&)\" required by "
+                      "InteractionProcess<TProcess1>. ");
 
-        std::vector<CrossSectionType> const weightedCrossSections =
-            composition.getWeighted([=](Code const targetId) -> CrossSectionType {
-              FourMomentum const targetP4(
-                  get_mass(targetId),
-                  MomentumVector(projectile.getMomentum().getCoordinateSystem(),
-                                 {0_GeV, 0_GeV, 0_GeV}));
-              return A_.getCrossSection(projectileId, targetId, projectileP4, targetP4);
-            });
+        std::vector<CrossSectionType> weightedCrossSections;
+        if constexpr (has_signature_cx1) {
+          /*std::vector<CrossSectionType> const*/ weightedCrossSections =
+              composition.getWeighted([=](Code const targetId) -> CrossSectionType {
+                FourMomentum const targetP4(
+                    get_mass(targetId),
+                    MomentumVector(projectile.getMomentum().getCoordinateSystem(),
+                                   {0_GeV, 0_GeV, 0_GeV}));
+                return A_.getCrossSection(projectileId, targetId, projectileP4, targetP4);
+              });
 
-        cx_sum += std::accumulate(weightedCrossSections.cbegin(),
-                                  weightedCrossSections.cend(), CrossSectionType::zero());
+          cx_sum +=
+              std::accumulate(weightedCrossSections.cbegin(),
+                              weightedCrossSections.cend(), CrossSectionType::zero());
+
+        } else { // this is for PROPOSAL
+          cx_sum += A_.template getCrossSection(projectile, projectileId, projectileP4);
+        }
 
         // check if we should execute THIS process and then EXIT
         if (cx_select <= cx_sum) {
 
-          // now also sample targetId from weighted cross sections
-          Code const targetId = composition.sampleTarget(weightedCrossSections, rng);
-          FourMomentum const targetP4(
-              get_mass(targetId),
-              MomentumVector(projectile.getMomentum().getCoordinateSystem(),
-                             {0_GeV, 0_GeV, 0_GeV}));
+          if constexpr (has_signature_cx1) {
+            // now also sample targetId from weighted cross sections
+            Code const targetId = composition.sampleTarget(weightedCrossSections, rng);
+            FourMomentum const targetP4(
+                get_mass(targetId),
+                MomentumVector(projectile.getMomentum().getCoordinateSystem(),
+                               {0_GeV, 0_GeV, 0_GeV}));
 
-          // interface checking on TProcess1
-          static_assert(
-              has_method_doInteract_v<TProcess1,       // process object
-                                      void,            // return type
-                                      TSecondaryView,  // template argument
-                                      TSecondaryView&, // method parameters
-                                      Code, Code, FourMomentum const&,
-                                      FourMomentum const&>,
-              "TProcess1 has no method with correct signature \"void "
-              "doInteraction<TSecondaryView>(TSecondaryView&, "
-              "Code, Code, FourMomentum const&, FourMomentum const&)\" required for "
-              "InteractionProcess<TProcess1>. ");
+            // interface checking on TProcess1
+            static_assert(
+                has_method_doInteract_v<TProcess1,       // process object
+                                        void,            // return type
+                                        TSecondaryView,  // template argument
+                                        TSecondaryView&, // method parameters
+                                        Code, Code, FourMomentum const&,
+                                        FourMomentum const&>,
+                "TProcess1 has no method with correct signature \"void "
+                "doInteraction<TSecondaryView>(TSecondaryView&, "
+                "Code, Code, FourMomentum const&, FourMomentum const&)\" required for "
+                "InteractionProcess<TProcess1>. ");
 
-          A_.template doInteraction(view, projectileId, targetId, projectileP4, targetP4);
+            A_.template doInteraction(view, projectileId, targetId, projectileP4,
+                                      targetP4);
+
+          } else { // this is for PROPOSAL
+            A_.template doInteraction(view, projectileId, projectileP4);
+          }
 
           return ProcessReturn::Interacted;
         }
@@ -508,52 +556,72 @@ namespace corsika {
         Code const projectileId = projectile.getPID();
 
         // get cross section vector for all material components, for selected process B
-        static_assert(has_method_getCrossSection_v<TProcess2,        // process object
-                                                   CrossSectionType, // return type
-                                                   Code, Code, FourMomentum const&,
-                                                   FourMomentum const&>, // parameters
+        bool constexpr has_signature_cx1 =
+            has_method_getCrossSection_v<TProcess2,        // process object
+                                         CrossSectionType, // return type
+                                         Code, Code,       // parameters
+                                         FourMomentum const&, FourMomentum const&>;
+        bool constexpr has_signature_cx2 = // needed for PROPOSAL interface
+            has_method_getCrossSectionTemplate_v<
+                TProcess2,                    // process object
+                CrossSectionType,             // return type
+                decltype(*projectile) const&, // template argument
+                decltype(*projectile) const&, // parameters
+                Code,                         // parameters
+                FourMomentum const&>;
+        static_assert((has_signature_cx1 || has_signature_cx2),
                       "TProcess2 has no method with correct signature \"CrossSectionType "
                       "getCrossSection(Code, Code, FourMomentum const&, FourMomentum "
                       "const&)\" required by "
                       "InteractionProcess<TProcess1>. ");
 
-        std::vector<CrossSectionType> const weightedCrossSections =
-            composition.getWeighted([=](Code const targetId) -> CrossSectionType {
-              FourMomentum const targetP4(
-                  get_mass(targetId),
-                  MomentumVector(projectile.getMomentum().getCoordinateSystem(),
-                                 {0_GeV, 0_GeV, 0_GeV}));
-              return B_.getCrossSection(projectileId, targetId, projectileP4, targetP4);
-            });
+        std::vector<CrossSectionType> weightedCrossSections;
+        if constexpr (has_signature_cx1) {
+          /* std::vector<CrossSectionType> const*/ weightedCrossSections =
+              composition.getWeighted([=](Code const targetId) -> CrossSectionType {
+                FourMomentum const targetP4(
+                    get_mass(targetId),
+                    MomentumVector(projectile.getMomentum().getCoordinateSystem(),
+                                   {0_GeV, 0_GeV, 0_GeV}));
+                return B_.getCrossSection(projectileId, targetId, projectileP4, targetP4);
+              });
 
-        cx_sum += std::accumulate(weightedCrossSections.begin(),
-                                  weightedCrossSections.end(), CrossSectionType::zero());
+          cx_sum +=
+              std::accumulate(weightedCrossSections.begin(), weightedCrossSections.end(),
+                              CrossSectionType::zero());
+        } else { // this is for PROPOSAL
+          cx_sum += B_.template getCrossSection(projectile, projectileId, projectileP4);
+        }
 
         // check if we should execute THIS process and then EXIT
         if (cx_select <= cx_sum) {
 
-          // now also sample targetId from weighted cross sections
-          Code const targetId = composition.sampleTarget(weightedCrossSections, rng);
-          FourMomentum const targetP4(
-              get_mass(targetId),
-              MomentumVector(projectile.getMomentum().getCoordinateSystem(),
-                             {0_GeV, 0_GeV, 0_GeV}));
+          if constexpr (has_signature_cx1) {
 
-          // interface checking on TProcess2
-          static_assert(
-              has_method_doInteract_v<TProcess2,       // process object
-                                      void,            // return type
-                                      TSecondaryView,  // template argument
-                                      TSecondaryView&, // method parameters
-                                      Code, Code, FourMomentum const&,
-                                      FourMomentum const&>,
-              "TProcess1 has no method with correct signature \"void "
-              "doInteraction<TSecondaryView>(TSecondaryView&, "
-              "Code, Code, FourMomentum const&, FourMomentum const&)\" required for "
-              "InteractionProcess<TProcess2>. ");
+            // now also sample targetId from weighted cross sections
+            Code const targetId = composition.sampleTarget(weightedCrossSections, rng);
+            FourMomentum const targetP4(
+                get_mass(targetId),
+                MomentumVector(projectile.getMomentum().getCoordinateSystem(),
+                               {0_GeV, 0_GeV, 0_GeV}));
 
-          B_.doInteraction(view, projectileId, targetId, projectileP4, targetP4);
+            // interface checking on TProcess2
+            static_assert(
+                has_method_doInteract_v<TProcess2,       // process object
+                                        void,            // return type
+                                        TSecondaryView,  // template argument
+                                        TSecondaryView&, // method parameters
+                                        Code, Code, FourMomentum const&,
+                                        FourMomentum const&>,
+                "TProcess1 has no method with correct signature \"void "
+                "doInteraction<TSecondaryView>(TSecondaryView&, "
+                "Code, Code, FourMomentum const&, FourMomentum const&)\" required for "
+                "InteractionProcess<TProcess2>. ");
 
+            B_.doInteraction(view, projectileId, targetId, projectileP4, targetP4);
+          } else { // this is for PROPOSAL
+            B_.doInteraction(view, projectileId, projectileP4);
+          }
           return ProcessReturn::Interacted;
         }
       }

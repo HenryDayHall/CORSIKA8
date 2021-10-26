@@ -248,7 +248,7 @@ int main(int argc, char** argv) {
     HEPEnergyType cutE_;
     EnergySwitch(HEPEnergyType cutE)
         : cutE_(cutE) {}
-    bool operator()(const setup::Stack::particle_type& p) {
+    bool operator()(const setup::Stack::particle_type& p) const {
       return (p.getEnergy() < cutE_);
     }
   };

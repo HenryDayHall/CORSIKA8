@@ -39,24 +39,26 @@ namespace corsika::proposal {
     auto c = p_cross->second(media.at(comp.getHash()), emCut);
 
     // Look which interactions take place and build the corresponding
-    // interaction and secondarie builder. The interaction integral will
+    // interaction and secondary builder. The interaction integral will
     // interpolated too and saved in the calc map by a key build out of a hash
     // of composed of the component and particle code.
     auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(c);
-    calc[std::make_pair(comp.getHash(), code)] = std::make_tuple(
+    calc_[std::make_pair(comp.getHash(), code)] = std::make_tuple(
         PROPOSAL::make_secondaries(inter_types, particle[code], media.at(comp.getHash())),
         PROPOSAL::make_interaction(c, true));
   }
 
   template <typename TStackView>
-  inline ProcessReturn Interaction::doInteraction(TStackView& view) {
+  inline ProcessReturn Interaction::doInteraction(TStackView& view,
+                                                  Code const projectileId,
+                                                  FourMomentum const& projectileP4) {
 
     auto const projectile = view.getProjectile();
 
-    if (canInteract(projectile.getPID())) {
+    if (canInteract(projectileId)) {
 
       // get or build corresponding calculators
-      auto c = getCalculator(projectile, calc);
+      auto c = getCalculator(projectile, calc_);
 
       // get the rates of the interaction types for every component.
       std::uniform_real_distribution<double> distr(0., 1.);
@@ -103,14 +105,27 @@ namespace corsika::proposal {
   }
 
   template <typename TParticle>
-  inline GrammageType Interaction::getInteractionLength(TParticle const& projectile) {
+  inline CrossSectionType Interaction::getCrossSection(TParticle const& projectile,
+                                                       Code const projectileId,
+                                                       FourMomentum const& projectileP4) {
 
-    if (canInteract(projectile.getPID())) {
-      auto c = getCalculator(projectile, calc);
-      return std::get<eINTERACTION>(c->second)->MeanFreePath(projectile.getEnergy() /
-                                                             1_MeV) *
-             1_g / (1_cm * 1_cm);
+    // ==============================================
+    // this block better diappears. RU 26.10.2021
+    //
+    // determine the volume where the particle is (last) known to be
+    auto const* currentLogicalNode = projectile.getNode();
+    NuclearComposition const& composition =
+        currentLogicalNode->getModelProperties().getNuclearComposition();
+    auto const meanMass = composition.getAverageMassNumber() * constants::u;
+    // ==============================================
+
+    if (canInteract(projectileId)) {
+      auto c = getCalculator(projectile, calc_);
+      return meanMass / (std::get<eINTERACTION>(c->second)->MeanFreePath(
+                             projectileP4.getTimeLikeComponent() / 1_MeV) *
+                         1_g / (1_cm * 1_cm));
     }
-    return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
+
+    return CrossSectionType::zero();
   }
 } // namespace corsika::proposal

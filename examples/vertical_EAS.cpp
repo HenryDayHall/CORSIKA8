@@ -236,7 +236,7 @@ int main(int argc, char** argv) {
     HEPEnergyType cutE_;
     EnergySwitch(HEPEnergyType cutE)
         : cutE_(cutE) {}
-    bool operator()(const Particle& p) { return (p.getEnergy() < cutE_); }
+    bool operator()(const Particle& p) const { return (p.getEnergy() < cutE_); }
   };
   auto hadronSequence =
       make_select(EnergySwitch(55_GeV), urqmdCounted,
