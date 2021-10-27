@@ -32,8 +32,7 @@ namespace corsika::proposal {
     _env.getUniverse()->walk([&](auto& vtn) {
       if (vtn.hasModelProperties()) {
         const auto& prop = vtn.getModelProperties();
-        const auto& medium = mediumData(
-            prop.getMedium(Point(_env.getCoordinateSystem(), 0_cm, 0_cm, 0_cm)));
+        const auto& medium = mediumData(prop.getMedium());
 
         auto comp_vec = std::vector<PROPOSAL::Component>();
         const auto& comp = prop.getNuclearComposition();

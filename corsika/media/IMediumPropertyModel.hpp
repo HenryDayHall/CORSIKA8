@@ -31,7 +31,7 @@ namespace corsika {
      * @param  point    The location to evaluate at.
      * @returns    The media type
      */
-    virtual Medium getMedium(Point const&) const = 0;
+    virtual Medium getMedium() const = 0;
 
     /**
      * A virtual default destructor.

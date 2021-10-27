@@ -19,7 +19,7 @@ namespace corsika {
       , medium_(medium) {}
 
   template <typename T>
-  inline Medium MediumPropertyModel<T>::getMedium(Point const&) const {
+  inline Medium MediumPropertyModel<T>::getMedium() const {
     return medium_;
   }
 

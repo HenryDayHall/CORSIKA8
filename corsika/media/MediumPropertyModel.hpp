@@ -36,7 +36,7 @@ namespace corsika {
      * @param  point    The location to evaluate at.
      * @returns    The medium type as enum environment::Medium
      */
-    Medium getMedium(Point const&) const override;
+    Medium getMedium() const override;
 
     /**
      * Set the medium type.

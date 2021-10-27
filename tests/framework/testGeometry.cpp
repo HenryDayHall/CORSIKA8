@@ -68,6 +68,12 @@ TEST_CASE("Geometry CoordinateSystems") {
     CHECK(p2.getX(rootCS) == 0_m);
     CHECK(p2.getY(rootCS) == 4_m);
     CHECK(p2.getZ(rootCS) == 0_m);
+    CHECK(p2.getX(translatedCS) == 0_m);
+    CHECK(p2.getY(translatedCS) == 0_m);
+    CHECK(p2.getZ(translatedCS) == 0_m);
+
+    Vector<magnetic_flux_density_d> v2(translatedCS, components);
+    CHECK((v2 - v1).getNorm() / 1_T == Approx(0));
   }
 
   SECTION("multiple translations") {
@@ -270,7 +276,8 @@ TEST_CASE("Geometry Trajectories") {
   Point r0(rootCS, {0_m, 0_m, 0_m});
 
   SECTION("Line") {
-    VelocityVector v0(rootCS, {3_m / second, 0_m / second, 0_m / second});
+    SpeedType const V0 = 3_m / second;
+    VelocityVector v0(rootCS, {V0, 0_m / second, 0_m / second});
 
     Line const line(r0, v0);
     CHECK(
@@ -311,6 +318,10 @@ TEST_CASE("Geometry Trajectories") {
                              std::numeric_limits<TimeType::value_type>::infinity() * 1_s);
     base2.setDuration(10_s);
     CHECK(base2.getDuration() / 1_s == Approx(10));
+
+    base2.setLength(1.3_m);
+    CHECK(base2.getDuration() * V0 / meter == Approx(1.3));
+    CHECK(base2.getLength() / meter == Approx(1.3));
   }
 
   SECTION("Helix") {
@@ -412,5 +423,9 @@ TEST_CASE("Path") {
     CHECK(P3.getLength() / 1_m == Approx(3)); // Check RemoveFromEnd() else case
     // Check GetNSegments()
     CHECK(P3.getNSegments() - 3 == Approx(0));
+    P3.removeFromEnd();
+    P3.removeFromEnd();
+    P3.removeFromEnd();
+    CHECK(P3.getNSegments() == Approx(0));
   }
 }
