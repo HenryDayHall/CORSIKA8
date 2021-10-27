@@ -9,9 +9,9 @@
 #pragma once
 
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/FourVector.hpp>
 
 #include <corsika/modules/sibyll/ParticleConversion.hpp>
+#include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/modules/sibyll/SibStack.hpp>
 
 #include <sibyll2.3d.hpp>

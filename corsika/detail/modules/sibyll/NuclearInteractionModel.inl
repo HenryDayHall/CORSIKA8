@@ -11,7 +11,6 @@
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 
-#include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/core/Logging.hpp>
