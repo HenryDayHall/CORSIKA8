@@ -68,10 +68,7 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
   AtmModel medium(type, density, protonComposition);
 
   // and require that it is constant
-  CHECK(type == medium.getMedium(Point(gCS, -10_m, 4_m, 35_km)));
-  CHECK(type == medium.getMedium(Point(gCS, +210_m, 0_m, 7_km)));
-  CHECK(type == medium.getMedium(Point(gCS, 0_m, 0_m, 0_km)));
-  CHECK(type == medium.getMedium(Point(gCS, 100_km, 400_km, 350_km)));
+  CHECK(type == medium.getMedium());
 
   // a new refractive index
   const Medium type2 = corsika::Medium::StandardRock;
@@ -80,10 +77,7 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
   medium.setMedium(type2);
 
   // check that the returned refractive index is correct
-  CHECK(type2 == medium.getMedium(Point(gCS, -10_m, 4_m, 35_km)));
-  CHECK(type2 == medium.getMedium(Point(gCS, +210_m, 0_m, 7_km)));
-  CHECK(type2 == medium.getMedium(Point(gCS, 0_m, 0_m, 0_km)));
-  CHECK(type2 == medium.getMedium(Point(gCS, 100_km, 400_km, 350_km)));
+  CHECK(type2 == medium.getMedium());
 
   // define our axis vector
   Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
