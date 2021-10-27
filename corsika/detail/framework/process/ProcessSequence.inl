@@ -443,7 +443,7 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
-  template <typename TSecondaryView>
+  template <typename TSecondaryView, typename TRNG>
   inline ProcessReturn
   ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1, IndexProcess2>::
       selectInteraction(TSecondaryView&& view, FourMomentum const& projectileP4,

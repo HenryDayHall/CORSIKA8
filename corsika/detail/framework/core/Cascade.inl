@@ -216,7 +216,7 @@ namespace corsika {
       }
       return;
     }
-    vParticle.setTime(vParticle.getTime() + step.getDuration());
+    particle.setTime(particle.getTime() + step.getDuration());
     if (isContinuous) {
       return; // there is nothing further, step is finished
     }
