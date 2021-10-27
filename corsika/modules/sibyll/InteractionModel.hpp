@@ -15,6 +15,8 @@
 
 namespace corsika::sibyll {
 
+  class FourMomentum; // fwd-decl
+
   /**
    * @brief sibyll::InteractionModel provides the SIBYLL proton-nucleus interaction model.
    *
