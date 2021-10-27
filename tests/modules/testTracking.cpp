@@ -75,7 +75,7 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
   // for algorithms that know magnetic deflections choose: +-50uT, 0uT
   // otherwise just 0uT
   auto Bfield = GENERATE_COPY(filter(
-      [isParallel]([[maybe_unused]] MagneticFluxType v) {
+      []([[maybe_unused]] MagneticFluxType v) {
         if constexpr (std::is_same_v<TestType, tracking_line::Tracking>)
           return v == 0_uT;
         else
