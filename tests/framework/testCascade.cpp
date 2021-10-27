@@ -41,7 +41,7 @@ using namespace std;
  * and a critical energy.
  *
  * It resembles one of the most simple cascades you can simulate with CORSIKA8.
- **/
+ */
 
 /*
   The dummy env (here) doesn't need to have any propoerties
@@ -65,7 +65,7 @@ auto make_dummy_env() {
 /**
  *
  * For the Heitler model we don't need particle transport.
- **/
+ */
 class DummyTracking {
 
 public:
