@@ -56,8 +56,8 @@ namespace corsika::proposal {
     PROPOSAL::InterpolationSettings::TABLES_PATH = corsika_data("PROPOSAL").c_str();
   }
 
-  inline size_t ProposalProcessBase::hash::operator()(
-      const calc_key_t& p) const noexcept {
+  inline size_t ProposalProcessBase::hash::operator()(const calc_key_t& p) const
+      noexcept {
     return p.first ^ std::hash<Code>{}(p.second);
   }
 
