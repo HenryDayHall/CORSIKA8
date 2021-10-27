@@ -291,8 +291,6 @@ int main(int argc, char** argv) {
   cut.reset();
   eLoss.reset();
 
-  conex_model.solveCE();
-
   auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                      urqmdCounted.getHistogram();
 

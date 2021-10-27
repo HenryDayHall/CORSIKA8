@@ -11,13 +11,17 @@
 #include <corsika/framework/process/ProcessTraits.hpp>
 #include <corsika/framework/utility/HasMethodSignature.hpp>
 
+/**
+ * @file CascadeEquationsProcess.hpp
+ */
+
 namespace corsika {
 
   /**
-   * traits test for SecondariesProcess::doSecondaries method.
+   * traits test for CascadeEquationsProcess::doCascadeEquations method.
    */
   template <class TProcess, typename TReturn, typename... TArg>
-  struct has_method_doSecondaries
+  struct has_method_doCascadeEquations
       : public detail::has_method_signature<TReturn, TArg...> {
 
     //! method signature
@@ -29,12 +33,12 @@ namespace corsika {
 
     //! templated parameter option
     template <class T>
-    static decltype(testSignature(&T::template doSecondaries<TArg...>)) test(
+    static decltype(testSignature(&T::template doCascadeEquations<TArg...>)) test(
         std::nullptr_t);
 
     //! non templated parameter option
     template <class T>
-    static decltype(testSignature(&T::doSecondaries)) test(std::nullptr_t);
+    static decltype(testSignature(&T::doCascadeEquations)) test(std::nullptr_t);
 
   public:
     /**
@@ -47,12 +51,10 @@ namespace corsika {
   };
 
   /**
-   * @file SecondariesProcess.hpp
-   *
-   * @brief value traits type.
+   * value traits type.
    */
   template <class TProcess, typename TReturn, typename... TArg>
-  bool constexpr has_method_doSecondaries_v =
-      has_method_doSecondaries<TProcess, TReturn, TArg...>::value;
+  bool constexpr has_method_doCascadeEquations_v =
+      has_method_doCascadeEquations<TProcess, TReturn, TArg...>::value;
 
 } // namespace corsika

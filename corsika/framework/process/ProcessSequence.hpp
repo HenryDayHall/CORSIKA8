@@ -20,6 +20,7 @@
 #include <corsika/framework/process/ContinuousProcessStepLength.hpp>
 #include <corsika/framework/process/DecayProcess.hpp>
 #include <corsika/framework/process/InteractionProcess.hpp>
+#include <corsika/framework/process/CascadeEquationsProcess.hpp>
 #include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/process/SecondariesProcess.hpp>
 #include <corsika/framework/process/StackProcess.hpp>
@@ -208,6 +209,17 @@ namespace corsika {
      */
     template <typename TStack>
     void doStack(TStack& stack);
+
+    /**
+     * Execute the CascadeEquationsProcess-es in the ProcessSequence.
+     */
+    template <typename TStack>
+    void doCascadeEquations(TStack& stack);
+
+    /**
+     * Init the CascadeEquationsProcess-es in the ProcessSequence.
+     */
+    void initCascadeEquations();
 
     /**
      * Calculate the maximum allowed length of the next tracking step, based on all

@@ -28,6 +28,9 @@ namespace corsika {
       : center_{center}
       , showerAxis_{showerAxis}
       , groundDist_{groundDist}
+      , injectionHeight_{injectionHeight}
+      , primaryEnergy_{primaryEnergy}
+      , primaryPDG_{primaryPDG}
       , showerCore_{showerAxis_.getStart() + showerAxis_.getDirection() * groundDist_}
       , conexObservationCS_{std::invoke([&]() {
         auto const& c8cs = center.getCoordinateSystem();
@@ -77,7 +80,9 @@ namespace corsika {
     CORSIKA_LOG_DEBUG("showerCore (C8): {}",
                       showerCore_.getCoordinates(center.getCoordinateSystem()));
 
-    int randomSeeds[3] = {1234, 0, 0}; // will be overwritten later??
+    int randomSeeds[3] = {1234, 0,
+                          0}; // SEEDS ARE NOT USED. All random numbers are obtained from
+                              // the CORSIKA 8 stream "conex" and "epos"!
     int heModel = eSibyll23;
 
     int nShower = 1; // large to avoid final stats.
@@ -92,8 +97,9 @@ namespace corsika {
                         particleListMode,
 #endif
                         configPath.c_str(), configPath.size());
+  }
 
-    double eprima = primaryEnergy / 1_GeV;
+  inline void CONEXhybrid::initCascadeEquations() {
 
     // set phi, theta
     Vector<length_d> ez{conexObservationCS_, {0._m, 0._m, -1_m}};
@@ -111,16 +117,17 @@ namespace corsika {
         "; phi (deg) = {}",
         theta, phi);
 
-    int ipart = static_cast<int>(primaryPDG);
-    auto rng = RNGManager<>::getInstance().getRandomStream("conex");
+    int ipart = static_cast<int>(primaryPDG_);
 
     double dimpact = 0.; // valid only if shower core is fixed on the observation plane;
                          // for skimming showers an offset is needed like in CONEX
 
-    std::array<int, 3> ioseed{static_cast<int>(rng()), static_cast<int>(rng()),
-                              static_cast<int>(rng())};
+    // SEEDS ARE NOT USED. All random numbers are obtained from
+    // the CORSIKA 8 stream "conex" and "epos"!
+    std::array<int, 3> ioseed{1, 1, 1};
 
-    double xminp = injectionHeight / 1_m;
+    double eprima = primaryEnergy_ / 1_GeV;
+    double xminp = injectionHeight_ / 1_m;
 
     ::conex::conexrun_(ipart, eprima, theta, phi, xminp, dimpact, ioseed.data());
   }
@@ -225,7 +232,8 @@ namespace corsika {
     return true;
   }
 
-  inline void CONEXhybrid::solveCE() {
+  template <typename TStack>
+  inline void CONEXhybrid::doCascadeEquations(TStack&) {
 
     ::conex::conexcascade_();
 

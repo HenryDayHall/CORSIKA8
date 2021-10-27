@@ -16,24 +16,24 @@
 namespace corsika {
 
   /**
-     @ingroup Processes
-     @{
-
-     Processes acting on the secondaries produced by other processes.
-
-     Create a new SecondariesProcess, e.g. for XYModel, via
-     @code{.cpp}
-     class XYModel : public SecondariesProcess<XYModel> {};
-     @endcode
-
-     and provide the necessary interface method:
-     @code{.cpp}
-     template <typename TStackView>
-     void doSecondaries(TStackView& StackView);
-     @endcode
-
-     where StackView is an object that can store secondaries on a
-     stack and also iterate over these secondaries.
+   * @ingroup Processes
+   * @{
+   *
+   * Processes acting on the secondaries produced by other processes.
+   *
+   * Create a new SecondariesProcess, e.g. for XYModel, via
+   * @code{.cpp}
+   * class XYModel : public SecondariesProcess<XYModel> {};
+   * @endcode
+   *
+   * and provide the necessary interface method:
+   * @code{.cpp}
+   * template <typename TStackView>
+   * void doSecondaries(TStackView& StackView);
+   * @endcode
+   *
+   * where StackView is an object that can store secondaries on a
+   * stack and also iterate over these secondaries.
    */
 
   template <typename TDerived>
@@ -42,8 +42,8 @@ namespace corsika {
   };
 
   /**
-   * ProcessTraits specialization to flag SecondariesProcess objects
-   **/
+   * ProcessTraits specialization to flag SecondariesProcess objects.
+   */
   template <typename TProcess>
   struct is_secondaries_process<
       TProcess, std::enable_if_t<

@@ -60,7 +60,8 @@ namespace corsika {
     for (auto const& node : volumeNode.getChildNodes()) {
 
       Intersections const time_intersections = TDerived::intersect(particle, *node);
-      CORSIKA_LOG_DEBUG("intersection times with child volume {}", fmt::ptr(node));
+      CORSIKA_LOG_DEBUG("search intersection times with child volume {}:",
+                        fmt::ptr(node));
       if (!time_intersections.hasIntersections()) { continue; }
       auto const t_entry = time_intersections.getEntry();
       auto const t_exit = time_intersections.getExit();

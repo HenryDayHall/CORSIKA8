@@ -206,10 +206,8 @@ namespace corsika::sibyll {
     // just for show:
     // boost projecticle
     [[maybe_unused]] auto const PprojCoM = boost.toCoM(PprojLab);
-
     // boost target
     [[maybe_unused]] auto const PtargCoM = boost.toCoM(PtargLab);
-
     CORSIKA_LOG_DEBUG(
         "Interaction: ebeam CoM: {} GeV "
         "Interaction: pbeam CoM: {} GeV ",
@@ -328,15 +326,16 @@ namespace corsika::sibyll {
         Ecm_final += psib.getEnergy();
       }
       CORSIKA_LOG_DEBUG(
-          "conservation (all GeV):"
-          "Ecm_initial(per nucleon)={}, Ecm_final(per nucleon)={}, "
-          "Elab_initial={}, Elab_final={}, "
-          "diff (%)={}, "
-          "E in nucleons={}, "
-          "Plab_initial={}, "
-          "Plab_final={} ",
+          "conservation (all GeV): "
+          "Ecm_initial(per nucleon)={:.2f}, Ecm_final(per nucleon)={:.2f}, "
+          "Elab_initial={:.2f}, Elab_final={:.2f}, "
+          "Elab-diff (%)={:.2f}, "
+          "m in target nucleons={:.2f}, "
+          "Plab_initial={:.2f}, "
+          "Plab_final={:.2f} ",
           Ecm / 1_GeV, Ecm_final * 2. / (get_nwounded() + 1) / 1_GeV, Etot / 1_GeV,
-          Elab_final / 1_GeV, (Elab_final / Etot / get_nwounded() - 1) * 100,
+          Elab_final / 1_GeV,
+          (Elab_final / (Etot + get_nwounded() * constants::nucleonMass) - 1) * 100,
           constants::nucleonMass * get_nwounded() / 1_GeV,
           (pProjectileLab / 1_GeV).getComponents(), (Plab_final / 1_GeV).getComponents());
     }
