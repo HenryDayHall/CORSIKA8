@@ -11,7 +11,6 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/framework/utility/COMBoost.hpp>
 #include <tuple>
 
 namespace corsika::sibyll {

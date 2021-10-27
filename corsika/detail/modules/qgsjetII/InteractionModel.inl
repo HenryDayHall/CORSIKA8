@@ -8,11 +8,13 @@
 
 #include <corsika/modules/qgsjetII/InteractionModel.hpp>
 
-#include <corsika/framework/geometry/QuantityVector.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
+#include <corsika/framework/geometry/Point.hpp>
+
 #include <corsika/modules/qgsjetII/ParticleConversion.hpp>
 #include <corsika/modules/qgsjetII/QGSJetIIFragmentsStack.hpp>
 #include <corsika/modules/qgsjetII/QGSJetIIStack.hpp>
+
 #include <corsika/framework/utility/COMBoost.hpp>
 
 #include <sstream>

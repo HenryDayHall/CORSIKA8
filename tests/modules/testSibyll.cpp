@@ -269,11 +269,7 @@ TEST_CASE("SibyllInterface", "modules") {
                                 MomentumVector(cs, {0_eV, 0_eV, 0_eV}));
     model.doInteraction(view, pid, Code::Oxygen, P4, targetP4);
     CrossSectionType const cx = model.getCrossSection(pid, Code::Oxygen, P4, targetP4);
-    // Felix, are those changes OK? Below are the checks before refactory-2020
-    // CHECK(length / 1_g * 1_cm * 1_cm == Approx(44.2).margin(.1));
-    // CHECK(view.getSize() == 11);
-    CHECK(cx / 1_mb == Approx(1100).margin(100)); // this is not physics validation
-    // CHECK(view.getSize() == 20); // also sibyll not stable wrt. to compiler changes
+    CHECK(cx / 1_mb == Approx(1100).margin(100));   // this is not physics validation
     CHECK(view.getSize() == Approx(40).margin(30)); // this is not physics validation
   }
 }
