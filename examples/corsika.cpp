@@ -202,23 +202,12 @@ int main(int argc, char** argv) {
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
-  auto builder = make_layered_spherical_atmosphere_builder<
-      setup::EnvironmentInterface, MyExtraEnv>::create(center,
-                                                       constants::EarthRadius::Mean,
-                                                       Medium::AirDry1Atm,
-                                                       MagneticFieldVector{rootCS, 0_T,
-                                                                           50_uT, 0_T});
-  builder.setNuclearComposition(
-      {{Code::Nitrogen, Code::Oxygen},
-       {0.7847, 1. - 0.7847}}); // values taken from AIRES manual, Ar removed for now
 
-  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 2_km);
-  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
-  builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
-  builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
-  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
-  builder.addLinearLayer(1e9_cm, 112.8_km);
-  builder.assemble(env);
+  // build a Linsley US Standard atmosphere into `env`
+  create_5layer_atmosphere<setup::EnvironmentInterface, MyExtraEnv>(
+      env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
+      MagneticFieldVector{rootCS, 0_T, 50_uT, 0_T});
+
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
   ofstream atmout("earth.dat");
@@ -230,8 +219,6 @@ int main(int argc, char** argv) {
     atmout << h / 1_m << " " << rho / 1_kg * cube(1_m) << "\n";
   }
   atmout.close();
-
-  /* === START: CONSTRUCT PRIMARY PARTICLE === */
 
   /* === START: CONSTRUCT PRIMARY PARTICLE === */
 
