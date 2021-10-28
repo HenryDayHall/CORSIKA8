@@ -36,26 +36,24 @@ namespace corsika::sibyll {
     CORSIKA_LOG_DEBUG("Sibyll::Model n={}, Nnuc={}", count_, nucCount_);
   }
 
-  inline void constexpr InteractionModel::isValid(Code const projectileId,
+  inline bool constexpr InteractionModel::isValid(Code const projectileId,
                                                   Code const targetId,
                                                   HEPEnergyType const sqrtSnn) const {
-    if ((minEnergyCoM_ > sqrtSnn) || (sqrtSnn > maxEnergyCoM_)) {
-      // i.e. nuclei handled by different process, this should not happen
-      throw std::runtime_error("CoM energy out of bounds for SIBYLL");
-    }
+    if ((minEnergyCoM_ > sqrtSnn) || (sqrtSnn > maxEnergyCoM_)) { return false; }
 
     if (is_nucleus(targetId)) {
-      unsigned int const targA = get_nucleus_A(targetId);
+      size_t const targA = get_nucleus_A(targetId);
       if (targA != 1 && (targA < minNuclearTargetA_ || targA >= maxTargetMassNumber_)) {
-        throw std::runtime_error("Target outside of allowed range for SIBYLL");
+        return false;
       }
     } else if (targetId != Code::Proton && targetId != Code::Neutron &&
                targetId != Code::Hydrogen) {
-      throw std::runtime_error("Target cannot be handled by SIBYLL");
+      return false;
     }
     if (is_nucleus(projectileId) || !corsika::sibyll::canInteract(projectileId)) {
-      throw std::runtime_error("Projectile cannot be handled by SIBYLL");
+      return false;
     }
+    return true;
   }
 
   inline std::tuple<CrossSectionType, CrossSectionType>
@@ -67,6 +65,10 @@ namespace corsika::sibyll {
     if (is_nucleus(targetId)) { targetSibCode = get_nucleus_A(targetId); }
     // sqrtS per target nucleon
     HEPEnergyType const sqrtSnn = (projectileP4 + targetP4 / targetSibCode).getNorm();
+
+    if (!isValid(projectileId, targetId, sqrtSnn)) {
+      return {CrossSectionType::zero(), CrossSectionType::zero()};
+    }
 
     double dummy, dum1, dum3, dum4, dumdif[3]; // dummies needed for fortran call
     int const iBeam = corsika::sibyll::getSibyllXSCode(
@@ -109,7 +111,9 @@ namespace corsika::sibyll {
     HEPEnergyType const sqrtSnn = (projectileP4 + targetP4 / targetSibCode).getNorm();
     COMBoost const boost(projectileP4, targetP4 / targetSibCode);
 
-    isValid(projectileId, targetId, sqrtSnn); // throws
+    if (!isValid(projectileId, targetId, sqrtSnn)) {
+      throw std::runtime_error("Invalid target/projectile/energy combination");
+    }
 
     CORSIKA_LOG_DEBUG("pId={} tId={} sqrtSnn={}GeV", projectileId, targetId, sqrtSnn);
 
@@ -135,10 +139,9 @@ namespace corsika::sibyll {
     // add particles from sibyll to stack
 
     // position and time of interaction, not used in Sibyll
-    Point const pOrig = Point(csPrime, {0_m, 0_m, 0_m});
-    TimeType const tOrig = 0_s; // no time in sibyll
-    CORSIKA_LOG_DEBUG("position of interaction: {}, time {} ", pOrig.getCoordinates(),
-                      tOrig);
+    auto const& projectile = secondaries.parent();
+    Point const& pOrig = projectile.getPosition();
+    TimeType const tOrig = projectile.getTime(); // no time in sibyll
 
     // link to sibyll stack
     SibStack ss;

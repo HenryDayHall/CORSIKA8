@@ -33,7 +33,7 @@ namespace corsika::qgsjetII {
      * @param beamId
      * @param targetId
      */
-    void isValid(Code const beamId, Code const targetId) const;
+    bool isValid(Code const beamId, Code const targetId) const;
 
     /**
      * Return the QGSJETII inelastic/production cross section.

@@ -273,7 +273,7 @@ namespace corsika {
                                      FourMomentum const& targetP4) const;
 
     template <typename TParticle>
-    TimeType getLifetime(TParticle&& particle) {
+    TimeType getLifetime(TParticle& particle) {
       return 1. / getInverseLifetime(particle);
     }
 

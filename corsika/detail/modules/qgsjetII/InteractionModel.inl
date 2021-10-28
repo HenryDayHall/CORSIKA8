@@ -41,44 +41,32 @@ namespace corsika::qgsjetII {
     CORSIKA_LOG_DEBUG("QgsjetII::InteractionModel n= {}", count_);
   }
 
-  inline void InteractionModel::isValid(Code const projectileId,
+  inline bool InteractionModel::isValid(Code const projectileId,
                                         Code const targetId) const {
     if (is_nucleus(targetId)) {
       size_t iTarget = get_nucleus_A(targetId);
-      if (iTarget > int(maxMassNumber_) || iTarget <= 0) {
-        std::ostringstream txt;
-        txt << "QgsjetII target outside range. Atarget=" << iTarget;
-        throw std::runtime_error(txt.str().c_str());
-      }
+      if (iTarget > int(maxMassNumber_) || iTarget <= 0) { return false; }
     } else if (targetId != Proton::code) {
-      std::ostringstream txt;
-      txt << "QgsjetII not valid target=" << targetId;
-      throw std::runtime_error(txt.str().c_str());
+      return false;
     }
 
     if (is_nucleus(projectileId)) {
       size_t iProjectile = get_nucleus_A(projectileId);
-      if (iProjectile > int(maxMassNumber_) || iProjectile <= 0) {
-        std::ostringstream txt;
-        txt << "QgsjetII projectile outside range. Aprojectile=" << iProjectile;
-        throw std::runtime_error(txt.str().c_str());
-      }
+      if (iProjectile > int(maxMassNumber_) || iProjectile <= 0) { return false; }
     } else if (!is_hadron(projectileId)) {
-      std::ostringstream txt;
-      txt << "QgsjetII projectile can only be hadrons. Is=" << projectileId;
-      throw std::runtime_error(txt.str().c_str());
+      return false;
     }
+    return true;
   }
 
   inline CrossSectionType InteractionModel::getCrossSection(
       Code const projectileId, Code const targetId, FourMomentum const& projectileP4,
       FourMomentum const& targetP4) const {
 
-    double sigProd = std::numeric_limits<double>::infinity();
-
-    if (!corsika::qgsjetII::canInteract(projectileId)) { return sigProd * 1_mb; }
-
-    isValid(projectileId, targetId); // throws
+    if (!corsika::qgsjetII::canInteract(projectileId)) {
+      return CrossSectionType::zero();
+    }
+    if (!isValid(projectileId, targetId)) { return CrossSectionType::zero(); }
 
     // define projectile, in lab frame
     auto const sqrtS2 = (projectileP4 + targetP4).getNormSqr();
@@ -97,9 +85,8 @@ namespace corsika::qgsjetII {
         "QgsjetII::getCrossSection Elab= {} GeV iBeam= {}"
         " iProjectile= {} iTarget= {}",
         Elab / 1_GeV, iBeam, iProjectile, iTarget);
-    sigProd = qgsect_(Elab / 1_GeV, iBeam, iProjectile, iTarget);
+    double sigProd = qgsect_(Elab / 1_GeV, iBeam, iProjectile, iTarget);
     CORSIKA_LOG_DEBUG("QgsjetII::getCrossSection sigProd= {} mb", sigProd);
-
     return sigProd * 1_mb;
   }
 
@@ -114,9 +101,10 @@ namespace corsika::qgsjetII {
         "doInteraction: {} interaction possible? {}",
         projectileId, corsika::qgsjetII::canInteract(projectileId));
 
-    if (!corsika::qgsjetII::canInteract(projectileId)) return;
-
-    isValid(projectileId, targetId); // throws
+    if (!corsika::qgsjetII::canInteract(projectileId) ||
+        !isValid(projectileId, targetId)) {
+      throw std::runtime_error("invalid target/projectile/energy combination.");
+    }
 
     CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
 

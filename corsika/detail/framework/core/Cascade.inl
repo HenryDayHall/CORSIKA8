@@ -47,7 +47,7 @@ namespace corsika {
         auto pNext = stack_.getNextParticle();
 
         CORSIKA_LOG_TRACE(
-            "============== next particle : count={}, pid={}, "
+            "============== next particle : count={}, pid={}"
             ", stack entries={}"
             ", stack deleted={}",
             count_, pNext.getPID(), stack_.getEntries(), stack_.getErased());
@@ -134,11 +134,9 @@ namespace corsika {
     ExponentialDistribution expDist(total_lambda);
     GrammageType const next_interact = expDist(rng_);
 
-    CORSIKA_LOG_DEBUG(
-        "total_lambda={} g/cm2, "
-        ", next_interact={} g/cm2",
-        double(total_lambda / 1_g * 1_cm * 1_cm),
-        double(next_interact / 1_g * 1_cm * 1_cm));
+    CORSIKA_LOG_DEBUG("total_lambda={} g/cm2, next_interact={} g/cm2",
+                      double(total_lambda / 1_g * 1_cm * 1_cm),
+                      double(next_interact / 1_g * 1_cm * 1_cm));
 
     // determine combined total inverse decay time
     InverseTimeType const total_inv_lifetime = sequence_.getInverseLifetime(particle);
@@ -147,10 +145,8 @@ namespace corsika {
     ExponentialDistribution expDistDecay(1 / total_inv_lifetime);
     TimeType const next_decay = expDistDecay(rng_);
 
-    CORSIKA_LOG_DEBUG(
-        "total_lifetime={} s"
-        ", next_decay={} s",
-        (1 / total_inv_lifetime) / 1_s, next_decay / 1_s);
+    CORSIKA_LOG_DEBUG("total_lifetime={} ns, next_decay={} ns",
+                      (1 / total_inv_lifetime) / 1_ns, next_decay / 1_ns);
 
     // convert next_decay from time to length [m]
     LengthType const distance_decay = next_decay * particle.getMomentum().getNorm() /
@@ -198,10 +194,6 @@ namespace corsika {
     // move particle along the trajectory to new position
     // also update momentum/direction/time
     step.setLength(min_distance);
-    particle.setPosition(step.getPosition(1));
-    // assumption: tracking does not change absolute momentum (continuous physics can and
-    // will):
-    particle.setMomentum(step.getDirection(1) * particle.getMomentum().getNorm());
 
     // apply all continuous processes on particle + track
     if (sequence_.doContinuous(particle, step, limitingId) ==
@@ -215,9 +207,12 @@ namespace corsika {
       } else {
         particle.erase();
       }
-      return;
+      return; // particle is gone -> return
     }
     particle.setTime(particle.getTime() + step.getDuration());
+    particle.setPosition(step.getPosition(1));
+    particle.setMomentum(step.getDirection(1) * particle.getMomentum().getNorm());
+
     if (isContinuous) {
       return; // there is nothing further, step is finished
     }

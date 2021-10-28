@@ -231,11 +231,13 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     corsika::pythia8::Interaction collision;
 
-    CHECK_THROWS(collision.getCrossSection(
-        Code::Proton, Code::Iron,
-        {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
-         {rootCS, {0_eV, 0_eV, 100_GeV}}},
-        {Iron::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
+    CHECK(collision.getCrossSection(
+              Code::Proton, Code::Iron,
+              {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
+               {rootCS, {0_eV, 0_eV, 100_GeV}}},
+              {Iron::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) /
+              1_mb ==
+          Approx(0));
 
     CHECK_THROWS(collision.doInteraction(
         view, Code::Proton, Code::Iron,

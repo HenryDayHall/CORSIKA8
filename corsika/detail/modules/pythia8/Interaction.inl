@@ -80,26 +80,20 @@ namespace corsika::pythia8 {
     Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
   }
 
-  inline void Interaction::isValid(Code const projectileId, Code const targetId,
+  inline bool Interaction::isValid(Code const projectileId, Code const targetId,
                                    HEPEnergyType const sqrtS) const {
 
-    if ((10_GeV > sqrtS) || (sqrtS > 1_PeV)) {
-      throw std::runtime_error("energy out of bounds for PYTHIA");
-    }
+    if ((10_GeV > sqrtS) || (sqrtS > 1_PeV)) { return false; }
 
     if (targetId != Code::Hydrogen && targetId != Code::Neutron &&
         targetId != Code::Proton) {
-      throw std::runtime_error("wrong target for PYTHIA");
+      return false;
     }
 
-    if (is_nucleus(projectileId)) {
-      // nuclei handled by different process, this should not happen
-      throw std::runtime_error("Nuclear projectile are not handled by PYTHIA!");
-    }
+    if (is_nucleus(projectileId)) { return false; }
 
-    if (!canInteract(projectileId)) {
-      throw std::runtime_error("Projectile not supported by PYTHIA!");
-    }
+    if (!canInteract(projectileId)) { return false; }
+    return true;
   }
 
   inline void Interaction::configureLabFrameCollision(Code const projectileId,
@@ -150,7 +144,9 @@ namespace corsika::pythia8 {
 
     HEPEnergyType const CoMenergy = (projectileP4 + targetP4).getNorm();
 
-    isValid(projectileId, targetId, CoMenergy); // throws
+    if (!isValid(projectileId, targetId, CoMenergy)) {
+      return {CrossSectionType::zero(), CrossSectionType::zero()};
+    }
 
     // input particle PDG
     auto const pdgCodeBeam = static_cast<int>(get_PDG(projectileId));
@@ -195,11 +191,13 @@ namespace corsika::pythia8 {
                                           static_pow<2>(get_mass(targetId))) /
                                          (2 * get_mass(targetId));
 
-    isValid(projectileId, targetId, sqrtS); // throws
+    if (!isValid(projectileId, targetId, sqrtS)) {
+      throw std::runtime_error("invalid target,projectile,energy combination.");
+    }
 
     // position and time of interaction
-    Point pOrig = projectile.getPosition();
-    TimeType tOrig = projectile.getTime();
+    Point const& pOrig = projectile.getPosition();
+    TimeType const tOrig = projectile.getTime();
 
     CORSIKA_LOG_DEBUG("Interaction: ebeam lab: {} GeV", eProjectileLab / 1_GeV);
 

@@ -35,7 +35,7 @@ namespace corsika::urqmd {
     UrQMD(boost::filesystem::path const path = corsika_data("UrQMD/UrQMD-1.3.1-xs.dat"),
           int const retryFlag = 0);
 
-    void isValid(Code const projectileId, Code const targetId) const;
+    bool isValid(Code const projectileId, Code const targetId) const;
 
     CrossSectionType getTabulatedCrossSection(Code const, Code const,
                                               HEPEnergyType const) const;

@@ -40,20 +40,17 @@ namespace corsika::sibyll {
   }
 
   template <typename TEnvironment, typename TNucleonModel>
-  inline void constexpr NuclearInteractionModel<TEnvironment, TNucleonModel>::isValid(
+  inline bool constexpr NuclearInteractionModel<TEnvironment, TNucleonModel>::isValid(
       Code const projectileId, Code const targetId, HEPEnergyType const sqrtSnn) const {
 
     // also depends on underlying model, for Proton/Neutron projectile
-    hadronicInteraction_.isValid(Code::Proton, targetId, sqrtSnn); // throws
+    if (!hadronicInteraction_.isValid(Code::Proton, targetId, sqrtSnn)) { return false; }
 
     // projectile limits:
-    if (!is_nucleus(projectileId)) {
-      throw std::runtime_error("can only handle nuclear projectile");
-    }
+    if (!is_nucleus(projectileId)) { return false; }
     unsigned int projectileA = get_nucleus_A(projectileId);
-    if (projectileA > getMaxNucleusAProjectile() || projectileA < 2) {
-      throw std::runtime_error("projectile mass A out of bounds");
-    }
+    if (projectileA > getMaxNucleusAProjectile() || projectileA < 2) { return false; }
+    return true;
   } // namespace corsika::sibyll
 
   template <typename TEnvironment, typename TNucleonModel>
@@ -114,28 +111,35 @@ namespace corsika::sibyll {
     for (Code const ptarg : allElementsInUniverse) {
       if (ptarg == Code::Argon) continue; // NEED TO IGNORE Argon ....
       ++k;
-      CORSIKA_LOG_DEBUG("init target component: {}", ptarg);
+      CORSIKA_LOG_DEBUG("init target component: {} A={}", ptarg, get_nucleus_A(ptarg));
       int const ib = get_nucleus_A(ptarg);
-      hadronicInteraction_.isValid(Code::Proton, ptarg, 100_GeV); // throws
+      if (!hadronicInteraction_.isValid(Code::Proton, ptarg, 100_GeV)) {
+        throw std::runtime_error("Invalid target type.");
+      }
       targetComponentsIndex_.insert(std::pair<Code, int>(ptarg, k));
       // loop over energies, fNEnBins log. energy bins
-      for (unsigned int i = 0; i < getNEnergyBins(); ++i) {
+      for (size_t i = 0; i < getNEnergyBins(); ++i) {
         // hard coded energy grid, has to be aligned to definition in signuc2!!, no
         // comment..
         HEPEnergyType const Ecm = pow(10., 1. + 1. * i) * 1_GeV;
+        // head-on pp collision:
+        HEPEnergyType const EcmHalve = Ecm / 2;
+        HEPMomentumType const pcm =
+            sqrt(EcmHalve * EcmHalve - Proton::mass * Proton::mass);
         CoordinateSystemPtr cs = get_root_CoordinateSystem();
-        HEPMomentumType const pcm = sqrt(Ecm * Ecm - Proton::mass * Proton::mass);
-        FourMomentum projectileP4(Ecm,
-                                  {cs, pcm, 0_eV, 0_eV}); // this is ONLY needd for sqrtS
-        FourMomentum targetP4(0_eV, {cs, 0_eV, 0_eV, 0_eV});
+        FourMomentum projectileP4(EcmHalve, {cs, pcm, 0_eV, 0_eV});
+        FourMomentum targetP4(EcmHalve, {cs, -pcm, 0_eV, 0_eV});
         // get p-p cross sections
-        auto const protonId = Code::Proton;
+        if (!hadronicInteraction_.isValid(Code::Proton, Code::Proton, Ecm)) {
+          throw std::runtime_error("invalid projectile,target,ecm combination");
+        }
         auto const [siginel, sigela] = hadronicInteraction_.getCrossSectionInelEla(
-            protonId, protonId, projectileP4, targetP4);
-        const double dsig = siginel / 1_mb;
-        const double dsigela = sigela / 1_mb;
+            Code::Proton, Code::Proton, projectileP4, targetP4);
+        double const dsig = siginel / 1_mb;
+        double const dsigela = sigela / 1_mb;
         // loop over projectiles, mass numbers from 2 to fMaxNucleusAProjectile
-        for (unsigned int j = 1; j < gMaxNucleusAProjectile_; ++j) {
+        CORSIKA_LOG_TRACE("Ecm={} siginel={} sigela={}", Ecm / 1_GeV, dsig, dsigela);
+        for (size_t j = 1; j < gMaxNucleusAProjectile_; ++j) {
           const int jj = j + 1;
           double sig_out, dsig_out, sigqe_out, dsigqe_out;
           sigma_mc_(jj, ib, dsig, dsigela, gNSample_, sig_out, dsig_out, sigqe_out,
@@ -143,6 +147,7 @@ namespace corsika::sibyll {
           // write to table
           cnucsignuc_.sigma[j][k][i] = sig_out;
           cnucsignuc_.sigqe[j][k][i] = sigqe_out;
+          CORSIKA_LOG_TRACE("nuc A={} sig={} qe={}", j, sig_out, sigqe_out);
         }
       }
     }
@@ -177,7 +182,7 @@ namespace corsika::sibyll {
                                                     FourMomentum const& targetP4) const {
 
     HEPEnergyType const sqrtSnn = (projectileP4 + targetP4).getNorm();
-    isValid(projectileId, targetId, sqrtSnn); // throws
+    if (!isValid(projectileId, targetId, sqrtSnn)) { return CrossSectionType::zero(); }
     HEPEnergyType const LabEnergyPerNuc =
         static_pow<2>(sqrtSnn) / (2 * constants::nucleonMass);
     auto const sigProd =
@@ -199,7 +204,9 @@ namespace corsika::sibyll {
     // this is center-of-mass for projectile_nucleon - target
     FourMomentum const nucleonP4 = projectileP4 / projectileA;
     HEPEnergyType const sqrtSnucleon = (nucleonP4 + targetP4).getNorm();
-    isValid(projectileId, targetId, sqrtSnucleon); // throws
+    if (!isValid(projectileId, targetId, sqrtSnucleon)) {
+      throw std::runtime_error("Invalid projectile/target/energy combination.");
+    }
     // projectile is always nucleus!
     // Elab corresponding to sqrtSnucleon -> fixed target projectile
     COMBoost const boost(nucleonP4, targetP4);
@@ -287,8 +294,8 @@ namespace corsika::sibyll {
     Point const& pOrig = projectile.getPosition();
     TimeType const delay = projectile.getTime();
 
-    CORSIKA_LOG_DEBUG("Interaction: position of interaction: {} {}",
-                      pOrig.getCoordinates(), delay / 1_s);
+    CORSIKA_LOG_DEBUG("Interaction: position of interaction: {}, {} ns",
+                      pOrig.getCoordinates(), delay / 1_ns);
     CORSIKA_LOG_DEBUG("number of fragments: {}", nFragments);
     CORSIKA_LOG_DEBUG("adding nuclear fragments to particle stack..");
     // put nuclear fragments on corsika stack

@@ -35,7 +35,7 @@ namespace corsika::pythia8 {
     bool canInteract(Code const) const;
     void configureLabFrameCollision(Code const, Code const, HEPEnergyType const);
 
-    void isValid(Code const projectileId, Code const targetId,
+    bool isValid(Code const projectileId, Code const targetId,
                  HEPEnergyType const sqrtS) const;
     /**
      * Returns inelastic AND elastic cross sections.

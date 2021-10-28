@@ -37,14 +37,13 @@ namespace corsika::urqmd {
     ::urqmd::iniurqmdc8_();
   }
 
-  inline void UrQMD::isValid(Code const projectileId, Code const targetId) const {
+  inline bool UrQMD::isValid(Code const projectileId, Code const targetId) const {
 
     if (!is_hadron(projectileId) || !corsika::urqmd::canInteract(projectileId)) {
-      throw std::runtime_error("UrQMD projectile is not a compatible hadron.");
+      return false;
     }
-    if (!is_nucleus(targetId)) {
-      throw std::runtime_error("UrQMD target is not a nucleus .");
-    }
+    if (!is_nucleus(targetId)) { return false; }
+    return true;
   }
 
   inline CrossSectionType UrQMD::getTabulatedCrossSection(
@@ -141,15 +140,13 @@ namespace corsika::urqmd {
                                                  FourMomentum const& projectileP4,
                                                  FourMomentum const& targetP4) const {
 
-    if (is_nucleus(projectileId)) {
+    if (!isValid(projectileId, targetId)) {
       /*
        * unfortunately unavoidable at the moment until we have tools to get the actual
        * inealstic cross-section from UrQMD
        */
       return CrossSectionType::zero();
     }
-
-    isValid(projectileId, targetId); // throws
 
     // define projectile, in lab frame
     auto const sqrtS2 = (projectileP4 + targetP4).getNormSqr();
@@ -200,7 +197,9 @@ namespace corsika::urqmd {
                                 static_pow<2>(get_mass(targetId))) /
                                (2 * get_mass(targetId));
 
-    isValid(projectileId, targetId); // throws
+    if (!isValid(projectileId, targetId)) {
+      throw std::runtime_error("invalid target,projectile,energy combination");
+    }
 
     size_t const targetA = get_nucleus_A(targetId);
     size_t const targetZ = get_nucleus_Z(targetId);

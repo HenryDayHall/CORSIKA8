@@ -75,13 +75,13 @@ TEST_CASE("UrQMD") {
 
   SECTION("valid") {
     // this is how it is currently done
-    CHECK_THROWS(urqmd.isValid(Code::K0, Code::Proton));
-    CHECK_THROWS(urqmd.isValid(Code::DPlus, Code::Proton));
-    CHECK_THROWS(urqmd.isValid(Code::Electron, Code::Proton));
-    CHECK_THROWS(urqmd.isValid(Code::Proton, Code::Electron));
-    CHECK_THROWS(urqmd.isValid(Code::Oxygen, Code::Oxygen));
-    CHECK_THROWS(urqmd.isValid(Code::PiPlus, Code::Omega));
-    CHECK_THROWS(
+    CHECK_FALSE(urqmd.isValid(Code::K0, Code::Proton));
+    CHECK_FALSE(urqmd.isValid(Code::DPlus, Code::Proton));
+    CHECK_FALSE(urqmd.isValid(Code::Electron, Code::Proton));
+    CHECK_FALSE(urqmd.isValid(Code::Proton, Code::Electron));
+    CHECK_FALSE(urqmd.isValid(Code::Oxygen, Code::Oxygen));
+    CHECK_FALSE(urqmd.isValid(Code::PiPlus, Code::Omega));
+    CHECK_FALSE(
         urqmd.isValid(Code::PiPlus, Code::Proton)); // Proton is not a valid target....
 
     CHECK_NOTHROW(urqmd.isValid(Code::Proton, Code::Oxygen));

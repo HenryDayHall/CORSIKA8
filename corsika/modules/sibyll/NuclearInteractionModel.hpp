@@ -29,7 +29,7 @@ namespace corsika::sibyll {
     NuclearInteractionModel(TNucleonModel&, TEnvironment const&);
     ~NuclearInteractionModel();
 
-    void constexpr isValid(Code const projectileId, Code const targetId,
+    bool constexpr isValid(Code const projectileId, Code const targetId,
                            HEPEnergyType const sqrtSnn) const;
 
     void initializeNuclearCrossSections();

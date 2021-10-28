@@ -96,8 +96,8 @@ TEST_CASE("QgsjetII", "[processes]") {
 
     corsika::qgsjetII::InteractionModel model;
 
-    CHECK_THROWS(model.isValid(Code::Electron, Code::Proton));
-    CHECK_THROWS(model.isValid(Code::Proton, Code::Electron));
+    CHECK_FALSE(model.isValid(Code::Electron, Code::Proton));
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Electron));
   }
 }
 
@@ -193,9 +193,12 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
     FourMomentum const aP4(100_GeV, {cs, 99_GeV, 0_GeV, 0_GeV});
     FourMomentum const bP4(1_TeV, {cs, 0.9_TeV, 0_GeV, 0_GeV});
 
-    CHECK_THROWS(model.getCrossSection(get_nucleus_code(10, 5),
-                                       get_nucleus_code(1000, 500), aP4, bP4));
-    CHECK_THROWS(model.getCrossSection(Code::Nucleus, Code::Nucleus, aP4, bP4));
+    CHECK(model.getCrossSection(get_nucleus_code(10, 5), get_nucleus_code(1000, 500), aP4,
+                                bP4) /
+              1_mb ==
+          Approx(0));
+    CHECK(model.getCrossSection(Code::Nucleus, Code::Nucleus, aP4, bP4) / 1_mb ==
+          Approx(0));
     CHECK_THROWS(
         model.doInteraction(view, get_nucleus_code(1000, 500), Code::Oxygen, aP4, bP4));
   }

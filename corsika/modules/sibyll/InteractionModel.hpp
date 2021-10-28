@@ -45,7 +45,7 @@ namespace corsika::sibyll {
      * sibyll only accepts nuclei with 4<=A<=18 as targets, or protons aka Hydrogen or
      * neutrons (p,n == nucleon).
      */
-    void constexpr isValid(Code const projectileId, Code const targetId,
+    bool constexpr isValid(Code const projectileId, Code const targetId,
                            HEPEnergyType const sqrtSnn) const;
 
     /**
@@ -96,7 +96,7 @@ namespace corsika::sibyll {
      */
 
     template <typename TSecondaries>
-    void doInteraction(TSecondaries&, Code const projectile, Code const target,
+    void doInteraction(TSecondaries& view, Code const projectile, Code const target,
                        FourMomentum const& projectileP4, FourMomentum const& targetP4);
 
   private:

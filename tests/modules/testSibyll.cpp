@@ -137,22 +137,22 @@ TEST_CASE("SibyllInterface", "modules") {
 
     corsika::sibyll::InteractionModel model;
     // sibyll only accepts protons or nuclei with 4<=A<=18 as targets
-    CHECK_THROWS(model.isValid(Code::Proton, Code::Electron, 100_GeV));
-    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Hydrogen, 100_GeV));
-    CHECK_THROWS(model.isValid(Code::Proton, Code::Deuterium, 100_GeV));
-    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Helium, 100_GeV));
-    CHECK_THROWS(model.isValid(Code::Proton, Code::Helium3, 100_GeV));
-    CHECK_THROWS(model.isValid(Code::Proton, Code::Iron, 100_GeV));
-    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Oxygen, 100_GeV));
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Electron, 100_GeV));
+    CHECK(model.isValid(Code::Proton, Code::Hydrogen, 100_GeV));
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Deuterium, 100_GeV));
+    CHECK(model.isValid(Code::Proton, Code::Helium, 100_GeV));
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Helium3, 100_GeV));
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Iron, 100_GeV));
+    CHECK(model.isValid(Code::Proton, Code::Oxygen, 100_GeV));
     // beam particles
-    CHECK_THROWS(model.isValid(Code::Electron, Code::Oxygen, 100_GeV));
-    CHECK_THROWS(model.isValid(Code::Iron, Code::Oxygen, 100_GeV));
+    CHECK_FALSE(model.isValid(Code::Electron, Code::Oxygen, 100_GeV));
+    CHECK_FALSE(model.isValid(Code::Iron, Code::Oxygen, 100_GeV));
     // energy too low
-    CHECK_THROWS(model.isValid(Code::Proton, Code::Proton, 9_GeV));
-    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Proton, 11_GeV));
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Proton, 9_GeV));
+    CHECK(model.isValid(Code::Proton, Code::Proton, 11_GeV));
     // energy too high
-    CHECK_THROWS(model.isValid(Code::Proton, Code::Proton, 1000001_GeV));
-    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Proton, 999999_GeV));
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Proton, 1000001_GeV));
+    CHECK(model.isValid(Code::Proton, Code::Proton, 999999_GeV));
 
     //  hydrogen target == proton target == neutron target
     FourMomentum const aP4(100_GeV, {cs, 99_GeV, 0_GeV, 0_GeV});
@@ -262,6 +262,11 @@ TEST_CASE("SibyllInterface", "modules") {
     MomentumVector const plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
     corsika::sibyll::InteractionModel hmodel;
     NuclearInteractionModel model(hmodel, *env);
+
+    CHECK(model.isValid(Code::Helium, Code::Oxygen, 100_GeV));
+    CHECK_FALSE(model.isValid(Code::PiPlus, Code::Oxygen, 100_GeV));
+    CHECK_FALSE(model.isValid(Code::Electron, Code::Oxygen, 100_GeV));
+
     Code const pid = Code::Oxygen;
     HEPEnergyType const Elab = sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid)));
     FourMomentum const P4(Elab, plab);
