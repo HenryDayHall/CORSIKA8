@@ -36,12 +36,6 @@ namespace corsika {
     }
     builder.addLinearLayer(params[4].offset, params[4].scaleHeight, params[4].altitude);
 
-    // check if we want to also add the US standard refractivity
-    if constexpr (detail::implements_mixin_v<IRefractiveIndexModel,
-                                             TEnvironmentInterface>) {
-      // TODO: Add US Standard refractivity
-    }
-
     // and assemble the environment
     builder.assemble(env);
   }
