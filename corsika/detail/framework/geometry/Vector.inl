@@ -241,9 +241,14 @@ namespace corsika {
   /*
    * scalar * vector multiplication
    */
+  template <typename TDimension, typename UDimension>
+  inline Vector<phys::units::detail::product_d<TDimension, UDimension>> operator*(
+      quantity<UDimension> const n, Vector<TDimension> const& vec) {
+    return vec * n;
+  }
+
   template <typename TDimension>
   inline Vector<TDimension> operator*(double const n, Vector<TDimension> const& vec) {
     return vec * n;
   }
-
 } // namespace corsika

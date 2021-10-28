@@ -46,6 +46,17 @@ TEST_CASE("Geometry CoordinateSystems") {
   CHECK((p1.getCoordinates(rootCS) - coordinates).getNorm().magnitude() ==
         Approx(0).margin(absMargin));
 
+  SECTION("basic operations") {
+    auto testV0 = v1 * 6;
+    CHECK(testV0.getNorm() / tesla == Approx(6));
+    auto testV1 = 6 * v1;
+    CHECK(testV1.getNorm() / tesla == Approx(6));
+    auto testV2 = 6_m * v1;
+    CHECK(testV2.getNorm() / (tesla * meter) == Approx(6));
+    auto testV3 = v1 * 6_m;
+    CHECK(testV3.getNorm() / (tesla * meter) == Approx(6));
+  }
+
   SECTION("translations") {
     QuantityVector<length_d> const translationVector{0_m, 4_m, 0_m};
     CORSIKA_LOG_INFO("QuantityVector<length_d> translationVector={}", translationVector);

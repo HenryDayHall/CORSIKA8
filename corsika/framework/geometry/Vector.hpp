@@ -142,6 +142,28 @@ namespace corsika {
     auto dot(Vector<TDimension2> const& pV) const;
   };
 
+  /**
+   * Free operator to allow commutative multiplications of quantities and Vector.
+   *
+   * @tparam TDimension
+   * @tparam UDimension
+   * @param n
+   * @param vec
+   * @return auto
+   */
+  template <typename TDimension, typename UDimension>
+  Vector<phys::units::detail::product_d<TDimension, UDimension>> operator*(
+      quantity<UDimension> const n, Vector<TDimension> const& vec);
+
+  /**
+   * Free operator to allow commutative multiplications of normal double with Vector.
+   *
+   * @tparam TDimension
+   * @tparam UDimension
+   * @param n
+   * @param vec
+   * @return auto
+   */
   template <typename TDimension>
   Vector<TDimension> operator*(double const n, Vector<TDimension> const& vec);
 
