@@ -37,7 +37,7 @@
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/ShowerAxis.hpp>
-#include <corsika/media/SlidingPlanarExponential.hpp>
+#include <corsika/media/CORSIKA7Atmospheres.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
@@ -212,7 +212,7 @@ int main(int argc, char** argv) {
 
   ofstream atmout("earth.dat");
   for (LengthType h = 0_m; h < 110_km; h += 100_m) {
-    Point const ptest{rootCS, 0_m, 0_m, builder.getPlanetRadius() + h};
+    Point const ptest{rootCS, 0_m, 0_m, constants::EarthRadius::Mean + h};
     auto rho =
         env.getUniverse()->getContainingNode(ptest)->getModelProperties().getMassDensity(
             ptest);
@@ -257,8 +257,8 @@ int main(int argc, char** argv) {
   /* === END: CONSTRUCT PRIMARY PARTICLE === */
 
   /* === START: CONSTRUCT GEOMETRY === */
-  auto const observationHeight = 0_km + builder.getPlanetRadius();
-  auto const injectionHeight = 111.75_km + builder.getPlanetRadius();
+  auto const observationHeight = 0_km + constants::EarthRadius::Mean;
+  auto const injectionHeight = 111.75_km + constants::EarthRadius::Mean;
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));
