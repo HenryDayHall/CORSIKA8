@@ -80,6 +80,28 @@ namespace corsika::pythia8 {
     Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
   }
 
+  inline void Interaction::isValid(Code const projectileId, Code const targetId,
+                                   HEPEnergyType const sqrtS) const {
+
+    if ((10_GeV > sqrtS) || (sqrtS > 1_PeV)) {
+      throw std::runtime_error("energy out of bounds for PYTHIA");
+    }
+
+    if (targetId != Code::Hydrogen && targetId != Code::Neutron &&
+        targetId != Code::Proton) {
+      throw std::runtime_error("wrong target for PYTHIA");
+    }
+
+    if (is_nucleus(projectileId)) {
+      // nuclei handled by different process, this should not happen
+      throw std::runtime_error("Nuclear projectile are not handled by PYTHIA!");
+    }
+
+    if (!canInteract(projectileId)) {
+      throw std::runtime_error("Projectile not supported by PYTHIA!");
+    }
+  }
+
   inline void Interaction::configureLabFrameCollision(Code const projectileId,
                                                       Code const targetId,
                                                       HEPEnergyType const BeamEnergy) {
@@ -128,180 +150,117 @@ namespace corsika::pythia8 {
 
     HEPEnergyType const CoMenergy = (projectileP4 + targetP4).getNorm();
 
-    // interaction possible in pythia?
-    if (targetId == Code::Proton || targetId == Code::Hydrogen) {
-      if (canInteract(projectileId) && isValidCoMEnergy(CoMenergy)) {
-        // input particle PDG
-        auto const pdgCodeBeam = static_cast<int>(get_PDG(projectileId));
-        auto const pdgCodeTarget = static_cast<int>(get_PDG(targetId));
-        double const ecm = CoMenergy / 1_GeV;
+    isValid(projectileId, targetId, CoMenergy); // throws
 
-        //! @todo: remove this const_cast, when Pythia8 becomes const-correct! CHECK!
-        Pythia8::SigmaTotal& sigma = *const_cast<Pythia8::SigmaTotal*>(&sigma_);
+    // input particle PDG
+    auto const pdgCodeBeam = static_cast<int>(get_PDG(projectileId));
+    auto const pdgCodeTarget = static_cast<int>(get_PDG(targetId));
+    double const ecm = CoMenergy / 1_GeV;
 
-        // calculate cross section
-        sigma.calc(pdgCodeBeam, pdgCodeTarget, ecm);
-        if (sigma.hasSigmaTot()) {
-          double const sigEla = sigma.sigmaEl();
-          double const sigProd = sigma.sigmaTot() - sigEla;
+    //! @todo: remove this const_cast, when Pythia8 becomes const-correct! CHECK!
+    Pythia8::SigmaTotal& sigma = *const_cast<Pythia8::SigmaTotal*>(&sigma_);
 
-          return std::make_tuple(sigProd * (1_fm * 1_fm), sigEla * (1_fm * 1_fm));
+    // calculate cross section
+    sigma.calc(pdgCodeBeam, pdgCodeTarget, ecm);
+    if (sigma.hasSigmaTot()) {
+      double const sigEla = sigma.sigmaEl();
+      double const sigProd = sigma.sigmaTot() - sigEla;
 
-        } else {
-          // we can't test pythia8 internals, LCOV_EXCL_START
-          throw std::runtime_error("pythia cross section init failed");
-          // we can't test pythia8 internals, LCOV_EXCL_STOP
-        }
-      } else {
-        return std::make_tuple(std::numeric_limits<double>::infinity() * 1_mb,
-                               std::numeric_limits<double>::infinity() * 1_mb);
-      }
+      return std::make_tuple(sigProd * (1_fm * 1_fm), sigEla * (1_fm * 1_fm));
+
     } else {
-      throw std::runtime_error("invalid target for pythia");
+      // we can't test pythia8 internals, LCOV_EXCL_START
+      throw std::runtime_error("pythia cross section init failed");
+      // we can't test pythia8 internals, LCOV_EXCL_STOP
     }
   }
 
   template <class TView>
   inline void Interaction::doInteraction(TView& view, Code const projectileId,
-                                         Code const targetId, FourMomentum const&,
-                                         FourMomentum const&) {
+                                         Code const targetId,
+                                         FourMomentum const& projectileP4,
+                                         FourMomentum const& targetP4) {
 
     auto projectile = view.getProjectile();
 
     CORSIKA_LOG_DEBUG(
         "Pythia::Interaction: "
-        "DoInteraction: {} interaction? ",
+        "doInteraction: {} interaction? ",
         projectileId, corsika::pythia8::Interaction::canInteract(projectileId));
 
-    if (is_nucleus(projectileId)) {
-      // nuclei handled by different process, this should not happen
-      throw std::runtime_error("Nuclear projectile are not handled by PYTHIA!");
+    // define system
+    auto const sqrtS2 = (projectileP4 + targetP4).getNormSqr();
+    HEPEnergyType const sqrtS = sqrt(sqrtS2);
+    HEPEnergyType const eProjectileLab = (sqrtS2 - static_pow<2>(get_mass(projectileId)) -
+                                          static_pow<2>(get_mass(targetId))) /
+                                         (2 * get_mass(targetId));
+
+    isValid(projectileId, targetId, sqrtS); // throws
+
+    // position and time of interaction
+    Point pOrig = projectile.getPosition();
+    TimeType tOrig = projectile.getTime();
+
+    CORSIKA_LOG_DEBUG("Interaction: ebeam lab: {} GeV", eProjectileLab / 1_GeV);
+
+    // define target kinematics in lab frame
+    // define boost to and from CoM frame
+    // CoM frame definition in Pythia projectile: +z
+    COMBoost const boost(projectileP4, constants::nucleonMass);
+    auto const& labCS = boost.getOriginalCS();
+
+    CORSIKA_LOG_DEBUG("Interaction: position of interaction: ", pOrig.getCoordinates());
+    CORSIKA_LOG_DEBUG("Interaction: time: {}", tOrig);
+
+    CORSIKA_LOG_DEBUG(
+        "Interaction: "
+        " doInteraction: E(GeV): {}"
+        " Ecm(GeV): {}",
+        eProjectileLab / 1_GeV, sqrtS / 1_GeV);
+
+    count_++;
+
+    configureLabFrameCollision(projectileId, targetId, eProjectileLab);
+
+    // create event in pytia. LCOV_EXCL_START: we don't validate pythia8 internals
+    if (!Pythia8::Pythia::next())
+      throw std::runtime_error("Pythia::DoInteraction: failed!");
+    // LCOV_EXCL_STOP
+
+    // link to pythia stack
+    Pythia8::Event& event = Pythia8::Pythia::event;
+
+    // LCOV_EXCL_START, we don't validate pythia8 internals
+    if (print_listing_) {
+      // print final state
+      event.list();
+    }
+    // LCOV_EXCL_STOP
+
+    MomentumVector Plab_final(labCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
+    HEPEnergyType Elab_final = 0_GeV;
+    for (int i = 0; i < event.size(); ++i) {
+      Pythia8::Particle const& p8p = event[i];
+      // skip particles that have decayed in pythia
+      if (!p8p.isFinal()) continue;
+
+      auto const pyId = convert_from_PDG(static_cast<PDGCode>(p8p.id()));
+
+      MomentumVector const pyPlab(labCS,
+                                  {p8p.px() * 1_GeV, p8p.py() * 1_GeV, p8p.pz() * 1_GeV});
+
+      // add to corsika stack
+      auto pnew = projectile.addSecondary(std::make_tuple(pyId, pyPlab, pOrig, tOrig));
+
+      Plab_final += pnew.getMomentum();
+      Elab_final += pnew.getEnergy();
     }
 
-    if (corsika::pythia8::Interaction::canInteract(projectileId)) {
-
-      // define projectile
-      HEPEnergyType const eProjectileLab = projectile.getEnergy();
-      auto const pProjectileLab = projectile.getMomentum();
-      CoordinateSystemPtr const& labCS = pProjectileLab.getCoordinateSystem();
-
-      // position and time of interaction, not used in Sibyll
-      Point pOrig = projectile.getPosition();
-      TimeType tOrig = projectile.getTime();
-
-      // define target
-      // FOR NOW: target is always at rest
-      auto const eTargetLab = 0_GeV + constants::nucleonMass;
-      auto const pTargetLab = MomentumVector(labCS, 0_GeV, 0_GeV, 0_GeV);
-      FourVector const PtargLab(eTargetLab, pTargetLab);
-
-      CORSIKA_LOG_DEBUG(
-          "Interaction: ebeam lab: {} GeV"
-          "Interaction: pbeam lab: {} GeV",
-          eProjectileLab / 1_GeV, pProjectileLab.getComponents() / 1_GeV);
-
-      CORSIKA_LOG_DEBUG(
-          "Interaction: etarget lab: {} GeV"
-          "Interaction: ptarget lab: {} GeV ",
-          eTargetLab / 1_GeV, pTargetLab.getComponents() / 1_GeV);
-
-      FourVector const PprojLab(eProjectileLab, pProjectileLab);
-
-      // define target kinematics in lab frame
-      // define boost to and from CoM frame
-      // CoM frame definition in Pythia projectile: +z
-      COMBoost const boost(PprojLab, constants::nucleonMass);
-
-      // just for show:
-      // boost projecticle
-      auto const PprojCoM = boost.toCoM(PprojLab);
-
-      // boost target
-      auto const PtargCoM = boost.toCoM(PtargLab);
-
-      CORSIKA_LOG_DEBUG(
-          "Interaction: ebeam CoM: {} GeV"
-          "Interaction: pbeam CoM: {} GeV",
-          PprojCoM.getTimeLikeComponent() / 1_GeV,
-          PprojCoM.getSpaceLikeComponents().getComponents() / 1_GeV);
-
-      CORSIKA_LOG_DEBUG(
-          "Interaction: etarget CoM: {} GeV"
-          "Interaction: ptarget CoM: {} GeV",
-          PtargCoM.getTimeLikeComponent() / 1_GeV,
-          PtargCoM.getSpaceLikeComponents().getComponents() / 1_GeV);
-
-      CORSIKA_LOG_DEBUG("Interaction: position of interaction: ", pOrig.getCoordinates());
-      CORSIKA_LOG_DEBUG("Interaction: time: {}", tOrig);
-
-      HEPEnergyType Etot = eProjectileLab + eTargetLab;
-      MomentumVector Ptot = projectile.getMomentum();
-      // invariant mass, i.e. cm. energy
-      HEPEnergyType Ecm = sqrt(Etot * Etot - Ptot.getSquaredNorm());
-
-      if (targetId != Code::Hydrogen && targetId != Code::Neutron &&
-          targetId != Code::Proton)
-        throw std::runtime_error("DoInteraction: wrong target for PYTHIA");
-
-      CORSIKA_LOG_DEBUG(
-          "Interaction: "
-          " DoInteraction: E(GeV): {}"
-          " Ecm(GeV): {}",
-          eProjectileLab / 1_GeV, Ecm / 1_GeV);
-
-      if (eProjectileLab < 8.5_GeV || !isValidCoMEnergy(Ecm)) {
-        CORSIKA_LOG_DEBUG(
-            "Interaction: "
-            " DoInteraction: should have dropped particle.. "
-            "THIS IS AN ERROR");
-        throw std::runtime_error("energy too low for PYTHIA");
-
-      } else {
-        count_++;
-
-        configureLabFrameCollision(projectileId, targetId, eProjectileLab);
-
-        // create event in pytia. LCOV_EXCL_START: we don't validate pythia8 internals
-        if (!Pythia8::Pythia::next())
-          throw std::runtime_error("Pythia::DoInteraction: failed!");
-        // LCOV_EXCL_STOP
-
-        // link to pythia stack
-        Pythia8::Event& event = Pythia8::Pythia::event;
-
-        // LCOV_EXCL_START, we don't validate pythia8 internals
-        if (print_listing_) {
-          // print final state
-          event.list();
-        }
-        // LCOV_EXCL_STOP
-
-        MomentumVector Plab_final(labCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
-        HEPEnergyType Elab_final = 0_GeV;
-        for (int i = 0; i < event.size(); ++i) {
-          Pythia8::Particle& p8p = event[i];
-          // skip particles that have decayed in pythia
-          if (!p8p.isFinal()) continue;
-
-          auto const pyId = convert_from_PDG(static_cast<PDGCode>(p8p.id()));
-
-          MomentumVector const pyPlab(
-              labCS, {p8p.px() * 1_GeV, p8p.py() * 1_GeV, p8p.pz() * 1_GeV});
-
-          // add to corsika stack
-          auto pnew =
-              projectile.addSecondary(std::make_tuple(pyId, pyPlab, pOrig, tOrig));
-
-          Plab_final += pnew.getMomentum();
-          Elab_final += pnew.getEnergy();
-        }
-        CORSIKA_LOG_DEBUG(
-            "conservation (all GeV): "
-            "Elab_final= {}"
-            ", Plab_final= {}",
-            Elab_final / 1_GeV, (Plab_final / 1_GeV).getComponents());
-      }
-    }
+    CORSIKA_LOG_DEBUG(
+        "conservation (all GeV): "
+        "Elab_final= {}"
+        ", Plab_final= {}",
+        Elab_final / 1_GeV, (Plab_final / 1_GeV).getComponents());
   }
 
 } // namespace corsika::pythia8

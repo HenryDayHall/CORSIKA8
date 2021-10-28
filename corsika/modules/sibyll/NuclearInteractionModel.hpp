@@ -10,7 +10,6 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
 
 namespace corsika::sibyll {

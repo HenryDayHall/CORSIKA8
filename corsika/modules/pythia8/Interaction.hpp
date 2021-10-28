@@ -21,20 +21,22 @@ namespace corsika::pythia8 {
   class Interaction : public InteractionProcess<Interaction>, public Pythia8::Pythia {
 
   public:
-    Interaction(const bool print_listing = false);
+    Interaction(bool const print_listing = false);
     ~Interaction();
 
     void setStable(std::vector<Code> const&);
-    void setUnstable(const Code);
-    void setStable(const Code);
+    void setUnstable(Code const);
+    void setStable(Code const);
 
     bool isValidCoMEnergy(HEPEnergyType const ecm) const {
       return (10_GeV < ecm) && (ecm < 1_PeV);
     }
 
-    bool canInteract(const Code) const;
-    void configureLabFrameCollision(const Code, const Code, const HEPEnergyType);
+    bool canInteract(Code const) const;
+    void configureLabFrameCollision(Code const, Code const, HEPEnergyType const);
 
+    void isValid(Code const projectileId, Code const targetId,
+                 HEPEnergyType const sqrtS) const;
     /**
      * Returns inelastic AND elastic cross sections.
      *
@@ -88,7 +90,7 @@ namespace corsika::pythia8 {
   private:
     default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("pythia");
     Pythia8::SigmaTotal sigma_;
-    const bool internalDecays_ = true;
+    bool const internalDecays_ = true;
     int count_ = 0;
     bool print_listing_ = false;
   };

@@ -183,17 +183,17 @@ TEST_CASE("Pythia8Interface", "modules") {
     std::tuple<CrossSectionType, CrossSectionType> xs_test =
         collision.getCrossSectionInelEla(
             Code::Proton, Code::Hydrogen,
-            {sqrt(static_pow<2>(Iron::mass) + static_pow<2>(100_GeV)),
+            {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
              {rootCS, {0_eV, 0_eV, 100_GeV}}},
             {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}});
-    CHECK(std::get<0>(xs_test) / 1_mb == Approx(353).margin(2));
-    CHECK(std::get<1>(xs_test) / 1_mb == Approx(75).margin(2));
+    CHECK(std::get<0>(xs_test) / 1_mb == Approx(314).margin(2));
+    CHECK(std::get<1>(xs_test) / 1_mb == Approx(69).margin(2));
 
     collision.doInteraction(view, Code::Proton, Code::Hydrogen,
-                            {sqrt(static_pow<2>(Iron::mass) + static_pow<2>(100_GeV)),
+                            {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
                              {rootCS, {0_eV, 0_eV, 100_GeV}}},
                             {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}});
-    CHECK(view.getSize() == 38);
+    CHECK(view.getSize() == 12);
   }
 
   SECTION("pythia too low energy") {
@@ -207,8 +207,8 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     CHECK_THROWS(collision.doInteraction(
         view, Code::Neutron, Code::Hydrogen,
-        {sqrt(static_pow<2>(Neutron::mass) + static_pow<2>(100_GeV)),
-         {rootCS, {0_eV, 0_eV, 100_GeV}}},
+        {sqrt(static_pow<2>(Neutron::mass) + static_pow<2>(1_GeV)),
+         {rootCS, {0_eV, 0_eV, 1_GeV}}},
         {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
   }
 

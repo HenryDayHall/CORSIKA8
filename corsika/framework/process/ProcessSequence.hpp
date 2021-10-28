@@ -141,7 +141,7 @@ namespace corsika {
    *  the static version of the
    *  ProcessSequence and all Process
    *  types are based on the CRTP C++
-   *  design pattern)
+   *  design pattern).
    *
    * Template parameters:
    *   @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a
@@ -177,7 +177,7 @@ namespace corsika {
     static bool const is_process_sequence = true;
 
     /**
-     * Only valid user constructor will create fully initialized object
+     * Only valid user constructor will create fully initialized object.
      *
      * ProcessSequence supports and encourages move semantics. You can
      * use object, l-value references or r-value references to
@@ -339,10 +339,10 @@ namespace corsika {
    * @fn make_sequence
    * @ingroup Processes
    *
-   * Factory function to create a ProcessSequence
+   * Factory function to create a ProcessSequence.
    *
    * to construct ProcessSequences in a flexible and dynamic way the
-   * `sequence` factory functions are provided
+   * `sequence` factory functions are provided.
    *
    * Any objects of type
    *  - BaseProcess
@@ -373,34 +373,34 @@ namespace corsika {
   }
 
   /**
-    * @fn make_sequence
-    * @ingroup Processes
-    *
-    * Factory function to create ProcessSequence
-    *
-    specialization for two input objects (no paramter pack in vB).
-
-    @tparam TProcess1 another BaseProcess
-    @tparam TProcess2 another BaseProcess
-    @param vA needs to derive from BaseProcess
-    @param vB needs to derive BaseProcess
-  */
+   * @fn make_sequence
+   * @ingroup Processes
+   *
+   * Factory function to create ProcessSequence.
+   *
+   * specialization for two input objects (no paramter pack in vB).
+   *
+   * @tparam TProcess1 another BaseProcess
+   * @tparam TProcess2 another BaseProcess
+   * @param vA needs to derive from BaseProcess
+   * @param vB needs to derive BaseProcess
+   */
   template <typename TProcess1, typename TProcess2>
   ProcessSequence<TProcess1, TProcess2> make_sequence(TProcess1&& vA, TProcess2&& vB) {
     return ProcessSequence<TProcess1, TProcess2>(vA, vB);
   }
 
   /**
-    @fn make_sequence
-    @ingroup Processes
-
-    Factory function to create ProcessSequence from a single BaseProcess
-
-    also allow a single Process in ProcessSequence, accompany by
-    `NullModel`
-
-    @tparam TProcess1 another BaseProcess
-    @param vA needs to derive from BaseProcess
+   * @fn make_sequence
+   * @ingroup Processes
+   *
+   * Factory function to create ProcessSequence from a single BaseProcess.
+   *
+   * also allow a single Process in ProcessSequence, accompany by
+   * `NullModel`.
+   *
+   * @tparam TProcess1 another BaseProcess
+   * @param vA needs to derive from BaseProcess
    */
   template <typename TProcess>
   ProcessSequence<TProcess, NullModel> make_sequence(TProcess&& vA) {

@@ -78,9 +78,10 @@ namespace corsika {
     NuclearComposition const& composition =
         currentLogicalNode->getModelProperties().getNuclearComposition();
 
-    // determine sqrtS per nucleon pair, sqrtS_NN
+    // determine projectile
     HEPEnergyType const Elab = particle.getEnergy();
     FourMomentum const projectileP4{Elab, particle.getMomentum()};
+    // determine cross section in material
     CrossSectionType const sigma =
         composition.getWeightedSum([=](Code const targetId) -> CrossSectionType {
           FourMomentum const targetP4(
@@ -110,7 +111,7 @@ namespace corsika {
     NuclearComposition const& composition =
         currentLogicalNode->getModelProperties().getNuclearComposition();
 
-    // determine sqrtS per nucleon pair, sqrtS_NN
+    // determine projectile
     HEPEnergyType const Elab = particle.getEnergy();
     FourMomentum const projectileP4{Elab, particle.getMomentum()};
 
@@ -291,7 +292,6 @@ namespace corsika {
       and Decay!
     */
     if (distance_interact < distance_decay) {
-      // define boost of NUCLEON-NUCLEON frame
       interaction(secondaries, projectileP4, composition, total_cx);
     } else {
       [[maybe_unused]] auto projectile = secondaries.getProjectile();

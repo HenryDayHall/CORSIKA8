@@ -16,10 +16,9 @@
 namespace corsika {
 
   /**
-   * An interface for type of media, needed e.g. to determine energy losses
+   * An interface for type of media, needed e.g. to determine energy losses.
    *
    * This is the base interface for media types.
-   *
    */
   template <typename TModel>
   class IMediumPropertyModel : public TModel {

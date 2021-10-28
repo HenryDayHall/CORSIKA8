@@ -109,12 +109,8 @@ namespace corsika {
     }
 
     std::discrete_distribution channelDist(
-        WeightProviderIterator //<decltype(numberFractions_.begin()),
-                               // decltype(sigma.begin())>
-        (numberFractions_.begin(), sigma.begin()),
-        WeightProviderIterator //<decltype(numberFractions_.begin()),
-                               // decltype(sigma.end())>
-        (numberFractions_.end(), sigma.end()));
+        WeightProviderIterator(numberFractions_.begin(), sigma.begin()),
+        WeightProviderIterator(numberFractions_.end(), sigma.end()));
 
     auto const iChannel = channelDist(randomStream);
     return components_[iChannel];

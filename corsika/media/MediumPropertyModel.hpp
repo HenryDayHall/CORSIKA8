@@ -14,7 +14,6 @@ namespace corsika {
 
   /**
    * A model for the energy loss property of a medium.
-   *
    */
   template <typename T>
   class MediumPropertyModel : public T {

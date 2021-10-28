@@ -66,7 +66,6 @@ namespace corsika {
      * Set data of new particle.
      *
      * @param v tuple containing: PID, kinetic Energy, Direction Vector, Position, Time
-     *
      */
     void setParticleData(particle_data_momentum_type const& v);
 
@@ -75,7 +74,6 @@ namespace corsika {
      *
      * @param parent parent particle
      * @param v tuple containing: PID, kinetic Energy, Direction Vector, Position, Time
-     *
      */
     void setParticleData(ParticleInterface<TStackIterator> const& parent,
                          particle_data_momentum_type const& v);
@@ -97,9 +95,9 @@ namespace corsika {
     }
 
     /**
-       The MomentumVector v is used to determine the DirectionVector, and to update the
-       particle energy.
-    */
+     * The MomentumVector v is used to determine the DirectionVector, and to update the
+     * particle energy.
+     */
     void setMomentum(MomentumVector const& v) {
       HEPMomentumType const P = v.getNorm();
       if (P == 0_eV) {

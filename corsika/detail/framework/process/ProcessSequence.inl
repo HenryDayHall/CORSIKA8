@@ -482,6 +482,7 @@ namespace corsika {
                 decltype(projectile) const&, // template argument
                 decltype(projectile) const&, // parameters
                 Code, FourMomentum const&>;
+
         static_assert((has_signature_cx1 || has_signature_cx2),
                       "TProcess1 has no method with correct signature \"CrossSectionType "
                       "getCrossSection(Code, Code, FourMomentum const&, FourMomentum "
