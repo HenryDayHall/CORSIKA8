@@ -274,7 +274,7 @@ TEST_CASE("SibyllInterface", "modules") {
                                 MomentumVector(cs, {0_eV, 0_eV, 0_eV}));
     model.doInteraction(view, pid, Code::Oxygen, P4, targetP4);
     CrossSectionType const cx = model.getCrossSection(pid, Code::Oxygen, P4, targetP4);
-    CHECK(cx / 1_mb == Approx(1100).margin(100));   // this is not physics validation
+    CHECK(cx / 1_mb == Approx(1250).margin(100));   // this is not physics validation
     CHECK(view.getSize() == Approx(40).margin(30)); // this is not physics validation
   }
 }
