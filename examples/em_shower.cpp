@@ -26,6 +26,7 @@
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/CORSIKA7Atmospheres.hpp>
 
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>

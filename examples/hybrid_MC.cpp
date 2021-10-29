@@ -34,6 +34,7 @@
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/ShowerAxis.hpp>
+#include <corsika/media/CORSIKA7Atmospheres.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
@@ -170,8 +171,8 @@ int main(int argc, char** argv) {
   cout << "input momentum: " << plab.getComponents() / 1_GeV
        << ", norm = " << plab.getNorm() << endl;
 
-  auto const observationHeight = 0_km + builder.getPlanetRadius();
-  auto const injectionHeight = 112.75_km + builder.getPlanetRadius();
+  auto const observationHeight = 0_km + constants::EarthRadius::Mean;
+  auto const injectionHeight = 112.75_km + constants::EarthRadius::Mean;
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));

@@ -34,7 +34,6 @@
 #include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/IMagneticFieldModel.hpp>
-#include <corsika/media/USStandardAtmosphere.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
