@@ -241,7 +241,7 @@ int main(int argc, char** argv) {
 
   builder.addTabularLayer(layer1, 100, 100_m, 7_km);
   builder.addTabularLayer(layer2, 300, 500_m, 100_km);
-  builder.addLinearLayer(1e9_cm, 112.8_km);
+  builder.addLinearLayer(1_g / square(1_cm), 1e9_cm, 112.8_km);
   builder.assemble(env);
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 

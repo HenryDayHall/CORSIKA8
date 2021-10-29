@@ -5,6 +5,7 @@ set (test_media_sources
   testMedium.cpp
   testRefractiveIndex.cpp
   testMagneticField.cpp
+  testCORSIKA7Atmospheres.cpp
   )
 
 CORSIKA_ADD_TEST (testMedia SOURCES ${test_media_sources})

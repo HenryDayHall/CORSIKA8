@@ -79,8 +79,7 @@ TEST_CASE("HomogeneousMedium") {
 
   logging::set_level(logging::level::info);
 
-  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
-                                             std::vector<float>{1.f});
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
   HomogeneousMedium<IMediumModel> const medium(19.2_g / cube(1_cm), protonComposition);
 
   CHECK(protonComposition.getFractions() == std::vector<float>{1.});
@@ -94,8 +93,7 @@ TEST_CASE("FlatExponential") {
 
   logging::set_level(logging::level::info);
 
-  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
-                                             std::vector<float>{1.f});
+  NuclearComposition const protonComposition({Code::Proton}, {1.});
 
   Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
   LengthType const lambda = 3_m;
@@ -162,8 +160,7 @@ TEST_CASE("SlidingPlanarExponential") {
 
   logging::set_level(logging::level::info);
 
-  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
-                                             std::vector<float>{1.f});
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
 
   LengthType const lambda = 3_m;
   auto const rho0 = 1_g / static_pow<3>(1_cm);
@@ -245,8 +242,7 @@ TEST_CASE("SlidingPlanarTabular") {
 
   logging::set_level(logging::level::info);
 
-  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
-                                             std::vector<float>{1.f});
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
 
   RhoFuncConst rhoFunc;
   SlidingPlanarTabular<IMediumModel> const medium(gOrigin, rhoFunc, 1000, 10_m,
@@ -555,11 +551,11 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
 
   builder.setNuclearComposition({{{Code::Nitrogen, Code::Oxygen}}, {{.6, .4}}});
 
-  builder.addLinearLayer(1_km, 10_km);
-  builder.addLinearLayer(2_km, 20_km);
+  builder.addLinearLayer(1_g / (1_cm * 1_cm), 1_km, 10_km);
+  builder.addLinearLayer(1_g / (1_cm * 1_cm), 2_km, 20_km);
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 30_km);
 
-  CHECK_THROWS(builder.addLinearLayer(0.5_km, 5_km));
+  CHECK_THROWS(builder.addLinearLayer(1_g / (1_cm * 1_cm), 0.5_km, 5_km));
 
   CHECK(builder.getSize() == 3);
 
@@ -592,8 +588,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
   using ModelInterface = IMagneticFieldModel<IMediumModel>;
 
   // the composition we use for the homogenous medium
-  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
-                                             std::vector<float>{1.f});
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
 
   // create magnetic field vectors
   Vector B0(gCS, 0_T, 0_T, 1_T);
@@ -603,7 +598,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
                                                     B0);
 
   builder.setNuclearComposition({{{Code::Nitrogen, Code::Oxygen}}, {{.6, .4}}});
-  builder.addLinearLayer(1_km, 10_km);
+  builder.addLinearLayer(1_g / (1_cm * 1_cm), 1_km, 10_km);
   builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 20_km);
 
   CHECK(builder.getSize() == 2);
@@ -644,7 +639,7 @@ TEST_CASE("media", "LayeredSphericalAtmosphereBuilder USStd") {
   builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
   builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
-  builder.addLinearLayer(1e9_cm, 112.8_km);
+  builder.addLinearLayer(1_g / (1_cm * 1_cm), 1e9_cm, 112.8_km);
 
   Environment<IMediumModel> env;
   builder.assemble(env);
@@ -652,7 +647,7 @@ TEST_CASE("media", "LayeredSphericalAtmosphereBuilder USStd") {
   typedef typename Environment<IMediumModel>::BaseNodeType::VTN_type node_type;
   node_type const* universe = env.getUniverse().get();
 
-  // far out ther is the universe
+  // far out there is the universe
   CHECK(universe->getContainingNode(Point(gCS, {10000_km, 0_m, 0_m})) == universe);
   CHECK(universe->getContainingNode(Point(gCS, {0_m, 10000_km, 0_m})) == universe);
 

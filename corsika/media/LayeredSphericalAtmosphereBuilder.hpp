@@ -24,10 +24,14 @@
 #include <type_traits>
 #include <functional>
 
+/**
+ * @file LayeredSphericalAtmosphereBuilder.hpp
+ */
+
 namespace corsika {
 
   /**
-   * \class make_layered_spherical_atmosphere_builder
+   * make_layered_spherical_atmosphere_builder.
    *
    * Helper class to create LayeredSphericalAtmosphereBuilder, the
    * extra environment models have to be passed as template-template
@@ -35,7 +39,7 @@ namespace corsika {
    * function `create` does then take an unspecified number of extra
    * parameters to internalize those models for all layers later
    * produced.
-   **/
+   */
   template <typename TMediumInterface = IMediumModel,
             template <typename> typename MExtraEnvirnoment = detail::NoExtraModel>
   struct make_layered_spherical_atmosphere_builder;
@@ -49,7 +53,6 @@ namespace corsika {
    *
    * Each layer by definition has a density profile and a (constant)
    * nuclear composition model.
-   *
    */
 
   template <typename TMediumInterface = IMediumModel,
@@ -69,7 +72,7 @@ namespace corsika {
 
   protected:
     LayeredSphericalAtmosphereBuilder(TModelArgs... args, Point const& center,
-                                      LengthType planetRadius)
+                                      LengthType const planetRadius)
         : center_(center)
         , planetRadius_(planetRadius)
         , additionalModelArgs_{args...} {}
@@ -79,9 +82,11 @@ namespace corsika {
     typedef typename VolumeTreeNode<TMediumInterface>::VTNUPtr volume_tree_node_uptr;
 
     void setNuclearComposition(NuclearComposition const& composition);
-    volume_tree_node* addExponentialLayer(GrammageType b, LengthType c,
-                                          LengthType upperBoundary);
-    void addLinearLayer(LengthType c, LengthType upperBoundary);
+    volume_tree_node* addExponentialLayer(GrammageType const b,
+                                          LengthType const scaleHeight,
+                                          LengthType const upperBoundary);
+    void addLinearLayer(GrammageType const b, LengthType const scaleHeight,
+                        LengthType const upperBoundary);
 
     void addTabularLayer(std::function<MassDensityType(LengthType)> const& funcRho,
                          unsigned int const nBins, LengthType const deltaHeight,
@@ -98,7 +103,7 @@ namespace corsika {
     LengthType getPlanetRadius() const { return planetRadius_; }
 
   private:
-    void checkRadius(LengthType r) const;
+    void checkRadius(LengthType const r) const;
 
     std::unique_ptr<NuclearComposition> composition_;
     Point center_;

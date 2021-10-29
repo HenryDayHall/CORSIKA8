@@ -21,11 +21,14 @@ namespace corsika {
   /**
    * flat exponential density distribution with
    * \f[
-   *  \varrho(r) = \varrho_0 \exp\left( \frac{1}{\lambda} (r - p) \cdot
+   *  \varrho(\vec{r}) = \varrho_0 \exp\left( \frac{1}{\lambda} (\vec{r} - \vec{p}) \cdot
    *    \vec{a} \right).
    * \f]
    * \f$ \vec{a} \f$ denotes the axis and should be normalized to avoid degeneracy
-   * with the scale parameter \f$ \lambda \f$.
+   * with the scale parameter \f$ \lambda \f$, \f$ \vec{r} \f$ is the location of 
+   * the evaluation, \f$ \vec{p} \f$ is the anchor point at which \f$ \varrho_0 \f$ 
+   * is given. Thus, the unit vector \f$ \vec{a} \f$ specifies the direction of
+   * <em>decreasing</em> <b>height/altitude</b>.
    */
   // clang-format on
   template <typename T>
@@ -34,7 +37,7 @@ namespace corsika {
 
   public:
     FlatExponential(Point const& point, Vector<dimensionless_d> const& axis,
-                    MassDensityType rho, LengthType lambda,
+                    MassDensityType const rho, LengthType const lambda,
                     NuclearComposition const& nuclComp);
 
     MassDensityType getMassDensity(Point const& point) const override;
@@ -44,7 +47,7 @@ namespace corsika {
     GrammageType getIntegratedGrammage(BaseTrajectory const& line) const override;
 
     LengthType getArclengthFromGrammage(BaseTrajectory const& line,
-                                        GrammageType grammage) const override;
+                                        GrammageType const grammage) const override;
 
   private:
     DirectionVector const axis_;

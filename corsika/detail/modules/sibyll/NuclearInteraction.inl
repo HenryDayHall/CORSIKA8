@@ -51,6 +51,10 @@ namespace corsika::sibyll {
 
   template <typename TEnvironment>
   inline void NuclearInteraction<TEnvironment>::printCrossSectionTable(Code pCode) {
+    if (pCode == Code::Argon) {
+      CORSIKA_LOG_WARN("SIBYLL cannot handle Argon as target!");
+      return;
+    }
     const int k = targetComponentsIndex_.at(pCode);
     Code pNuclei[] = {Code::Helium, Code::Lithium7, Code::Oxygen,
                       Code::Neon,   Code::Argon,    Code::Iron};
@@ -97,6 +101,7 @@ namespace corsika::sibyll {
     // loop over target components, at most 4!!
     int k = -1;
     for (auto& ptarg : allElementsInUniverse) {
+      if (ptarg == Code::Argon) continue; // NEED TO IGNORE Argon ....
       ++k;
       CORSIKA_LOG_DEBUG("NuclearInteraction: init target component: {}", ptarg);
       const int ib = get_nucleus_A(ptarg);
@@ -265,6 +270,7 @@ namespace corsika::sibyll {
       const auto& w = mediumComposition.getFractions();
       // loop over components in medium
       for (auto const targetId : mediumComposition.getComponents()) {
+        if (targetId == Code::Argon) continue; // NEED TO IGNORE Argon ....
         i++;
         CORSIKA_LOG_DEBUG("NuclearInteraction: get interaction length for target: {}",
                           get_name(targetId));
@@ -422,6 +428,7 @@ namespace corsika::sibyll {
 
     for (size_t i = 0; i < compVec.size(); ++i) {
       auto const targetId = compVec[i];
+      if (targetId == Code::Argon) continue; // NEED TO IGNORE Argon ....
       CORSIKA_LOG_DEBUG("target component: {}", get_name(targetId));
       CORSIKA_LOG_DEBUG("beam id: {}", get_name(beamId));
       const auto [sigProd, sigEla] =

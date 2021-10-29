@@ -37,7 +37,7 @@
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/ShowerAxis.hpp>
-#include <corsika/media/SlidingPlanarExponential.hpp>
+#include <corsika/media/CORSIKA7Atmospheres.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
@@ -158,24 +158,29 @@ int main(int argc, char** argv) {
       ->default_str("info")
       ->check(CLI::IsMember({"warn", "info", "debug", "trace"}))
       ->group("Misc.");
+  app.add_option("-v,--verbosity", "Verbosity level: warn, info, debug, trace.")
+      ->default_val("info")
+      ->check(CLI::IsMember({"warn", "info", "debug", "trace"}))
+      ->group("Misc.");
 
   // parse the command line options into the variables
   CLI11_PARSE(app, argc, argv);
 
-  string const loglevel =
-      (app.count("--verbosity") ? app["--verbosity"]->as<string>() : "info");
-  if (loglevel == "warn") {
-    logging::set_level(logging::level::warn);
-  } else if (loglevel == "info") {
-    logging::set_level(logging::level::info);
-  } else if (loglevel == "debug") {
-    logging::set_level(logging::level::debug);
-  } else if (loglevel == "trace") {
+  if (app.count("--verbosity")) {
+    string const loglevel = app["verbosity"]->as<string>();
+    if (loglevel == "warn") {
+      logging::set_level(logging::level::warn);
+    } else if (loglevel == "info") {
+      logging::set_level(logging::level::info);
+    } else if (loglevel == "debug") {
+      logging::set_level(logging::level::debug);
+    } else if (loglevel == "trace") {
 #ifndef DEBUG
-    CORSIKA_LOG_ERROR("trace log level requires a Debug build.");
-    return 1;
+      CORSIKA_LOG_ERROR("trace log level requires a Debug build.");
+      return 1;
 #endif
-    logging::set_level(logging::level::trace);
+      logging::set_level(logging::level::trace);
+    }
   }
 
   // check that we got either PDG or A/Z
@@ -197,28 +202,17 @@ int main(int argc, char** argv) {
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
-  auto builder = make_layered_spherical_atmosphere_builder<
-      setup::EnvironmentInterface, MyExtraEnv>::create(center,
-                                                       constants::EarthRadius::Mean,
-                                                       Medium::AirDry1Atm,
-                                                       MagneticFieldVector{rootCS, 0_T,
-                                                                           50_uT, 0_T});
-  builder.setNuclearComposition(
-      {{Code::Nitrogen, Code::Oxygen},
-       {0.7847, 1. - 0.7847}}); // values taken from AIRES manual, Ar removed for now
 
-  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 2_km);
-  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
-  builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
-  builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
-  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
-  builder.addLinearLayer(1e9_cm, 112.8_km);
-  builder.assemble(env);
+  // build a Linsley US Standard atmosphere into `env`
+  create_5layer_atmosphere<setup::EnvironmentInterface, MyExtraEnv>(
+      env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
+      MagneticFieldVector{rootCS, 0_T, 50_uT, 0_T});
+
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
   ofstream atmout("earth.dat");
-  for (LengthType h = 0_m; h < 110_km; h += 10_m) {
-    Point const ptest{rootCS, 0_m, 0_m, builder.getPlanetRadius() + h};
+  for (LengthType h = 0_m; h < 110_km; h += 100_m) {
+    Point const ptest{rootCS, 0_m, 0_m, constants::EarthRadius::Mean + h};
     auto rho =
         env.getUniverse()->getContainingNode(ptest)->getModelProperties().getMassDensity(
             ptest);
@@ -263,8 +257,8 @@ int main(int argc, char** argv) {
   /* === END: CONSTRUCT PRIMARY PARTICLE === */
 
   /* === START: CONSTRUCT GEOMETRY === */
-  auto const observationHeight = 0_km + builder.getPlanetRadius();
-  auto const injectionHeight = 111.75_km + builder.getPlanetRadius();
+  auto const observationHeight = 0_km + constants::EarthRadius::Mean;
+  auto const injectionHeight = 111.75_km + constants::EarthRadius::Mean;
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));

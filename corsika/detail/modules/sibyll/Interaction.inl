@@ -127,7 +127,10 @@ namespace corsika::sibyll {
 
       si::CrossSectionType weightedProdCrossSection = mediumComposition.getWeightedSum(
           [=](corsika::Code targetID) -> si::CrossSectionType {
-            return std::get<0>(this->getCrossSection(corsikaBeamId, targetID, ECoM));
+            // Argon needs special handling ....
+            return targetID == Code::Argon ? CrossSectionType::zero()
+                                           : std::get<0>(this->getCrossSection(
+                                                 corsikaBeamId, targetID, ECoM));
           });
 
       CORSIKA_LOG_DEBUG(
@@ -243,6 +246,7 @@ namespace corsika::sibyll {
 
     for (size_t i = 0; i < compVec.size(); ++i) {
       auto const targetId = compVec[i];
+      if (targetId == Code::Argon) continue; // skip Argon ....
       const auto [sigProd, sigEla] = getCrossSection(corsikaBeamId, targetId, Ecm);
       [[maybe_unused]] const auto& dummy_sigEla = sigEla;
       cross_section_of_components[i] = sigProd;

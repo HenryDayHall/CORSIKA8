@@ -20,7 +20,7 @@ namespace corsika {
 
   // clang-format off
   /**
-   * The SlidingPlanarExponential models mass density as
+   * The SlidingPlanarExponential models mass density as:
    * \f[
    *   \varrho(r) = \varrho_0 \exp\left( \frac{|p_0 - r|}{\lambda} \right).
    * \f]
@@ -37,9 +37,9 @@ namespace corsika {
     using Base = BaseExponential<SlidingPlanarExponential<T>>;
 
   public:
-    SlidingPlanarExponential(Point const& p0, MassDensityType rho0, LengthType lambda,
-                             NuclearComposition const& nuclComp,
-                             LengthType referenceHeight = LengthType::zero());
+    SlidingPlanarExponential(Point const& p0, MassDensityType const rho0,
+                             LengthType const lambda, NuclearComposition const& nuclComp,
+                             LengthType const referenceHeight = LengthType::zero());
 
     MassDensityType getMassDensity(Point const& point) const override;
 
@@ -48,7 +48,7 @@ namespace corsika {
     GrammageType getIntegratedGrammage(BaseTrajectory const& line) const override;
 
     LengthType getArclengthFromGrammage(BaseTrajectory const& line,
-                                        GrammageType grammage) const override;
+                                        GrammageType const grammage) const override;
 
   private:
     NuclearComposition const nuclComp_;
