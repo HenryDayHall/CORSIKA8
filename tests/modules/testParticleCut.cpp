@@ -76,7 +76,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
 
     CHECK(view.getEntries() == 9);
     CHECK(cut.getNumberInvParticles() == 2);
-    CHECK(cut.getInvEnergy() / 1_GeV == 2000);
+    CHECK(cut.getInvEnergy() / 1_GeV == Approx(2000.));
   }
 
   SECTION("cut on particle type: em") {
@@ -101,14 +101,14 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
 
     CHECK(view.getEntries() == 10);
     CHECK(cut.getNumberEmParticles() == 1);
-    CHECK(cut.getEmEnergy() / 1_GeV == Approx(1000. + 0.000511));
+    CHECK(cut.getEmEnergy() / 1_GeV == 1000.);
   }
 
   SECTION("cut low energy") {
     ParticleCut cut(20_GeV, true, true);
 
     // add primary particle to stack
-    auto particle = stack.addParticle(std::make_tuple(Code::Proton, Eabove - Proton::mass,
+    auto particle = stack.addParticle(std::make_tuple(Code::Proton, Eabove,
                                                       DirectionVector(rootCS, {1, 0, 0}),
                                                       point0, 0_ns));
     // view on secondary particles
@@ -134,6 +134,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
 
     CHECK(view.getEntries() == 1);
     CHECK(view.getSize() == 13);
+    CHECK(cut.getEmEnergy() == Ebelow * A);
   }
 
   SECTION("cut low energy: electrons, photons, hadrons and muons") {
@@ -151,10 +152,10 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     // add secondaries
     projectile.addSecondary(std::make_tuple(
         Code::Photon, 3_MeV, DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
-    projectile.addSecondary(std::make_tuple(Code::Electron, 3_MeV - Electron::mass,
+    projectile.addSecondary(std::make_tuple(Code::Electron, 3_MeV,
                                             DirectionVector(rootCS, {1, 0, 0}), point0,
                                             0_ns));
-    projectile.addSecondary(std::make_tuple(Code::PiPlus, 4_GeV - PiPlus::mass,
+    projectile.addSecondary(std::make_tuple(Code::PiPlus, 4_GeV,
                                             DirectionVector(rootCS, {1, 0, 0}), point0,
                                             0_ns));
 
@@ -197,7 +198,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     // add secondaries, all with energies above the threshold
     // only cut is by time
     for (auto proType : particleList) {
-      projectile.addSecondary(std::make_tuple(proType, Eabove - get_mass(proType),
+      projectile.addSecondary(std::make_tuple(proType, Eabove,
                                               DirectionVector(rootCS, {1, 0, 0}), point0,
                                               too_late));
     }
