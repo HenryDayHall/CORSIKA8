@@ -133,7 +133,6 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
 
     CHECK(view.getEntries() == 1);
     CHECK(view.getSize() == 13);
-    CHECK(cut.getEmEnergy() == Ebelow * A);
   }
 
   SECTION("cut low energy: electrons, photons, hadrons and muons") {
