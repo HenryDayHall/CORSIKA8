@@ -108,9 +108,8 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     ParticleCut cut(20_GeV, true, true);
 
     // add primary particle to stack
-    auto particle = stack.addParticle(std::make_tuple(Code::Proton, Eabove,
-                                                      DirectionVector(rootCS, {1, 0, 0}),
-                                                      point0, 0_ns));
+    auto particle = stack.addParticle(std::make_tuple(
+        Code::Proton, Eabove, DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
     // view on secondary particles
     setup::StackView view(particle);
     // ref. to primary particle through the secondary view.
@@ -152,12 +151,10 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     // add secondaries
     projectile.addSecondary(std::make_tuple(
         Code::Photon, 3_MeV, DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
-    projectile.addSecondary(std::make_tuple(Code::Electron, 3_MeV,
-                                            DirectionVector(rootCS, {1, 0, 0}), point0,
-                                            0_ns));
-    projectile.addSecondary(std::make_tuple(Code::PiPlus, 4_GeV,
-                                            DirectionVector(rootCS, {1, 0, 0}), point0,
-                                            0_ns));
+    projectile.addSecondary(std::make_tuple(
+        Code::Electron, 3_MeV, DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
+    projectile.addSecondary(std::make_tuple(
+        Code::PiPlus, 4_GeV, DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
 
     unsigned short A = 18;
     unsigned short Z = 8;
@@ -198,9 +195,8 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     // add secondaries, all with energies above the threshold
     // only cut is by time
     for (auto proType : particleList) {
-      projectile.addSecondary(std::make_tuple(proType, Eabove,
-                                              DirectionVector(rootCS, {1, 0, 0}), point0,
-                                              too_late));
+      projectile.addSecondary(std::make_tuple(
+          proType, Eabove, DirectionVector(rootCS, {1, 0, 0}), point0, too_late));
     }
     cut.doSecondaries(view);
 
