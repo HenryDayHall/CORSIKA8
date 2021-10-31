@@ -228,51 +228,30 @@ TEST_CASE("EposInterface", "modules") {
         {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
     CHECK(xs_prod2 / 1_mb == Approx(1076.7).margin(3.1));
   }
+}
 
-  SECTION("InteractionInterface - low energy") {
+TEST_CASE("EposDoInteractionNucleus", "module") {
 
-    const HEPEnergyType P0 = 60_GeV;
-    auto [stack, viewPtr] = setup::testing::setup_stack(
-        Code::Proton, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
-    MomentumVector plab =
-        MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
-    setup::StackView& view = *viewPtr;
+  logging::set_level(logging::level::trace);
 
-    InteractionModel model;
-    model.doInteraction(
-        view, Code::Proton, Code::Oxygen,
-        {sqrt(static_pow<2>(P0) + static_pow<2>(Proton::mass)), {cs, P0, 0_GeV, 0_GeV}},
-        {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
+  auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
+  auto const& cs = *csPtr;
+  [[maybe_unused]] auto const& env_dummy = env;
 
-    auto const pSum = sumMomentum(view, cs);
+  RNGManager<>::getInstance().registerRandomStream("epos");
 
-    // this is not physics validation
-    CHECK(pSum.getComponents(cs).getX() / P0 == Approx(1).margin(0.05));
-    CHECK(pSum.getComponents(cs).getY() / 1_GeV == Approx(0).margin(.5));
-    CHECK(pSum.getComponents(cs).getZ() / 1_GeV == Approx(0).margin(.5));
-
-    CHECK((pSum - plab).getNorm() / 1_GeV ==
-          Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
-    CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
-
-    //    [[maybe_unused]] const GrammageType length =
-    //    model.getInteractionLength(particle);
-    //  CHECK(length / 1_g * 1_cm * 1_cm == Approx(93.3).margin(0.1));
-  }
+  InteractionModel model;
 
   SECTION("InteractionInterface - nuclear projectile") {
 
     HEPEnergyType const P0 = 10_TeV;
-    Code const pid = get_nucleus_code(8, 4);
+    Code const pid = get_nucleus_code(40, 20);
     auto [stack, viewPtr] = setup::testing::setup_stack(
         pid, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
     MomentumVector plab =
         MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
     setup::StackView& view = *viewPtr;
 
-    InteractionModel model;
-
-#ifndef __clang__
     // @todo This is very obscure since it fails for -O2, but for both clang and gcc ???
     model.doInteraction(
         view, pid, Code::Oxygen,
@@ -290,7 +269,6 @@ TEST_CASE("EposInterface", "modules") {
     CHECK((pSum - plab).getNorm() / 1_GeV ==
           Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
     CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
-#endif
     //    [[maybe_unused]] const GrammageType length =
     //    model.getInteractionLength(particle);
     //  CHECK(length / 1_g * 1_cm * 1_cm ==

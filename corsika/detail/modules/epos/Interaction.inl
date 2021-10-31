@@ -31,12 +31,12 @@ namespace corsika::epos {
                                             bool const epos_printout_on)
       : data_path_(dataPath)
       , epos_listing_(epos_printout_on) {
-    if (dataPath == "") {
-      data_path_ = (std::string(corsika_data("EPOS").c_str()) + "/").c_str();
-    }
     // initialize Eposlhc
     static bool initialized = false;
     if (!initialized) {
+      if (dataPath == "") {
+        data_path_ = (std::string(corsika_data("EPOS").c_str()) + "/").c_str();
+      }
       initialize();
       initialized = true;
     }
