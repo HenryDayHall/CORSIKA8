@@ -2,7 +2,7 @@
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
- * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version ofp
  * the license.
  */
 
@@ -33,7 +33,7 @@ namespace corsika::qgsjetII {
      * @param beamId
      * @param targetId
      */
-    bool isValid(Code const beamId, Code const targetId) const;
+    bool isValid(Code const beamId, Code const targetId, HEPEnergyType const sqrtS) const;
 
     /**
      * Return the QGSJETII inelastic/production cross section.
@@ -70,6 +70,7 @@ namespace corsika::qgsjetII {
     corsika::default_prng_type& rng_ =
         corsika::RNGManager<>::getInstance().getRandomStream("qgsjet");
     static size_t constexpr maxMassNumber_ = 208;
+    static HEPEnergyType constexpr sqrtSmin_ = 10_GeV;
   };
 
 } // namespace corsika::qgsjetII

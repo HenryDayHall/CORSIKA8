@@ -96,8 +96,9 @@ TEST_CASE("QgsjetII", "[processes]") {
 
     corsika::qgsjetII::InteractionModel model;
 
-    CHECK_FALSE(model.isValid(Code::Electron, Code::Proton));
-    CHECK_FALSE(model.isValid(Code::Proton, Code::Electron));
+    CHECK_FALSE(model.isValid(Code::Electron, Code::Proton, 1_TeV));
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Electron, 1_TeV));
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Proton, 1_GeV));
   }
 }
 

@@ -41,8 +41,10 @@ namespace corsika::qgsjetII {
     CORSIKA_LOG_DEBUG("QgsjetII::InteractionModel n= {}", count_);
   }
 
-  inline bool InteractionModel::isValid(Code const projectileId,
-                                        Code const targetId) const {
+  inline bool InteractionModel::isValid(Code const projectileId, Code const targetId,
+                                        HEPEnergyType const sqrtS) const {
+
+    if (sqrtS < sqrtSmin_) { return false; }
     if (is_nucleus(targetId)) {
       size_t iTarget = get_nucleus_A(targetId);
       if (iTarget > int(maxMassNumber_) || iTarget <= 0) { return false; }
@@ -66,10 +68,11 @@ namespace corsika::qgsjetII {
     if (!corsika::qgsjetII::canInteract(projectileId)) {
       return CrossSectionType::zero();
     }
-    if (!isValid(projectileId, targetId)) { return CrossSectionType::zero(); }
 
     // define projectile, in lab frame
     auto const sqrtS2 = (projectileP4 + targetP4).getNormSqr();
+    auto const sqrtS = sqrt(sqrtS2);
+    if (!isValid(projectileId, targetId, sqrtS)) { return CrossSectionType::zero(); }
     HEPEnergyType const Elab = (sqrtS2 - static_pow<2>(get_mass(projectileId)) -
                                 static_pow<2>(get_mass(targetId))) /
                                (2 * get_mass(targetId));
@@ -101,15 +104,13 @@ namespace corsika::qgsjetII {
         "doInteraction: {} interaction possible? {}",
         projectileId, corsika::qgsjetII::canInteract(projectileId));
 
-    if (!corsika::qgsjetII::canInteract(projectileId) ||
-        !isValid(projectileId, targetId)) {
-      throw std::runtime_error("invalid target/projectile/energy combination.");
-    }
-
-    CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
-
     // define projectile, in lab frame
     auto const sqrtS2 = (projectileP4 + targetP4).getNormSqr();
+    auto const sqrtS = sqrt(sqrtS2);
+    if (!corsika::qgsjetII::canInteract(projectileId) ||
+        !isValid(projectileId, targetId, sqrtS)) {
+      throw std::runtime_error("invalid target/projectile/energy combination.");
+    }
     HEPEnergyType const Elab = (sqrtS2 - static_pow<2>(get_mass(projectileId)) -
                                 static_pow<2>(get_mass(targetId))) /
                                (2 * get_mass(targetId));
@@ -150,6 +151,8 @@ namespace corsika::qgsjetII {
     qgini_(Elab / 1_GeV, qgsjet_hadron_type_int, projectileMassNumber, targetMassNumber);
     qgconf_();
 
+    CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
+
     // bookkeeping
     MomentumVector Plab_final(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
     HEPEnergyType Elab_final = 0_GeV;
@@ -168,7 +171,6 @@ namespace corsika::qgsjetII {
     auto const& csPrime =
         boost.getRotatedCS(); // z is along the CM motion (projectile, in Cascade)
 
-    MomentumVector const projectileMomentum = projectileP4.getSpaceLikeComponents();
     HEPMomentumType const pLabMag =
         sqrt((Elab - get_mass(projectileId)) * (Elab + get_mass(projectileId)));
     MomentumVector pLab(csPrime, {0_eV, 0_eV, pLabMag});

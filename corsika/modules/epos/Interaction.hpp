@@ -10,20 +10,19 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/process/InteractionProcess.hpp>
 #include <tuple>
 
 namespace corsika::epos {
 
-  class Interaction : public InteractionProcess<Interaction> {
-    std::string data_path_;
-    unsigned int count_ = 0;
-    bool epos_listing_;
+  class InteractionModel {
 
   public:
-    Interaction(std::string const& dataPath = "", bool const epos_printout_on = false);
-    ~Interaction();
+    InteractionModel(std::string const& dataPath = "",
+                     bool const epos_printout_on = false);
+    ~InteractionModel();
 
     //! returns production and elastic cross section for hadrons in epos. Inputs are:
     //! CorsikaId of beam particle, CorsikaId of target particle, center-of-mass energy.
@@ -41,27 +40,39 @@ namespace corsika::epos {
     //! returns production and elastic cross section. Allowed configurations are
     //! hadron-nucleon, hadron-nucleus and nucleus-nucleus. Inputs are particle id's mass
     //! and charge numbers and total energy in the lab.
-    std::tuple<CrossSectionType, CrossSectionType> getCrossSectionLab(
-        Code const, int const, int const, Code const, int const, int const,
-        HEPEnergyType const) const;
-
-    template <typename TParticle>
-    GrammageType getInteractionLength(TParticle const&) const;
+    std::tuple<CrossSectionType, CrossSectionType> getCrossSectionInelEla(
+        Code const projectileId, Code const targetId, FourMomentum const& projectileP4,
+        FourMomentum const& targetP4) const;
 
     /**
-       In this function EPOSLHC is called to produce one event. The
-       event is copied into the shower lab frame.
+     * Checks validity of projectile, target and energy combination.
      */
-    template <typename TSecondaries>
-    void doInteraction(TSecondaries&);
+    bool isValid(Code const projectileId, Code const targetId,
+                 HEPEnergyType const sqrtS) const;
 
-    bool isValidCoMEnergy(HEPEnergyType const ecm) const {
-      return (minEnergyCoM_ <= ecm) && (ecm <= maxEnergyCoM_);
+    /**
+     * Get the inelatic/production cross section.
+     *
+     * @param projectileId
+     * @param targetId
+     * @param projectileP4
+     * @param targetP4
+     * @return CrossSectionType
+     */
+    CrossSectionType getCrossSection(Code const projectileId, Code const targetId,
+                                     FourMomentum const& projectileP4,
+                                     FourMomentum const& targetP4) const {
+      return std::get<0>(
+          getCrossSectionInelEla(projectileId, targetId, projectileP4, targetP4));
     }
 
-    //! eposlhc only accepts nuclei with X<=A<=Y as targets, or protons aka Hydrogen or
-    //! neutrons (p,n == nucleon)
-    bool isValidTarget(Code const) const;
+    /**
+     * In this function EPOSLHC is called to produce one event. The
+     * event is copied into the shower lab frame.
+     */
+    template <typename TSecondaries>
+    void doInteraction(TSecondaries&, Code const projectileId, Code const targetId,
+                       FourMomentum const& projectileP4, FourMomentum const& targetP4);
 
     void initialize() const;
     void initializeEventCoM(Code const, int const, int const, Code const, int const,
@@ -73,6 +84,10 @@ namespace corsika::epos {
     void setParticlesStable() const;
 
   private:
+    std::string data_path_;
+    unsigned int count_ = 0;
+    bool epos_listing_;
+
     default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("epos");
     std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_epos_Interaction");
     HEPEnergyType const minEnergyCoM_ = 6 * 1e9 * electronvolt;

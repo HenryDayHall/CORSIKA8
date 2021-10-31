@@ -29,7 +29,7 @@
 using namespace corsika;
 using namespace corsika::epos;
 
-TEST_CASE("epos", "module,process") {
+TEST_CASE("Epos", "module,process") {
 
   logging::set_level(logging::level::trace);
 
@@ -134,75 +134,99 @@ TEST_CASE("EposInterface", "modules") {
     CHECK(rndm < 1);
   }
 
-  SECTION("InteractionInterface - valid targets") {
+  SECTION("InteractionInterface - isValid") {
 
-    Interaction model;
-    CHECK_FALSE(model.isValidTarget(Code::Electron));
-    CHECK(model.isValidTarget(Code::Hydrogen));
-    CHECK(model.isValidTarget(Code::Helium));
-    CHECK_FALSE(model.isValidTarget(Code::Iron));
-    CHECK(model.isValidTarget(Code::Oxygen));
+    InteractionModel model;
+
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Electron, 100_GeV));
+    CHECK(model.isValid(Code::Proton, Code::Hydrogen, 100_GeV));
+    CHECK(model.isValid(Code::Proton, Code::Helium, 100_GeV));
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Iron, 100_GeV));
+    CHECK(model.isValid(Code::Proton, Code::Oxygen, 100_GeV));
+  }
+
+  SECTION("InteractionInterface - getCrossSectionInelEla") {
+
+    InteractionModel model;
 
     // hydrogen target == proton target == neutron target
-    auto const [xs_prod_pp, xs_ela_pp] =
-        model.getCrossSectionLab(Code::Proton, 1, 1, Code::Proton, 1, 1, 100_GeV);
-    auto const [xs_prod_pn, xs_ela_pn] =
-        model.getCrossSectionLab(Code::Proton, 1, 1, Code::Neutron, 1, 0, 100_GeV);
-    auto const [xs_prod_pHydrogen, xs_ela_pHydrogen] =
-        model.getCrossSectionLab(Code::Proton, 1, 1, Code::Hydrogen, 1, 1, 100_GeV);
+    auto const [xs_prod_pp, xs_ela_pp] = model.getCrossSectionInelEla(
+        Code::Proton, Code::Proton,
+        {sqrt(static_pow<2>(100_GeV) + static_pow<2>(Proton::mass)),
+         {cs, 100_GeV, 0_GeV, 0_GeV}},
+        {Proton::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
+
+    auto const [xs_prod_pn, xs_ela_pn] = model.getCrossSectionInelEla(
+        Code::Proton, Code::Neutron,
+        {sqrt(static_pow<2>(100_GeV) + static_pow<2>(Proton::mass)),
+         {cs, 100_GeV, 0_GeV, 0_GeV}},
+        {Neutron::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
+
+    auto const [xs_prod_pHydrogen, xs_ela_pHydrogen] = model.getCrossSectionInelEla(
+        Code::Proton, Code::Hydrogen,
+        {sqrt(static_pow<2>(100_GeV) + static_pow<2>(Proton::mass)),
+         {cs, 100_GeV, 0_GeV, 0_GeV}},
+        {Hydrogen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
+
     CHECK(xs_prod_pp == xs_prod_pHydrogen);
     CHECK(xs_prod_pp == xs_prod_pn);
     CHECK(xs_ela_pp == xs_ela_pHydrogen);
     CHECK(xs_ela_pn == xs_ela_pHydrogen);
   }
 
-  SECTION("InteractionInterface - hadron cross sections") {
+  SECTION("InteractionModelInterface - hadron cross sections") {
 
-    Interaction model;
+    InteractionModel model;
 
     // p-p at 7TeV around 70mb according to LHC
-    auto const [xs_prod, xs_ela] =
-        model.getCrossSectionLab(Code::Proton, 1, 1, Code::Proton, 1, 1,
-                                 sqs2elab(7_TeV, Proton::mass, Proton::mass));
+    auto const xs_prod = model.getCrossSection(
+        Code::Proton, Code::Proton,
+        {3.5_TeV,
+         {cs, sqrt(static_pow<2>(3.5_TeV) - static_pow<2>(Proton::mass)), 0_GeV, 0_GeV}},
+        {3.5_TeV,
+         {cs, -sqrt(static_pow<2>(3.5_TeV) - static_pow<2>(Proton::mass)), 0_GeV,
+          0_GeV}});
     CHECK(xs_prod / 1_mb == Approx(70.7).margin(2.1));
-    { [[maybe_unused]] auto const& dum_xs = xs_ela; }
 
     // pi-n at 7TeV
-    auto const [xs_prod1, xs_ela1] =
-        model.getCrossSectionLab(Code::PiPlus, 0, 0, Code::Neutron, 1, 0,
-                                 sqs2elab(7_TeV, PiPlus::mass, Neutron::mass));
+    auto const xs_prod1 = model.getCrossSection(
+        Code::PiPlus, Code::Neutron,
+        {3.5_TeV,
+         {cs, sqrt(static_pow<2>(3.5_TeV) - static_pow<2>(PiPlus::mass)), 0_GeV, 0_GeV}},
+        {3.5_TeV,
+         {cs, -sqrt(static_pow<2>(3.5_TeV) - static_pow<2>(Neutron::mass)), 0_GeV,
+          0_GeV}});
     CHECK(xs_prod1 / 1_mb == Approx(52.7).margin(2.1));
-    { [[maybe_unused]] auto const& dum_xs = xs_ela1; }
 
     // k-p at 7TeV
-    auto const [xs_prod2, xs_ela2] =
-        model.getCrossSectionLab(Code::KPlus, 0, 0, Code::Proton, 1, 1,
-                                 sqs2elab(7_TeV, KPlus::mass, Proton::mass));
+    auto const xs_prod2 = model.getCrossSection(
+        Code::KPlus, Code::Proton,
+        {3.5_TeV,
+         {cs, sqrt(static_pow<2>(3.5_TeV) - static_pow<2>(KPlus::mass)), 0_GeV, 0_GeV}},
+        {3.5_TeV,
+         {cs, -sqrt(static_pow<2>(3.5_TeV) - static_pow<2>(Proton::mass)), 0_GeV,
+          0_GeV}});
     CHECK(xs_prod2 / 1_mb == Approx(45.7).margin(2.1));
-    { [[maybe_unused]] auto const& dum_xs = xs_ela2; }
   }
 
   SECTION("InteractionInterface - nuclear cross sections") {
 
-    Interaction model;
+    InteractionModel model;
 
-    auto const [xs_prod, xs_ela] = model.getCrossSectionLab(
-        Code::Proton, 1, 1, Code::Oxygen, Oxygen::nucleus_A, Oxygen::nucleus_Z, 100_GeV);
+    auto const xs_prod = model.getCrossSection(
+        Code::Proton, Code::Oxygen,
+        {100_GeV,
+         {cs, sqrt(static_pow<2>(100_GeV) - static_pow<2>(Proton::mass)), 0_GeV, 0_GeV}},
+        {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
     CHECK(xs_prod / 1_mb == Approx(287.0).margin(5.1));
-    { [[maybe_unused]] auto const& dum_xs = xs_ela; }
 
-    auto const [xs_prod2, xs_ela2] = model.getCrossSectionLab(
-        Code::Nitrogen, Nitrogen::nucleus_A, Nitrogen::nucleus_Z, Code::Oxygen,
-        Oxygen::nucleus_A, Oxygen::nucleus_Z, 400_GeV);
+    auto const xs_prod2 = model.getCrossSection(
+        Code::Nitrogen, Code::Oxygen,
+        {400_GeV,
+         {cs, sqrt(static_pow<2>(400_GeV) - static_pow<2>(Nitrogen::mass)), 0_GeV,
+          0_GeV}},
+        {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
     CHECK(xs_prod2 / 1_mb == Approx(1076.7).margin(3.1));
-    { [[maybe_unused]] auto const& dum_xs = xs_ela2; }
-
-    // nuclear stack extension, particle "Nucleus"
-    auto const [xs_prod3, xs_ela3] = model.getCrossSectionLab(
-        Code::Nucleus, Nitrogen::nucleus_A, Nitrogen::nucleus_Z, Code::Oxygen,
-        Oxygen::nucleus_A, Oxygen::nucleus_Z, 400_GeV);
-    CHECK(xs_prod2 / xs_prod3 == 1);
-    { [[maybe_unused]] auto const& dum_xs = xs_ela3; }
   }
 
   SECTION("InteractionInterface - low energy") {
@@ -214,10 +238,11 @@ TEST_CASE("EposInterface", "modules") {
         MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
     setup::StackView& view = *viewPtr;
 
-    auto particle = stack->first();
-
-    Interaction model;
-    model.doInteraction(view);
+    InteractionModel model;
+    model.doInteraction(
+        view, Code::Proton, Code::Oxygen,
+        {sqrt(static_pow<2>(P0) + static_pow<2>(Proton::mass)), {cs, P0, 0_GeV, 0_GeV}},
+        {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
 
     auto const pSum = sumMomentum(view, cs);
 
@@ -230,26 +255,29 @@ TEST_CASE("EposInterface", "modules") {
           Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
     CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
 
-    [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
-    CHECK(length / 1_g * 1_cm * 1_cm == Approx(93.3).margin(0.1));
+    //    [[maybe_unused]] const GrammageType length =
+    //    model.getInteractionLength(particle);
+    //  CHECK(length / 1_g * 1_cm * 1_cm == Approx(93.3).margin(0.1));
   }
 
   SECTION("InteractionInterface - nuclear projectile") {
 
-    const HEPEnergyType P0 = 10_TeV;
+    HEPEnergyType const P0 = 10_TeV;
+    Code const pid = get_nucleus_code(8, 4);
     auto [stack, viewPtr] = setup::testing::setup_stack(
-        get_nucleus_code(8, 4), P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+        pid, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
     MomentumVector plab =
         MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
     setup::StackView& view = *viewPtr;
 
-    auto particle = stack->first();
-
-    Interaction model;
+    InteractionModel model;
 
 #ifndef __clang__
-    // This is very obscure since it fails for -O2, but for both clang and gcc ???
-    model.doInteraction(view);
+    // @todo This is very obscure since it fails for -O2, but for both clang and gcc ???
+    model.doInteraction(
+        view, pid, Code::Oxygen,
+        {sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid))), {cs, P0, 0_GeV, 0_GeV}},
+        {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
 
     auto const pSum = sumMomentum(view, cs);
 
@@ -263,8 +291,9 @@ TEST_CASE("EposInterface", "modules") {
           Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
     CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
 #endif
-    [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
-    CHECK(length / 1_g * 1_cm * 1_cm ==
-          Approx(30).margin(20)); // this is no physics validation
+    //    [[maybe_unused]] const GrammageType length =
+    //    model.getInteractionLength(particle);
+    //  CHECK(length / 1_g * 1_cm * 1_cm ==
+    //      Approx(30).margin(20)); // this is no physics validation
   }
 }

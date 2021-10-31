@@ -25,13 +25,10 @@
 #include <string>
 #include <tuple>
 
-using namespace corsika;
-using SetupParticle = setup::Stack::stack_iterator_type;
-
 namespace corsika::epos {
 
-  inline Interaction::Interaction(std::string const& dataPath,
-                                  bool const epos_printout_on)
+  inline InteractionModel::InteractionModel(std::string const& dataPath,
+                                            bool const epos_printout_on)
       : data_path_(dataPath)
       , epos_listing_(epos_printout_on) {
     if (dataPath == "") {
@@ -46,7 +43,7 @@ namespace corsika::epos {
     setParticlesStable();
   }
 
-  inline void Interaction::setParticlesStable() const {
+  inline void InteractionModel::setParticlesStable() const {
     CORSIKA_LOGGER_DEBUG(logger_,
                          "set all particles known to CORSIKA stable inside EPOS..");
     for (auto& p : get_all_particles()) {
@@ -59,11 +56,22 @@ namespace corsika::epos {
     }
   }
 
-  inline bool Interaction::isValidTarget(Code const TargetId) const {
-    return is_nucleus(TargetId) && (get_nucleus_A(TargetId) < maxTargetMassNumber_);
+  inline bool InteractionModel::isValid(Code const projectileId, Code const targetId,
+                                        HEPEnergyType const sqrtS) const {
+    //! eposlhc only accepts nuclei with X<=A<=Y as targets, or protons aka Hydrogen or
+    //! neutrons (p,n == nucleon)
+    if (!is_nucleus(targetId) && targetId != Code::Neutron && targetId != Code::Proton) {
+      return false;
+    }
+    if (is_nucleus(targetId) && (get_nucleus_A(targetId) >= maxTargetMassNumber_)) {
+      return false;
+    }
+    if ((minEnergyCoM_ > sqrtS) || (sqrtS > maxEnergyCoM_)) { return false; }
+    if (!epos::canInteract(projectileId)) { return false; }
+    return true;
   }
 
-  inline void Interaction::initialize() const {
+  inline void InteractionModel::initialize() const {
 
     CORSIKA_LOGGER_DEBUG(logger_, "initializing...");
 
@@ -137,10 +145,10 @@ namespace corsika::epos {
                        Argon::nucleus_A, Argon::nucleus_Z, 100_GeV);
   }
 
-  inline void Interaction::initializeEventCoM(Code const idBeam, int const iBeamA,
-                                              int const iBeamZ, Code const idTarget,
-                                              int const iTargetA, int const iTargetZ,
-                                              HEPEnergyType const Ecm) const {
+  inline void InteractionModel::initializeEventCoM(Code const idBeam, int const iBeamA,
+                                                   int const iBeamZ, Code const idTarget,
+                                                   int const iTargetA, int const iTargetZ,
+                                                   HEPEnergyType const Ecm) const {
     CORSIKA_LOGGER_TRACE(logger_,
                          "initialize event in CoM frame!"
                          " Ecm={}",
@@ -163,10 +171,10 @@ namespace corsika::epos {
     ::epos::ainit_();
   }
 
-  inline void Interaction::initializeEventLab(Code const idBeam, int const iBeamA,
-                                              int const iBeamZ, Code const idTarget,
-                                              int const iTargetA, int const iTargetZ,
-                                              HEPEnergyType const Plab) const {
+  inline void InteractionModel::initializeEventLab(Code const idBeam, int const iBeamA,
+                                                   int const iBeamZ, Code const idTarget,
+                                                   int const iTargetA, int const iTargetZ,
+                                                   HEPEnergyType const Plab) const {
     CORSIKA_LOGGER_TRACE(logger_,
                          "initialize event in lab. frame!"
                          " Plab per nuc={} GeV",
@@ -191,10 +199,10 @@ namespace corsika::epos {
     ::epos::ainit_();
   }
 
-  inline void Interaction::configureParticles(Code const idBeam, int const iBeamA,
-                                              int const iBeamZ, Code const idTarget,
-                                              int const iTargetA,
-                                              int const iTargetZ) const {
+  inline void InteractionModel::configureParticles(Code const idBeam, int const iBeamA,
+                                                   int const iBeamZ, Code const idTarget,
+                                                   int const iTargetA,
+                                                   int const iTargetZ) const {
     CORSIKA_LOGGER_TRACE(logger_,
                          "setting "
                          "Beam={}, "
@@ -227,9 +235,8 @@ namespace corsika::epos {
       ::epos::hadr25_.idtargin = convertToEposRaw(Code::Neutron);
       ::epos::nucl1_.matarg = 1;
       ::epos::nucl1_.latarg = -1;
-    } else {
-      throw std::runtime_error("Epos: target outside range!");
     }
+
     CORSIKA_LOGGER_TRACE(logger_,
                          "inside EPOS: "
                          "Id beam={}, "
@@ -246,11 +253,15 @@ namespace corsika::epos {
                          ::epos::nucl1_.matarg, ::epos::had10_.icltar);
   }
 
-  inline Interaction::~Interaction() { CORSIKA_LOGGER_DEBUG(logger_, "n={} ", count_); }
+  inline InteractionModel::~InteractionModel() {
+    CORSIKA_LOGGER_DEBUG(logger_, "n={} ", count_);
+  }
 
-  inline std::tuple<CrossSectionType, CrossSectionType> Interaction::calcCrossSectionCoM(
-      Code const BeamId, int const BeamA, int const BeamZ, Code const TargetId,
-      int const TargetA, int const TargetZ, const HEPEnergyType EnergyCOM) const {
+  inline std::tuple<CrossSectionType, CrossSectionType>
+  InteractionModel::calcCrossSectionCoM(Code const BeamId, int const BeamA,
+                                        int const BeamZ, Code const TargetId,
+                                        int const TargetA, int const TargetZ,
+                                        const HEPEnergyType EnergyCOM) const {
     CORSIKA_LOGGER_DEBUG(logger_,
                          "calcCrossSection: input:"
                          " beamId={}, beamA={}, beamZ={}"
@@ -259,12 +270,8 @@ namespace corsika::epos {
                          BeamId, BeamA, BeamZ, TargetId, TargetA, TargetZ,
                          EnergyCOM / 1_GeV);
 
-    const int iBeam = corsika::epos::getEposXSCode(
+    const int iBeam = epos::getEposXSCode(
         BeamId); // 0 (can not interact, 1: proton-like, 2: pion-like, 3:kaon-like)
-    if (!iBeam)
-      throw std::runtime_error(
-          "calcCrossSectionCoM: interaction of beam hadron not defined in "
-          "Epos!");
 
     CORSIKA_LOGGER_TRACE(logger_,
                          "projectile cross section type={} "
@@ -280,10 +287,6 @@ namespace corsika::epos {
     else if (iBeam == 3)
       initializeEventCoM(Code::KPlus, BeamA, BeamZ, TargetId, TargetA, TargetZ,
                          EnergyCOM);
-    else
-      throw std::runtime_error(
-          "calcCrossSectionCoM: interaction of beam hadron not defined in "
-          "Epos!");
 
     double sigProd, sigEla = 0;
     float sigTot1, sigProd1, sigCut1 = 0;
@@ -306,10 +309,10 @@ namespace corsika::epos {
     return std::make_tuple(sigProd * 1_mb, sigEla * 1_mb);
   }
 
-  inline std::tuple<corsika::CrossSectionType, corsika::CrossSectionType>
-  Interaction::readCrossSectionTableLab(Code const BeamId, int const BeamA,
-                                        int const BeamZ, Code const TargetId,
-                                        HEPEnergyType const EnergyLab) const {
+  inline std::tuple<CrossSectionType, CrossSectionType>
+  InteractionModel::readCrossSectionTableLab(Code const BeamId, int const BeamA,
+                                             int const BeamZ, Code const TargetId,
+                                             HEPEnergyType const EnergyLab) const {
     CORSIKA_LOGGER_DEBUG(logger_,
                          "readCrossSectionTableLab: input: "
                          "beamId={}, "
@@ -329,7 +332,7 @@ namespace corsika::epos {
       Ekin = (EnergyLab / Abeam - constants::nucleonMass) / 1_GeV;
     } else {
       ::epos::hadr2_.idproj = convertToEposRaw(BeamId);
-      int const iBeam = corsika::epos::getEposXSCode(
+      int const iBeam = epos::getEposXSCode(
           BeamId); // 0 (can not interact, 1: pion-like, 2: proton-like, 3:kaon-like)
       CORSIKA_LOGGER_TRACE(logger_,
                            "projectile cross section type={} "
@@ -339,13 +342,6 @@ namespace corsika::epos {
       ::epos::had10_.iclpro = iBeam;
       Abeam = 1;
       Ekin = (EnergyLab - get_mass(BeamId)) / 1_GeV;
-    }
-    if (Ekin < 0) {
-      CORSIKA_LOGGER_ERROR(logger_,
-                           "Negative kinetic energy!"
-                           "Ekin={}",
-                           Ekin);
-      throw std::runtime_error("Epos cross section failed! Negative kinetic energy!");
     }
 
     int Atarget = 1;
@@ -366,219 +362,145 @@ namespace corsika::epos {
     return std::make_tuple(sigProdEpos * 1_mb, sigElaEpos * 1_mb);
   }
 
-  inline std::tuple<corsika::CrossSectionType, corsika::CrossSectionType>
-  Interaction::getCrossSectionLab(corsika::Code const BeamId, int const BeamA,
-                                  int const BeamZ, corsika::Code const TargetId,
-                                  int const TargetA, int const TargetZ,
-                                  const corsika::HEPEnergyType EnergyLab) const {
+  inline std::tuple<CrossSectionType, CrossSectionType>
+  InteractionModel::getCrossSectionInelEla(Code const projectileId, Code const targetId,
+                                           FourMomentum const& projectileP4,
+                                           FourMomentum const& targetP4) const {
+    auto const sqrtS2 = (projectileP4 + targetP4).getNormSqr();
+    auto const sqrtS = sqrt(sqrtS2);
+
+    if (!isValid(projectileId, targetId, sqrtS)) {
+      return {CrossSectionType::zero(), CrossSectionType::zero()};
+    }
+    HEPEnergyType const Elab = (sqrtS2 - static_pow<2>(get_mass(projectileId)) -
+                                static_pow<2>(get_mass(targetId))) /
+                               (2 * get_mass(targetId));
+    int beamA = 1;
+    int beamZ = 1;
+    if (is_nucleus(projectileId)) {
+      beamA = get_nucleus_A(projectileId);
+      beamZ = get_nucleus_Z(projectileId);
+    }
+
     CORSIKA_LOGGER_DEBUG(logger_,
                          "getCrossSectionLab: input:"
                          " beamId={}, beamA={}, beamZ={}"
-                         " target={}, targetA={}, targetZ={}"
-                         " ELab={:4.3f} GeV,",
-                         BeamId, BeamA, BeamZ, TargetId, TargetA, TargetZ,
-                         EnergyLab / 1_GeV);
-    return readCrossSectionTableLab(BeamId, BeamA, BeamZ, TargetId, EnergyLab);
-  }
-
-  template <>
-  inline corsika::GrammageType Interaction::getInteractionLength(
-      SetupParticle const& projectile) const {
-
-    const corsika::Code corsikaBeamId = projectile.getPID();
-    const bool kInteraction = corsika::epos::canInteract(corsikaBeamId);
-    CORSIKA_LOGGER_DEBUG(logger_,
-                         "InteractionLength: input: \n"
-                         " energy: {} GeV "
-                         " beam can interact: {} "
-                         " beam pid: {}",
-                         projectile.getEnergy() / 1_GeV, kInteraction,
-                         projectile.getPID());
-
-    if (kInteraction) {
-
-      // define projectile nuclei
-      int beamA = 1;
-      int beamZ = 1;
-      if (is_nucleus(corsikaBeamId)) {
-        beamA = get_nucleus_A(corsikaBeamId);
-        beamZ = get_nucleus_Z(corsikaBeamId);
-      }
-
-      // get target from environment
-      MomentumVector const& pLab = projectile.getMomentum();
-      CoordinateSystemPtr const& labCS = pLab.getCoordinateSystem();
-
-      // assume target is at rest!!
-      MomentumVector pTarget(labCS, {0_GeV, 0_GeV, 0_GeV});
-
-      // total momentum and energy
-      HEPEnergyType Elab = projectile.getEnergy() + constants::nucleonMass;
-
-      auto const* currentNode = projectile.getNode();
-      const auto& mediumComposition =
-          currentNode->getModelProperties().getNuclearComposition();
-
-      si::CrossSectionType weightedProdCrossSection = mediumComposition.getWeightedSum(
-          [=](corsika::Code targetID) -> si::CrossSectionType {
-            return std::get<0>(this->getCrossSectionLab(corsikaBeamId, beamA, beamZ,
-                                                        targetID, get_nucleus_A(targetID),
-                                                        get_nucleus_Z(targetID), Elab));
-          });
-
-      CORSIKA_LOGGER_DEBUG(logger_, "InteractionLength: weighted CrossSection (mb): {} ",
-                           weightedProdCrossSection / 1_mb);
-
-      // calculate interaction length in medium
-      GrammageType const int_length = mediumComposition.getAverageMassNumber() *
-                                      constants::u / weightedProdCrossSection;
-      CORSIKA_LOGGER_DEBUG(logger_, "interaction length (g/cm2): {} ",
-                           int_length / (0.001_kg) * 1_cm * 1_cm);
-
-      return int_length;
-    }
-
-    return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
+                         " target={}"
+                         " ELab={:4.3f} GeV, sqrtS={}",
+                         projectileId, beamA, beamZ, targetId, Elab / 1_GeV,
+                         sqrtS / 1_GeV);
+    return readCrossSectionTableLab(projectileId, beamA, beamZ, targetId, Elab);
   }
 
   template <typename TSecondaryView>
-  inline void Interaction::doInteraction(TSecondaryView& view) {
+  inline void InteractionModel::doInteraction(TSecondaryView& view,
+                                              Code const projectileId,
+                                              Code const targetId,
+                                              FourMomentum const& projectileP4,
+                                              FourMomentum const& targetP4) {
 
+    count_ = count_ + 1;
+
+    // define projectile
+    // define projectile, in lab frame
+    auto const sqrtS2 = (projectileP4 + targetP4).getNormSqr();
+    auto const sqrtS = sqrt(sqrtS2);
+    if (!isValid(projectileId, targetId, sqrtS)) {
+      throw std::runtime_error("invalid projectiel/target/energy combination.");
+    }
+    HEPEnergyType const Elab = (sqrtS2 - static_pow<2>(get_mass(projectileId)) -
+                                static_pow<2>(get_mass(targetId))) /
+                               (2 * get_mass(targetId));
+
+    // system of initial-state
+    COMBoost boost(projectileP4, targetP4);
+
+    auto const& originalCS = boost.getOriginalCS();
+    auto const& csPrime =
+        boost.getRotatedCS(); // z is along the CM motion (projectile, in Cascade)
+
+    HEPMomentumType const pLabMag =
+        sqrt((Elab - get_mass(projectileId)) * (Elab + get_mass(projectileId)));
+    MomentumVector pLab(csPrime, {0_eV, 0_eV, pLabMag});
+
+    // internal EPOS lab system
+    COMBoost boostInternal({Elab, pLab}, get_mass(targetId));
+
+    CORSIKA_LOGGER_DEBUG(logger_, "doInteraction: {} interaction, Elab={} ", projectileId,
+                         Elab);
+
+    int beamA = 1;
+    int beamZ = 1;
+    if (is_nucleus(projectileId)) {
+      beamA = get_nucleus_A(projectileId);
+      beamZ = get_nucleus_Z(projectileId);
+      CORSIKA_LOGGER_DEBUG(logger_, "A={}, Z={} ", beamA, beamZ);
+    }
+
+    HEPMomentumType const projectileMomentumLabPerNucleon = pLabMag / beamA;
+
+    // // from corsika7 interface
+    // // NEXLNK-part
+    int targetA = 1;
+    int targetZ = 1;
+    if (is_nucleus(targetId)) {
+      targetA = get_nucleus_A(targetId);
+      targetZ = get_nucleus_Z(targetId);
+    }
+    initializeEventLab(projectileId, beamA, beamZ, targetId, targetA, targetZ,
+                       projectileMomentumLabPerNucleon);
+
+    // create event
+    int iarg = 1;
+    ::epos::aepos_(iarg);
+
+    ::epos::afinal_();
+
+    if (epos_listing_) {
+      char nam[9] = "EPOSLHC&";
+      ::epos::alistf_(nam, 9);
+    }
+
+    // NSTORE-part
+
+    MomentumVector Plab_final(originalCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
+    HEPEnergyType Elab_final = 0_GeV;
+
+    // position and time of interaction, not used in QgsjetII
     auto const projectile = view.getProjectile();
-    auto const corsikaBeamId = projectile.getPID();
+    Point const pOrig = projectile.getPosition();
+    TimeType const tOrig = projectile.getTime();
 
-    CORSIKA_LOGGER_DEBUG(logger_, "doInteraction: {} interaction, Elab={} ",
-                         corsikaBeamId, projectile.getEnergy());
+    // secondaries
+    EposStack es;
+    CORSIKA_LOGGER_DEBUG(logger_, "number of particles: {}", es.getSize());
+    for (auto& psec : es) {
+      if (!psec.isFinal()) continue;
 
-    if (corsika::epos::canInteract(corsikaBeamId)) {
-      count_ = count_ + 1;
-      // position and time of interaction, not used in Epos
-      Point const pOrig = projectile.getPosition();
-      TimeType const tOrig = projectile.getTime();
+      auto momentum = psec.getMomentum(csPrime);
+      // this is not "CoM" here, but rather the system defined by projectile+target,
+      // which in Cascade-mode is already lab
+      auto const P4com = boostInternal.toCoM(FourVector{psec.getEnergy(), momentum});
+      auto const P4output = boost.fromCoM(P4com);
+      auto p3output = P4output.getSpaceLikeComponents();
+      p3output.rebase(originalCS); // transform back into standard lab frame
 
-      // define projectile
-      HEPEnergyType const eProjectileLab = projectile.getEnergy();
-      auto const pProjectileLab = projectile.getMomentum();
-      auto const projectileMomentum = pProjectileLab.getNorm();
-      CoordinateSystemPtr const& originalCS = pProjectileLab.getCoordinateSystem();
+      EposCode const eposId = psec.getPID();
+      Code const pid = epos::convertFromEpos(eposId);
+      CORSIKA_LOGGER_TRACE(logger_,
+                           " id= {}"
+                           " p= {}",
+                           pid, p3output.getComponents() / 1_GeV);
 
-      // epos frame with z along the projectile direction
-      CoordinateSystemPtr const zAxisFrame = make_rotationToZ(originalCS, pProjectileLab);
-
-      int beamA = 1;
-      int beamZ = 1;
-      if (is_nucleus(corsikaBeamId)) {
-        beamA = get_nucleus_A(corsikaBeamId);
-        beamZ = get_nucleus_Z(corsikaBeamId);
-        CORSIKA_LOGGER_DEBUG(logger_, "A={}, Z={} ", beamA, beamZ);
-      }
-
-      HEPEnergyType const projectileMomentumLabPerNucleon = projectileMomentum / beamA;
-
-      // define target
-
-      // sample target mass number
-      auto const* currentNode = projectile.getNode();
-      auto const& mediumComposition =
-          currentNode->getModelProperties().getNuclearComposition();
-      // get cross sections for target materials
-      /*
-        Here we read the cross section from the interaction model again,
-        should be passed from getInteractionLength if possible
-       */
-      //#warning reading interaction cross section again, should not be necessary
-      auto const& compVec = mediumComposition.getComponents();
-      std::vector<CrossSectionType> cross_section_of_components(compVec.size());
-
-      for (size_t i = 0; i < compVec.size(); ++i) {
-        auto const targetId = compVec[i];
-        [[maybe_unused]] auto const [sigProd, sigEla] = getCrossSectionLab(
-            corsikaBeamId, beamA, beamZ, targetId, get_nucleus_A(targetId),
-            get_nucleus_Z(targetId), eProjectileLab);
-        cross_section_of_components[i] = sigProd;
-      }
-
-      const auto targetCode =
-          mediumComposition.sampleTarget(cross_section_of_components, RNG_);
-      CORSIKA_LOGGER_DEBUG(logger_, "target selected: {} ", targetCode);
-
-      // // from corsika7 interface
-      // // NEXLNK-part
-      int targetA = 1;
-      int targetZ = 1;
-      if (is_nucleus(targetCode)) {
-        targetA = get_nucleus_A(targetCode);
-        targetZ = get_nucleus_Z(targetCode);
-      }
-      initializeEventLab(corsikaBeamId, beamA, beamZ, targetCode, targetA, targetZ,
-                         projectileMomentumLabPerNucleon);
-
-      // create event
-      int iarg = 1;
-      ::epos::aepos_(iarg);
-
-      ::epos::afinal_();
-
-      if (epos_listing_) {
-        char nam[9] = "EPOSLHC&";
-        ::epos::alistf_(nam, 9);
-      }
-
-      // NSTORE-part
-
-      MomentumVector Plab_final(originalCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
-      HEPEnergyType Elab_final = 0_GeV;
-
-      // secondaries
-      EposStack es;
-      CORSIKA_LOGGER_DEBUG(logger_, "number of particles: {}", es.getSize());
-      for (auto& psec : es) {
-        if (!psec.isFinal()) continue;
-
-        auto momentum = psec.getMomentum(zAxisFrame);
-
-        momentum.rebase(originalCS); // transform back into standard lab frame
-
-        EposCode const eposId = psec.getPID();
-        Code const pid = corsika::epos::convertFromEpos(eposId);
-        CORSIKA_LOGGER_TRACE(logger_,
-                             " id= {}"
-                             " p= {}",
-                             pid, momentum.getComponents() / 1_GeV);
-        if (!is_nucleus(pid)) {
-          auto pnew = view.addSecondary(std::make_tuple(pid, momentum, pOrig, tOrig));
-          Plab_final += pnew.getMomentum();
-          Elab_final += pnew.getEnergy();
-        } else {
-          unsigned int A = 0;
-          unsigned int Z = 0;
-          if (pid == Code::Deuterium) {
-            A = 2;
-            Z = 1;
-          } else if (pid == Code::Tritium) {
-            A = 3;
-            Z = 1;
-          } else if (pid == Code::Helium) {
-            A = 4;
-            Z = 2;
-          } else {
-            Z = get_nucleus_Z(eposId);
-            A = get_nucleus_Z(eposId);
-          }
-          auto pnew = view.addSecondary(
-              std::make_tuple(get_nucleus_code(A, Z), momentum, pOrig, tOrig));
-          Plab_final += pnew.getMomentum();
-          Elab_final += pnew.getEnergy();
-        }
-      }
-      CORSIKA_LOGGER_DEBUG(
-          logger_,
-          "conservation (all GeV): Ecm_final= n/a" /* << Ecm_final / 1_GeV*/
-          ", Elab_final={}"
-          ", Plab_final={}",
-          Elab_final / 1_GeV, (Plab_final / 1_GeV).getComponents());
-    } else
-      CORSIKA_LOGGER_WARN(
-          logger_, "Projectile not configured for interaction! This is likely an error!");
+      auto pnew = view.addSecondary(std::make_tuple(pid, p3output, pOrig, tOrig));
+      Plab_final += pnew.getMomentum();
+      Elab_final += pnew.getEnergy();
+    }
+    CORSIKA_LOGGER_DEBUG(
+        logger_,
+        "conservation (all GeV): Ecm_final= n/a" /* << Ecm_final / 1_GeV*/
+        ", Elab_final={}"
+        ", Plab_final={}",
+        Elab_final / 1_GeV, (Plab_final / 1_GeV).getComponents());
   }
 } // namespace corsika::epos
