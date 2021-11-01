@@ -12,7 +12,6 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/framework/process/InteractionProcess.hpp>
 #include <tuple>
 
 namespace corsika::epos {
@@ -98,4 +97,4 @@ namespace corsika::epos {
 
 } // namespace corsika::epos
 
-#include <corsika/detail/modules/epos/Interaction.inl>
+#include <corsika/detail/modules/epos/InteractionModel.inl>

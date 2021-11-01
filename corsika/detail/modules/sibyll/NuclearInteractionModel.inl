@@ -57,10 +57,11 @@ namespace corsika::sibyll {
   inline void
   NuclearInteractionModel<TEnvironment, TNucleonModel>::printCrossSectionTable(
       Code const pCode) const {
-    if (pCode == Code::Argon) {
-      CORSIKA_LOG_WARN("SIBYLL cannot handle Argon as target!");
+    if (!hadronicInteraction_.isValid(Code::Proton, pCode, 100_GeV)) {
+      CORSIKA_LOG_ERROR("Invalid target type {} for hadron interaction model.", pCode);
       return;
     }
+
     int const k = targetComponentsIndex_.at(pCode);
     Code const pNuclei[] = {Code::Helium, Code::Lithium7, Code::Oxygen,
                             Code::Neon,   Code::Argon,    Code::Iron};
@@ -109,12 +110,12 @@ namespace corsika::sibyll {
     // loop over target components, at most 4!!
     int k = -1;
     for (Code const ptarg : allElementsInUniverse) {
-      if (ptarg == Code::Argon) continue; // NEED TO IGNORE Argon ....
       ++k;
       CORSIKA_LOG_DEBUG("init target component: {} A={}", ptarg, get_nucleus_A(ptarg));
       int const ib = get_nucleus_A(ptarg);
       if (!hadronicInteraction_.isValid(Code::Proton, ptarg, 100_GeV)) {
-        throw std::runtime_error("Invalid target type.");
+        CORSIKA_LOG_ERROR("Invalid target type {} for hadron interaction model.", ptarg);
+        continue;
       }
       targetComponentsIndex_.insert(std::pair<Code, int>(ptarg, k));
       // loop over energies, fNEnBins log. energy bins

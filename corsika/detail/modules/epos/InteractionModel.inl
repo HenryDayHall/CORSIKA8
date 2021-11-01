@@ -8,17 +8,11 @@
 
 #pragma once
 
-#include <corsika/modules/epos/Interaction.hpp>
+#include <corsika/modules/epos/InteractionModel.hpp>
 #include <corsika/modules/epos/EposStack.hpp>
-
-#include <corsika/media/Environment.hpp>
-#include <corsika/media/NuclearComposition.hpp>
 
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/utility/CorsikaData.hpp>
-
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
 
 #include <epos.hpp>
 
