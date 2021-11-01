@@ -24,7 +24,7 @@ namespace corsika {
   }
 
   template <typename Particle>
-  inline TimeType StraightTrajectory::getTime(Particle& particle, double const u) const {
+  inline TimeType StraightTrajectory::getTime(Particle const& particle, double const u) const {
     return particle.getTime() + getDuration(u);//timeStep_ * u;
   }
 

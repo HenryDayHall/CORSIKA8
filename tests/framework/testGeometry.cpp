@@ -375,7 +375,7 @@ TEST_CASE("Geometry Trajectories") {
     StraightTrajectory base(line, t);
     CHECK(line.getPosition(t).getCoordinates() == base.getPosition(1.).getCoordinates());
     // test the getTime() method for straight trajectory
-    CHECK( base.getTime(particle1, 1) / 1_s == Approx(1));
+    CHECK(base.getTime(particle1, 1) / 1_s == Approx(1));
 
     CHECK((base.getDirection(0).getComponents(rootCS) -
            QuantityVector<dimensionless_d>{1, 0, 0})
@@ -442,9 +442,9 @@ TEST_CASE("Geometry Trajectories") {
     LeapFrogTrajectory base(pos, v0, B0, k, t);
 
     // test the getTime() method for trajectories
-    CHECK( (base.getTime(particle1,1) - t) / 1_s == 0 );
-    CHECK( base.getTime(particle1,0) / 1_s == Approx(0) );
-    CHECK( (base.getTime(particle1,0) + t) / 1_s == Approx(1e-12) );
+    CHECK((base.getTime(particle1,1) - t) / 1_s == Approx(0));
+    CHECK(base.getTime(particle1,0) / 1_s == Approx(0));
+    CHECK((base.getTime(particle1,0) + t) / 1_s == Approx(1e-12));
   }
 }
 

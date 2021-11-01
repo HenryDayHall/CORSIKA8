@@ -55,7 +55,7 @@ namespace corsika {
   }
 
   template <typename Particle>
-  inline TimeType LeapFrogTrajectory::getTime(Particle& particle, double const u) const {
+  inline TimeType LeapFrogTrajectory::getTime(Particle const& particle, double const u) const {
     return particle.getTime() + getDuration(u);
   }
 
