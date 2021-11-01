@@ -23,17 +23,19 @@ CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
 /**
  * \todo such helper functions should be moved to the FourVector class:
- **/
+ */
 // helper function for energy-momentum
 // relativistic energy
-auto const energy = [](HEPMassType m, MomentumVector const& p) {
+auto const energy = [](HEPMassType const m, MomentumVector const& p) {
   return sqrt(m * m + p.getSquaredNorm());
 };
 
-auto const momentum = [](HEPEnergyType E, HEPMassType m) { return sqrt(E * E - m * m); };
+auto const momentum = [](HEPEnergyType const E, HEPMassType const m) {
+  return sqrt(E * E - m * m);
+};
 
 // helper function for mandelstam-s
-auto const s = [](HEPEnergyType E, QuantityVector<hepmomentum_d> const& p) {
+auto const s = [](HEPEnergyType const E, QuantityVector<hepmomentum_d> const& p) {
   return E * E - p.getSquaredNorm();
 };
 
@@ -170,7 +172,7 @@ TEST_CASE("rotation") {
 
 TEST_CASE("boosts") {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::trace);
 
   // define target kinematics in lab frame
   HEPMassType const targetMass = 1_GeV;
@@ -321,6 +323,49 @@ TEST_CASE("boosts") {
     auto const sumPCoM =
         PprojCoM.getSpaceLikeComponents() + PtargCoM.getSpaceLikeComponents();
     CHECK(sumPCoM.getNorm() / P0 == Approx(0).margin(absMargin)); // MAKE RELATIVE CHECK
+  }
+
+  SECTION("CoM system") {
+
+    MomentumVector pCM{rootCS, 0_GeV, 0_GeV, 5_GeV};
+
+    COMBoost boostCMS({energy(1_GeV, pCM), pCM}, {energy(1_GeV, pCM), -pCM});
+
+    auto test1 = boostCMS.fromCoM(FourMomentum{
+        0_GeV, MomentumVector(boostCMS.getOriginalCS(), {0_GeV, 0_GeV, 0_GeV})});
+    CHECK(test1.getNorm() == 0_GeV);
+    auto test2 = boostCMS.fromCoM(FourMomentum{
+        0_GeV, MomentumVector(boostCMS.getRotatedCS(), {0_GeV, 0_GeV, 0_GeV})});
+    CHECK(test2.getNorm() == 0_GeV);
+
+    auto test3 = boostCMS.toCoM(FourMomentum{
+        0_GeV, MomentumVector(boostCMS.getOriginalCS(), {0_GeV, 0_GeV, 0_GeV})});
+    CHECK(test3.getNorm() == 0_GeV);
+    auto test4 = boostCMS.toCoM(FourMomentum{
+        0_GeV, MomentumVector(boostCMS.getRotatedCS(), {0_GeV, 0_GeV, 0_GeV})});
+    CHECK(test4.getNorm() == 0_GeV);
+
+    HEPEnergyType const sqrtS =
+        (FourMomentum{energy(1_GeV, pCM), pCM} + FourMomentum{energy(1_GeV, pCM), -pCM})
+            .getNorm();
+    HEPEnergyType const eLab =
+        (static_pow<2>(sqrtS) - 2 * static_pow<2>(1_GeV)) / (2 * 1_GeV);
+    COMBoost boostLab({eLab, MomentumVector{rootCS, momentum(eLab, 1_GeV), 0_eV, 0_eV}},
+                      {1_GeV, MomentumVector{rootCS, 0_eV, 0_eV, 0_eV}});
+
+    FourMomentum p4lab_trans(
+        10_GeV,
+        MomentumVector(boostLab.getOriginalCS(), {0_eV, momentum(10_GeV, 1_GeV), 0_eV}));
+    FourMomentum p4lab_long(
+        10_GeV,
+        MomentumVector(boostLab.getOriginalCS(), {momentum(10_GeV, 1_GeV), 0_GeV, 0_eV}));
+    // boost of transverse momentum
+    CHECK(boostLab.toCoM(p4lab_trans).getNorm() / 1_GeV == Approx(1));
+    CHECK(boostLab.toCoM(p4lab_trans).getTimeLikeComponent() / 1_GeV == Approx(50.99));
+    // boost of longitudinal momentum
+    CHECK(boostLab.toCoM(p4lab_long).getNorm() / 1_GeV == Approx(1));
+    CHECK(boostLab.toCoM(p4lab_long).getTimeLikeComponent() / 1_GeV ==
+          Approx(1.24).margin(0.1));
   }
 }
 

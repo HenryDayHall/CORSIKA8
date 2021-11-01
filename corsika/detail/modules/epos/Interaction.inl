@@ -406,14 +406,14 @@ namespace corsika::epos {
     auto const sqrtS2 = (projectileP4 + targetP4).getNormSqr();
     auto const sqrtS = sqrt(sqrtS2);
     if (!isValid(projectileId, targetId, sqrtS)) {
-      throw std::runtime_error("invalid projectiel/target/energy combination.");
+      throw std::runtime_error("invalid projectile/target/energy combination.");
     }
     HEPEnergyType const Elab = (sqrtS2 - static_pow<2>(get_mass(projectileId)) -
                                 static_pow<2>(get_mass(targetId))) /
                                (2 * get_mass(targetId));
 
     // system of initial-state
-    COMBoost boost(projectileP4, targetP4);
+    COMBoost const boost(projectileP4, targetP4);
 
     auto const& originalCS = boost.getOriginalCS();
     auto const& csPrime =
@@ -424,7 +424,7 @@ namespace corsika::epos {
     MomentumVector pLab(csPrime, {0_eV, 0_eV, pLabMag});
 
     // internal EPOS lab system
-    COMBoost boostInternal({Elab, pLab}, get_mass(targetId));
+    COMBoost const boostInternal({Elab, pLab}, get_mass(targetId));
 
     CORSIKA_LOGGER_DEBUG(logger_, "doInteraction: {} interaction, Elab={} ", projectileId,
                          Elab);
@@ -467,8 +467,8 @@ namespace corsika::epos {
     HEPEnergyType Elab_final = 0_GeV;
 
     // position and time of interaction, not used in QgsjetII
-    auto const projectile = view.getProjectile();
-    Point const pOrig = projectile.getPosition();
+    auto const& projectile = view.getProjectile();
+    Point const& pOrig = projectile.getPosition();
     TimeType const tOrig = projectile.getTime();
 
     // secondaries

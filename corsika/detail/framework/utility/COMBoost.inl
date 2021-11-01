@@ -22,9 +22,7 @@ namespace corsika {
   inline COMBoost::COMBoost(FourMomentum const& P4projectile,
                             HEPMassType const massTarget)
       : originalCS_{P4projectile.getSpaceLikeComponents().getCoordinateSystem()}
-      , rotatedCS_{
-            make_rotationToZ(P4projectile.getSpaceLikeComponents().getCoordinateSystem(),
-                             P4projectile.getSpaceLikeComponents())} {
+      , rotatedCS_{make_rotationToZ(originalCS_, P4projectile.getSpaceLikeComponents())} {
     auto const pProjectile = P4projectile.getSpaceLikeComponents();
     auto const pProjNormSquared = pProjectile.getSquaredNorm();
     auto const pProjNorm = sqrt(pProjNormSquared);
@@ -45,15 +43,20 @@ namespace corsika {
 
   inline COMBoost::COMBoost(FourMomentum const& P4projectile,
                             FourMomentum const& P4target)
-      : originalCS_{P4projectile.getSpaceLikeComponents().getCoordinateSystem()}
-      , rotatedCS_{make_rotationToZ(
-            P4projectile.getSpaceLikeComponents().getCoordinateSystem(),
-            P4projectile.getSpaceLikeComponents() + P4target.getSpaceLikeComponents())} {
+      : originalCS_{P4projectile.getSpaceLikeComponents().getCoordinateSystem()} {
+
     // this is the center-of-momentum CM frame
     auto const pCM =
         P4projectile.getSpaceLikeComponents() + P4target.getSpaceLikeComponents();
     auto const pCM2 = pCM.getSquaredNorm();
     auto const pCMnorm = sqrt(pCM2);
+    if (pCMnorm == 0_eV) {
+      // CM is at reset
+      rotatedCS_ = originalCS_;
+    } else {
+      rotatedCS_ = make_rotationToZ(originalCS_, P4projectile.getSpaceLikeComponents() +
+                                                     P4target.getSpaceLikeComponents());
+    }
 
     auto const s = (P4projectile + P4target).getNormSqr();
     auto const sqrtS = sqrt(s);
@@ -91,6 +94,9 @@ namespace corsika {
 
     eVecRotated(2) = boostedZ(1) * (1_GeV).magnitude();
 
+    CORSIKA_LOG_TRACE("E0={}, p={}, E0'={}, p'={}", p4.getTimeLikeComponent() / 1_GeV,
+                      eVecRotated(2) * (1 / 1_GeV).magnitude(), E_CoM / 1_GeV, boostedZ);
+
     return FourVector(E_CoM, MomentumVector(rotatedCS_, eVecRotated));
   }
 
@@ -102,10 +108,9 @@ namespace corsika {
     Eigen::Vector2d com;
     com << (Ecm * (1 / 1_GeV)), (pCM.getEigenVector()(2) * (1 / 1_GeV).magnitude());
 
-    CORSIKA_LOG_TRACE(
-        "COMBoost::fromCoM Ecm={} GeV"
-        " pcm={} GeV (norm = {} GeV), invariant mass={} GeV",
-        Ecm / 1_GeV, pCM / 1_GeV, pCM.getNorm() / 1_GeV, p4.getNorm() / 1_GeV);
+    CORSIKA_LOG_TRACE("Ecm={} GeV, pcm={} GeV (norm = {} GeV), invariant mass={} GeV",
+                      Ecm / 1_GeV, pCM / 1_GeV, pCM.getNorm() / 1_GeV,
+                      p4.getNorm() / 1_GeV);
 
     auto const boostedZ = inverseBoost_ * com;
     auto const E_lab = boostedZ(0) * 1_GeV;
