@@ -11,6 +11,8 @@
 #include <corsika/modules/epos/InteractionModel.hpp>
 #include <corsika/modules/epos/EposStack.hpp>
 
+#include <corsika/framework/geometry/Point.hpp>
+
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/utility/CorsikaData.hpp>
 
