@@ -15,16 +15,16 @@ namespace corsika {
   template <typename T>
   template <typename... Args>
   ExponentialRefractiveIndex<T>::ExponentialRefractiveIndex(
-      double const n0, InverseLengthType const lambda_, Point const center_, LengthType const planetRadius_, Args&&... args)
+      double const n0, InverseLengthType const lambda, Point const center, LengthType const radius, Args&&... args)
       : T(std::forward<Args>(args)...)
-      , n_0(n0)
-      , lambda(lambda_)
-      , center(center_)
-      , planetRadius(planetRadius_) {}
+      , n0_(n0)
+      , lambda_(lambda)
+      , center_(center)
+      , radius_(radius) {}
 
   template <typename T>
   double ExponentialRefractiveIndex<T>::getRefractiveIndex(Point const& point) const {
-    return n_0 * exp((-lambda) * (distance(point, center) - planetRadius));
+    return n0_ * exp((-lambda_) * (distance(point, center_) - radius_));
   }
 
 } // namespace corsika
