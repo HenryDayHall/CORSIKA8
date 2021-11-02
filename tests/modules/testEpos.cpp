@@ -29,7 +29,7 @@
 using namespace corsika;
 using namespace corsika::epos;
 
-TEST_CASE("Epos", "module,process") {
+TEST_CASE("EposBasics", "module,process") {
 
   logging::set_level(logging::level::trace);
 
@@ -71,6 +71,7 @@ TEST_CASE("Epos", "module,process") {
 
   SECTION("epos mass") {
     CHECK_FALSE(corsika::epos::getEposMass(Code::Electron) / 1_GeV == Approx(0));
+    CHECK_THROWS(corsika::epos::getEposMass(Code::Unknown));
   }
 
   /*
@@ -88,6 +89,7 @@ TEST_CASE("Epos", "module,process") {
           CHECK(p == convert_from_PDG(getEposPDGId(p)));
       }
     }
+    CHECK_THROWS(getEposPDGId(Code::Oxygen));
   }
 }
 
@@ -118,15 +120,16 @@ auto sqs2elab(HEPEnergyType const sqs, HEPEnergyType const ma, HEPEnergyType con
   return (sqs * sqs - ma * ma - mb * mb) / 2. / mb;
 }
 
-TEST_CASE("EposInterface", "modules") {
+TEST_CASE("Epos", "modules") {
 
   logging::set_level(logging::level::trace);
+
+  RNGManager<>::getInstance().registerRandomStream("epos");
+  InteractionModel model;
 
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
-
-  RNGManager<>::getInstance().registerRandomStream("epos");
 
   SECTION("InteractionInterface - random number") {
     auto const rndm = ::epos::rangen_();
@@ -136,8 +139,6 @@ TEST_CASE("EposInterface", "modules") {
 
   SECTION("InteractionInterface - isValid") {
 
-    InteractionModel model;
-
     CHECK_FALSE(model.isValid(Code::Proton, Code::Electron, 100_GeV));
     CHECK(model.isValid(Code::Proton, Code::Hydrogen, 100_GeV));
     CHECK(model.isValid(Code::Proton, Code::Helium, 100_GeV));
@@ -146,8 +147,6 @@ TEST_CASE("EposInterface", "modules") {
   }
 
   SECTION("InteractionInterface - getCrossSectionInelEla") {
-
-    InteractionModel model;
 
     // hydrogen target == proton target == neutron target
     auto const [xs_prod_pp, xs_ela_pp] = model.getCrossSectionInelEla(
@@ -172,11 +171,18 @@ TEST_CASE("EposInterface", "modules") {
     CHECK(xs_prod_pp == xs_prod_pn);
     CHECK(xs_ela_pp == xs_ela_pHydrogen);
     CHECK(xs_ela_pn == xs_ela_pHydrogen);
+
+    // invalid system
+    auto const [xs_prod_0, xs_ela_0] = model.getCrossSectionInelEla(
+        Code::Electron, Code::Electron,
+        {sqrt(static_pow<2>(100_GeV) + static_pow<2>(Electron::mass)),
+         {cs, 100_GeV, 0_GeV, 0_GeV}},
+        {Electron::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
+    CHECK(xs_prod_0 / 1_mb == Approx(0));
+    CHECK(xs_ela_0 / 1_mb == Approx(0));
   }
 
   SECTION("InteractionModelInterface - hadron cross sections") {
-
-    InteractionModel model;
 
     // p-p at 7TeV around 70mb according to LHC
     auto const xs_prod = model.getCrossSection(
@@ -211,8 +217,6 @@ TEST_CASE("EposInterface", "modules") {
 
   SECTION("InteractionInterface - nuclear cross sections") {
 
-    InteractionModel model;
-
     auto const xs_prod = model.getCrossSection(
         Code::Proton, Code::Oxygen,
         {100_GeV,
@@ -228,35 +232,67 @@ TEST_CASE("EposInterface", "modules") {
         {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
     CHECK(xs_prod2 / 1_mb == Approx(1076.7).margin(3.1));
   }
-}
 
-TEST_CASE("EposDoInteractionNucleus", "module") {
+  /*
+    SECTION("InteractionInterface - invalid") {
+      Code const pid = Code::Electron;
+      HEPEnergyType const P0 = 10_TeV;
+      auto [stack, viewPtr] = setup::testing::setup_stack(
+          pid, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+      setup::StackView& view = *viewPtr;
+      CHECK_THROWS(model.doInteraction(
+          view, pid, Code::Oxygen,
+          {sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid))), {cs, P0, 0_GeV,
+    0_GeV}}, {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}}));
+    }
+  */
+  /*
+    SECTION("InteractionInterface - nuclear projectile") {
 
-  logging::set_level(logging::level::trace);
+      HEPEnergyType const P0 = 10_TeV;
+      Code const pid = get_nucleus_code(40, 20);
+      auto [stack, viewPtr] = setup::testing::setup_stack(
+          pid, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+      MomentumVector plab =
+          MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about
+    setupStack setup::StackView& view = *viewPtr;
 
-  auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
-  auto const& cs = *csPtr;
-  [[maybe_unused]] auto const& env_dummy = env;
+      // @todo This is very obscure since it fails for -O2, but for both clang and gcc ???
+      model.doInteraction(view, pid, Code::Oxygen,
+                          {sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid))), plab},
+                          {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
 
-  RNGManager<>::getInstance().registerRandomStream("epos");
+      auto const pSum = sumMomentum(view, cs);
 
-  InteractionModel model;
+      CHECK(pSum.getComponents(cs).getX() / P0 == Approx(1).margin(0.05));
+      CHECK(pSum.getComponents(cs).getY() / 1_GeV ==
+            Approx(0).margin(0.5)); // this is not physics validation
+      CHECK(pSum.getComponents(cs).getZ() / 1_GeV ==
+            Approx(0).margin(0.5)); // this is not physics validation
 
-  SECTION("InteractionInterface - nuclear projectile") {
+      CHECK((pSum - plab).getNorm() / 1_GeV ==
+            Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
+      CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
+      //    [[maybe_unused]] const GrammageType length =
+      //    model.getInteractionLength(particle);
+      //  CHECK(length / 1_g * 1_cm * 1_cm ==
+      //      Approx(30).margin(20)); // this is no physics validation
+    }*/
 
+  // SECTION("InteractionInterface")
+  {
     HEPEnergyType const P0 = 10_TeV;
-    Code const pid = get_nucleus_code(40, 20);
+    Code const pid = Code::Proton;
     auto [stack, viewPtr] = setup::testing::setup_stack(
         pid, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
     MomentumVector plab =
-        MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
+        MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about
     setup::StackView& view = *viewPtr;
 
     // @todo This is very obscure since it fails for -O2, but for both clang and gcc ???
-    model.doInteraction(
-        view, pid, Code::Oxygen,
-        {sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid))), {cs, P0, 0_GeV, 0_GeV}},
-        {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
+    model.doInteraction(view, pid, Code::Oxygen,
+                        {sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid))), plab},
+                        {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
 
     auto const pSum = sumMomentum(view, cs);
 

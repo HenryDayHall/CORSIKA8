@@ -89,6 +89,7 @@ TEST_CASE("UrQMD") {
   }
 
   SECTION("cross sections") {
+
     FourMomentum const targetP4{Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}};
 
     HEPMomentumType const P0 = 100_GeV;
@@ -108,6 +109,9 @@ TEST_CASE("UrQMD") {
       CORSIKA_LOG_INFO("UrQMD cross seciton for {} is {} mb", code, cx / 1_mb);
       CHECK(cx / 1_mb == Approx(checkCX[i++] / 1_mb).margin(1));
     }
+
+    // invalid
+    CHECK_THROWS(urqmd.getTabulatedCrossSection(Code::Proton, Code::Proton, 100_GeV));
   }
 
   SECTION("pion+ projectile") {

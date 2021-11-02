@@ -100,27 +100,9 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
   return sum;
 }
 
-/*
-calculate COM boost object assuming fixed target collision with projectile
-*/
-COMBoost getCOMboost(HEPEnergyType const& eProjectileLab,
-                     MomentumVector const& pProjectileLab,
-                     CoordinateSystemPtr const& cs) {
-  // define target
-  // for Sibyll is always a single nucleon
-  // FOR NOW: target is always at rest
-  auto const pTargetLab = MomentumVector(cs, 0_GeV, 0_GeV, 0_GeV);
-  FourVector const P4projLab(eProjectileLab, pProjectileLab);
-  // define target kinematics in lab frame
-  // define boost to and from CoM frame
-  // CoM frame definition in Sibyll projectile: +z
-  COMBoost const boost(P4projLab, constants::nucleonMass);
-  return boost;
-}
-
 TEST_CASE("SibyllInterface", "modules") {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::trace);
 
   // the environment and stack should eventually disappear from here
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
@@ -167,6 +149,11 @@ TEST_CASE("SibyllInterface", "modules") {
     CHECK(xs_prod_pp == xs_prod_pn);
     CHECK(xs_ela_pp == xs_ela_pHydrogen);
     CHECK(xs_ela_pn == xs_ela_pHydrogen);
+
+    // invalids
+    auto const xs_prod_0 = model.getCrossSection(Code::Electron, Code::Proton, aP4, bP4);
+    CHECK(xs_prod_0 / 1_mb == Approx(0));
+    CHECK_THROWS(model.doInteraction(view, Code::Electron, Code::Proton, aP4, bP4));
 
     CHECK_THROWS(convertFromSibyll(corsika::sibyll::SibyllCode::Unknown));
   }
@@ -274,8 +261,18 @@ TEST_CASE("SibyllInterface", "modules") {
                                 MomentumVector(cs, {0_eV, 0_eV, 0_eV}));
     model.doInteraction(view, pid, Code::Oxygen, P4, targetP4);
     CrossSectionType const cx = model.getCrossSection(pid, Code::Oxygen, P4, targetP4);
-    CHECK(cx / 1_mb == Approx(1250).margin(100));   // this is not physics validation
-    CHECK(view.getSize() == Approx(40).margin(30)); // this is not physics validation
+    CHECK(cx / 1_mb == Approx(1250).margin(100));     // this is not physics validation
+    CHECK(view.getSize() == Approx(150).margin(140)); // this is not physics validation
+
+    // invalid to underlying model
+    FourMomentum P4mu(
+        100_GeV,
+        {cs, {sqrt(static_pow<2>(100_GeV) - static_pow<2>(MuPlus::mass)), 0_eV, 0_eV}});
+    CrossSectionType const cx0 =
+        model.getCrossSection(Code::MuPlus, Code::Oxygen, P4mu, targetP4);
+    CHECK(cx0 / 1_mb == Approx(0));
+
+    CHECK_THROWS(model.doInteraction(view, Code::MuPlus, Code::Oxygen, P4mu, targetP4));
   }
 }
 

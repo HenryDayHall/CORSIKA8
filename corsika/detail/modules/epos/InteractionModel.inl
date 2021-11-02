@@ -28,13 +28,12 @@ namespace corsika::epos {
       : data_path_(dataPath)
       , epos_listing_(epos_printout_on) {
     // initialize Eposlhc
-    static bool initialized = false;
-    if (!initialized) {
+    if (!isInitialized_) {
+      isInitialized_ = true;
       if (dataPath == "") {
         data_path_ = (std::string(corsika_data("EPOS").c_str()) + "/").c_str();
       }
       initialize();
-      initialized = true;
     }
     setParticlesStable();
   }
@@ -136,9 +135,9 @@ namespace corsika::epos {
     strcpy(::epos::fname_.fncs, CS.data);
     ::epos::nfname_.nfncs = CS.length;
 
-    // dummy event (prepare commons)
-    initializeEventLab(Code::Iron, Iron::nucleus_A, Iron::nucleus_Z, Code::Argon,
-                       Argon::nucleus_A, Argon::nucleus_Z, 100_GeV);
+    // initialiazes maximum energy and mass
+    initializeEventLab(Code::Lead, Lead::nucleus_A, Lead::nucleus_Z, Code::Lead,
+                       Lead::nucleus_A, Lead::nucleus_Z, 1_TeV);
   }
 
   inline void InteractionModel::initializeEventCoM(Code const idBeam, int const iBeamA,
@@ -157,11 +156,8 @@ namespace corsika::epos {
 
     ::epos::enrgy_.ecms = Ecm / 1_GeV; // -> c.m.s. frame
 
-    CORSIKA_LOGGER_TRACE(logger_,
-                         "inside EPOS: "
-                         "Ecm={}, "
-                         "Elab={}",
-                         ::epos::enrgy_.ecms, ::epos::enrgy_.elab);
+    CORSIKA_LOGGER_TRACE(logger_, "inside EPOS: Ecm={}, Elab={}", ::epos::enrgy_.ecms,
+                         ::epos::enrgy_.elab);
 
     configureParticles(idBeam, iBeamA, iBeamZ, idTarget, iTargetA, iTargetZ);
     ::epos::ainit_();
@@ -184,11 +180,7 @@ namespace corsika::epos {
     // hadron-nucleon momentum
     ::epos::hadr1_.pnll = float(Plab / 1_GeV); // -> lab frame
 
-    CORSIKA_LOGGER_TRACE(logger_,
-                         "inside EPOS: "
-                         "Ecm={}, "
-                         "Elab={}, "
-                         "Pnll={}",
+    CORSIKA_LOGGER_TRACE(logger_, "inside EPOS: Ecm={}, Elab={}, Pnll={}",
                          ::epos::enrgy_.ecms, ::epos::enrgy_.elab, ::epos::hadr1_.pnll);
 
     configureParticles(idBeam, iBeamA, iBeamZ, idTarget, iTargetA, iTargetZ);
@@ -449,13 +441,12 @@ namespace corsika::epos {
     // create event
     int iarg = 1;
     ::epos::aepos_(iarg);
-
     ::epos::afinal_();
 
-    if (epos_listing_) {
+    if (epos_listing_) { // LCOV_EXCL_START
       char nam[9] = "EPOSLHC&";
       ::epos::alistf_(nam, 9);
-    }
+    } // LCOV_EXCL_STOP
 
     // NSTORE-part
 

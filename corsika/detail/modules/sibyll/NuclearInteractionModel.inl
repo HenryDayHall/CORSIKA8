@@ -57,10 +57,10 @@ namespace corsika::sibyll {
   inline void
   NuclearInteractionModel<TEnvironment, TNucleonModel>::printCrossSectionTable(
       Code const pCode) const {
-    if (!hadronicInteraction_.isValid(Code::Proton, pCode, 100_GeV)) {
+    if (!hadronicInteraction_.isValid(Code::Proton, pCode, 100_GeV)) { // LCOV_EXCL_START
       CORSIKA_LOG_ERROR("Invalid target type {} for hadron interaction model.", pCode);
       return;
-    }
+    } // LCOV_EXCL_STOP
 
     int const k = targetComponentsIndex_.at(pCode);
     Code const pNuclei[] = {Code::Helium, Code::Lithium7, Code::Oxygen,
@@ -200,6 +200,9 @@ namespace corsika::sibyll {
 
     // model is only designed for projectile nuclei. Collisions are broken down into
     // "nucleon-target" collisions.
+    if (!is_nucleus(projectileId)) {
+      throw std::runtime_error("Can only handle nuclear projectiles.");
+    }
     size_t const projectileA = get_nucleus_A(projectileId);
 
     // this is center-of-mass for projectile_nucleon - target

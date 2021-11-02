@@ -83,6 +83,8 @@ namespace corsika::epos {
     void setParticlesStable() const;
 
   private:
+    inline static bool isInitialized_ = false;
+
     std::string data_path_;
     unsigned int count_ = 0;
     bool epos_listing_;

@@ -151,8 +151,9 @@ namespace corsika::sibyll {
     HEPEnergyType Elab_final = 0_GeV, Ecm_final = 0_GeV;
     for (auto& psib : ss) {
       // abort on particles that have decayed in Sibyll. Should not happen!
-      if (psib.hasDecayed())
+      if (psib.hasDecayed()) { // LCOV_EXCL_START
         throw std::runtime_error("found particle that decayed in SIBYLL!");
+      } // LCOV_EXCL_STOP
 
       // transform 4-momentum to lab. frame
       // note that the momentum needs to be rotated back
