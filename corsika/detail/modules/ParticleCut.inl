@@ -133,26 +133,26 @@ namespace corsika {
     CORSIKA_LOG_DEBUG("p={}", particle.asString());
     if (doCutEm_ && is_em(pid)) {
       CORSIKA_LOG_DEBUG("removing em. particle...");
-      energy_emcut_ += energy;
+      energy_emcut_ += kine_energy;
       em_count_ += 1;
-      energy_event_ += energy;
+      energy_event_ += kine_energy;
       return true;
     } else if (doCutInv_ && is_neutrino(pid)) {
       CORSIKA_LOG_DEBUG("removing inv. particle...");
-      energy_invcut_ += energy;
+      energy_invcut_ += kine_energy;
       inv_count_ += 1;
-      energy_event_ += energy;
+      energy_event_ += kine_energy;
       return true;
     } else if (isBelowEnergyCut(particle)) {
       CORSIKA_LOG_DEBUG("removing low en. particle...");
-      energy_cut_ += energy;
+      energy_cut_ += kine_energy;
       energy_count_ += 1;
-      energy_event_ += energy;
+      energy_event_ += kine_energy;
       return true;
     } else if (particle.getTime() > 10_ms) {
       CORSIKA_LOG_DEBUG("removing OLD particle...");
-      energy_timecut_ += energy;
-      energy_event_ += energy;
+      energy_timecut_ += kine_energy;
+      energy_event_ += kine_energy;
       return true;
     }
     return false; // this particle will not be removed/cut
@@ -192,10 +192,10 @@ namespace corsika {
   inline void ParticleCut::showResults() {
     CORSIKA_LOG_INFO(
         "\n ******************************\n "
-        " energy removed by cut of electromagnetic (GeV): {} (number: {})\n "
-        " energy removed by cut of invisible (GeV): {} (number: {})\n "
-        " energy removed by kinetic energy cut (GeV): {} (number: {}) \n "
-        " energy removed by time cut (GeV): {} \n"
+        " kinetic energy removed by cut of electromagnetic (GeV): {} (number: {})\n "
+        " kinetic energy removed by cut of invisible (GeV): {} (number: {})\n "
+        " kinetic energy removed by kinetic energy cut (GeV): {} (number: {}) \n "
+        " kinetic energy removed by time cut (GeV): {} \n"
         " ******************************",
         energy_emcut_ / 1_GeV, em_count_, energy_invcut_ / 1_GeV, inv_count_,
         energy_cut_ / 1_GeV, energy_count_, energy_timecut_ / 1_GeV);
