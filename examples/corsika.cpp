@@ -41,6 +41,7 @@
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
+#include <corsika/media/WMM.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
@@ -203,7 +204,7 @@ int main(int argc, char** argv) {
   // build a Linsley US Standard atmosphere into `env`
   create_5layer_atmosphere<setup::EnvironmentInterface, MyExtraEnv>(
       env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
-      MagneticFieldVector{rootCS, 0_T, 50_uT, 0_T});
+      get_wmm(rootCS, 2022.5, 10_km, 49, 8.4));
 
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
