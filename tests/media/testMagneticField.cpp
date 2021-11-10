@@ -83,4 +83,9 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   // and the associated trajectory
   setup::Trajectory const track =
       setup::testing::make_track<setup::Trajectory>(line, tEnd);
+
+  // create earth magnetic field vector
+  MagneticFieldVector Earth_B = get_wmm(gCS, 2022.5, 100_km, -80, -120);
+  CHECK(Earth_B.getComponents(gCS) == MagneticFieldVector{gCS, 5814.9658886215_nT, 
+  14802.9663839328_nT, -49755.3119939183_nT}.getComponents(gCS));
 }
