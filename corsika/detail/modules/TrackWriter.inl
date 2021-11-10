@@ -48,8 +48,7 @@ namespace corsika {
 
     // add default units for values
     node["type"] = "TrackWriter";
-    node["units"]["energy"] = "GeV";
-    node["units"]["length"] = "m";
+    node["units"] = "GeV | m | ns";
 
     return node;
   }
