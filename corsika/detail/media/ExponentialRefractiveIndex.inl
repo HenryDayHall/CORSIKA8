@@ -15,7 +15,8 @@ namespace corsika {
   template <typename T>
   template <typename... Args>
   ExponentialRefractiveIndex<T>::ExponentialRefractiveIndex(
-      double const n0, InverseLengthType const lambda, Point const center, LengthType const radius, Args&&... args)
+      double const n0, InverseLengthType const lambda, Point const center,
+      LengthType const radius, Args&&... args)
       : T(std::forward<Args>(args)...)
       , n0_(n0)
       , lambda_(lambda)

@@ -10,6 +10,7 @@
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
@@ -19,6 +20,7 @@
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
 #include <corsika/media/ExponentialRefractiveIndex.hpp>
+#include <corsika/media/CORSIKA7Atmospheres.hpp>
 
 #include <SetupTestTrajectory.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -124,18 +126,21 @@ TEST_CASE("ExponentialRefractiveIndex w/ Homogeneous medium") {
   // the center of the earth
   Point const center_{gCS, 0_m, 0_m, 0_m};
   // earth's radius
-  LengthType const radius_ {constants::EarthRadius::Mean};
+  LengthType const radius_{constants::EarthRadius::Mean};
 
   // create the atmospheric model and check refractive index
-  AtmModel medium(n0, lambda, center_, constants::EarthRadius::Mean, density, protonComposition);
-  CHECK(n0 - medium.getRefractiveIndex(Point(gCS, 0_m, 0_m, constants::EarthRadius::Mean)) == Approx(0));
+  AtmModel medium(n0, lambda, center_, constants::EarthRadius::Mean, density,
+                  protonComposition);
+  CHECK(n0 - medium.getRefractiveIndex(
+                 Point(gCS, 0_m, 0_m, constants::EarthRadius::Mean)) ==
+        Approx(0));
 
   // another refractive index
   const double n0_{1};
   const InverseLengthType lambda_{1 / 1_km};
 
   // distance from the center
-  LengthType const dist_ {4_km};
+  LengthType const dist_{4_km};
 
   // create the atmospheric model and check refractive index
   AtmModel medium_(n0_, lambda_, center_, dist_, density, protonComposition);
@@ -172,7 +177,7 @@ TEST_CASE("ExponentialRefractiveIndex w/ Homogeneous medium") {
   REQUIRE((medium_.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
 }
 
-TEST_CASE("ExponentialRefractiveIndex w/ Layered atmosphere") {
+TEST_CASE("ExponentialRefractiveIndex w/ 5-layered atmosphere") {
 
   logging::set_level(logging::level::info);
 
@@ -187,32 +192,18 @@ TEST_CASE("ExponentialRefractiveIndex w/ Layered atmosphere") {
   const InverseLengthType lambda{1 / 1_km};
 
   // a reference point to calculate the refractive index there
-  Point const ref_ {gCS, 0_m, 0_m, constants::EarthRadius::Mean};
+  Point const ref_{gCS, 0_m, 0_m, constants::EarthRadius::Mean};
 
-  // setup a realistic environment
+  // setup a 5-layered environment
   using EnvironmentInterface =
       IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
   using EnvType = Environment<EnvironmentInterface>;
   EnvType env;
 
-  auto builder = make_layered_spherical_atmosphere_builder<
-      EnvironmentInterface, MyExtraEnv>::create(center_,
-                                                constants::EarthRadius::Mean, n0, lambda,
-                                                center_, constants::EarthRadius::Mean,
-                                                Medium::AirDry1Atm,
-                                                MagneticFieldVector{gCS, 10_uT,
-                                                                    0_T, 0_T});
-  builder.setNuclearComposition(
-      {{Code::Nitrogen, Code::Oxygen},
-       {0.7847f, 1.f - 0.7847f}});
-
-  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 2_km);
-  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
-  builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
-  builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
-  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
-  builder.addLinearLayer(1e9_cm, 112.8_km + constants::EarthRadius::Mean);
-  builder.assemble(env);
+  create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
+      env, AtmosphereId::LinsleyUSStd, center_, n0, lambda, center_,
+      constants::EarthRadius::Mean, Medium::AirDry1Atm,
+      MagneticFieldVector{gCS, 0_T, 50_uT, 0_T});
 
   // get the universe for this environment
   auto const* const universe{env.getUniverse().get()};
