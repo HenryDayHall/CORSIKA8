@@ -442,9 +442,9 @@ TEST_CASE("Geometry Trajectories") {
     LeapFrogTrajectory base(pos, v0, B0, k, t);
 
     // test the getTime() method for trajectories
-    CHECK((base.getTime(particle1,1) - t) / 1_s == Approx(0));
-    CHECK(base.getTime(particle1,0) / 1_s == Approx(0));
-    CHECK((base.getTime(particle1,0) + t) / 1_s == Approx(1e-12));
+    CHECK((base.getTime(particle1, 1) - t) / 1_s == Approx(0));
+    CHECK(base.getTime(particle1, 0) / 1_s == Approx(0));
+    CHECK((base.getTime(particle1, 0) + t) / 1_s == Approx(1e-12));
   }
 }
 
