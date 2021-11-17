@@ -80,12 +80,12 @@ namespace corsika {
               auto halfVector{(startPoint - endPoint) / 2};
               auto midPoint{endPoint + halfVector};
 
-              // changed if deltaT1_ > deltaT2_, so not const
-              auto constants{charge / (4 * M_PI) / (constants::epsilonZero) /
-                             constants::c};
-
               // we loop over each antenna in the collection
               for (auto& antenna : antennas_.getAntennas()) {
+
+                // changed if deltaT1_ > deltaT2_, so not const
+                auto constants{charge / (4 * M_PI) / (constants::epsilonZero) /
+                               constants::c};
 
                 auto midPaths{
                     this->propagator_.propagate(midPoint, antenna.getLocation(), 1_m)};
