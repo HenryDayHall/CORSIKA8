@@ -65,7 +65,8 @@ namespace corsika::constants {
    */
   namespace EarthRadius {
     static constexpr auto Mean{6'371'000 * meter};
-    static constexpr auto Eqautorial{6'378'137 * meter};
+    static constexpr auto Geomagnetic_reference{6'371'200 * meter};
+    static constexpr auto Equatorial{6'378'137 * meter};
     static constexpr auto Polar{6'356'752 * meter};
     static constexpr auto PolarCurvature{6'399'593 * meter};
   } // namespace EarthRadius
