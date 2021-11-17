@@ -55,13 +55,10 @@ namespace corsika {
         template <typename Particle, typename Track>
         ProcessReturn simulate(Particle& particle, Track const& track) const {
 
-//            CORSIKA_LOG_INFO("Z  H  S");
-
             auto const startTime{particle.getTime()};
             auto const endTime{particle.getTime() + track.getDuration()};
 
             if (startTime - endTime == 0_s) {
-//              CORSIKA_LOG_ERROR("Tiny track!");
               return ProcessReturn::Ok;
             } else {
 
@@ -80,13 +77,11 @@ namespace corsika {
               auto halfVector{(startPoint - endPoint) / 2};
               auto midPoint{endPoint + halfVector};
 
+              auto const constants{charge / (4 * M_PI) / (constants::epsilonZero) /
+                              constants::c};
+
               // we loop over each antenna in the collection
               for (auto& antenna : antennas_.getAntennas()) {
-
-                // changed if deltaT1_ > deltaT2_, so not const
-                auto constants{charge / (4 * M_PI) / (constants::epsilonZero) /
-                               constants::c};
-
                 auto midPaths{
                     this->propagator_.propagate(midPoint, antenna.getLocation(), 1_m)};
                 // Loop over midPaths, first check Fraunhoffer limit
@@ -126,23 +121,25 @@ namespace corsika {
                                                 n_source * betaTimesK *
                                                     (time2 - midTime)};
 
-                        // make detectionTime1_ be the smallest time => changes step function order so constants is changed to account for it
+                        // make detectionTime1_ be the smallest time => 
+                        // changes step function order so sign is changed to account for it
+                        double sign = 1.;
                         if (detectionTime1 > detectionTime2) {
                           detectionTime1 = time2 + newMidPaths[k].propagation_time_ -
                                            n_source * betaTimesK * (time2 - midTime);
                           detectionTime2 = time1 + newMidPaths[k].propagation_time_ -
                                            n_source * betaTimesK * (time1 - midTime);
-                          constants = -constants;
-                        }
+                          sign = -1.;
+                        } // end if statement for time structure
 
                         double const startBin{
                             std::floor((detectionTime1 - antenna.start_time_) *
                                            antenna.sample_rate_ +
-                                       0.5L)};
+                                       0.5)};
                         double const endBin{
                             std::floor((detectionTime2 - antenna.start_time_) *
                                            antenna.sample_rate_ +
-                                       0.5L)};
+                                       0.5)};
 
                         auto const betaPerp{
                             newMidPaths[k].emit_.cross(beta.cross(newMidPaths[k].emit_))};
@@ -151,29 +148,29 @@ namespace corsika {
                         if (startBin == endBin) {
                           // track contained in bin
                           // if not in Cerenkov angle then
-                          if (std::fabs(denominator) > 1.e-15L) {
+                          if (std::fabs(denominator) > 1.e-15) {
                             double const f{
                                 std::fabs((detectionTime2 * antenna.sample_rate_ -
                                            detectionTime1 * antenna.sample_rate_))};
-                            VectorPotential const Vp = betaPerp / denominator /
-                                                       newMidPaths[k].R_distance_ *
-                                                       constants * f;
+                            VectorPotential const Vp = betaPerp * sign * constants * f /
+                                                       denominator / 
+                                                       newMidPaths[k].R_distance_;
                             antenna.receive(detectionTime2, betaPerp, Vp);
                           } else { // If emission in Cerenkov angle => approximation
-                            double const f{(detectionTime2 - detectionTime1) *
-                                           antenna.sample_rate_};
-                            VectorPotential const Vp =
-                                betaPerp / newMidPaths[k].R_distance_ * constants * f;
+                            double const f{time2*antenna.sample_rate_ -
+                                                time1*antenna.sample_rate_};
+                            VectorPotential const Vp = betaPerp * sign * constants * f /
+                                                 newMidPaths[k].R_distance_;
                             antenna.receive(detectionTime2, betaPerp, Vp);
                           } // end if Cerenkov angle approx
                         } else {
                           /*Track is contained in more than one bin*/
                           int const numberOfBins{static_cast<int>(endBin - startBin)};
                           // first contribution/ plus 1 bin minus 0.5 from new antenna ruonding
-                          double f{std::fabs(startBin + 0.5L -
+                          double f{std::fabs(startBin + 0.5 -
                                              (detectionTime1 - antenna.start_time_) *
                                                  antenna.sample_rate_)};
-                          VectorPotential Vp = betaPerp * f * constants / denominator /
+                          VectorPotential Vp = betaPerp * sign * constants * f / denominator /
                                                newMidPaths[k].R_distance_;
                           antenna.receive(detectionTime1, betaPerp, Vp);
                           // intermidiate contributions
@@ -187,8 +184,8 @@ namespace corsika {
                           // final contribution// f +0.5 from new antenna rounding
                           f = std::fabs((detectionTime2 - antenna.start_time_) *
                                             antenna.sample_rate_ +
-                                        0.5L - endBin);
-                          Vp = betaPerp * f * constants / denominator /
+                                        0.5 - endBin);
+                          Vp = betaPerp * sign * constants * f / denominator /
                                newMidPaths[k].R_distance_;
                           antenna.receive(detectionTime2, betaPerp, Vp);
                         } // end if statement for track in multiple bins
@@ -211,21 +208,23 @@ namespace corsika {
                     TimeType detectionTime2{endTime + midPaths[i].propagation_time_ -
                                             n_source * betaTimesK * (endTime - midTime)};
 
-                    // make detectionTime1_ be the smallest time => changes step function order so constants is changed to account for it
+                    // make detectionTime1_ be the smallest time => 
+                    // changes step function order so sign is changed to account for it
+                    double sign = 1.;
                     if (detectionTime1 > detectionTime2) {
                       detectionTime1 = endTime + midPaths[i].propagation_time_ -
                                        n_source * betaTimesK * (endTime - midTime);
                       detectionTime2 = startTime + midPaths[i].propagation_time_ -
                                        n_source * betaTimesK * (startTime - midTime);
-                      constants = -constants;
-                    }
+                      sign = -1.;
+                    }// end if statement for time structure
 
                     double const startBin{std::floor(
                         (detectionTime1 - antenna.start_time_) * antenna.sample_rate_ +
-                        0.5L)};
+                        0.5)};
                     double const endBin{std::floor(
                         (detectionTime2 - antenna.start_time_) * antenna.sample_rate_ +
-                        0.5L)};
+                        0.5)};
 
                     auto const betaPerp{
                         midPaths[i].emit_.cross(beta.cross(midPaths[i].emit_))};
@@ -235,20 +234,19 @@ namespace corsika {
                     if (startBin == endBin) {
                       // track contained in bin
                       // if not in Cerenkov angle then
-                      if (std::fabs(denominator) > 1.e-15L) {
+                      if (std::fabs(denominator) > 1.e-15) {
                         double const f{
                             std::fabs((detectionTime2 * antenna.sample_rate_ -
                                        detectionTime1 * antenna.sample_rate_))};
 
-                        VectorPotential const Vp = betaPerp / denominator /
-                                                   midPaths[i].R_distance_ * constants *
-                                                   f;
+                        VectorPotential const Vp = betaPerp * sign * constants * f /
+                                                  denominator / midPaths[i].R_distance_;
                         antenna.receive(detectionTime2, betaPerp, Vp);
                       } else { // If emission in Cerenkov angle => approximation
-                        double const f{(detectionTime2 - detectionTime1) *
-                                       antenna.sample_rate_};
-                        VectorPotential const Vp =
-                            betaPerp / midPaths[i].R_distance_ * constants * f;
+                        double const f{endTime*antenna.sample_rate_ - 
+                                        startTime*antenna.sample_rate_};
+                        VectorPotential const Vp = betaPerp * sign * constants * f /
+                                                   midPaths[i].R_distance_;
                         antenna.receive(detectionTime2, betaPerp, Vp);
                       } // end if Cerenkov angle approx
                     } else {
@@ -256,15 +254,16 @@ namespace corsika {
                       int const numberOfBins{static_cast<int>(endBin - startBin)};
                       // TODO: should we check for Cerenkov angle?
                       // first contribution
-                      double f{std::fabs(startBin + 0.5L -
+                      double f{std::fabs(startBin + 0.5 -
                                          (detectionTime1 - antenna.start_time_) *
                                              antenna.sample_rate_)};
-                      VectorPotential Vp = betaPerp * f * constants / denominator /
-                                           midPaths[i].R_distance_;
+                      VectorPotential Vp = betaPerp * sign * constants * f /
+                                          denominator / midPaths[i].R_distance_;
                       antenna.receive(detectionTime1, betaPerp, Vp);
                       // intermidiate contributions
                       for (int it{1}; it < numberOfBins; ++it) {
-                        Vp = betaPerp * constants / denominator / midPaths[i].R_distance_;
+                        Vp = betaPerp * sign * constants / denominator /
+                             midPaths[i].R_distance_;
                         antenna.receive(detectionTime1 + static_cast<double>(it) /
                                                              antenna.sample_rate_,
                                         betaPerp, Vp);
@@ -272,8 +271,8 @@ namespace corsika {
                       // final contribution
                       f = std::fabs((detectionTime2 - antenna.start_time_) *
                                         antenna.sample_rate_ +
-                                    0.5L - endBin);
-                      Vp = betaPerp * f * constants / denominator /
+                                    0.5 - endBin);
+                      Vp = betaPerp * sign * constants * f / denominator /
                            midPaths[i].R_distance_;
                       antenna.receive(detectionTime2, betaPerp, Vp);
                     } // end if statement for track in multiple bins
