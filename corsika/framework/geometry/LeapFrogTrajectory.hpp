@@ -79,6 +79,9 @@ namespace corsika {
     ///! total length along potentially bend trajectory
     LengthType getLength(double const u = 1) const;
 
+    template <typename Particle>
+    TimeType getTime(Particle& particle, double const u) const;
+
     ///! set new duration along potentially bend trajectory.
     void setLength(LengthType const limit);
 
