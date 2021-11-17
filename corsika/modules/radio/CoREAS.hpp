@@ -88,7 +88,7 @@ namespace corsika {
       auto const charge_{get_charge(particle.getPID())};
 
       // constants for electric field vector calculation
-      auto constants_{charge_ / (4 * M_PI) / (constants::epsilonZero) / constants::c};
+      auto const constants_{charge_ / (4 * M_PI) / (constants::epsilonZero) / constants::c};
 
       // set threshold for application of ZHS-like approximation.
       const double approxThreshold_{1.0e-3};
