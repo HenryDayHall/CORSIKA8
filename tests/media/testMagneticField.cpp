@@ -14,6 +14,7 @@
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/IMagneticFieldModel.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
+#include <corsika/media/WMM.hpp>
 
 #include <SetupTestTrajectory.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -85,7 +86,13 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
       setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
   // create earth magnetic field vector
-  MagneticFieldVector Earth_B = get_wmm(gCS, 2022.5, 100_km, -80, -120);
-  CHECK(Earth_B.getComponents(gCS) == MagneticFieldVector{gCS, 5814.9658886215_nT, 
-  14802.9663839328_nT, -49755.3119939183_nT}.getComponents(gCS));
+  MagneticFieldVector Earth_B_1 = get_wmm(gCS, 2022.5, 100_km, -80, -120);
+  MagneticFieldVector Earth_B_2 = get_wmm(gCS, 2022.5, 0_km, 0, 120);
+  MagneticFieldVector Earth_B_3 = get_wmm(gCS, 2020, 100_km, 80, 0);
+  CHECK(Earth_B_1.getComponents(gCS) == 
+  MagneticFieldVector{gCS, 5815_nT, 14803_nT, -49755.3_nT}.getComponents(gCS));
+  CHECK(Earth_B_2.getComponents(gCS) == 
+  MagneticFieldVector{gCS, 39684.7_nT, -42.2_nT, 10809.5_nT}.getComponents(gCS));
+  CHECK(Earth_B_3.getComponents(gCS) == 
+  MagneticFieldVector{gCS, 6570.4_nT, -146.3_nT, -54606_nT}.getComponents(gCS));
 }
