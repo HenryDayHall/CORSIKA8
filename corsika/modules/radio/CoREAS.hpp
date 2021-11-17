@@ -61,8 +61,8 @@ namespace corsika {
 //      CORSIKA_LOG_DEBUG("CoREAS initiated");
 
       // get the global simulation time for that track.
-      auto startTime_{particle.getTime()}; // time at the start point of the track hopefully. I should use something similar to fCoreHitTime (?)
-      auto endTime_{particle.getTime() + track.getDuration()};    // time at end point of track.
+      auto startTime_{track.getTime(particle,0)}; // time at the start point of the track hopefully. I should use something similar to fCoreHitTime (?)
+      auto endTime_{track.getTime(particle,1)};    // time at end point of track.
       trackcounter_ += 1;
 //      CORSIKA_LOG_DEBUG("Number of total tracks for radio: {} ", trackcounter_);
 
