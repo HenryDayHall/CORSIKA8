@@ -78,12 +78,11 @@ int main() {
       UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
 
   // fraction of oxygen
-  float const fox = 0.20946;
+  double const fox = 0.20946;
   auto const props = world->setModelProperties<MyHomogeneousModel>(
       Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 0_T),
       1_kg / (1_m * 1_m * 1_m),
-      NuclearComposition(std::vector<Code>{Code::Nitrogen, Code::Oxygen},
-                         std::vector<float>{1.f - fox, fox}));
+      NuclearComposition({Code::Nitrogen, Code::Oxygen}, {1. - fox, fox}));
 
   auto innerMedium =
       setup::Environment::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
@@ -147,11 +146,8 @@ int main() {
   BetheBlochPDG eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
-  auto sequence = make_sequence(
-      stackInspect,
-      make_select([](auto const& particle) { return is_nucleus(particle.getPID()); },
-                  sibyllNuc, sibyll),
-      decay, eLoss, cut, trackWriter);
+  auto sequence = make_sequence(stackInspect, make_sequence(sibyllNuc, sibyll), decay,
+                                eLoss, cut, trackWriter);
 
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);

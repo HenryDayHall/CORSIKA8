@@ -248,7 +248,7 @@ build_test_example-clang-8:
     - cmake --build . -- VERBOSE=1 -j2
     - cmake --build . --target run_examples -- -j2 
   rules:
-    - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
+    - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for Code Review/' # run on merge requests, if label 'Ready for Code Review' is set
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
       allow_failure: true
@@ -307,7 +307,7 @@ coverage:
     - tar czf coverage-report.tar.gz coverage-report
   coverage: '/^.*lines\.+:\s(.*\%)\s/'
   rules:
-    - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
+    - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for Code Review/' # run on merge requests, if label 'Ready for Code Review' is set
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_MERGE_REQUEST_ID
       when: manual
@@ -343,7 +343,7 @@ sanity:
     - cmake .. -DWITH_CORSIKA_SANITIZERS_ENABLED=ON -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
   rules:
-    - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
+    - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for Code Review/' # run on merge requests, if label 'Ready for Code Review' is set
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
       allow_failure: true

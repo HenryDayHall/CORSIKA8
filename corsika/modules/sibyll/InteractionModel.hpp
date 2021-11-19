@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -11,32 +11,43 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/framework/process/InteractionProcess.hpp>
-#include <corsika/modules/pythia8/Pythia8.hpp>
+#include <corsika/framework/geometry/FourVector.hpp>
 
 #include <tuple>
 
-namespace corsika::pythia8 {
+namespace corsika::sibyll {
 
-  class Interaction : public InteractionProcess<Interaction>, public Pythia8::Pythia {
+  /**
+   * @brief sibyll::InteractionModel provides the SIBYLL proton-nucleus interaction model.
+   *
+   * This is a TModel argument for InteractionProcess<TModel>.
+   */
+
+  class InteractionModel {
 
   public:
-    Interaction(bool const print_listing = false);
-    ~Interaction();
+    InteractionModel();
+    ~InteractionModel();
 
-    void setStable(std::vector<Code> const&);
-    void setUnstable(Code const);
-    void setStable(Code const);
+    /**
+     * @brief Set the Verbose flag.
+     *
+     * If flag is true, SIBYLL will printout additional secondary particle information
+     * lists, etc.
+     *
+     * @param flag to switch.
+     */
+    void setVerbose(bool const flag);
 
-    bool isValidCoMEnergy(HEPEnergyType const ecm) const {
-      return (10_GeV < ecm) && (ecm < 1_PeV);
-    }
+    /**
+     * @brief evaluated validity of collision system.
+     *
+     * sibyll only accepts nuclei with 4<=A<=18 as targets, or protons aka Hydrogen or
+     * neutrons (p,n == nucleon).
+     */
+    bool constexpr isValid(Code const projectileId, Code const targetId,
+                           HEPEnergyType const sqrtSnn) const;
 
-    bool canInteract(Code const) const;
-    void configureLabFrameCollision(Code const, Code const, HEPEnergyType const);
-
-    bool isValid(Code const projectileId, Code const targetId,
-                 HEPEnergyType const sqrtS) const;
     /**
      * Returns inelastic AND elastic cross sections.
      *
@@ -80,21 +91,32 @@ namespace corsika::pythia8 {
     }
 
     /**
-     * In this function PYTHIA is called to produce one event. The
+     * In this function SIBYLL is called to produce one event. The
      * event is copied (and boosted) into the shower lab frame.
      */
-    template <typename TView>
-    void doInteraction(TView& output, Code const projectileId, Code const targetId,
+
+    template <typename TSecondaries>
+    void doInteraction(TSecondaries& view, Code const projectile, Code const target,
                        FourMomentum const& projectileP4, FourMomentum const& targetP4);
 
   private:
-    default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("pythia");
-    Pythia8::SigmaTotal sigma_;
-    bool const internalDecays_ = true;
+    HEPEnergyType constexpr getMinEnergyCoM() const { return minEnergyCoM_; }
+    HEPEnergyType constexpr getMaxEnergyCoM() const { return maxEnergyCoM_; }
+
+    // hard model limits
+    static HEPEnergyType constexpr minEnergyCoM_ = 10. * 1e9 * electronvolt;
+    static HEPEnergyType constexpr maxEnergyCoM_ = 1.e6 * 1e9 * electronvolt;
+    static unsigned int constexpr maxTargetMassNumber_ = 18;
+    static unsigned int constexpr minNuclearTargetA_ = 4;
+
+    default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("sibyll");
+
+    // data members
     int count_ = 0;
-    bool print_listing_ = false;
+    int nucCount_ = 0;
+    bool sibyll_listing_;
   };
 
-} // namespace corsika::pythia8
+} // namespace corsika::sibyll
 
-#include <corsika/detail/modules/pythia8/Interaction.inl>
+#include <corsika/detail/modules/sibyll/InteractionModel.inl>

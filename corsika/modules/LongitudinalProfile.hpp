@@ -31,8 +31,7 @@ namespace corsika {
    * simulation into a projected grammage range and counts for
    * different particle species when they cross dX (default: 10g/cm2)
    * boundaries.
-   *
-   **/
+   */
 
   class LongitudinalProfile : public ContinuousProcess<LongitudinalProfile> {
 

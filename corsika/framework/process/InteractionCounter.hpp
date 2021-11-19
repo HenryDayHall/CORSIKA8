@@ -10,24 +10,25 @@
 
 #include <corsika/framework/process/InteractionHistogram.hpp>
 #include <corsika/framework/process/InteractionProcess.hpp>
+#include <corsika/framework/geometry/FourVector.hpp>
 
 namespace corsika {
 
-  /*!
-    @ingroup Processes
-    @{
-
+  /**
+   * @ingroup Processes
+   * @{
+   *
    * Wrapper around an InteractionProcess that fills histograms of the number
    * of calls to `doInteraction()` binned in projectile energy (both in
-   * lab and center-of-mass frame) and species
+   * lab and center-of-mass frame) and species.
    *
-   * Use by wrapping a normal InteractionProcess
+   * Use by wrapping a normal InteractionProcess:
    * @code{.cpp}
    * InteractionProcess collision1;
    * InteractionClounter<collision1> counted_collision1;
    * @endcode
-   *
    */
+
   template <class TCountedProcess>
   class InteractionCounter
       : public InteractionProcess<InteractionCounter<TCountedProcess>> {
@@ -35,17 +36,24 @@ namespace corsika {
   public:
     InteractionCounter(TCountedProcess& process);
 
-    //! wrapper around internall process doInteraction
+    /**
+     * Wrapper around internal process doInteraction.
+     */
     template <typename TSecondaryView>
-    void doInteraction(TSecondaryView& view);
+    void doInteraction(TSecondaryView& view, Code const, Code const, FourMomentum const&,
+                       FourMomentum const&);
 
-    ///! returns internal process getInteractionLength
-    template <typename TParticle>
-    GrammageType getInteractionLength(TParticle const& particle) const;
+    /**
+     * Wrapper around internal process getCrossSection.
+     */
+    CrossSectionType getCrossSection(Code const, Code const, FourMomentum const&,
+                                     FourMomentum const&) const;
 
-    /** returns the filles histograms
-        @return InteractionHistogram, which contains the histogram data
-    */
+    /**
+     * returns the filles histograms.
+     *
+     * @return InteractionHistogram, which contains the histogram data
+     */
     InteractionHistogram const& getHistogram() const;
 
   private:

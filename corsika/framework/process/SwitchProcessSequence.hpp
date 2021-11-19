@@ -146,18 +146,15 @@ namespace corsika {
     ContinuousProcessStepLength getMaxStepLength(TParticle& particle, TTrack& vTrack);
 
     template <typename TParticle>
-    GrammageType getInteractionLength(TParticle&& particle) {
-      return 1. / getInverseInteractionLength(particle);
-    }
+    CrossSectionType getCrossSection(TParticle const& projectile, Code const targetId,
+                                     FourMomentum const& targetP4) const;
 
-    template <typename TParticle>
-    InverseGrammageType getInverseInteractionLength(TParticle&& particle);
-
-    template <typename TSecondaryView>
-    ProcessReturn selectInteraction(
-        TSecondaryView& view, [[maybe_unused]] InverseGrammageType lambda_inv_select,
-        [[maybe_unused]] InverseGrammageType lambda_inv_sum =
-            InverseGrammageType::zero());
+    template <typename TSecondaryView, typename TRNG>
+    ProcessReturn selectInteraction(TSecondaryView& view,
+                                    FourMomentum const& projectileP4,
+                                    NuclearComposition const& composition, TRNG& rng,
+                                    CrossSectionType const cx_select,
+                                    CrossSectionType cx_sum = CrossSectionType::zero());
 
     template <typename TParticle>
     TimeType getLifetime(TParticle&& particle) {

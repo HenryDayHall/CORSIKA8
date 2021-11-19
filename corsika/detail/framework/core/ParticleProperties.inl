@@ -115,6 +115,11 @@ namespace corsika {
   inline HEPMassType constexpr get_nucleus_mass(Code const code) {
     unsigned int const A = get_nucleus_A(code);
     unsigned int const Z = get_nucleus_Z(code);
+    return get_nucleus_mass(A, Z);
+  }
+
+  inline HEPMassType constexpr get_nucleus_mass(unsigned int const A,
+                                                unsigned int const Z) {
     return get_mass(Code::Proton) * Z + (A - Z) * get_mass(Code::Neutron);
   }
 

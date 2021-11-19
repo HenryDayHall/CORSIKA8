@@ -9,36 +9,42 @@
 #pragma once
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/core/PhysicalGeometry.hpp>
 #include <type_traits>
+
+/**
+ * @file FourVector.hpp
+ * @author Ralf Ulrich
+ * @brief General FourVector object.
+ * @date 2021-10-16
+ */
 
 namespace corsika {
 
   /**
-     Description of physical four-vectors
-
-     FourVector fully supports units, e.g. E in [GeV/c] and p in [GeV],
-     or also t in [s] and r in [m], etc.
-
-     However, for HEP applications it is also possible to use E and p
-     both in [GeV].
-
-     Thus, the input units of time-like and space-like coordinates
-     must either be idential (e.g. GeV) or scaled by "c" as in
-     [E/c]=[p].
-
-
-     The FourVector can return its squared-norm \ref getNormSqr and its
-     norm \ref getNorm, whereas norm is sqrt(abs(norm-squared)). The
-     physical units are always calculated and returned properly.
-
-     FourVector can also return if it is TimeLike, SpaceLike or PhotonLike.
-
-     When a FourVector is initialized with a lvalue references,
-     e.g. as `FourVector<TimeType&, Vector<length_d>&>`, references
-     are also used as internal data types, which should lead to
-     complete disappearance of the FourVector class during
-     optimization.
+   * Description of physical four-vectors
+   *
+   * FourVector fully supports units, e.g. E in [GeV/c] and p in [GeV],
+   * or also t in [s] and r in [m], etc.
+   *
+   * However, for HEP applications it is also possible to use E and p
+   * both in [GeV].
+   *
+   * Thus, the input units of time-like and space-like coordinates
+   * must either be idential (e.g. GeV) or scaled by "c" as in
+   * [E/c]=[p].
+   *
+   * The FourVector can return its squared-norm \ref getNormSqr and its
+   * norm \ref getNorm, whereas norm is sqrt(abs(norm-squared)). The
+   * physical units are always calculated and returned properly.
+   *
+   * FourVector can also return if it is TimeLike, SpaceLike or PhotonLike.
+   *
+   * When a FourVector is initialized with a lvalue references,
+   * e.g. as `FourVector<TimeType&, Vector<length_d>&>`, references
+   * are also used as internal data types, which should lead to
+   * complete disappearance of the FourVector class during
+   * optimization.
    */
 
   template <typename TTimeType, typename TSpaceVecType>
@@ -73,13 +79,11 @@ namespace corsika {
         , spaceLike_(eS) {}
 
     /**
-     *
      * @return timeLike_
      */
     TTimeType getTimeLikeComponent() const;
 
     /**
-     *
      * @return spaceLike_
      */
     TSpaceVecType& getSpaceLikeComponents();
@@ -124,12 +128,12 @@ namespace corsika {
     FourVector& operator/(double const);
 
     /**
-       Scalar product of two FourVectors
-
-       Note that the product between two 4-vectors assumes that you use
-       the same "c" convention for both. Only the LHS vector is checked
-       for this. You cannot mix different conventions due to
-       unit-checking.
+     * Scalar product of two FourVectors.
+     *
+     *  Note that the product between two 4-vectors assumes that you use
+     *  the same "c" convention for both. Only the LHS vector is checked
+     *  for this. You cannot mix different conventions due to
+     *  unit-checking.
      */
     norm_type operator*(FourVector const& b);
 
@@ -152,7 +156,7 @@ namespace corsika {
      *  value-copies.
      * @{
      *
-     **/
+     */
     friend FourVector<time_type, space_vec_type> operator+(FourVector const& a,
                                                            FourVector const& b) {
       return FourVector<time_type, space_vec_type>(a.timeLike_ + b.timeLike_,
@@ -179,19 +183,24 @@ namespace corsika {
 
   private:
     /**
-       This function is there to automatically remove the eventual
-       extra factor of "c" for the time-like quantity.
+     * This function is there to automatically remove the eventual
+     * extra factor of "c" for the time-like quantity.
      */
     norm_square_type getTimeSquared() const;
   };
 
   /**
    * streaming operator
-   **/
+   */
 
   template <typename TTimeType, typename TSpaceVecType>
   std::ostream& operator<<(std::ostream& os,
                            corsika::FourVector<TTimeType, TSpaceVecType> const& qv);
+
+  /**
+   * @typedef FourMomentum A FourVector with HEPEnergyType and MomentumVector.
+   */
+  typedef FourVector<HEPEnergyType, MomentumVector> FourMomentum;
 
 } // namespace corsika
 

@@ -94,6 +94,8 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
 TEST_CASE("Pythia8Interface", "modules") {
 
   logging::set_level(logging::level::info);
+
+  auto const rootCS = get_root_CoordinateSystem();
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Proton);
   auto const& cs = *csPtr;
   {
@@ -166,7 +168,6 @@ TEST_CASE("Pythia8Interface", "modules") {
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Proton, 7_TeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     auto& view = *secViewPtr;
-    auto const particle = stackPtr->getNextParticle();
 
     corsika::pythia8::Interaction collision;
 
@@ -179,34 +180,20 @@ TEST_CASE("Pythia8Interface", "modules") {
     CHECK_FALSE(collision.canInteract(Code::Electron));
 
     // nuclei not supported
-    CHECK_THROWS(collision.getCrossSection(Code::Proton, Code::Helium, 1_TeV));
     std::tuple<CrossSectionType, CrossSectionType> xs_test =
-        collision.getCrossSection(Code::Iron, Code::Hydrogen, 1_GeV);
-    CHECK(std::get<0>(xs_test) == std::numeric_limits<double>::infinity() * 1_mb);
-    CHECK(std::get<1>(xs_test) == std::numeric_limits<double>::infinity() * 1_mb);
+        collision.getCrossSectionInelEla(
+            Code::Proton, Code::Hydrogen,
+            {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
+             {rootCS, {0_eV, 0_eV, 100_GeV}}},
+            {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}});
+    CHECK(std::get<0>(xs_test) / 1_mb == Approx(314).margin(2));
+    CHECK(std::get<1>(xs_test) / 1_mb == Approx(69).margin(2));
 
-    collision.getInteractionLength(particle);
-
-    collision.doInteraction(view);
-    [[maybe_unused]] const GrammageType length = collision.getInteractionLength(particle);
-    CHECK(length / 1_kg * square(1_m) == Approx(43.04).margin(5e-1));
-    CHECK(view.getSize() == 38);
-  }
-
-  SECTION("pythia nucleus projectile") {
-
-    // this is a projectile nucleus with very little energy
-    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Oxygen, 17_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
-    auto& view = *secViewPtr;
-    auto particle = stackPtr->first();
-
-    corsika::pythia8::Interaction collision;
-
-    GrammageType lambda_test = collision.getInteractionLength(particle);
-    CHECK(lambda_test == std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm));
-
-    CHECK_THROWS(collision.doInteraction(view));
+    collision.doInteraction(view, Code::Proton, Code::Hydrogen,
+                            {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
+                             {rootCS, {0_eV, 0_eV, 100_GeV}}},
+                            {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}});
+    CHECK(view.getSize() == 12);
   }
 
   SECTION("pythia too low energy") {
@@ -215,14 +202,14 @@ TEST_CASE("Pythia8Interface", "modules") {
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Neutron, 1_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     auto& view = *secViewPtr;
-    auto particle = stackPtr->first();
 
     corsika::pythia8::Interaction collision;
 
-    GrammageType lambda_test = collision.getInteractionLength(particle);
-    CHECK(lambda_test == std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm));
-
-    CHECK_THROWS(collision.doInteraction(view));
+    CHECK_THROWS(collision.doInteraction(
+        view, Code::Neutron, Code::Hydrogen,
+        {sqrt(static_pow<2>(Neutron::mass) + static_pow<2>(1_GeV)),
+         {rootCS, {0_eV, 0_eV, 1_GeV}}},
+        {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
   }
 
   SECTION("pythia wrong target") {
@@ -244,6 +231,34 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     corsika::pythia8::Interaction collision;
 
-    CHECK_THROWS(collision.doInteraction(view));
+    CHECK(collision.getCrossSection(
+              Code::Proton, Code::Iron,
+              {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
+               {rootCS, {0_eV, 0_eV, 100_GeV}}},
+              {Iron::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) /
+              1_mb ==
+          Approx(0));
+
+    CHECK_THROWS(collision.doInteraction(
+        view, Code::Proton, Code::Iron,
+        {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
+         {rootCS, {0_eV, 0_eV, 100_GeV}}},
+        {Iron::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
+  }
+
+  SECTION("pythia wrong projectile") {
+
+    // resonable projectile, but tool low energy
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::Iron, 1_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+    { [[maybe_unused]] auto const& dummy_StackPtr = stackPtr; }
+
+    corsika::pythia8::Interaction collision;
+
+    CHECK_THROWS(
+        collision.doInteraction(*secViewPtr, Code::Iron, Code::Hydrogen,
+                                {sqrt(static_pow<2>(Iron::mass) + static_pow<2>(100_GeV)),
+                                 {rootCS, {0_eV, 0_eV, 100_GeV}}},
+                                {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
   }
 }

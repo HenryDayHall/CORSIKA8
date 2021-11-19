@@ -41,7 +41,7 @@ namespace corsika {
 
   template <typename StackIteratorInterface>
   inline void ParticleInterface<StackIteratorInterface>::setParticleData(
-      ParticleInterface<StackIteratorInterface> const&,
+      ParticleInterface<StackIteratorInterface> const& parent,
       particle_data_momentum_type const& v) {
     this->setPID(std::get<0>(v));
     MomentumVector const p = std::get<1>(v);
@@ -54,7 +54,7 @@ namespace corsika {
       this->setDirection(p / sqrt(P2));
     }
     this->setPosition(std::get<2>(v));
-    this->setTime(std::get<3>(v));
+    this->setTime(std::get<3>(v) + parent.getTime()); // parent time is added
   }
 
   template <typename StackIteratorInterface>
@@ -69,12 +69,13 @@ namespace corsika {
 
   template <typename StackIteratorInterface>
   inline void ParticleInterface<StackIteratorInterface>::setParticleData(
-      ParticleInterface<StackIteratorInterface> const&, particle_data_type const& v) {
+      ParticleInterface<StackIteratorInterface> const& parent,
+      particle_data_type const& v) {
     this->setPID(std::get<0>(v));
     this->setKineticEnergy(std::get<1>(v));
     this->setDirection(std::get<2>(v));
     this->setPosition(std::get<3>(v));
-    this->setTime(std::get<4>(v));
+    this->setTime(std::get<4>(v) + parent.getTime()); // parent time is added
   }
 
   template <typename StackIteratorInterface>

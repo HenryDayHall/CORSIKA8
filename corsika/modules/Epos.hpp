@@ -9,4 +9,22 @@
 #pragma once
 
 #include <corsika/modules/epos/ParticleConversion.hpp>
-#include <corsika/modules/epos/Interaction.hpp>
+#include <corsika/modules/epos/InteractionModel.hpp>
+#include <corsika/framework/process/InteractionProcess.hpp>
+
+/**
+ * @file Sibyll.hpp
+ *
+ * Includes all the parts of the EPOS model. Defines the InteractionProcess<TModel>
+ * classes needed for the ProcessSequence.
+ */
+
+namespace corsika::epos {
+  /**
+   * epos::Interaction is the process for ProcessSequence.
+   *
+   * The epos::InteractionModel is wrapped as an InteractionProcess here in order
+   * to provide all the functions for ProcessSequence.
+   */
+  class Interaction : public InteractionModel, public InteractionProcess<Interaction> {};
+} // namespace corsika::epos

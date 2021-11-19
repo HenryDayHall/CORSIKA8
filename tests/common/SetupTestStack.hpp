@@ -18,7 +18,7 @@
  * \file SetupTestStack
  *
  * standard stack setup for unit tests.
- **/
+ */
 
 namespace corsika::setup::testing {
 
@@ -32,10 +32,10 @@ namespace corsika::setup::testing {
    *
    * \return a tuple with element 0 being a Stack object filled with
    * one particle, and element 1 the StackView on it.
-   **/
+   */
 
   inline std::tuple<std::unique_ptr<setup::Stack>, std::unique_ptr<setup::StackView>>
-  setup_stack(Code vProjectileType, HEPEnergyType vMomentum,
+  setup_stack(Code const vProjectileType, HEPEnergyType const vMomentum,
               setup::Environment::BaseNodeType* const vNodePtr,
               CoordinateSystemPtr const& cs) {
 

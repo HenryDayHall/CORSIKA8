@@ -13,6 +13,7 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/process/InteractionProcess.hpp>
 #include <corsika/framework/process/ProcessReturn.hpp>
+#include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
 
@@ -32,7 +33,7 @@ namespace corsika::proposal {
                                     std::unique_ptr<PROPOSAL::Interaction>>;
 
     std::unordered_map<calc_key_t, calculator_t, hash>
-        calc; //!< Stores the secondaries and interaction calculators.
+        calc_; //!< Stores the secondaries and interaction calculators.
 
     //!
     //! Build the secondaries and interaction calculators and add it to calc.
@@ -53,13 +54,15 @@ namespace corsika::proposal {
     //! produce the corresponding secondaries and store them on the particle stack.
     //!
     template <typename TSecondaryView>
-    ProcessReturn doInteraction(TSecondaryView&);
+    ProcessReturn doInteraction(TSecondaryView&, Code const projectileId,
+                                FourMomentum const& projectileP4);
 
     //!
-    //! Calculates the  mean free path length
+    //! Calculates and returns the cross section.
     //!
     template <typename TParticle>
-    GrammageType getInteractionLength(TParticle const& p);
+    CrossSectionType getCrossSection(TParticle const& p, Code const projectileId,
+                                     FourMomentum const& projectileP4);
   };
 } // namespace corsika::proposal
 

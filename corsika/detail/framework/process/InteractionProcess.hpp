@@ -14,10 +14,12 @@
 namespace corsika {
 
   /**
-     traits test for InteractionProcess::doInteraction method
-  */
+   * @file InteractionProcess.hpp
+   *
+   * traits test for InteractionProcess::doInteraction methods etc.
+   */
 
-  template <class TProcess, typename TReturn, typename... TArgs>
+  template <class TProcess, typename TReturn, typename TTemplate, typename... TArgs>
   struct has_method_doInteract : public detail::has_method_signature<TReturn, TArgs...> {
 
     ///! method signature
@@ -29,7 +31,7 @@ namespace corsika {
 
     //! signature of templated method
     template <class T>
-    static decltype(testSignature(&T::template doInteraction<TArgs...>)) test(
+    static decltype(testSignature(&T::template doInteraction<TTemplate>)) test(
         std::nullptr_t);
 
     //! signature of non-templated method
@@ -38,26 +40,25 @@ namespace corsika {
 
   public:
     /**
-        @name traits results
-        @{
-    */
+     *  @name traits results
+     * @{
+     */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
     //! @}
   };
 
-  //! @file InteractionProcess.hpp
   //! value traits type
-  template <class TProcess, typename TReturn, typename... TArgs>
+  template <class TProcess, typename TReturn, typename TTemplate, typename... TArgs>
   bool constexpr has_method_doInteract_v =
-      has_method_doInteract<TProcess, TReturn, TArgs...>::value;
+      has_method_doInteract<TProcess, TReturn, TTemplate, TArgs...>::value;
 
   /**
-     traits test for InteractionProcess::getInteractionLength method
-  */
+   *  traits test for TEMPLATED InteractionProcess::getCrossSection method (PROPOSAL).
+   */
 
-  template <class TProcess, typename TReturn, typename... TArgs>
-  struct has_method_getInteractionLength
+  template <class TProcess, typename TReturn, typename TTemplate, typename... TArgs>
+  struct has_method_getCrossSectionTemplate
       : public detail::has_method_signature<TReturn, TArgs...> {
 
     ///! method signature
@@ -69,28 +70,65 @@ namespace corsika {
 
     //! templated parameter option
     template <class T>
-    static decltype(testSignature(&T::template getInteractionLength<TArgs...>)) test(
+    static decltype(testSignature(&T::template getCrossSection<TTemplate>)) test(
         std::nullptr_t);
 
     //! non templated parameter option
     template <class T>
-    static decltype(testSignature(&T::getInteractionLength)) test(std::nullptr_t);
+    static decltype(testSignature(&T::getCrossSection)) test(std::nullptr_t);
 
   public:
     /**
-        @name traits results
-        @{
-    */
+     *  @name traits results
+     * @{
+     */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
     //! @}
   };
 
-  //! @file InteractionProcess.hpp
-  //! value traits type
+  //! value traits type shortcut
+  template <class TProcess, typename TReturn, typename TTemplate, typename... TArgs>
+  bool constexpr has_method_getCrossSectionTemplate_v =
+      has_method_getCrossSectionTemplate<TProcess, TReturn, TTemplate, TArgs...>::value;
+
+  /**
+   *  traits test for InteractionProcess::getCrossSection method.
+   */
 
   template <class TProcess, typename TReturn, typename... TArgs>
-  bool constexpr has_method_getInteractionLength_v =
-      has_method_getInteractionLength<TProcess, TReturn, TArgs...>::value;
+  struct has_method_getCrossSection
+      : public detail::has_method_signature<TReturn, TArgs...> {
+
+    ///! method signature
+    using detail::has_method_signature<TReturn, TArgs...>::testSignature;
+
+    //! the default value
+    template <class T>
+    static std::false_type test(...);
+
+    //! templated parameter option
+    template <class T>
+    static decltype(testSignature(&T::template getCrossSection<TArgs...>)) test(
+        std::nullptr_t);
+
+    //! non templated parameter option
+    template <class T>
+    static decltype(testSignature(&T::getCrossSection)) test(std::nullptr_t);
+
+  public:
+    /**
+     *  @name traits results
+     * @{
+     */
+    using type = decltype(test<std::decay_t<TProcess>>(nullptr));
+    static const bool value = type::value;
+    //! @}
+  };
+
+  //! value traits type shortcut
+  template <class TProcess, typename TReturn, typename... TArgs>
+  bool constexpr has_method_getCrossSection_v =
+      has_method_getCrossSection<TProcess, TReturn, TArgs...>::value;
 
 } // namespace corsika

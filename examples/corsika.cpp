@@ -240,11 +240,11 @@ int main(int argc, char** argv) {
   HEPEnergyType mass = get_mass(beamCode);
 
   // particle energy
-  HEPEnergyType const E0 = 1_GeV * app["--energy"]->as<float>();
+  HEPEnergyType const E0 = 1_GeV * app["--energy"]->as<double>();
 
   // direction of the shower in (theta, phi) space
-  auto const thetaRad = app["--zenith"]->as<float>() / 180. * M_PI;
-  auto const phiRad = app["--azimuth"]->as<float>() / 180. * M_PI;
+  auto const thetaRad = app["--zenith"]->as<double>() / 180. * M_PI;
+  auto const phiRad = app["--azimuth"]->as<double>() / 180. * M_PI;
 
   // convert Elab to Plab
   HEPMomentumType P0 = sqrt((E0 - mass) * (E0 + mass));
@@ -286,8 +286,7 @@ int main(int argc, char** argv) {
   InteractionCounter sibyllCounted(sibyll);
   corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   InteractionCounter sibyllNucCounted(sibyllNuc);
-  auto heModelCounted = make_select([](auto const& p) { return is_nucleus(p.getPID()); },
-                                    sibyllNucCounted, sibyllCounted);
+  auto heModelCounted = make_sequence(sibyllNucCounted, sibyllCounted);
 
   corsika::pythia8::Decay decayPythia;
 
@@ -317,8 +316,10 @@ int main(int argc, char** argv) {
   HEPEnergyType const emcut = 1_GeV;
   HEPEnergyType const hadcut = 1_GeV;
   ParticleCut cut(emcut, emcut, hadcut, hadcut, true);
+
   corsika::proposal::Interaction emCascade(env);
-  InteractionCounter emCascadeCounted(emCascade);
+  // NOT available for PROPOSAL due to interface trouble:
+  //  InteractionCounter emCascadeCounted(emCascade);
   // corsika::proposal::ContinuousProcess emContinuous(env);
   BetheBlochPDG emContinuous(showerAxis);
 
@@ -335,7 +336,7 @@ int main(int argc, char** argv) {
     HEPEnergyType cutE_;
     EnergySwitch(HEPEnergyType cutE)
         : cutE_(cutE) {}
-    bool operator()(const Particle& p) { return (p.getKineticEnergy() < cutE_); }
+    bool operator()(const Particle& p) const { return (p.getKineticEnergy() < cutE_); }
   };
   auto hadronSequence = make_select(EnergySwitch(63.1_GeV), urqmdCounted, heModelCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
@@ -352,8 +353,8 @@ int main(int argc, char** argv) {
   output.add("particles", observationLevel);
 
   // assemble the final process sequence
-  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence,
-                                emCascadeCounted, cut, emContinuous, // trackWriter,
+  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, cut,
+                                emCascade, emContinuous, // trackWriter,
                                 observationLevel, longprof);
   /* === END: SETUP PROCESS LIST === */
 

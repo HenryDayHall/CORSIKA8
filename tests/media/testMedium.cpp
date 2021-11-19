@@ -58,8 +58,7 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
   const auto density{19.2_g / cube(1_cm)};
 
   // the composition we use for the homogenous medium
-  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
-                                             std::vector<float>{1.f});
+  NuclearComposition const protonComposition({Code::Proton}, {1.});
 
   // the refrative index that we use
   const Medium type = corsika::Medium::AirDry1Atm;

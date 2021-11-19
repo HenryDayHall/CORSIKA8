@@ -144,7 +144,9 @@ int main(int argc, char** argv) {
   ParticleCut cut(60_GeV, 60_GeV, 100_PeV, 100_PeV, true);
   corsika::proposal::Interaction emCascade(env);
   corsika::proposal::ContinuousProcess emContinuous(env);
-  InteractionCounter emCascadeCounted(emCascade);
+
+  //  NOT possible right now, due to interface differenc in PROPOSAL
+  //  InteractionCounter emCascadeCounted(emCascade);
 
   TrackWriter trackWriter;
   output.add("tracks", trackWriter); // register TrackWriter
@@ -157,8 +159,8 @@ int main(int argc, char** argv) {
       obsPlane, DirectionVector(rootCS, {1., 0., 0.}), "particles.dat");
   output.add("obsplane", observationLevel);
 
-  auto sequence = make_sequence(emCascadeCounted, emContinuous, longprof, cut,
-                                observationLevel, trackWriter);
+  auto sequence = make_sequence(emCascade, emContinuous, longprof, cut, observationLevel,
+                                trackWriter);
   // define air shower object, run simulation
   setup::Tracking tracking;
   Cascade EAS(env, tracking, sequence, output, stack);
@@ -183,9 +185,6 @@ int main(int argc, char** argv) {
   cut.reset();
   emContinuous.reset();
 
-  auto const hists = emCascadeCounted.getHistogram();
-  save_hist(hists.labHist(), "inthist_lab_emShower.npz", true);
-  save_hist(hists.CMSHist(), "inthist_cms_emShower.npz", true);
   longprof.save("longprof_emShower.txt");
 
   output.endOfLibrary();

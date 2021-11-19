@@ -1,0 +1,370 @@
+/*
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
+#pragma once
+
+#include <corsika/media/Environment.hpp>
+#include <corsika/media/NuclearComposition.hpp>
+
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/utility/COMBoost.hpp>
+#include <corsika/framework/core/Logging.hpp>
+
+#include <nuclib.hpp>
+
+namespace corsika::sibyll {
+
+  template <typename TEnvironment, typename TNucleonModel>
+  inline NuclearInteractionModel<TEnvironment, TNucleonModel>::NuclearInteractionModel(
+      TNucleonModel& hadint, TEnvironment const& env)
+      : environment_(env)
+      , hadronicInteraction_(hadint) {
+
+    // initialize nuclib
+    // TODO: make sure this does not overlap with sibyll
+    nuc_nuc_ini_();
+
+    // initialize cross sections
+    initializeNuclearCrossSections();
+  }
+
+  template <typename TEnvironment, typename TNucleonModel>
+  inline NuclearInteractionModel<TEnvironment,
+                                 TNucleonModel>::~NuclearInteractionModel() {
+    CORSIKA_LOG_DEBUG("Nuclib::NuclearInteractionModel n={} Nnuc={}", count_, nucCount_);
+  }
+
+  template <typename TEnvironment, typename TNucleonModel>
+  inline bool constexpr NuclearInteractionModel<TEnvironment, TNucleonModel>::isValid(
+      Code const projectileId, Code const targetId, HEPEnergyType const sqrtSnn) const {
+
+    // also depends on underlying model, for Proton/Neutron projectile
+    if (!hadronicInteraction_.isValid(Code::Proton, targetId, sqrtSnn)) { return false; }
+
+    // projectile limits:
+    if (!is_nucleus(projectileId)) { return false; }
+    unsigned int projectileA = get_nucleus_A(projectileId);
+    if (projectileA > getMaxNucleusAProjectile() || projectileA < 2) { return false; }
+    return true;
+  } // namespace corsika::sibyll
+
+  template <typename TEnvironment, typename TNucleonModel>
+  inline void
+  NuclearInteractionModel<TEnvironment, TNucleonModel>::printCrossSectionTable(
+      Code const pCode) const {
+    if (!hadronicInteraction_.isValid(Code::Proton, pCode, 100_GeV)) { // LCOV_EXCL_START
+      CORSIKA_LOG_ERROR("Invalid target type {} for hadron interaction model.", pCode);
+      return;
+    } // LCOV_EXCL_STOP
+
+    int const k = targetComponentsIndex_.at(pCode);
+    Code const pNuclei[] = {Code::Helium, Code::Lithium7, Code::Oxygen,
+                            Code::Neon,   Code::Argon,    Code::Iron};
+
+    std::ostringstream table;
+    table << "Nuclear CrossSectionTable pCode=" << pCode << " :\n en/A ";
+    for (auto& j : pNuclei) table << std::setw(9) << j;
+    table << "\n";
+
+    // loop over energy bins
+    for (unsigned int i = 0; i < getNEnergyBins(); ++i) {
+      table << " " << i << "  ";
+
+      for (auto& n : pNuclei) {
+        auto const j = get_nucleus_A(n);
+        table << " " << std::setprecision(5) << std::setw(8)
+              << cnucsignuc_.sigma[j - 1][k][i];
+      }
+      table << "\n";
+    }
+    CORSIKA_LOG_DEBUG(table.str());
+  }
+
+  template <typename TEnvironment, typename TNucleonModel>
+  inline void
+  NuclearInteractionModel<TEnvironment, TNucleonModel>::initializeNuclearCrossSections() {
+
+    auto& universe = *(environment_.getUniverse());
+    // generate complete list of all nuclei types in universe
+
+    auto const allElementsInUniverse = std::invoke([&]() {
+      std::set<Code> allElementsInUniverse;
+      auto collectElements = [&](auto& vtn) {
+        if (vtn.hasModelProperties()) {
+          auto const& comp =
+              vtn.getModelProperties().getNuclearComposition().getComponents();
+          for (auto const c : comp) allElementsInUniverse.insert(c);
+        }
+      };
+      universe.walk(collectElements);
+      return allElementsInUniverse;
+    });
+
+    CORSIKA_LOG_DEBUG("initializing nuclear cross sections...");
+
+    // loop over target components, at most 4!!
+    int k = -1;
+    for (Code const ptarg : allElementsInUniverse) {
+      ++k;
+      CORSIKA_LOG_DEBUG("init target component: {} A={}", ptarg, get_nucleus_A(ptarg));
+      int const ib = get_nucleus_A(ptarg);
+      if (!hadronicInteraction_.isValid(Code::Proton, ptarg, 100_GeV)) {
+        CORSIKA_LOG_ERROR("Invalid target type {} for hadron interaction model.", ptarg);
+        continue;
+      }
+      targetComponentsIndex_.insert(std::pair<Code, int>(ptarg, k));
+      // loop over energies, fNEnBins log. energy bins
+      for (size_t i = 0; i < getNEnergyBins(); ++i) {
+        // hard coded energy grid, has to be aligned to definition in signuc2!!, no
+        // comment..
+        HEPEnergyType const Ecm = pow(10., 1. + 1. * i) * 1_GeV;
+        // head-on pp collision:
+        HEPEnergyType const EcmHalve = Ecm / 2;
+        HEPMomentumType const pcm =
+            sqrt(EcmHalve * EcmHalve - Proton::mass * Proton::mass);
+        CoordinateSystemPtr cs = get_root_CoordinateSystem();
+        FourMomentum projectileP4(EcmHalve, {cs, pcm, 0_eV, 0_eV});
+        FourMomentum targetP4(EcmHalve, {cs, -pcm, 0_eV, 0_eV});
+        // get p-p cross sections
+        if (!hadronicInteraction_.isValid(Code::Proton, Code::Proton, Ecm)) {
+          throw std::runtime_error("invalid projectile,target,ecm combination");
+        }
+        auto const [siginel, sigela] = hadronicInteraction_.getCrossSectionInelEla(
+            Code::Proton, Code::Proton, projectileP4, targetP4);
+        double const dsig = siginel / 1_mb;
+        double const dsigela = sigela / 1_mb;
+        // loop over projectiles, mass numbers from 2 to fMaxNucleusAProjectile
+        CORSIKA_LOG_TRACE("Ecm={} siginel={} sigela={}", Ecm / 1_GeV, dsig, dsigela);
+        for (size_t j = 1; j < gMaxNucleusAProjectile_; ++j) {
+          const int jj = j + 1;
+          double sig_out, dsig_out, sigqe_out, dsigqe_out;
+          sigma_mc_(jj, ib, dsig, dsigela, gNSample_, sig_out, dsig_out, sigqe_out,
+                    dsigqe_out);
+          // write to table
+          cnucsignuc_.sigma[j][k][i] = sig_out;
+          cnucsignuc_.sigqe[j][k][i] = sigqe_out;
+          CORSIKA_LOG_TRACE("nuc A={} sig={} qe={}", j, sig_out, sigqe_out);
+        }
+      }
+    }
+    CORSIKA_LOG_DEBUG("cross sections for {} components initialized!",
+                      targetComponentsIndex_.size());
+    for (auto& ptarg : allElementsInUniverse) { printCrossSectionTable(ptarg); }
+  }
+
+  template <typename TEnvironment, typename TNucleonModel>
+  inline CrossSectionType
+  NuclearInteractionModel<TEnvironment, TNucleonModel>::readCrossSectionTable(
+      int const ia, Code const pTarget, HEPEnergyType const elabnuc) const {
+
+    int const ib = targetComponentsIndex_.at(pTarget) + 1; // table index in fortran
+    auto const ECoMNuc = sqrt(2. * constants::nucleonMass * elabnuc);
+    if (ECoMNuc < getMinEnergyPerNucleonCoM() || ECoMNuc > getMaxEnergyPerNucleonCoM()) {
+      throw std::runtime_error("energy outside tabulated range!");
+    }
+    double const e0 = elabnuc / 1_GeV;
+    double sig;
+    CORSIKA_LOG_DEBUG("ReadCrossSectionTable: {} {} {}", ia, ib, e0);
+    signuc2_(ia, ib, e0, sig);
+    CORSIKA_LOG_DEBUG("ReadCrossSectionTable: sig={}", sig);
+    return sig * 1_mb;
+  }
+
+  template <typename TEnvironment, typename TNucleonModel>
+  CrossSectionType inline NuclearInteractionModel<
+      TEnvironment, TNucleonModel>::getCrossSection(Code const projectileId,
+                                                    Code const targetId,
+                                                    FourMomentum const& projectileP4,
+                                                    FourMomentum const& targetP4) const {
+
+    HEPEnergyType const sqrtSnn = (projectileP4 + targetP4).getNorm();
+    if (!isValid(projectileId, targetId, sqrtSnn)) { return CrossSectionType::zero(); }
+    HEPEnergyType const LabEnergyPerNuc =
+        static_pow<2>(sqrtSnn) / (2 * constants::nucleonMass);
+    auto const sigProd =
+        readCrossSectionTable(get_nucleus_A(projectileId), targetId, LabEnergyPerNuc);
+    CORSIKA_LOG_DEBUG("cross section (mb): {}", sigProd / 1_mb);
+    return sigProd;
+  }
+
+  template <typename TEnvironment, typename TNucleonModel>
+  template <typename TSecondaryView>
+  inline void NuclearInteractionModel<TEnvironment, TNucleonModel>::doInteraction(
+      TSecondaryView& view, Code const projectileId, Code const targetId,
+      FourMomentum const& projectileP4, FourMomentum const& targetP4) {
+
+    // model is only designed for projectile nuclei. Collisions are broken down into
+    // "nucleon-target" collisions.
+    if (!is_nucleus(projectileId)) {
+      throw std::runtime_error("Can only handle nuclear projectiles.");
+    }
+    size_t const projectileA = get_nucleus_A(projectileId);
+
+    // this is center-of-mass for projectile_nucleon - target
+    FourMomentum const nucleonP4 = projectileP4 / projectileA;
+    HEPEnergyType const sqrtSnucleon = (nucleonP4 + targetP4).getNorm();
+    if (!isValid(projectileId, targetId, sqrtSnucleon)) {
+      throw std::runtime_error("Invalid projectile/target/energy combination.");
+    }
+    // projectile is always nucleus!
+    // Elab corresponding to sqrtSnucleon -> fixed target projectile
+    COMBoost const boost(nucleonP4, targetP4);
+
+    CORSIKA_LOG_DEBUG("pId={} tId={} sqrtSnucleon={}GeV Aproj={}", projectileId, targetId,
+                      sqrtSnucleon / 1_GeV, projectileA);
+    count_++;
+
+    // lab. momentum per projectile nucleon
+    HEPMomentumType const pNucleonLab = nucleonP4.getSpaceLikeComponents().getNorm();
+    // nucleon momentum in direction of CM motion (lab system)
+    MomentumVector const p3NucleonLab(boost.getRotatedCS(), {0_GeV, 0_GeV, pNucleonLab});
+
+    /*
+      FOR NOW: allow nuclei with A<18 or protons/nucleon only.
+      when medium composition becomes more complex, approximations will have to be
+      allowed air in atmosphere also contains some Argon.
+    */
+    int kATarget = -1;
+    size_t targetA = 1;
+    if (is_nucleus(targetId)) {
+      kATarget = get_nucleus_A(targetId);
+      targetA = kATarget;
+    } else if (targetId == Code::Proton || targetId == Code::Neutron ||
+               targetId == Code::Hydrogen) {
+      kATarget = 1;
+    }
+    CORSIKA_LOG_DEBUG("nuclib target code: {}", kATarget);
+
+    // end of target sampling
+
+    // superposition
+    CORSIKA_LOG_DEBUG("sampling nuc. multiple interaction structure.. ");
+    // get nucleon-nucleon cross section
+    // (needed to determine number of nucleon-nucleon scatterings)
+    auto const protonId = Code::Proton;
+    auto const [prodCrossSection, elaCrossSection] =
+        hadronicInteraction_.getCrossSectionInelEla(
+            protonId, protonId, nucleonP4,
+            targetP4 / targetA); // todo check, wrong RU
+    double const sigProd = prodCrossSection / 1_mb;
+    double const sigEla = elaCrossSection / 1_mb;
+    // sample number of interactions (only input variables, output in common cnucms)
+    // nuclear multiple scattering according to glauber (r.i.p.)
+    int_nuc_(kATarget, projectileA, sigProd, sigEla);
+
+    CORSIKA_LOG_DEBUG(
+        "number of nucleons in target           : {}\n"
+        "number of wounded nucleons in target   : {}\n"
+        "number of nucleons in projectile       : {}\n"
+        "number of wounded nucleons in project. : {}\n"
+        "number of inel. nuc.-nuc. interactions : {}\n"
+        "number of elastic nucleons in target   : {}\n"
+        "number of elastic nucleons in project. : {}\n"
+        "impact parameter: {}",
+        kATarget, cnucms_.na, projectileA, cnucms_.nb, cnucms_.ni, cnucms_.nael,
+        cnucms_.nbel, cnucms_.b);
+
+    // calculate fragmentation
+    CORSIKA_LOG_DEBUG("calculating nuclear fragments..");
+    // number of interactions
+    // include elastic
+    int const nElasticNucleons = cnucms_.nbel;
+    int const nInelNucleons = cnucms_.nb;
+    int const nIntProj = nInelNucleons + nElasticNucleons;
+    double const impactPar = cnucms_.b; // only needed to avoid passing common var.
+    int nFragments = 0;
+    // number of fragments is limited to 60
+    int AFragments[60];
+    // call fragmentation routine
+    // input: target A, projectile A, number of int. nucleons in projectile, impact
+    // parameter (fm) output: nFragments, AFragments in addition the momenta ar stored
+    // in pf in common fragments, neglected
+    fragm_(kATarget, projectileA, nIntProj, impactPar, nFragments, AFragments);
+
+    // this should not occur but well :)  (LCOV_EXCL_START)
+    if (nFragments > (int)getMaxNFragments()) {
+      throw std::runtime_error("Number of nuclear fragments in NUCLIB exceeded!");
+    }
+    // (LCOV_EXCL_STOP)
+
+    // position and time of interaction, not used in NUCLIB
+    auto const& projectile = view.parent();
+    // position and time of interaction, not used in NUCLI
+    Point const& pOrig = projectile.getPosition();
+    TimeType const delay = projectile.getTime();
+
+    CORSIKA_LOG_DEBUG("Interaction: position of interaction: {}, {} ns",
+                      pOrig.getCoordinates(), delay / 1_ns);
+    CORSIKA_LOG_DEBUG("number of fragments: {}", nFragments);
+    CORSIKA_LOG_DEBUG("adding nuclear fragments to particle stack..");
+    // put nuclear fragments on corsika stack
+    for (int j = 0; j < nFragments; ++j) {
+      CORSIKA_LOG_DEBUG("fragment {}: A={} px={} py={} pz={}", j, AFragments[j],
+                        fragments_.ppp[j][0], fragments_.ppp[j][1], fragments_.ppp[j][2]);
+      auto const nuclA = AFragments[j];
+      // get Z from stability line
+      auto const nuclZ = int(nuclA / 2.15 + 0.7);
+
+      // TODO: do we need to catch single nucleons??
+      Code const specCode = (nuclA == 1 ?
+                                        // TODO: sample neutron or proton
+                                 Code::Proton
+                                        : get_nucleus_code(nuclA, nuclZ));
+      HEPMassType const mass = get_mass(specCode);
+
+      CORSIKA_LOG_DEBUG("adding fragment: {}", get_name(specCode));
+      CORSIKA_LOG_DEBUG("A,Z: {}, {}", nuclA, nuclZ);
+      CORSIKA_LOG_DEBUG("mass: {} GeV", mass / 1_GeV);
+
+      // CORSIKA 7 way
+      // spectators inherit momentum from original projectile
+      auto const p3lab = p3NucleonLab * nuclA;
+      CORSIKA_LOG_DEBUG("fragment momentum {}", p3lab.getComponents() / 1_GeV);
+      view.addSecondary(std::make_tuple(specCode, p3lab, pOrig, delay));
+    }
+
+    // add elastic nucleons to corsika stack
+    // TODO: the elastic interaction could be external like the inelastic interaction,
+    // e.g. use existing ElasticModel
+    CORSIKA_LOG_DEBUG("adding elastically scattered nucleons to particle stack..");
+    for (int j = 0; j < nElasticNucleons; ++j) {
+      // TODO: sample proton or neutron
+      Code const elaNucCode = Code::Proton;
+
+      // CORSIKA 7 way
+      // elastic nucleons inherit momentum from original projectile
+      // neglecting momentum transfer in interaction
+      auto const p3lab = p3NucleonLab;
+      view.addSecondary(std::make_tuple(elaNucCode, p3lab, pOrig, delay));
+    }
+
+    // add inelastic interactions
+    CORSIKA_LOG_DEBUG("calculate inelastic nucleon-nucleon interactions..");
+    for (int j = 0; j < nInelNucleons; ++j) {
+      // TODO: sample neutron or proton
+      auto const pCode = Code::Proton;
+      // temporarily add to stack, will be removed after interaction in DoInteraction
+      CORSIKA_LOG_DEBUG("inelastic interaction no. {}", j);
+      typename TSecondaryView::inner_stack_value_type nucleonStack;
+      auto inelasticNucleon =
+          nucleonStack.addParticle(std::make_tuple(pCode, p3NucleonLab, pOrig, delay));
+      inelasticNucleon.setNode(view.getProjectile().getNode());
+      // create inelastic interaction for each nucleon
+      CORSIKA_LOG_TRACE("calling HadronicInteraction...");
+      // create new StackView for each of the nucleons
+      TSecondaryView nucleon_secondaries(inelasticNucleon);
+      // all inner hadronic event generator
+      hadronicInteraction_.doInteraction(nucleon_secondaries, pCode, targetId, nucleonP4,
+                                         targetP4);
+      for (const auto& pSec : nucleon_secondaries) {
+        view.addSecondary(std::make_tuple(pSec.getPID(), pSec.getMomentum(),
+                                          pSec.getPosition(), pSec.getTime()));
+      }
+    }
+  }
+} // namespace corsika::sibyll

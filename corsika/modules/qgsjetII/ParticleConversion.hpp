@@ -15,13 +15,13 @@
 namespace corsika::qgsjetII {
 
   /**
-     These are the possible secondaries produced by QGSJetII
+   * These are the possible secondaries produced by QGSJetII.
    */
   enum class QgsjetIICode : int8_t;
   using QgsjetIICodeIntType = std::underlying_type<QgsjetIICode>::type;
 
   /**
-     These are the possible projectile for which QGSJetII knwos cross section
+   * These are the possible projectile for which QGSJetII knwos cross section.
    */
   enum class QgsjetIIXSClass : int8_t {
     CannotInteract = 0,
@@ -32,7 +32,7 @@ namespace corsika::qgsjetII {
   using QgsjetIIXSClassIntType = std::underlying_type<QgsjetIIXSClass>::type;
 
   /**
-     These are the only possible projectile types in QGSJetII
+   *  These are the only possible projectile types in QGSJetII.
    */
   enum class QgsjetIIHadronType : int8_t {
     UndefinedType = 0,
@@ -58,7 +58,7 @@ namespace corsika::qgsjetII {
 
 namespace corsika::qgsjetII {
 
-  QgsjetIICode constexpr convertToQgsjetII(Code pCode) {
+  QgsjetIICode constexpr convertToQgsjetII(Code const pCode) {
     return corsika2qgsjetII[static_cast<CodeIntType>(pCode)];
   }
 

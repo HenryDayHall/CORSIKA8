@@ -174,7 +174,7 @@ namespace corsika::sibyll {
 
     count_++;
     // remember position
-    Point const decayPoint = projectile.getPosition();
+    Point const& decayPoint = projectile.getPosition();
     TimeType const t0 = projectile.getTime();
     // switch on decay for this particle
     setUnstable(pCode);

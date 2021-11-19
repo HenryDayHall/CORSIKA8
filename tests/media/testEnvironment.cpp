@@ -82,9 +82,6 @@ TEST_CASE("HomogeneousMedium") {
   NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
   HomogeneousMedium<IMediumModel> const medium(19.2_g / cube(1_cm), protonComposition);
 
-  CHECK(protonComposition.getFractions() == std::vector<float>{1.});
-  CHECK(protonComposition.getComponents() == std::vector<Code>{Code::Proton});
-
   CHECK_THROWS(NuclearComposition({Code::Proton}, {1.1}));
   CHECK_THROWS(NuclearComposition({Code::Proton}, {0.99}));
 }
@@ -104,7 +101,7 @@ TEST_CASE("FlatExponential") {
   LengthType const length = 2_m;
   TimeType const tEnd = length / speed;
 
-  CHECK(medium.getNuclearComposition().getFractions() == std::vector<float>{1.});
+  CHECK(medium.getNuclearComposition().getFractions() == std::vector<double>{1.});
   CHECK(medium.getNuclearComposition().getComponents() ==
         std::vector<Code>{Code::Proton});
 
@@ -514,7 +511,7 @@ TEST_CASE("InhomogeneousMedium") {
 
   LengthType const length = tEnd * speed;
 
-  NuclearComposition const composition{{Code::Proton}, {1.f}};
+  NuclearComposition const composition{{Code::Proton}, {1.}};
   InhomogeneousMedium<IMediumModel, decltype(rho)> const inhMedium(composition, rho);
 
   CORSIKA_LOG_INFO("test={} l={} {} {}", rho.getIntegrateGrammage(trajectory), length,
