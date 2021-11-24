@@ -13,6 +13,7 @@
  */
 
 #include <type_traits>
+#include <cstddef>
 
 namespace corsika {
 
@@ -103,7 +104,7 @@ namespace corsika {
    */
   template <typename TProcess, int N = 0, typename Enable = void>
   struct count_processes {
-    static unsigned int constexpr count = N;
+    static size_t constexpr count = N;
   };
 
 } // namespace corsika

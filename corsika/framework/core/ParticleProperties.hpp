@@ -7,9 +7,9 @@
  */
 
 /**
-   @file ParticleProperties.hpp
-
-   Interface to particle properties
+ *   @file ParticleProperties.hpp
+ *
+ * Interface to particle properties.
  */
 
 #pragma once
@@ -59,17 +59,34 @@ namespace corsika {
    */
 
   /**
-   * @brief  The Code enum is the actual place to define CORSIKA 8 particle codes.
+   * @enum Code
+   *
+   * The Code enum is the actual place to define CORSIKA 8 particle codes.
    */
   enum class Code : int32_t;
 
   /**
-   * @brief Specifically for PDG ids.
+   * @enum PDGCode
+   *
+   * Specifically for PDG ids.
    */
   enum class PDGCode : int32_t;
 
-  using CodeIntType = std::underlying_type<Code>::type;
-  using PDGCodeIntType = std::underlying_type<PDGCode>::type;
+  /**
+   * Internal integer type for enum Code.
+   */
+  typedef std::underlying_type<Code>::type CodeIntType;
+
+  /**
+   * Internal integer type for enum PDGCode.
+   */
+  typedef std::underlying_type<PDGCode>::type PDGCodeIntType;
+} // namespace corsika
+
+// data arrays, etc., as generated automatically
+#include <corsika/framework/core/GeneratedParticleProperties.inc>
+
+namespace corsika {
 
   // forward declarations to be used in GeneratedParticleProperties
   int16_t constexpr get_charge_number(Code const);     //!< electric charge in units of e
@@ -96,19 +113,20 @@ namespace corsika {
   std::string_view constexpr get_name(Code const); //!< name of the particle as string
   TimeType constexpr get_lifetime(Code const);     //!< lifetime
 
-  bool constexpr is_hadron(Code const); //!< true iff particle is hadron
-  bool constexpr is_em(Code const); //!< true iff particle is electron, positron or photon
-  bool constexpr is_muon(Code const);     //!< true iff particle is mu+ or mu-
-  bool constexpr is_neutrino(Code const); //!< true iff particle is (anti-) neutrino
+  bool constexpr is_hadron(Code const); //!< true if particle is hadron
+  bool constexpr is_em(Code const); //!< true if particle is electron, positron or photon
+  bool constexpr is_muon(Code const);     //!< true if particle is mu+ or mu-
+  bool constexpr is_neutrino(Code const); //!< true if particle is (anti-) neutrino
 
   /**
    * @brief Creates the Code for a nucleus of type 10LZZZAAAI.
    *
    * @return internal nucleus Code
    */
-  Code constexpr get_nucleus_code(unsigned int const A, unsigned int const Z);
+  Code constexpr get_nucleus_code(size_t const A, size_t const Z);
+
   /**
-   * @brief Checks if Code corresponds to a nucleus.
+   * Checks if Code corresponds to a nucleus.
    *
    * @return true if nucleus.
    * @return false  if not nucleus.
@@ -116,19 +134,19 @@ namespace corsika {
   bool constexpr is_nucleus(Code const);
 
   /**
-   * @brief Get the mass number A for nucleus.
+   * Get the mass number A for nucleus.
    *
    * @return int size of nucleus.
    */
-  unsigned int constexpr get_nucleus_A(
+  size_t constexpr get_nucleus_A(
       Code const); //!< returns A for hard-coded nucleus, otherwise 0
 
   /**
-   * @brief Get the charge number Z for nucleus.
+   * Get the charge number Z for nucleus.
    *
    * @return int charge of nucleus.
    */
-  unsigned int constexpr get_nucleus_Z(
+  size_t constexpr get_nucleus_Z(
       Code const); //!< returns Z for hard-coded nucleus, otherwise 0
 
   /**
@@ -149,7 +167,7 @@ namespace corsika {
    * @brief Get the nucleus name.
    *
    * @param code
-   * @return std::string
+   * @return std::string_view
    */
   inline std::string_view get_nucleus_name(Code const code);
 
@@ -179,9 +197,6 @@ namespace corsika {
   /** @}*/
 
 } // namespace corsika
-
-// data arrays, etc., as generated automatically
-#include <corsika/framework/core/GeneratedParticleProperties.inc>
 
 #include <corsika/detail/framework/core/ParticleProperties.inl>
 

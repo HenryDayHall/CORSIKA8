@@ -14,9 +14,7 @@
 namespace corsika {
 
   /**
-   * @file InteractionProcess.hpp
-   *
-   * traits test for InteractionProcess::doInteraction methods etc.
+   *  traits test for InteractionProcess::doInteraction method.
    */
 
   template <class TProcess, typename TReturn, typename TTemplate, typename... TArgs>
@@ -41,7 +39,7 @@ namespace corsika {
   public:
     /**
      *  @name traits results
-     * @{
+     *  @{
      */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
@@ -80,7 +78,7 @@ namespace corsika {
   public:
     /**
      *  @name traits results
-     * @{
+     *  @{
      */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;

@@ -17,7 +17,6 @@ namespace corsika {
    *
    * This class returns the same refractive index
    * for all evaluated locations.
-   *
    */
   template <typename T>
   class UniformRefractiveIndex final : public T {
@@ -31,26 +30,26 @@ namespace corsika {
      * This is initialized with a fixed refractive index
      * and returns this refractive index at all locations.
      *
-     * @param field    The refractive index to return everywhere.
+     * @param n  The refractive index to return everywhere.
      */
     template <typename... Args>
     UniformRefractiveIndex(double const n, Args&&... args);
 
     /**
-     * Evaluate the refractive index at a given location.
+     * Evaluate the refractive index at a given location. Note: since this
+     * is *uniform* model, it has no position-dependence.
      *
-     * @param  point    The location to evaluate at.
+     * @param  point    The location to evaluate at (not used internally).
      * @returns    The refractive index at this point.
      */
-    double getRefractiveIndex(Point const&) const override;
+    double getRefractiveIndex(Point const& point) const override;
 
     /**
      * Set the refractive index returned by this instance.
      *
-     * @param  point    The location to evaluate at.
-     * @returns    The refractive index at this location.
+     * @param  n  The global refractive index.
      */
-    void setRefractiveIndex(double const& n);
+    void setRefractiveIndex(double const n);
 
   }; // END: class RefractiveIndex
 

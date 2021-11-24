@@ -14,12 +14,12 @@
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/framework/geometry/BaseTrajectory.hpp>
 
-/**
- * A general inhomogeneous medium. The mass density distribution TDensityFunction must be
- * a \f$C^2\f$-function.
- */
-
 namespace corsika {
+
+  /**
+   * A general inhomogeneous medium. The mass density distribution TDensityFunction must
+   * be a \f$C^2\f$-function.
+   */
 
   template <typename T, typename TDensityFunction>
   class InhomogeneousMedium : public T {

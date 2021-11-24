@@ -11,22 +11,23 @@
 #include <corsika/framework/process/ProcessTraits.hpp>
 
 #include <type_traits>
+#include <cstddef>
 
 //! @file BaseProcess.hpp
 
 namespace corsika {
 
   /**
-     @ingroup Processes
-     @{
-
-     Each process in C8 must derive from BaseProcess
-
-     The structural base type of a process object in a
-     ProcessSequence. Both, the ProcessSequence and all its elements
-     are of type BaseProcess
-
-     @todo rename BaseProcess into just Process
+   * @ingroup Processes
+   * @{
+   *
+   * Each process in C8 must derive from BaseProcess
+   *
+   * The structural base type of a process object in a
+   * ProcessSequence. Both, the ProcessSequence and all its elements
+   * are of type BaseProcess.
+   *
+   * @todo rename BaseProcess into just Process
    */
 
   template <typename TDerived>
@@ -39,7 +40,7 @@ namespace corsika {
                              // BaseProcess itself
 
     /** @name getRef Return reference to underlying type
-        @{
+     *  @{
      */
     TDerived& getRef() { return static_cast<TDerived&>(*this); }
     const TDerived& getRef() const { return static_cast<const TDerived&>(*this); }
@@ -50,15 +51,15 @@ namespace corsika {
     static bool const is_switch_process_sequence = false;
 
     //! Default number of processes is just one, obviously
-    static unsigned int constexpr getNumberOfProcesses() { return 1; }
+    static size_t constexpr getNumberOfProcesses() { return 1; }
 
     //! Base processor type for use in other template classes
     using process_type = TDerived;
   };
 
   /**
-     is_process traits specialization to indicate inheritance from BaseProcess
-  */
+   * is_process traits specialization to indicate inheritance from BaseProcess.
+   */
   template <typename TProcess>
   struct is_process<
       TProcess,
@@ -67,14 +68,14 @@ namespace corsika {
       : std::true_type {};
 
   /**
-     count_processes traits specialization to increase process count by one.
+   * count_processes traits specialization to increase process count by one.
    */
   template <typename TProcess, int N>
   struct count_processes<
       TProcess, N,
       typename std::enable_if_t<is_process_v<std::decay_t<TProcess>> &&
                                 !std::decay_t<TProcess>::is_process_sequence>> {
-    static unsigned int constexpr count = N + 1;
+    static size_t constexpr count = N + 1;
   };
 
   //! @}

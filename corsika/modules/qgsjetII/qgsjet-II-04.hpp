@@ -42,7 +42,7 @@ extern struct {
 } qgarr55_;
 
 /**
-   Small helper class to provide a data-directory name in the format qgsjetII expects
+ * Small helper class to provide a data-directory name in the format qgsjetII expects.
  */
 class datadir {
 private:
@@ -60,33 +60,33 @@ void qgaini_(
     const char* datdir); // Note: there is a length limiation 132 from fortran-qgsjet here
 
 /**
-   additional initialization procedure per event
-
-   @param e0n  - interaction energy (per hadron/nucleon),
-   @param icp0 - hadron type (+-1 - pi+-, +-2 - p(p~), +-3 - n(n~), +-4 - K+-, +-5 -
-   K_l/s),
-   @param iap  - projectile mass number (1 - for a hadron),
-   @param iat  - target mass number
-*/
+ * Additional initialization procedure per event.
+ *
+ * @param e0n  - interaction energy (per hadron/nucleon),
+ * @param icp0 - hadron type (+-1 - pi+-, +-2 - p(p~), +-3 - n(n~), +-4 - K+-, +-5 -
+ *               K_l/s),
+ * @param iap  - projectile mass number (1 - for a hadron),
+ * @param iat  - target mass number
+ */
 void qgini_(const double& e0n, const int& icp0, const int& iap, const int& iat);
 
 /**
-   generate one event configuration
-*/
+ * Generate one event configuration.
+ */
 void qgconf_();
 
 /**
-   hadron-nucleus (hadron-nucleus) particle production cross section
-
-   @param e0n lab. energy per projectile nucleon (hadron)
-   @param icz hadron class (1 - pion, 2 - nucleon, 3 - kaon)
-   @param iap projectile mass number (1=<iap<=iapmax),
-   @param iat target mass number     (1=<iat<=iapmax)
+ * Hadron-nucleus (hadron-nucleus) particle production cross section.
+ *
+ * @param e0n lab. energy per projectile nucleon (hadron)
+ * @param icz hadron class (1 - pion, 2 - nucleon, 3 - kaon)
+ * @param iap0 projectile mass number (1=<iap<=iapmax),
+ * @param iat0 target mass number     (1=<iat<=iapmax)
  */
 double qgsect_(const double& e0n, const int& icz, const int& iap0, const int& iat0);
 
 /**
-   link to random number generation
+ * Link to random number generation.
  */
 double qgran_(int&);
 }

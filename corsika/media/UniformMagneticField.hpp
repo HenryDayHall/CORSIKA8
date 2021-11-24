@@ -19,7 +19,6 @@ namespace corsika {
    *
    * This class returns the same magnetic field vector
    * for all evaluated locations.
-   *
    */
   template <typename T>
   class UniformMagneticField : public T {
@@ -31,28 +30,30 @@ namespace corsika {
      * This is initialized with a fixed magnetic field
      * and returns this magnetic field at all locations.
      *
-     * @param field    The fixed magnetic field to return.
+     * @param field   The fixed magnetic field to return.
      */
     template <typename... Args>
-    UniformMagneticField(MagneticFieldVector const& B, Args&&... args)
+    UniformMagneticField(MagneticFieldVector const& field, Args&&... args)
         : T(std::forward<Args>(args)...)
-        , B_(B) {}
+        , B_(field) {}
 
     /**
      * Evaluate the magnetic field at a given location.
      *
-     * @param  point    The location to evaluate the field at.
+     * @param  point    The location to evaluate the field at (not used internally).
      * @returns    The magnetic field vector.
      */
-    MagneticFieldVector getMagneticField(Point const&) const final override { return B_; }
+    MagneticFieldVector getMagneticField([
+        [maybe_unused]] Point const& point) const final override {
+      return B_;
+    }
 
     /**
      * Set the magnetic field returned by this instance.
      *
-     * @param  point    The location to evaluate the field at.
-     * @returns    The magnetic field vector.
+     * @param  Bfield    The new vaue of the global magnetic field.
      */
-    auto setMagneticField(MagneticFieldVector const& Bfield) -> void { B_ = Bfield; }
+    void setMagneticField(MagneticFieldVector const& Bfield) { B_ = Bfield; }
 
   private:
     MagneticFieldVector B_; ///< The constant magnetic field we use.

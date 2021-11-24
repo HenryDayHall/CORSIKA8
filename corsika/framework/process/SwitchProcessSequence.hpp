@@ -115,16 +115,16 @@ namespace corsika {
     static bool const is_switch_process_sequence = true;
 
     /**
-      Only valid user constructor will create fully initialized object
-
-      SwitchProcessSequence supports and encourages move semantics. You can
-      use object, l-value references or r-value references to
-      construct sequences.
-
-      @param sel functor to switch between branch A and B
-      @param in_A process branch A
-      @param in_A process branch B
-     **/
+     * Only valid user constructor will create fully initialized object.
+     *
+     * SwitchProcessSequence supports and encourages move semantics. You can
+     * use object, l-value references or r-value references to
+     * construct sequences.
+     *
+     * @param sel functor to switch between branch A and B
+     * @param in_A process branch A
+     * @param in_B process branch B
+     */
     SwitchProcessSequence(TCondition sel, TSequence in_A, USequence in_B)
         : select_(sel)
         , A_(in_A)
@@ -172,8 +172,8 @@ namespace corsika {
 
     /**
      * static counter to uniquely index (count) all ContinuousProcess in switch sequence.
-     **/
-    static unsigned int constexpr getNumberOfProcesses() { return numberOfProcesses_; }
+     */
+    static size_t constexpr getNumberOfProcesses() { return numberOfProcesses_; }
 
 #ifdef CORSIKA_UNIT_TESTING
     TCondition getCondition() const { return select_; }

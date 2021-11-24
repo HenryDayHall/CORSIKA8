@@ -34,19 +34,19 @@ namespace corsika {
 
   inline bool constexpr is_nucleus(Code const code) { return code >= Code::Nucleus; }
 
-  inline Code constexpr get_nucleus_code(unsigned int const A,
-                                         unsigned int const Z) { // 10LZZZAAAI
+  inline Code constexpr get_nucleus_code(size_t const A,
+                                         size_t const Z) { // 10LZZZAAAI
     if (Z > A) { throw std::runtime_error("Z cannot be larger than A in nucleus."); }
     return static_cast<Code>(static_cast<CodeIntType>(Code::Nucleus) + Z * 10000 +
                              A * 10);
   }
 
-  inline unsigned int constexpr get_nucleus_Z(Code const code) {
+  inline size_t constexpr get_nucleus_Z(Code const code) {
     return (static_cast<CodeIntType>(code) % static_cast<CodeIntType>(Code::Nucleus)) /
            10000;
   }
 
-  inline unsigned int constexpr get_nucleus_A(Code const code) {
+  inline size_t constexpr get_nucleus_A(Code const code) {
     return (static_cast<CodeIntType>(code) % 10000) / 10;
   }
 
@@ -54,8 +54,8 @@ namespace corsika {
     if (code < Code::Nucleus) {
       return particle::detail::pdg_codes[static_cast<CodeIntType>(code)];
     }
-    unsigned int const Z = get_nucleus_Z(code);
-    unsigned int const A = get_nucleus_A(code);
+    size_t const Z = get_nucleus_Z(code);
+    size_t const A = get_nucleus_A(code);
     return static_cast<PDGCode>(static_cast<CodeIntType>(Code::Nucleus) + Z * 10000 +
                                 A * 10); // 10LZZZAAAI
   }
@@ -124,8 +124,8 @@ namespace corsika {
   }
 
   inline std::string_view get_nucleus_name(Code const code) {
-    unsigned int const A = get_nucleus_A(code);
-    unsigned int const Z = get_nucleus_Z(code);
+    size_t const A = get_nucleus_A(code);
+    size_t const Z = get_nucleus_Z(code);
     return fmt::format("Nucleus_A{}_Z{}", A, Z);
   }
 

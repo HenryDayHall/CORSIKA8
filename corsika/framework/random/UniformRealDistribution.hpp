@@ -45,57 +45,42 @@ namespace corsika {
     }
 
     /**
-     * @fn quantity_type getMax()const
-     * @brief Get the upper limit.
+     * Get the upper limit.
      *
-     * @pre
-     * @post
-     * @return quantity_type
+     * @return value_type
      */
     value_type getMax() const { return max_; }
 
     /**
-     * @fn void setMax(quantity_type)
-     * @brief Set the upper limit.
+     * Set the upper limit.
      *
-     * @pre
-     * @post
      * @param vMax
      */
     void setMax(value_type const& pmax) { max_ = pmax; }
 
     /**
-     * @fn quantity_type getMin()const
-     * @brief Get the lower limit.
+     * Get the lower limit.
      *
-     * @pre
-     * @post
-     * @return
+     * @return The minimum possible value.
      */
     value_type getMin() const { return min_; }
 
     /**
-     * @fn void setMin(quantity_type)
-     * @brief  Set the lower limit.
+     * Set the lower limit.
      *
-     * @pre
-     * @post
-     * @param vMin
+     * @param pmin is the new lower bound.
      */
     void setMin(value_type const& pmin) { min_ = pmin; }
 
     /**
-     * @fn quantity_type operator ()(Generator&)
-     * @brief Generate a random numberin the range [min, max]
+     * Generate a random number in the range [min, max].
      *
-     * @pre
-     * @post
-     * @tparam Generator
+     * @tparam TGenerator
      * @param g
-     * @return quantity_type
+     * @return value_type
      */
-    template <class Generator>
-    value_type operator()(Generator& g) {
+    template <class TGenerator>
+    value_type operator()(TGenerator& g) {
       return min_ + dist_(g) * (max_ - min_);
     }
 

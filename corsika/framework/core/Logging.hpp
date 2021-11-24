@@ -103,7 +103,7 @@ namespace corsika {
     /**
      * Set the default log level for all *newly* created loggers.
      *
-     *  @param name    The minimum log level required to print.
+     *  @param minlevel The minimum log level required to print.
      *
      */
     auto set_default_level(level::level_enum const minlevel) -> void;

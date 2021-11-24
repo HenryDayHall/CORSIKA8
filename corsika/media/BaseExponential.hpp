@@ -24,6 +24,8 @@ namespace corsika {
   /**
    * This class provides the grammage/length conversion functionality for
    * (locally) flat exponential atmospheres.
+   *
+   * The density is described according to \f[ \varrho() \f]
    */
   template <typename TDerived>
   class BaseExponential {
@@ -37,6 +39,12 @@ namespace corsika {
   protected:
     auto const& getImplementation() const;
 
+    /**
+     * Returns the mass density at altitude "height".
+     *
+     * @param height
+     * @return MassDensityType
+     */
     MassDensityType getMassDensity(LengthType const height) const;
 
     // clang-format off
