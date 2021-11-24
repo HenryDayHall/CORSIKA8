@@ -21,7 +21,7 @@ namespace corsika {
    *
    * The leap-frog algorithm uses two half-steps and is used in magnetic
    * field tracking. The LeapFrogTrajectory will solve the leap-frog
-   * algorithm equation for a given constant $k$ that has to be
+   * algorithm equation for a given constant @f$k@f$ that has to be
    * specified during construction (essentially fixing the magnetic
    * field). Thus, different steps (length) can be dynamically
    * generated here. The velocity vector will correctly point into the
@@ -29,17 +29,18 @@ namespace corsika {
    * intermediate position.
    *
    * One complete leap-frog step is
-   * $
-   * \vec{x}(t_{i+0.5}) = \vec{x}(t_{i}) + \vec{v(t_{i})} * \Delta t / 2 \\
-   * \vec{v}(t_{i+1}) = \vec{v}(t_{i}) + \vec{v}(t_{i})\cross\vec{B}(x_{i}, t_{i}) *
+   * @f{eqnarray*}{
+   * \vec{x}(t_{i+0.5}) &=& \vec{x}(t_{i}) + \vec{v(t_{i})} * \Delta t / 2 \\
+   * \vec{v}(t_{i+1}) &=& \vec{v}(t_{i}) + \vec{v}(t_{i})\times\vec{B}(x_{i}, t_{i}) *
    * \Delta t \\
-   * \vec{x}(t_{i+1}) = \vec{x}(t_{i+0.5}) + \vec{v}(t_{i+1}) * \Delta t /2 \\
-   * $
+   * \vec{x}(t_{i+1}) &=& \vec{x}(t_{i+0.5}) + \vec{v}(t_{i+1}) * \Delta t /2 \\
+   * @f}
    *
-   * The volocity update has the characteristics $|\vec{v}(t_{i+1})|>1$, thus final
+   * The volocity update has the characteristics @f$|\vec{v}(t_{i+1})|>1@f$, thus final
    * velocities are renormalised. The full leap-frog steplength is thus
-   * $L = |\vec{v}(t_{i+1})| * \Delta t / 2  + |\vec{v}(t_{i+1})| *\Delta t / 2$
-   **/
+   * @f[ L = |\vec{v}(t_{i+1})| \cdot \Delta t / 2  + |\vec{v}(t_{i+1})| \cdot \Delta t /
+   * 2 @f]
+   */
 
   class LeapFrogTrajectory : public BaseTrajectory {
 

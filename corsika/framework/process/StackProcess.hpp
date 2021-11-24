@@ -35,13 +35,19 @@ namespace corsika {
    * Where, of course, Stack is the valid
    * class to access particles on the Stack. This methods does
    * not need to be templated, they could use the types
-   * e.g. corsika::setup::Stack directly -- but by the cost of
+   * e.g. `corsika::setup::Stack` directly -- but by the cost of
    * loosing all flexibility otherwise provided.
    *
    * A StackProcess has only one constructor `StackProcess::StackProcess(unsigned int
-   * const nStep)` where nStep is the number of steps of the cascade stepping after which
-   * the stack process should be run. Good values are on the order of 1000, which will not
-   * compromise run time in the end, but provide all the benefits of the StackProcess.
+   * const nStep)` where nStep (@f$n_{step}@f$) is the number of steps of the cascade
+   * stepping after which the stack process should be run. Good values are on the order of
+   * 1000, which will not compromise run time in the end, but provide all the benefits of
+   * the StackProcess.
+   *
+   * The number of *steps* during the cascade processing after
+   * which a StackProcess is going to be executed is determined from `iStep_` and `nStep_`
+   * using the modulo: @f$ !(iStep\_ \; \% \; nStep\_) @f$. And `iStep_` is increased
+   * for each evaluation (step).
    */
 
   template <typename TDerived>
@@ -64,9 +70,7 @@ namespace corsika {
 
   private:
     /**
-     * @name The number of "steps" during the cascade processing after
-     * which this StackProcess is going to be executed. The logic is
-     * "iStep_ modulo nStep_"
+     * @name Execution control and counters.
      * @{
      */
     unsigned int nStep_ = 0;

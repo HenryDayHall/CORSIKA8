@@ -11,54 +11,55 @@
 namespace corsika {
 
   /**
-     @defgroup MediaProperties Media Properties
-
-     Medium types are useful most importantly for effective models
-     like energy losses. a particular medium (mixture of components)
-     may have specif properties not reflected by its mixture of
-     components.
-
-     The data provided here is automatically parsed from the file
-     properties8.dat from NIST.
-
-     The data of each known medium can be access via the global functions in namespace
-     corsika, or via a static class object with the following interface (here at the
-     example of the class HydrogenGas):
-
-     @code{.cpp}
-     static constexpr Medium medium() { return Medium::HydrogenGas; }
-
-     static std::string const getName() { return data_.getName(); }
-     static std::string const getPrettyName() { return data_.getPrettyName(); }
-     static double getWeight() { return data_.getWeight (); }
-     static int weight_significant_figure() { return data_.weight_significant_figure (); }
-     static int weight_error_last_digit() { return data_.weight_error_last_digit(); }
-     static double Z_over_A() { return data_.Z_over_A(); }
-     static double getSternheimerDensity() { return data_.getSternheimerDensity(); }
-     static double getCorrectedDensity() { return data_.getCorrectedDensity(); }
-     static StateOfMatter getStateOfMatter() { return data_.getStateOfMatter(); }
-     static MediumType getType() { return data_.getType(); }
-     static std::string const getSymbol() { return data_.getSymbol(); }
-
-     static double getIeff() { return data_.getIeff(); }
-     static double getCbar() { return data_.getCbar(); }
-     static double getX0() { return data_.getX0(); }
-     static double getX1() { return data_.getX1(); }
-     static double getAA() { return data_.getAA(); }
-     static double getSK() { return data_.getSK(); }
-     static double getDlt0() { return data_.getDlt0(); }
-
-     inline static const MediumData data_ { "hydrogen_gas", "hydrogen gas (H%2#)", 1.008,
-     3, 7, 0.99212,
-     8.3748e-05, 8.3755e-05, StateOfMatter::DiatomicGas,
-     MediumType::Element, "H", 19.2, 9.5835, 1.8639, 3.2718, 0.14092, 5.7273, 0.0 };
-     @endcode
-
-     The numeric data known to CORSIKA 8 (and obtained from NIST) can be browsed below.
-
-     @ingroup MediaProperties
-     @{
-  */
+   * @defgroup MediaProperties Media Properties
+   *
+   * Medium types are useful most importantly for effective models
+   * like energy losses. a particular medium (mixture of components)
+   * may have specif properties not reflected by its mixture of
+   * components.
+   *
+   * The data provided here is automatically parsed from the file
+   * properties8.dat from NIST.
+   *
+   * The data of each known medium can be access via the global functions in namespace
+   * corsika, or via a static class object with the following interface (here at the
+   * example of the class HydrogenGas):
+   *
+   * @code
+   * static constexpr Medium medium() { return Medium::HydrogenGas; }
+   *
+   * static std::string const getName() { return data_.getName(); }
+   * static std::string const getPrettyName() { return data_.getPrettyName(); }
+   * static double getWeight() { return data_.getWeight (); }
+   * static int weight_significant_figure() { return data_.weight_significant_figure (); }
+   * static int weight_error_last_digit() { return data_.weight_error_last_digit(); }
+   * static double Z_over_A() { return data_.Z_over_A(); }
+   * static double getSternheimerDensity() { return data_.getSternheimerDensity(); }
+   * static double getCorrectedDensity() { return data_.getCorrectedDensity(); }
+   * static StateOfMatter getStateOfMatter() { return data_.getStateOfMatter(); }
+   * static MediumType getType() { return data_.getType(); }
+   * static std::string const getSymbol() { return data_.getSymbol(); }
+   *
+   * static double getIeff() { return data_.getIeff(); }
+   * static double getCbar() { return data_.getCbar(); }
+   * static double getX0() { return data_.getX0(); }
+   * static double getX1() { return data_.getX1(); }
+   * static double getAA() { return data_.getAA(); }
+   * static double getSK() { return data_.getSK(); }
+   * static double getDlt0() { return data_.getDlt0(); }
+   *
+   * inline static const MediumData data_ { "hydrogen_gas", "hydrogen gas (H%2#)", 1.008,
+   * 3, 7, 0.99212,
+   * 8.3748e-05, 8.3755e-05, StateOfMatter::DiatomicGas,
+   * MediumType::Element, "H", 19.2, 9.5835, 1.8639, 3.2718, 0.14092, 5.7273, 0.0 };
+   * @endcode
+   *
+   * The numeric data known to CORSIKA 8 (and obtained from NIST) can be browsed in
+   * @ref MediaPropertiesClasses.
+   *
+   * @ingroup MediaProperties
+   * @{
+   */
 
   //! General type of medium
   enum class MediumType {
@@ -75,15 +76,20 @@ namespace corsika {
   //! Physical state of medium
   enum class StateOfMatter { Unknown, Solid, Liquid, Gas, DiatomicGas };
 
+  /**
+   * Enum for all known Media types.
+   */
   enum class Medium : int16_t;
 
-  using MediumIntType = std::underlying_type<Medium>::type;
+  /**
+   * The internal integer type of a medium enum.
+   */
+  typedef std::underlying_type<Medium>::type MediumIntType;
 
   /**
    *
    * Simple object to group together the properties of a medium.
-   *
-   **/
+   */
   struct MediumData {
     std::string name_;
     std::string pretty_name_;
@@ -145,12 +151,12 @@ namespace corsika {
 namespace corsika {
 
   /**
-     @file MediaProperties.hpp
-
-     @ingroup MediaProperties
-     @{
-
-     Returns MediumData object for medium identifed by enum Medium.
+   * @file MediaProperties.hpp
+   *
+   * @ingroup MediaProperties
+   * @{
+   *
+   * Returns MediumData object for medium identifed by enum Medium.
    */
 
   constexpr MediumData const& mediumData(Medium const m) {

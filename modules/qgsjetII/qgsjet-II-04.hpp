@@ -10,18 +10,22 @@
 
 #include <string>
 
+/**
+ * @file qgsjet-II.04.hpp
+ *
+ * The interface to the fortran code.
+ */
+
 namespace qgsjetII {
 
   /**
-   * \function qgsjetII::rndm_interface
-   *
-   * this is the random number hook to external packages.
+   * This is the random number hook to external packages.
    *
    * CORSIKA8, for example, has to provide an implementation of this.
-   **/
+   */
   extern double rndm_interface();
 
-} // namespace sibyll
+} // namespace qgsjetII
 
 //----------------------------------------------
 //  C++ interface for the QGSJetII event generator
@@ -55,7 +59,7 @@ extern struct {
 } qgarr55_;
 
 /**
-   Small helper class to provide a data-directory name in the format qgsjetII expects
+ * Small helper class to provide a data-directory name in the format qgsjetII expects.
  */
 class datadir {
 private:
@@ -73,41 +77,33 @@ void qgaini_(
     const char* datdir); // Note: there is a length limiation 132 from fortran-qgsjet here
 
 /**
-   @function qgini_
-
-   additional initialization procedure per event
-
-   @parameter e0n  - interaction energy (per hadron/nucleon),
-   @parameter icp0 - hadron type (+-1 - pi+-, +-2 - p(p~), +-3 - n(n~), +-4 - K+-, +-5 -
-   K_l/s),
-   @parameter iap  - projectile mass number (1 - for a hadron),
-   @parameter iat  - target mass number
-*/
+ * Additional initialization procedure per event.
+ *
+ * @param e0n  - interaction energy (per hadron/nucleon),
+ * @param icp0 - hadron type (+-1 - pi+-, +-2 - p(p~), +-3 - n(n~), +-4 - K+-, +-5 -
+ *               K_l/s),
+ * @param iap  - projectile mass number (1 - for a hadron),
+ * @param iat  - target mass number
+ */
 void qgini_(const double& e0n, const int& icp0, const int& iap, const int& iat);
 
 /**
-   @function qgconf_
-
-   generate one event configuration
-*/
+ * Generate one event configuration.
+ */
 void qgconf_();
 
 /**
-   @function qgsect_
-
-   hadron-nucleus (hadron-nucleus) particle production cross section
-
-   @parameter e0n lab. energy per projectile nucleon (hadron)
-   @parameter icz hadron class (1 - pion, 2 - nucleon, 3 - kaon)
-   @parameter iap0 projectile mass number (1=<iap0<=iapmax),
-   @parameter iat0 target mass number     (1=<iat0<=iapmax)
+ * Hadron-nucleus (hadron-nucleus) particle production cross section.
+ *
+ * @param e0n lab. energy per projectile nucleon (hadron)
+ * @param icz hadron class (1 - pion, 2 - nucleon, 3 - kaon)
+ * @param iap0 projectile mass number (1=<iap0<=iapmax),
+ * @param iat0 target mass number     (1=<iat0<=iapmax)
  */
 double qgsect_(const double& e0n, const int& icz, const int& iap0, const int& iat0);
 
 /**
-   @function qgran
-
-   link to random number generation
+ * Link to random number generation.
  */
 double qgran_(int&);
 }

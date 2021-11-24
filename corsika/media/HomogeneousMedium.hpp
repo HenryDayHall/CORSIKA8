@@ -14,11 +14,11 @@
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/framework/geometry/BaseTrajectory.hpp>
 
-/**
- * a homogeneous medium
- */
-
 namespace corsika {
+
+  /**
+   * a homogeneous medium
+   */
 
   template <typename T>
   class HomogeneousMedium : public T {

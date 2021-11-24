@@ -24,7 +24,7 @@ namespace corsika {
   }
 
   template <typename T>
-  inline void UniformRefractiveIndex<T>::setRefractiveIndex(double const& n) {
+  inline void UniformRefractiveIndex<T>::setRefractiveIndex(double const n) {
     n_ = n;
   }
 

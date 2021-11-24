@@ -33,42 +33,44 @@ namespace corsika {
   class ConstStackIteratorInterface; // forward decl
 
   /**
-     The StackIteratorInterface is the main interface to iterator over
-     particles on a stack.
-
-     At the same time StackIteratorInterface is a
-     Particle object by itself, thus there is no difference between
-     type and ref_type for convenience of the physicist.
-
-     This allows to write code like
-     \verbatim
-     for (auto& p : theStack) { p.SetEnergy(newEnergy); }
-     \endverbatim
-
-     The template argument Stack determines the type of Stack object
-     the data is stored in. A pointer to the Stack object is part of
-     the StackIteratorInterface. In addition to Stack the iterator only knows
-     the index index_ in the Stack data.
-
-     The template argument `TParticleInterface` acts as a policy to provide
-     readout function of Particle data from the stack. The TParticleInterface
-     class must know how to retrieve information from the Stack data
-     for a particle entry at any index index_.
-
-     The TParticleInterface class must be written and provided by the
-     user, it contains methods like <code> auto getData() const {
-     return getStackData().getData(getIndex()); }</code>, where
-     StackIteratorInterface::getStackData() return a reference to the
-     object storing the particle data of type TStackData. And
-     StackIteratorInterface::getIndex() provides the iterator index to
-     be readout. The TStackData is another user-provided class to
-     store data and must implement functions compatible with
-     TParticleInterface, in this example TStackData::getData(const unsigned int
-     vIndex).
-
-     For two examples see stack_example.cc, or the
-     corsikaes::sibyll::SibStack class
-  */
+   * The StackIteratorInterface is the main interface to iterator over
+   * particles on a stack.
+   *
+   * At the same time StackIteratorInterface is a
+   * Particle object by itself, thus there is no difference between
+   * type and ref_type for convenience of the physicist.
+   *
+   * This allows to write code like:
+   * @code
+   * for (auto& p : theStack) {
+   *    p.setEnergy(newEnergy);
+   * }
+   * @endcode
+   *
+   * The template argument Stack determines the type of Stack object
+   * the data is stored in. A pointer to the Stack object is part of
+   * the StackIteratorInterface. In addition to Stack the iterator only knows
+   * the index index_ in the Stack data.
+   *
+   * The template argument `TParticleInterface` acts as a policy to provide
+   * readout function of Particle data from the stack. The TParticleInterface
+   * class must know how to retrieve information from the Stack data
+   * for a particle entry at any index index_.
+   *
+   * The TParticleInterface class must be written and provided by the
+   * user, it contains methods like <code> auto getData() const {
+   * return getStackData().getData(getIndex()); }</code>, where
+   * StackIteratorInterface::getStackData() return a reference to the
+   * object storing the particle data of type TStackData. And
+   * StackIteratorInterface::getIndex() provides the iterator index to
+   * be readout. The TStackData is another user-provided class to
+   * store data and must implement functions compatible with
+   * TParticleInterface, in this example TStackData::getData(const unsigned int
+   * vIndex).
+   *
+   * For two examples see stack_example.cc, or the
+   * corsika::sibyll::SibStack class.
+   */
 
   template <typename TStackData, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer,
@@ -105,20 +107,24 @@ namespace corsika {
       return *this;
     }
 
-    /** iterator must always point to data, with an index:
-          @param data reference to the stack [rw]
-          @param index index on stack
-       */
+    /**
+     *  Iterator must always point to data, with an index.
+     *
+     *    @param data reference to the stack [rw]
+     *    @param index index on stack
+     */
     StackIteratorInterface(stack_type& data, unsigned int const index)
         : index_(index)
         , data_(&data) {}
 
-    /** constructor that also sets new values on particle data object
-        @param data reference to the stack [rw]
-        @param index index on stack
-        @param args variadic list of data to initialize stack entry, this must be
-       consistent with the definition of the user-provided
-       particle_interface_type::setParticleData(...) function
+    /**
+     *  Constructor that also sets new values on particle data object.
+     *
+     *  @param data reference to the stack [rw].
+     *  @param index index on stack.
+     *  @param args variadic list of data to initialize stack entry, this must be
+     *        consistent with the definition of the user-provided
+     *        particle_interface_type::setParticleData(...) function.
      */
     template <typename... TArgs>
     StackIteratorInterface(stack_type& data, unsigned int const index,
@@ -129,16 +135,18 @@ namespace corsika {
       (**this).setParticleData(args...);
     }
 
-    /** constructor that also sets new values on particle data object, including reference
-        to parent particle
-        @param data reference to the stack [rw]
-        @param index index on stack
-        @param reference to parent particle [rw]. This can be used for thinning, particle
-       counting, history, etc.
-        @param args variadic list of data to initialize stack entry, this must be
-       consistent with the definition of the user-provided
-       particle_interface_type::setParticleData(...) function
-    */
+    /**
+     * Constructor that also sets new values on particle data object, including reference
+     * to parent particle.
+     *
+     *  @param data reference to the stack [rw]
+     *  @param index index on stack
+     *  @param parent to parent particle [rw]. This can be used for thinning, particle
+     *         counting, history, etc.
+     *   @param args variadic list of data to initialize stack entry, this must be
+     *        consistent with the definition of the user-provided
+     *         particle_interface_type::setParticleData(...) function.
+     */
     template <typename... TArgs>
     StackIteratorInterface(stack_type& data, unsigned int const index,
                            StackIteratorInterface& parent, const TArgs... args)
@@ -151,9 +159,10 @@ namespace corsika {
     bool isErased() const { return getStack().isErased(*this); }
 
   public:
-    /** @name Iterator interface
-        @{
-    **/
+    /**
+     * @name Iterator interface
+     * @{
+     */
     StackIteratorInterface& operator++() {
       do {
         ++index_;
@@ -187,26 +196,26 @@ namespace corsika {
 
     /**
      * Convert iterator to value type, where value type is the user-provided particle
-     * readout class
-     **/
+     * readout class.
+     */
     particle_interface_type& operator*() {
       return static_cast<particle_interface_type&>(*this);
     }
 
     /**
      * Convert iterator to const value type, where value type is the user-provided
-     * particle readout class
-     **/
+     * particle readout class.
+     */
     particle_interface_type const& operator*() const {
       return static_cast<particle_interface_type const&>(*this);
     }
-    ///@}
+    //! @}
 
   protected:
     /**
      * @name Stack data access
      * @{
-     **/
+     */
     /// Get current particle index
     unsigned int getIndex() const { return index_; }
     /// Get current particle Stack object
@@ -221,7 +230,7 @@ namespace corsika {
     unsigned int getIndexFromIterator() const {
       return data_->getIndexFromIterator(index_);
     }
-    ///@}
+    //! @}
 
     // friends are needed for access to protected methods
     friend class Stack<TStackData, TParticleInterface,
@@ -252,17 +261,17 @@ namespace corsika {
   }; // end class StackIterator
 
   /**
-     This is the iterator class for const-access to stack data.
-
-     The const counterpart of StackIteratorInterface, which is used
-     for read-only iterator access on particle stack:
-
-     \verbatim
-     for (auto const& p : theStack) { E += p.getEnergy(); }
-     \endverbatim
-
-     See documentation of StackIteratorInterface for more details:
-     \sa StackIteratorInterface
+   * This is the iterator class for const-access to stack data.
+   *
+   * The const counterpart of StackIteratorInterface, which is used
+   * for read-only iterator access on particle stack:
+   *
+   * @code
+   * for (auto const& p : theStack) { E += p.getEnergy(); }
+   * @endcode
+   *
+   * See documentation of StackIteratorInterface for more details:
+   * \sa StackIteratorInterface.
    */
 
   template <typename TStackData, template <typename> typename TParticleInterface,
@@ -295,8 +304,9 @@ namespace corsika {
 
     bool isErased() const { return getStack().isErased(*this); }
 
-    /** @name Iterator interface
-        @{
+    /**
+     * @name Iterator interface
+     * @{
      */
     ConstStackIteratorInterface& operator++() {
       do {
@@ -336,12 +346,13 @@ namespace corsika {
     particle_interface_type const& operator*() const {
       return static_cast<particle_interface_type const&>(*this);
     }
-    ///@}
+    //! @}
 
   protected:
-    /** @name Stack data access
-        Only the const versions for read-only access
-        @{
+    /**
+     * @name Stack data access
+     * Only the const versions for read-only access
+     * @{
      */
     unsigned int getIndex() const { return index_; }
     stack_type const& getStack() const { return *data_; }
@@ -350,7 +361,7 @@ namespace corsika {
     unsigned int getIndexFromIterator() const {
       return data_->getIndexFromIterator(index_);
     }
-    ///@}
+    //! @}
 
     // friends are needed for access to protected methods
     friend class Stack<stack_data_type, TParticleInterface,

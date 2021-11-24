@@ -45,8 +45,7 @@ namespace corsika {
       TProcess, N,
       typename std::enable_if_t<is_process_v<std::decay_t<TProcess>> &&
                                 std::decay_t<TProcess>::is_process_sequence>> {
-    static unsigned int constexpr count =
-        N + std::decay_t<TProcess>::getNumberOfProcesses();
+    static size_t constexpr count = N + std::decay_t<TProcess>::getNumberOfProcesses();
   };
 
   /**
@@ -56,8 +55,8 @@ namespace corsika {
    * SwitchProcessSequence containers. The former is a mere (ordered) collection, while
    * the latter has the option to switch between two alternative ProcessSequences.
    *
-   * Depending on the type of data to act on and on the allowed actions of
-   * processes there are several interface options:
+   * Depending on the type of data to act on and on the allowed actions of processes
+   * there are several interface options:
    * - InteractionProcess
    * - DecayProcess
    * - ContinuousProcess
@@ -71,7 +70,7 @@ namespace corsika {
    * Processes of any type (e.g. p1, p2, p3,...) can be assembled into a ProcessSequence
    * using the `make_sequence` factory function.
    *
-   * @code{.cpp}
+   * @code
    *   auto sequence1 = make_sequence(p1, p2, p3);
    *   auto sequence2 = make_sequence(p4, p5, p6, p7);
    *   auto sequence3 = make_sequence(sequence1, sequemce2, p8, p9);
@@ -128,30 +127,30 @@ namespace corsika {
    *
    *   Definition of a static process list/sequence.
    *
-   *  A compile time static list of processes. The compiler will
-   *  generate a new type based on template logic containing all the
-   *  elements provided by the user.
+   *   A compile time static list of processes. The compiler will
+   *   generate a new type based on template logic containing all the
+   *   elements provided by the user.
    *
-   *  TProcess1 and TProcess2 must both be derived from BaseProcess,
-   *  and are both references if possible (lvalue), otherwise (rvalue)
-   *  they are just classes. This allows us to handle both, rvalue as
-   *  well as lvalue Processes in the ProcessSequence.
+   *   TProcess1 and TProcess2 must both be derived from BaseProcess,
+   *   and are both references if possible (lvalue), otherwise (rvalue)
+   *   they are just classes. This allows us to handle both, rvalue as
+   *   well as lvalue Processes in the ProcessSequence.
    *
-   *  (For your potential interest,
-   *  the static version of the
-   *  ProcessSequence and all Process
-   *  types are based on the CRTP C++
-   *  design pattern).
+   *   (For your potential interest,
+   *   the static version of the
+   *   ProcessSequence and all Process
+   *   types are based on the CRTP C++
+   *   design pattern).
    *
-   * Template parameters:
-   *   @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a
-   *           ProcessSequence.
-   *   @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a
-   *           ProcessSequence.
-   * @tparam IndexFirstProcess to count and index each Process in the entire
-   *         process-chain. The offset is the starting value for this ProcessSequence.
-   *  @tparam IndexOfProcess1 index of TProcess1 (counting of Process).
-   *  @tparam IndexOfProcess2 index of TProcess2 (counting of Process).
+   *  Template parameters:
+   *  @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a
+   *           ProcessSequence
+   *  @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a
+   *           ProcessSequence
+   *  @tparam IndexFirstProcess to count and index each Process in the entire
+   *          process-chain. The offset is the starting value for this ProcessSequence
+   *  @tparam IndexOfProcess1 index of TProcess1 (counting of Process)
+   *  @tparam IndexOfProcess2 index of TProcess2 (counting of Process)
    */
 
   template <typename TProcess1, typename TProcess2 = NullModel,
@@ -183,8 +182,8 @@ namespace corsika {
      * use object, l-value references or r-value references to
      * construct sequences.
      *
-     * @param in_A BaseProcess or switch/process list.
-     * @param in_B BaseProcess or switch/process list.
+     * @param in_A BaseProcess or switch/process list
+     * @param in_B BaseProcess or switch/process list
      */
     ProcessSequence(TProcess1 in_A, TProcess2 in_B);
 
@@ -252,6 +251,10 @@ namespace corsika {
      * The maximum allowed step length is the minimum of the allowed track lenght over all
      * ContinuousProcess-es in the ProcessSequence.
      *
+     * @tparam TParticle particle type.
+     * @tparam TTrack the trajectory type.
+     * @param particle The particle data object.
+     * @param track The track data object.
      * @return ContinuousProcessStepLength which contains the step length itself in
      *          LengthType, and a unique identifier of the related ContinuousProcess.
      */
@@ -321,7 +324,7 @@ namespace corsika {
     /**
      * static counter to uniquely index (count) all ContinuousProcess in switch sequence.
      */
-    static unsigned int constexpr getNumberOfProcesses() { return numberOfProcesses_; }
+    static size_t constexpr getNumberOfProcesses() { return numberOfProcesses_; }
 
 #ifdef CORSIKA_UNIT_TESTING
     TProcess1 getProcess1() const { return A_; }
@@ -332,7 +335,7 @@ namespace corsika {
     TProcess1 A_; //! process/list A, this is a reference, if possible
     TProcess2 B_; //! process/list B, this is a reference, if possible
 
-    static unsigned int constexpr numberOfProcesses_ = IndexOfProcess1; // static counter
+    static size_t constexpr numberOfProcesses_ = IndexOfProcess1; // static counter
   };
 
   /**
@@ -359,10 +362,10 @@ namespace corsika {
    * types derived from BaseProcess. Also the ProcessSequence itself
    * is derived from type BaseProcess.
    *
-   * @tparam TProcesses parameter pack with objects of type BaseProcess.
-   * @tparam TProcess1 another BaseProcess.
-   * @param vA needs to derive from BaseProcess.
-   * @param vB paramter-pack, needs to derive BaseProcess.
+   * @tparam TProcesses parameter pack with objects of type BaseProcess
+   * @tparam TProcess1 another BaseProcess
+   * @param vA needs to derive from BaseProcess
+   * @param vB paramter-pack, needs to derive BaseProcess
    */
   template <typename... TProcesses, typename TProcess1>
   ProcessSequence<TProcess1, decltype(make_sequence(std::declval<TProcesses>()...))>

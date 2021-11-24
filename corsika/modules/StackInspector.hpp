@@ -15,6 +15,17 @@
 
 namespace corsika {
 
+  /**
+   * StackProcess that will act each @f$n_{step}@f$ steps to perform diagnostics on the
+   * full stack.
+   *
+   * The StackInspector can dump the entrie stack content for debugging, or also just
+   * determine the total energy remaining on the stack. From the decrease of energy on the
+   * stack an ETA for the completion of the simulation is determined.
+   *
+   * @tparam TStack Is the type of the particle stack.
+   */
+
   template <typename TStack>
   class StackInspector : public StackProcess<StackInspector<TStack>> {
 
@@ -23,15 +34,15 @@ namespace corsika {
     using StackProcess<StackInspector<TStack>>::getStep;
 
   public:
-    StackInspector(const int vNStep, const bool vReportStack, const HEPEnergyType vE0);
+    StackInspector(int const nStep, bool const reportStack, HEPEnergyType const vE0);
     ~StackInspector();
 
     void doStack(TStack const&);
 
     /**
-     * To set a new E0, for example when a new shower event is started
+     * To set a new E0, for example when a new shower event is started.
      */
-    void setE0(const HEPEnergyType vE0) { E0_ = vE0; }
+    void setE0(HEPEnergyType const E0) { E0_ = E0; }
 
   private:
     bool ReportStack_;

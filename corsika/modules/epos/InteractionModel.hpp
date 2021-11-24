@@ -23,28 +23,45 @@ namespace corsika::epos {
                      bool const epos_printout_on = false);
     ~InteractionModel();
 
-    //! returns production and elastic cross section for hadrons in epos. Inputs are:
-    //! CorsikaId of beam particle, CorsikaId of target particle, center-of-mass energy.
-    //!  Allowed targets are: nuclei or single nucleons (p,n,hydrogen). This routine
-    //!  calculates the cross sections from scratch. Very slow!
+    /**
+     * Returns production and elastic cross section for hadrons in epos.
+     *
+     * Allowed targets are: nuclei or single nucleons (p,n,hydrogen). This routine
+     * calculates the cross sections from scratch.
+     *
+     * Note: **Very slow!**, use tabulation for any performance application.
+     *
+     * @param corsikaId - PID of beam particle,
+     * @param targetId - PID of target particle
+     * @param sqrtS - center-of-mass energy.
+     */
     std::tuple<CrossSectionType, CrossSectionType> calcCrossSectionCoM(
-        Code const, int const, int const, Code const, int const, int const,
-        HEPEnergyType const) const;
+        Code const corsikaId, int const, int const, Code const targetId, int const,
+        int const, HEPEnergyType const sqrtS) const;
 
-    //! returns production and elastic cross section for hadrons in epos by reading
-    //! pre-calculated tables from epos.
+    /**
+     * Returns production and elastic cross section for hadrons in epos by reading
+     * pre-calculated tables from epos.
+     */
     std::tuple<CrossSectionType, CrossSectionType> readCrossSectionTableLab(
         Code const, int const, int const, Code const, HEPEnergyType const) const;
 
-    //! returns production and elastic cross section. Allowed configurations are
-    //! hadron-nucleon, hadron-nucleus and nucleus-nucleus. Inputs are particle id's mass
-    //! and charge numbers and total energy in the lab.
+    /**
+     * Returns production and elastic cross section.
+     *
+     * Allowed configurations are
+     * hadron-nucleon, hadron-nucleus and nucleus-nucleus. Inputs are particle id's mass
+     * and charge numbers and total energy in the lab.
+     */
     std::tuple<CrossSectionType, CrossSectionType> getCrossSectionInelEla(
         Code const projectileId, Code const targetId, FourMomentum const& projectileP4,
         FourMomentum const& targetP4) const;
 
     /**
      * Checks validity of projectile, target and energy combination.
+     *
+     * EPOSLHC only accepts nuclei with X<=A<=Y as targets, or protons aka Hydrogen or
+     * neutrons (p,n == nucleon).
      */
     bool isValid(Code const projectileId, Code const targetId,
                  HEPEnergyType const sqrtS) const;
@@ -66,8 +83,7 @@ namespace corsika::epos {
     }
 
     /**
-     * In this function EPOSLHC is called to produce one event. The
-     * event is copied into the shower lab frame.
+     * Calculate one hadron-hadron interaction.
      */
     template <typename TSecondaries>
     void doInteraction(TSecondaries&, Code const projectileId, Code const targetId,

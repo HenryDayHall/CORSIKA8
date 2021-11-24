@@ -28,10 +28,6 @@
 #include <limits>
 #include <type_traits>
 
-/**
- * The cascade namespace assembles all objects needed to simulate full particles cascades.
- */
-
 namespace corsika {
 
   /**
@@ -43,15 +39,14 @@ namespace corsika {
    * <b>TTracking</b> must be a class according to the
    * TrackingInterface providing the functions:
    *
-   * <code>
+   * @code
    * auto getTrack(particle_type const& p)</auto>,
    * with the return type <code>geometry::Trajectory<Line>
-   * </code>
+   * @endcode
    *
    * <b>TProcessList</b> must be a ProcessSequence.   *
    * <b>Stack</b> is the storage object for particle data, i.e. with
-   * particle class type <code>Stack::particle_type</code>
-   *
+   * particle class type `Stack::particle_type`.
    */
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   class Cascade {
@@ -67,8 +62,8 @@ namespace corsika {
 
   public:
     /**
-     * \group constructors
-     * \{
+     * @name constructors
+     * @{
      * Cascade class cannot be default constructed, but needs a valid
      * list of physics processes for configuration at construct time.
      */
@@ -93,7 +88,7 @@ namespace corsika {
         CORSIKA_LOG_INFO("Stack - with full cascade HISTORY.");
       }
     }
-    //! \}
+    //! @}
 
     /**
      * set the nodes for all particles on the stack according to their numerical

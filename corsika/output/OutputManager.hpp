@@ -79,9 +79,8 @@ namespace corsika {
     /**
      * Register an existing output to this manager.
      *
-     * @param name    The unique name of this output.
-     * @param args... These are perfect forwarded to the
-     *                constructor of the output.
+     * @param name   The unique name of this output.
+     * @param output The output module.
      */
     template <typename TOutput>
     void add(std::string const& name, TOutput& output);
