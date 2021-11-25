@@ -201,7 +201,7 @@ int main(int argc, char** argv) {
    auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getPlanetRadius())};
    auto triggertime_ {(triggerpoint_ - point_).getNorm() / constants::c};
    std::string name_ = "CoREAS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
-   TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
+   TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_, triggertime_);
    detectorCoREAS.addAntenna(antenna_);
  }
  // }
@@ -214,7 +214,7 @@ int main(int argc, char** argv) {
    auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getPlanetRadius())};
    auto triggertime_ {(triggerpoint_ - point_).getNorm() / constants::c};
    std::string name_ = "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
-   TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
+   TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_, triggertime_);
    detectorZHS.addAntenna(antenna_);
  }
  // }
