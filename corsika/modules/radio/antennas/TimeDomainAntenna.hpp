@@ -34,6 +34,7 @@ namespace corsika {
     InverseTimeType const sample_rate_; ///< The sampling rate of this antenna.
     int num_bins_;                      ///< The number of bins used.
     xt::xtensor<double, 2> waveformE_;  ///< The waveform stored by this antenna.
+    TimeType const ground_hit_time_;      ///< The time the primary particle hits the ground.
 
     using Antenna<TimeDomainAntenna>::getName;
     using Antenna<TimeDomainAntenna>::getLocation;
@@ -53,11 +54,12 @@ namespace corsika {
      */
     TimeDomainAntenna(std::string const& name, Point const& location,
                       TimeType const& start_time, TimeType const& duration,
-                      InverseTimeType const& sample_rate)
+                      InverseTimeType const& sample_rate, TimeType const& ground_hit_time)
         : Antenna(name, location)
         , start_time_(start_time)
         , duration_(duration)
         , sample_rate_(sample_rate)
+        , ground_hit_time_(ground_hit_time)
         , num_bins_(static_cast<std::size_t>(duration * sample_rate + 1.5l))
         , waveformE_(xt::zeros<double>({num_bins_, 3})){};
 
@@ -140,7 +142,7 @@ namespace corsika {
       // TODO: Vectorize this using xtensor
       for (std::size_t i = 0; i < num_bins_; i++) {
         // create the current time in nanoseconds
-        times.at(i) = static_cast<long double>((start_time_ + i*sample_period) / 1_ns);
+        times.at(i) = static_cast<long double>(((start_time_ - ground_hit_time_) + i*sample_period) / 1_ns);
       }
 
       return times;
