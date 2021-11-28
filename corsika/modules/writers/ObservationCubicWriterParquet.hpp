@@ -49,9 +49,8 @@ namespace corsika {
     /**
      * Write a particle to the file.
      */
-    void write(Code const& pid, HEPEnergyType const& energy,
-               LengthType const& x, LengthType const& y, LengthType const& z,
-               double nx, double ny, double nz,
+    void write(Code const& pid, HEPEnergyType const& energy, LengthType const& x,
+               LengthType const& y, LengthType const& z, double nx, double ny, double nz,
                TimeType const& t);
 
   }; // class ObservationCubicWriterParquet

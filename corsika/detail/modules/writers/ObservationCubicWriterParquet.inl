@@ -50,15 +50,16 @@ namespace corsika {
 
   inline void ObservationCubicWriterParquet::endOfLibrary() { output_.closeStreamer(); }
 
-  inline void ObservationCubicWriterParquet::write(Code const& pid, HEPEnergyType const& energy,
-               LengthType const& x, LengthType const& y, LengthType const& z,
-               double nx, double ny, double nz,
-               TimeType const& t) {
+  inline void ObservationCubicWriterParquet::write(
+      Code const& pid, HEPEnergyType const& energy, LengthType const& x,
+      LengthType const& y, LengthType const& z, double nx, double ny, double nz,
+      TimeType const& t) {
     // write the next row - we must write `shower_` first.
     *(output_.getWriter()) << shower_ << static_cast<int>(get_PDG(pid))
                            << static_cast<float>(energy / 1_GeV)
-                           << static_cast<float>(x / 1_m) << static_cast<float>(y / 1_m) << static_cast<float>(z / 1_m)
-                           << static_cast<float>(nx) << static_cast<float>(ny) << static_cast<float>(nz)
+                           << static_cast<float>(x / 1_m) << static_cast<float>(y / 1_m)
+                           << static_cast<float>(z / 1_m) << static_cast<float>(nx)
+                           << static_cast<float>(ny) << static_cast<float>(nz)
                            << static_cast<float>(t / 1_ns) << parquet::EndRow;
   }
 

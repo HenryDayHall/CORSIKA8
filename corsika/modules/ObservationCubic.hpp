@@ -5,7 +5,6 @@
 #include <corsika/modules/writers/ObservationCubicWriterParquet.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
 
-
 namespace corsika {
 
   /**
@@ -30,8 +29,8 @@ namespace corsika {
         public TOutputWriter {
 
   public:
-    ObservationCubic(Point const& center, CoordinateSystemPtr cs,
-    LengthType const x, LengthType const y, LengthType const z, bool = true);
+    ObservationCubic(Point const& center, CoordinateSystemPtr cs, LengthType const x,
+                     LengthType const y, LengthType const z, bool = true);
 
     template <typename TParticle, typename TTrajectory>
     ProcessReturn doContinuous(TParticle& vParticle, TTrajectory& vTrajectory,
@@ -49,11 +48,8 @@ namespace corsika {
     bool const deleteOnHit_;
     HEPEnergyType energy_;
     unsigned int count_;
-
   };
   //! @}
 } // namespace corsika
-
-
 
 #include <corsika/detail/modules/ObservationCubic.inl>

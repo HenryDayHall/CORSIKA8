@@ -88,9 +88,9 @@ namespace corsika {
                                    inner_stack_value_type>
         stack_value_iterator;
 
-    typedef ConstStackIteratorInterface<
-        typename std::remove_reference<TStackDataType>::type, TParticleInterface,
-        MSecondaryProducer, inner_stack_value_type>
+    typedef ConstStackIteratorInterface<std::remove_reference_t<TStackDataType>,
+                                        TParticleInterface, MSecondaryProducer,
+                                        inner_stack_value_type>
         const_stack_value_iterator;
     /// @}
 
@@ -98,9 +98,8 @@ namespace corsika {
                                    TParticleInterface, MSecondaryProducer, view_type>
         stack_view_iterator;
 
-    typedef ConstStackIteratorInterface<
-        typename std::remove_reference<TStackDataType>::type, TParticleInterface,
-        MSecondaryProducer, view_type>
+    typedef ConstStackIteratorInterface<std::remove_reference_t<TStackDataType>,
+                                        TParticleInterface, MSecondaryProducer, view_type>
         const_stack_view_iterator;
 
     /**
