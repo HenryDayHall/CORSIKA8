@@ -22,7 +22,7 @@ namespace corsika {
   template <typename TTracking, typename TOutput>
   template <typename TParticle, typename TTrajectory>
   inline ProcessReturn ObservationPlane<TTracking, TOutput>::doContinuous(
-      TParticle& particle, TTrajectory&, bool const stepLimit) {
+      TParticle& particle, TTrajectory& step, bool const stepLimit) {
     /*
        The current step did not yet reach the ObservationPlane, do nothing now and wait:
      */
@@ -46,7 +46,7 @@ namespace corsika {
     }
 
     HEPEnergyType const energy = particle.getEnergy();
-    Point const pointOfIntersection = particle.getPosition();
+    Point const pointOfIntersection = step.getPosition(1);
     Vector const displacement = pointOfIntersection - plane_.getCenter();
 
     // add our particles to the output file stream
