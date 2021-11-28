@@ -30,7 +30,7 @@ namespace corsika {
         public TOutputWriter {
 
   public:
-    ObservationCubic(Point const& center, 
+    ObservationCubic(Point const& center, CoordinateSystemPtr cs,
     LengthType const x, LengthType const y, LengthType const z, bool = true);
 
     template <typename TParticle, typename TTrajectory>
@@ -56,4 +56,4 @@ namespace corsika {
 
 
 
-#include <corsika/details/modules/ObservationCubic.inl>
+#include <corsika/detail/modules/ObservationCubic.inl>

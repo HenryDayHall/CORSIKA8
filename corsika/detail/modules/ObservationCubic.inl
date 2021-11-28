@@ -10,10 +10,10 @@ namespace corsika {
 
 template <typename TTracking, typename TOutput>
 ObservationCubic<TTracking, TOutput>::ObservationCubic(
-    Point const &center, LengthType const x, LengthType const y,
-    LengthType const z, bool deleteOnHit)
-    : Cubic(center, x, y, z), deleteOnHit_(deleteOnHit),
-      energy_(0_GeV), count_(0) {}
+    Point const &center, CoordinateSystemPtr cs, LengthType const x,
+    LengthType const y, LengthType const z, bool deleteOnHit)
+    : Cubic(center, cs, x, y, z), deleteOnHit_(deleteOnHit), energy_(0_GeV),
+      count_(0) {}
 
 template <typename TTracking, typename TOutput>
 template <typename TParticle, typename TTrajectory>
@@ -47,7 +47,7 @@ inline ProcessReturn ObservationCubic<TTracking, TOutput>::doContinuous(
 
   // add our particles to the output file stream
   this->write(particle.getPID(), energy, pointOfIntersection.getX(cs_),
-              pointOfIntersection.getY(cs_), pointOfIntersection.getZ(cs_), 
+              pointOfIntersection.getY(cs_), pointOfIntersection.getZ(cs_),
               dirction.getX(cs_), dirction.getY(cs_), dirction.getZ(cs_),
               particle.getTime());
 
@@ -71,7 +71,8 @@ inline LengthType ObservationCubic<TTracking, TOutput>::getMaxStepLength(
                     particle.asString(), particle.getPosition(),
                     particle.getDirection(), cubic_.asString());
 
-  auto const intersection = TTracking::intersect(particle, *this);
+  auto const intersection =
+      TTracking::intersect(particle, static_cast<Cubic const>(*this));
 
   TimeType const timeOfIntersection = intersection.getEntry();
   CORSIKA_LOG_TRACE("timeOfIntersection={}", timeOfIntersection);
@@ -118,21 +119,21 @@ inline YAML::Node ObservationCubic<TTracking, TOutput>::getConfig() const {
 
   // the x-axis vector
   DirectionVector const x_axis = DirectionVector{cs_, {1, 0, 0}};
-  node["x-axis"].push_back(x_axis.getX(root_cs));
-  node["x-axis"].push_back(x_axis.getY(root_cs));
-  node["x-axis"].push_back(x_axis.getZ(root_cs));
+  node["x-axis"].push_back(x_axis.getX(root_cs).magnitude());
+  node["x-axis"].push_back(x_axis.getY(root_cs).magnitude());
+  node["x-axis"].push_back(x_axis.getZ(root_cs).magnitude());
 
   // the y-axis vector
   DirectionVector const y_axis = DirectionVector{cs_, {0, 1, 0}};
-  node["y-axis"].push_back(y_axis.getX(root_cs));
-  node["y-axis"].push_back(y_axis.getY(root_cs));
-  node["y-axis"].push_back(y_axis.getZ(root_cs));
+  node["y-axis"].push_back(y_axis.getX(root_cs).magnitude());
+  node["y-axis"].push_back(y_axis.getY(root_cs).magnitude());
+  node["y-axis"].push_back(y_axis.getZ(root_cs).magnitude());
 
   // the x-axis vector
   DirectionVector const z_axis = DirectionVector{cs_, {0, 0, 1}};
-  node["z-axis"].push_back(z_axis.getX(root_cs));
-  node["z-axis"].push_back(z_axis.getY(root_cs));
-  node["z-axis"].push_back(z_axis.getZ(root_cs));
+  node["z-axis"].push_back(z_axis.getX(root_cs).magnitude());
+  node["z-axis"].push_back(z_axis.getY(root_cs).magnitude());
+  node["z-axis"].push_back(z_axis.getZ(root_cs).magnitude());
 
   node["delete_on_hit"] = deleteOnHit_;
 
@@ -141,8 +142,8 @@ inline YAML::Node ObservationCubic<TTracking, TOutput>::getConfig() const {
 
 template <typename TTracking, typename TOutput>
 inline void ObservationCubic<TTracking, TOutput>::reset() {
-  energy_= 0_GeV;
-  count_= 0;
+  energy_ = 0_GeV;
+  count_ = 0;
 }
 
 } // namespace corsika

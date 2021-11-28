@@ -58,4 +58,4 @@ namespace corsika {
 
 } // namespace corsika
 
-#include <corsika/details/modules/writers/ObservationCubicWriterParquet.inl>
+#include <corsika/detail/modules/writers/ObservationCubicWriterParquet.inl>
