@@ -12,12 +12,12 @@ namespace corsika {
     // a CoordinateSystemPtr to specify the orintation of coordinate
     Cubic(Point const& center, CoordinateSystemPtr cs, LengthType const x, LengthType const y, LengthType const z)
         : center_(center)
-        , cs_(make_translation(cs, center.getCoordinates(center.getCoordinateSystem())))
+        , cs_(make_translation(cs, center.getCoordinates(cs)))
         , x_(x), y_(y), z_(z) {}
 
     Cubic(Point const& center, CoordinateSystemPtr cs, LengthType const side)
         : center_(center)
-        , cs_(make_translation(cs, center.getCoordinates(center.getCoordinateSystem())))
+        , cs_(make_translation(cs, center.getCoordinates(cs)))
         , x_(side/2), y_(side/2), z_(side/2) {}
 
 

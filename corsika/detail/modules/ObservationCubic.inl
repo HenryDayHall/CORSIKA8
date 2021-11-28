@@ -18,7 +18,7 @@ ObservationCubic<TTracking, TOutput>::ObservationCubic(
 template <typename TTracking, typename TOutput>
 template <typename TParticle, typename TTrajectory>
 inline ProcessReturn ObservationCubic<TTracking, TOutput>::doContinuous(
-    TParticle &particle, TTrajectory &, bool const stepLimit) {
+    TParticle &particle, TTrajectory & step, bool const stepLimit) {
   /*
      The current step did not yet reach the ObservationCubic, do nothing now and
      wait:
@@ -42,7 +42,7 @@ inline ProcessReturn ObservationCubic<TTracking, TOutput>::doContinuous(
   }
 
   HEPEnergyType const energy = particle.getEnergy();
-  Point const pointOfIntersection = particle.getPosition();
+  Point const pointOfIntersection = step.getPosition(1);
   DirectionVector const dirction = particle.getDirection();
 
   // add our particles to the output file stream
@@ -69,7 +69,7 @@ inline LengthType ObservationCubic<TTracking, TOutput>::getMaxStepLength(
 
   CORSIKA_LOG_TRACE("getMaxStepLength, particle={}, pos={}, dir={}, cubic={}",
                     particle.asString(), particle.getPosition(),
-                    particle.getDirection(), cubic_.asString());
+                    particle.getDirection(), asString());
 
   auto const intersection =
       TTracking::intersect(particle, static_cast<Cubic const>(*this));

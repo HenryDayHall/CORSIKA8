@@ -100,10 +100,14 @@ inline Intersections Tracking::intersect(TParticle const &particle,
   SpeedType vx = velocity.getX(cs);
   SpeedType vy = velocity.getY(cs);
   SpeedType vz = velocity.getZ(cs);
+  CORSIKA_LOG_TRACE("particle in cubic coordinate: position: ({:.3f}, {:.3f}, "
+                    "{:.3f}) m, veolocity: ({:.3f}, {:.3f}, {:.3f}) m/ns",
+                    x0 / 1_m, y0 / 1_m, z0 / 1_m, vx / (1_m / 1_ns),
+                    vy / (1_m / 1_ns), vz / (1_m / 1_ns));
 
   auto get_intersect_min_max = [](LengthType x0, SpeedType v0, LengthType dx) {
-    auto t1 = (x0 - dx) / v0;
-    auto t2 = (x0 + dx) / v0;
+    auto t1 = (dx - x0) / v0;
+    auto t2 = (-dx - x0) / v0;
     if (t1 > t2)
       return std::make_pair(t1, t2);
     else
@@ -115,8 +119,10 @@ inline Intersections Tracking::intersect(TParticle const &particle,
   auto [tz_max, tz_min] = get_intersect_min_max(z0, vz, cubic.getZ());
 
   TimeType t_exit = std::min(std::min(tx_max, ty_max), tz_max);
-  TimeType t_enter = std::min(std::min(tx_min, ty_min), tz_min);
+  TimeType t_enter = std::max(std::max(tx_min, ty_min), tz_min);
 
+  CORSIKA_LOG_DEBUG("t_enter: {} ns, t_exit: {} ns", t_enter / 1_ns,
+                    t_exit / 1_ns);
   if ((t_exit > t_enter)) {
     if (t_enter < 0_s && t_exit > 0_s)
       CORSIKA_LOG_DEBUG("numericallyInside={}", cubic.contains(position));
