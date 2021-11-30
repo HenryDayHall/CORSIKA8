@@ -82,12 +82,11 @@ namespace corsika::tracking_line {
   }
 
   template <typename TParticle>
-  inline Intersections Tracking::intersect(TParticle const& particle,
-                                           Cubic const& cubic) {
+  inline Intersections Tracking::intersect(TParticle const& particle, Box const& box) {
     Point const& position = particle.getPosition();
     VelocityVector const velocity =
         particle.getMomentum() / particle.getEnergy() * constants::c;
-    CoordinateSystemPtr const& cs = cubic.getCoordinateSystem();
+    CoordinateSystemPtr const& cs = box.getCoordinateSystem();
     LengthType x0 = position.getX(cs);
     LengthType y0 = position.getY(cs);
     LengthType z0 = position.getZ(cs);
@@ -95,7 +94,7 @@ namespace corsika::tracking_line {
     SpeedType vy = velocity.getY(cs);
     SpeedType vz = velocity.getZ(cs);
     CORSIKA_LOG_TRACE(
-        "particle in cubic coordinate: position: ({:.3f}, {:.3f}, "
+        "particle in box coordinate: position: ({:.3f}, {:.3f}, "
         "{:.3f}) m, veolocity: ({:.3f}, {:.3f}, {:.3f}) m/ns",
         x0 / 1_m, y0 / 1_m, z0 / 1_m, vx / (1_m / 1_ns), vy / (1_m / 1_ns),
         vz / (1_m / 1_ns));
@@ -109,9 +108,9 @@ namespace corsika::tracking_line {
         return std::make_pair(t2, t1);
     };
 
-    auto [tx_max, tx_min] = get_intersect_min_max(x0, vx, cubic.getX());
-    auto [ty_max, ty_min] = get_intersect_min_max(y0, vy, cubic.getY());
-    auto [tz_max, tz_min] = get_intersect_min_max(z0, vz, cubic.getZ());
+    auto [tx_max, tx_min] = get_intersect_min_max(x0, vx, box.getX());
+    auto [ty_max, ty_min] = get_intersect_min_max(y0, vy, box.getY());
+    auto [tz_max, tz_min] = get_intersect_min_max(z0, vz, box.getZ());
 
     TimeType t_exit = std::min(std::min(tx_max, ty_max), tz_max);
     TimeType t_enter = std::max(std::max(tx_min, ty_min), tz_min);
@@ -119,7 +118,7 @@ namespace corsika::tracking_line {
     CORSIKA_LOG_DEBUG("t_enter: {} ns, t_exit: {} ns", t_enter / 1_ns, t_exit / 1_ns);
     if ((t_exit > t_enter)) {
       if (t_enter < 0_s && t_exit > 0_s)
-        CORSIKA_LOG_DEBUG("numericallyInside={}", cubic.contains(position));
+        CORSIKA_LOG_DEBUG("numericallyInside={}", box.contains(position));
       else if (t_enter < 0_s && t_exit < 0_s)
         CORSIKA_LOG_DEBUG("oppisite direction");
       return Intersections(std::move(t_enter), std::move(t_exit));
@@ -133,9 +132,8 @@ namespace corsika::tracking_line {
     if (Sphere const* sphere = dynamic_cast<Sphere const*>(&volumeNode.getVolume());
         sphere) {
       return Tracking::intersect<TParticle>(particle, *sphere);
-    } else if (Cubic const* cubic = dynamic_cast<Cubic const*>(&volumeNode.getVolume());
-               cubic) {
-      return Tracking::intersect<TParticle>(particle, *cubic);
+    } else if (Box const* box = dynamic_cast<Box const*>(&volumeNode.getVolume()); box) {
+      return Tracking::intersect<TParticle>(particle, *box);
     } else {
       throw std::runtime_error(
           "The Volume type provided is not supported in "

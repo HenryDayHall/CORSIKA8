@@ -6,19 +6,19 @@
 #include <corsika/framework/geometry/IVolume.hpp>
 
 namespace corsika {
-  class Cubic : public IVolume {
+  class Box : public IVolume {
 
   public:
     // a CoordinateSystemPtr to specify the orintation of coordinate
-    Cubic(Point const& center, CoordinateSystemPtr cs, LengthType const x,
-          LengthType const y, LengthType const z)
+    Box(Point const& center, CoordinateSystemPtr cs, LengthType const x,
+        LengthType const y, LengthType const z)
         : center_(center)
         , cs_(make_translation(cs, center.getCoordinates(cs)))
         , x_(x)
         , y_(y)
         , z_(z) {}
 
-    Cubic(Point const& center, CoordinateSystemPtr cs, LengthType const side)
+    Box(Point const& center, CoordinateSystemPtr cs, LengthType const side)
         : center_(center)
         , cs_(make_translation(cs, center.getCoordinates(cs)))
         , x_(side / 2)
@@ -30,11 +30,15 @@ namespace corsika {
 
     Point const& getCenter() const { return center_; };
     CoordinateSystemPtr const getCoordinateSystem() const { return cs_; }
+
     LengthType const getX() const { return x_; }
     LengthType const getY() const { return y_; }
     LengthType const getZ() const { return z_; }
 
     std::string asString() const;
+
+    template <typename TDim>
+    void rotate(QuantityVector<TDim> const& axis, double const angle);
 
   protected:
     Point center_;
@@ -47,4 +51,4 @@ namespace corsika {
 
 } // namespace corsika
 
-#include <corsika/detail/framework/geometry/Cubic.inl>
+#include <corsika/detail/framework/geometry/Box.inl>
