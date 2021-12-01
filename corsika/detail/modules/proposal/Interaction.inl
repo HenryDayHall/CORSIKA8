@@ -93,12 +93,10 @@ namespace corsika::proposal {
       for (auto& s : sec) {
         auto E = s.energy * 1_MeV;
         auto vecProposal = s.direction;
-        auto vec = QuantityVector(vecProposal.GetX() * E, vecProposal.GetY() * E,
-                                  vecProposal.GetZ() * E);
-        auto p = MomentumVector(labCS, vec);
+        auto dir = DirectionVector(
+            labCS, {vecProposal.GetX(), vecProposal.GetY(), vecProposal.GetZ()});
         auto sec_code = convert_from_PDG(static_cast<PDGCode>(s.type));
-        view.addSecondary(
-            std::make_tuple(sec_code, p, projectile.getPosition(), projectile.getTime()));
+        view.addSecondary(std::make_tuple(sec_code, E - get_mass(sec_code), dir));
       }
     }
     return ProcessReturn::Ok;

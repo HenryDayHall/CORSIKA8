@@ -15,6 +15,7 @@
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/EnergyMomentumOperations.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 
 #include <fstream>
@@ -75,7 +76,9 @@ int main() {
         momentumComponents(theta / 180. * constants::pi, phi / 180. * constants::pi, P0);
     auto plab = MomentumVector(rootCS, {px, py, pz});
 
-    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
+    stack.addParticle(
+        std::make_tuple(beamCode, get_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
+                        plab.normalized(), injectionPos, 0_ns));
 
     auto const p = stack.getNextParticle();
     HEPEnergyType dE = eLoss.getTotalEnergyLoss(p, 1_g / square(1_cm));

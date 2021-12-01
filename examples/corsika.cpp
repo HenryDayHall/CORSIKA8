@@ -12,18 +12,19 @@
 // to include it first...
 #include <corsika/framework/process/InteractionCounter.hpp>
 /* clang-format on */
-#include <corsika/framework/geometry/Plane.hpp>
-#include <corsika/framework/geometry/Sphere.hpp>
-#include <corsika/framework/core/Logging.hpp>
-#include <corsika/framework/utility/SaveBoostHistogram.hpp>
 #include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/process/SwitchProcessSequence.hpp>
 #include <corsika/framework/process/InteractionCounter.hpp>
-#include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/utility/CorsikaFenv.hpp>
-#include <corsika/framework/core/Cascade.hpp>
+#include <corsika/framework/geometry/Plane.hpp>
+#include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
+#include <corsika/framework/core/Logging.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/Cascade.hpp>
+#include <corsika/framework/core/EnergyMomentumOperations.hpp>
+#include <corsika/framework/utility/SaveBoostHistogram.hpp>
+#include <corsika/framework/utility/CorsikaFenv.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
 
 #include <corsika/output/OutputManager.hpp>
 #include <corsika/output/NoOutput.hpp>
@@ -395,7 +396,9 @@ int main(int argc, char** argv) {
     stack.clear();
 
     // add the desired particle to the stack
-    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
+    stack.addParticle(
+        std::make_tuple(beamCode, get_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
+                        plab.normalized(), injectionPos, 0_ns));
 
     // if we want to fix the first location of the shower
     if (force_interaction) {
