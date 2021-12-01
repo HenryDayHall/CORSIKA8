@@ -57,6 +57,7 @@ install (
   TARGETS Sibyll_static Sibyll
   EXPORT CORSIKA8PublicTargets
   ARCHIVE DESTINATION lib/corsika
+  LIBRARY DESTINATION lib/corsika # just for cmake 3.10.x (ubuntu 18)
   )
 
 # add sibyll to corsika8 build
