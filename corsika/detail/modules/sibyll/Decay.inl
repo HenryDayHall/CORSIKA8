@@ -173,9 +173,7 @@ namespace corsika::sibyll {
       throw std::runtime_error("STOP! Sibyll not configured to execute this decay!");
 
     count_++;
-    // remember position
-    Point const& decayPoint = projectile.getPosition();
-    TimeType const t0 = projectile.getTime();
+
     // switch on decay for this particle
     setUnstable(pCode);
     printDecayConfig(pCode);
@@ -222,8 +220,11 @@ namespace corsika::sibyll {
 
       CORSIKA_LOG_TRACE("Sibyll::Decay: i={} id={} p={} GeV", i, pid, components / 1_GeV);
 
-      projectile.addSecondary(
-          std::make_tuple(pid, MomentumVector(rootCS, components), decayPoint, t0));
+      auto const p3 = MomentumVector(rootCS, components);
+      HEPEnergyType const mass = get_mass(pid);
+      HEPEnergyType const Ekin = sqrt(p3.getSquaredNorm() + mass * mass) - mass;
+
+      projectile.addSecondary(std::make_tuple(pid, Ekin, p3.normalized()));
     }
   }
 

@@ -121,8 +121,6 @@ TEST_CASE("UrQMD") {
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::PiPlus, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
-    CHECK(stackPtr->getEntries() == 1);
-    CHECK(secViewPtr->getEntries() == 0);
 
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->getProjectile();

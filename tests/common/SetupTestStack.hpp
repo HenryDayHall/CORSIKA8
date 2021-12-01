@@ -27,9 +27,6 @@ namespace corsika::setup::testing {
    *
    * standard stack setup for unit tests.
    *
-   *
-   *
-   *
    * \return a tuple with element 0 being a Stack object filled with
    * one particle, and element 1 the StackView on it.
    */
@@ -43,9 +40,11 @@ namespace corsika::setup::testing {
 
     Point const origin(cs, {0_m, 0_m, 0_m});
     MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
+    HEPMassType const mass = get_mass(vProjectileType);
+    HEPEnergyType const Ekin = sqrt(vMomentum * vMomentum + mass * mass) - mass;
 
-    auto particle =
-        stack->addParticle(std::make_tuple(vProjectileType, pLab, origin, 0_ns));
+    auto particle = stack->addParticle(
+        std::make_tuple(vProjectileType, Ekin, pLab.normalized(), origin, 0_ns));
     particle.setNode(vNodePtr);
     return std::make_tuple(std::move(stack),
                            std::make_unique<setup::StackView>(particle));

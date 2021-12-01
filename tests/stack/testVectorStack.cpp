@@ -40,12 +40,6 @@ TEST_CASE("VectorStack", "stack") {
     CHECK(pout.getTime() == 100_s);
     CHECK(pout.getChargeNumber() == -1);
 
-    // particle with no momentum, has no direction
-    auto const p0 = s.addParticle(
-        std::make_tuple(Code::Proton, MomentumVector(dummyCS, {0_GeV, 0_GeV, 0_GeV}),
-                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
-    CHECK(p0.getDirection().getNorm() == 0);
-
     s.clear();
     CHECK(s.getEntries() == 0);
     CHECK(s.getSize() == 0);
@@ -57,7 +51,7 @@ TEST_CASE("VectorStack", "stack") {
     for (int i = 0; i < 99; ++i)
 
       s.addParticle(
-          std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+          std::make_tuple(Code::Electron, 1_GeV, DirectionVector(dummyCS, {1, 0, 0}),
                           Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
 
     CHECK(s.getSize() == 99);

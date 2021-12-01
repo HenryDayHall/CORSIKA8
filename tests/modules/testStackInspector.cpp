@@ -35,11 +35,11 @@ TEST_CASE("StackInspector", "modules") {
   TestCascadeStack stack;
   stack.clear();
   HEPEnergyType E0 = 100_GeV;
-  stack.addParticle(std::make_tuple(Code::Electron,
-                                    MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
+  stack.addParticle(std::make_tuple(Code::Electron, 1_GeV,
+                                    DirectionVector(rootCS, {0, 0, -1}),
                                     Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
-  stack.addParticle(std::make_tuple(get_nucleus_code(16, 8),
-                                    MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
+  stack.addParticle(std::make_tuple(get_nucleus_code(16, 8), 1_GeV,
+                                    DirectionVector(rootCS, {0, 0, -1}),
                                     Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
   SECTION("interface") {

@@ -430,11 +430,6 @@ namespace corsika::epos {
     MomentumVector P_final(originalCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
     HEPEnergyType E_final = 0_GeV;
 
-    // position and time of interaction, not used in QgsjetII
-    auto const& projectile = view.getProjectile();
-    Point const& pOrig = projectile.getPosition();
-    TimeType const tOrig = projectile.getTime();
-
     // secondaries
     EposStack es;
     CORSIKA_LOGGER_DEBUG(logger_, "number of entries on Epos stack: {}", es.getSize());
@@ -449,12 +444,14 @@ namespace corsika::epos {
 
       EposCode const eposId = psec.getPID();
       Code const pid = epos::convertFromEpos(eposId);
+      HEPEnergyType const mass = get_mass(pid);
+      HEPEnergyType const Ekin = sqrt(p3output.getSquaredNorm() + mass * mass) - mass;
       CORSIKA_LOGGER_TRACE(logger_,
                            " id= {}"
                            " p= {}",
                            pid, p3output.getComponents() / 1_GeV);
 
-      auto pnew = view.addSecondary(std::make_tuple(pid, p3output, pOrig, tOrig));
+      auto pnew = view.addSecondary(std::make_tuple(pid, Ekin, p3output.normalized()));
       P_final += pnew.getMomentum();
       E_final += pnew.getEnergy();
     }

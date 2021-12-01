@@ -33,19 +33,29 @@ namespace corsika {
     typedef ParticleBase<TStackIterator> super_type;
 
   public:
+    /**
+     * particle data information content.
+     *
+     * PID, Ekin, direction, position, time.
+     */
     typedef std::tuple<Code, HEPEnergyType, DirectionVector, Point, TimeType>
         particle_data_type;
 
-    typedef std::tuple<Code, MomentumVector, Point, TimeType> particle_data_momentum_type;
+    /**
+     * secondary particle data information content.
+     *
+     * PID, Ekin, direction.
+     */
+    typedef std::tuple<Code, HEPEnergyType, DirectionVector> secondary_data_type;
 
     std::string asString() const;
 
     /**
      * Set data of new particle.
      *
-     * @param v tuple containing: PID, Momentum Vector, Position, Time
+     * @param v tuple containing of type particle_data_type
      *
-     *  MomentumVector is only used to determine the DirectionVector, the normalization
+     * MomentumVector is only used to determine the DirectionVector, the normalization
      * is lost.
      */
     void setParticleData(particle_data_type const& v);
@@ -54,29 +64,10 @@ namespace corsika {
      * Set data of new particle.
      *
      * @param parent parent particle
-     * @param v tuple containing: PID, Momentum Vector, Position, Time
-     *
-     *  MomentumVector is only used to determine the DirectionVector, the normalization
-     * is lost.
+     * @param v tuple containing of type secondary_data_type.
      */
     void setParticleData(ParticleInterface<TStackIterator> const& parent,
-                         particle_data_type const& v);
-
-    /**
-     * Set data of new particle.
-     *
-     * @param v tuple containing: PID, kinetic Energy, Direction Vector, Position, Time
-     */
-    void setParticleData(particle_data_momentum_type const& v);
-
-    /**
-     * Set data of new particle.
-     *
-     * @param parent parent particle
-     * @param v tuple containing: PID, kinetic Energy, Direction Vector, Position, Time
-     */
-    void setParticleData(ParticleInterface<TStackIterator> const& parent,
-                         particle_data_momentum_type const& v);
+                         secondary_data_type const& v);
 
     ///! Set particle corsika::Code
     void setPID(Code const id) {

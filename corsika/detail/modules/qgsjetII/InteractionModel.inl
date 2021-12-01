@@ -178,11 +178,6 @@ namespace corsika::qgsjetII {
     // internal QGSJetII system
     COMBoost boostInternal({Elab, pLab}, get_mass(targetId));
 
-    // position and time of interaction, not used in QgsjetII
-    auto const projectile = view.getProjectile();
-    Point const pOrig = projectile.getPosition();
-    TimeType const tOrig = projectile.getTime();
-
     // fragments
     QGSJetIIFragmentsStack qfs;
     for (auto& fragm : qfs) {
@@ -208,11 +203,16 @@ namespace corsika::qgsjetII {
         auto p3output = P4output.getSpaceLikeComponents();
         p3output.rebase(originalCS); // transform back into standard lab frame
 
+        HEPEnergyType const mass = get_mass(idFragm);
+        HEPEnergyType const Ekin = sqrt(p3output.getSquaredNorm() + mass * mass) - mass;
+
         CORSIKA_LOG_DEBUG(
             "secondary fragment> id= {}"
             " p={}",
             idFragm, p3output.getComponents());
-        auto pnew = view.addSecondary(std::make_tuple(idFragm, p3output, pOrig, tOrig));
+
+        auto pnew =
+            view.addSecondary(std::make_tuple(idFragm, Ekin, p3output.normalized()));
         Plab_final += pnew.getMomentum();
         Elab_final += pnew.getEnergy();
 
@@ -252,15 +252,19 @@ namespace corsika::qgsjetII {
         auto p3output = P4output.getSpaceLikeComponents();
         p3output.rebase(originalCS); // transform back into standard lab frame
 
+        Code const idFragm = get_nucleus_code(A, Z);
+        HEPEnergyType const mass = get_mass(idFragm);
+        HEPEnergyType const Ekin = sqrt(p3output.getSquaredNorm() + mass * mass) - mass;
+
         CORSIKA_LOG_DEBUG(
             "secondary fragment> id={}"
             " p={}"
             " A={}"
             " Z={}",
-            get_nucleus_code(A, Z), p3output.getComponents(), A, Z);
+            idFragm, p3output.getComponents(), A, Z);
 
-        auto pnew = view.addSecondary(
-            std::make_tuple(get_nucleus_code(A, Z), p3output, pOrig, tOrig));
+        auto pnew =
+            view.addSecondary(std::make_tuple(idFragm, Ekin, p3output.normalized()));
         Plab_final += pnew.getMomentum();
         Elab_final += pnew.getEnergy();
       }
@@ -278,11 +282,12 @@ namespace corsika::qgsjetII {
       auto p3output = P4output.getSpaceLikeComponents();
       p3output.rebase(originalCS); // transform back into standard lab frame
 
-      CORSIKA_LOG_DEBUG("secondary> id= {}, p= {}",
-                        corsika::qgsjetII::convertFromQgsjetII(psec.getPID()),
-                        p3output.getComponents());
-      auto pnew = view.addSecondary(std::make_tuple(
-          corsika::qgsjetII::convertFromQgsjetII(psec.getPID()), p3output, pOrig, tOrig));
+      Code const pid = corsika::qgsjetII::convertFromQgsjetII(psec.getPID());
+      HEPEnergyType const mass = get_mass(pid);
+      HEPEnergyType const Ekin = sqrt(p3output.getSquaredNorm() + mass * mass) - mass;
+
+      CORSIKA_LOG_DEBUG("secondary> id= {}, p= {}", pid, p3output.getComponents());
+      auto pnew = view.addSecondary(std::make_tuple(pid, Ekin, p3output.normalized()));
       Plab_final += pnew.getMomentum();
       Elab_final += pnew.getEnergy();
     }
