@@ -99,11 +99,11 @@ else ()
     IMPORTED_LOCATION ${Pythia8_LIBDIR}/libpythia8.a
     IMPORTED_LINK_INTERFACE_LIBRARIES dl
     )
-  target_include_directories (
-    C8::ext::pythia8 
-    INTERFACE
-    $<BUILD_INTERFACE:${Pythia8_INCLUDE_DIRS}>
-    $<INSTALL_INTERFACE:include/corsika/modules/pythia8/include> 
+  set_property (
+    TARGET C8::ext::pythia8
+    APPEND PROPERTY
+    INTERFACE_INCLUDE_DIRECTORIES $<BUILD_INTERFACE:${Pythia8_INCLUDE_DIRS}>
+                                  $<INSTALL_INTERFACE:include/corsika/modules/pythia8/include> 
     )
 
     message (STATUS "Pythia8 build at: ${Pythia8_PREFIX}, final install to: ${Pythia8_PREFIX_INSTALL}")
