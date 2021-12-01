@@ -22,7 +22,7 @@ namespace corsika {
       abort();
     }
     if (altitude < -1_km || altitude > 850_km) {
-      CORSIKA_LOG_WARN("Altitude should be between -10_km and 3000_km.");
+      CORSIKA_LOG_WARN("Altitude should be between -1_km and 850_km.");
     }
     if (latitude < -90 || latitude > 90) {
       CORSIKA_LOG_ERROR("Latitude has to be between -90 and 90 degree.");
