@@ -1,3 +1,11 @@
+/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 namespace corsika {
   inline bool Box::contains(Point const& p) const {
     if ((abs(p.getX(cs_)) < x_) && (abs(p.getY(cs_)) < y_) && (abs(p.getZ(cs_)) < z_))
