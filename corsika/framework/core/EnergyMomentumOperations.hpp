@@ -15,22 +15,106 @@
 /**
  * \file EnergyMomentumOperations.hpp
  *
- * Relativic energy momentum calculations.
+ * Relativistic energy momentum calculations.
  */
 
 namespace corsika {
 
-  auto constexpr get_total_energy_sqr(HEPMomentumType const p, HEPMassType const m) {
+  namespace detail {
+    using HEPEnergyTypeSqr = decltype(1_GeV * 1_GeV);
+  }
+
+  /**
+   * \f[m^2=E_{tot}^2-p^2\f]
+   *
+   * @param E total energy.
+   * @param p particle momentum.
+   * @return HEPEnergyType-squared
+   */
+  auto constexpr calculate_mass_sqr(HEPEnergyType const E, HEPMomentumType const p) {
+    return (E - p) * (E + p);
+  }
+
+  /**
+   * \f[m=sqrt(E_{tot}^2-p^2) \f]
+   *
+   * @param E total energy.
+   * @param p particle momentum.
+   * @return HEPEnergyType
+   */
+  HEPEnergyType constexpr calculate_mass(HEPEnergyType const E, HEPMomentumType const p) {
+    return sqrt(calculate_mass_sqr(E, p));
+  }
+
+  /**
+   * \f[p^2=E_{tot}^2-m^2\f]
+   *
+   * @param E total energy.
+   * @param m particle mass.
+   * @return HEPEnergyType-squared
+   */
+  auto constexpr calculate_momentum_sqr(HEPEnergyType const E, HEPMassType const m) {
+    return (E - m) * (E + m);
+  }
+
+  /**
+   * \f[p=sqrt(E_{tot}^2-m^2) \f]
+   *
+   * @param E total energy.
+   * @param m particle mass.
+   * @return HEPEnergyType
+   */
+  HEPEnergyType constexpr calculate_momentum(HEPEnergyType const E, HEPMassType const m) {
+    return sqrt(calculate_momentum_sqr(E, m));
+  }
+
+  /**
+   * \f[E_{tot}^2=p^2+m^2\f]
+   *
+   * @param p momentum.
+   * @param m particle mass.
+   * @return HEPEnergyType-squared
+   */
+  auto constexpr calculate_total_energy_sqr(HEPMomentumType const p,
+                                            HEPMassType const m) {
     return p * p + m * m;
   }
 
-  HEPEnergyType constexpr get_total_energy(HEPMomentumType const p, HEPMassType const m) {
-    return sqrt(get_total_energy_sqr(p, m));
+  /**
+   * \f[E_{tot}=sqrt(p^2+m^2)\f]
+   *
+   * @param p momentum.
+   * @param m particle mass.
+   * @return HEPEnergyType
+   */
+  HEPEnergyType constexpr calculate_total_energy(HEPMomentumType const p,
+                                                 HEPMassType const m) {
+    return sqrt(calculate_total_energy_sqr(p, m));
   }
 
-  HEPEnergyType constexpr get_kinetic_energy(HEPMomentumType const p,
-                                             HEPMassType const m) {
-    return get_total_energy(p, m) - m;
+  /**
+   * \f[E_{kin}=sqrt(p^2+m^2) - m \f]
+   *
+   * @param p momentum.
+   * @param m particle mass.
+   * @return HEPEnergyType
+   */
+  HEPEnergyType constexpr calculate_kinetic_energy(HEPMomentumType const p,
+                                                   HEPMassType const m) {
+    return calculate_total_energy(p, m) - m;
+  }
+
+  /**
+   * \f[E_{lab}=(\sqrt{s}^2 - m_{proj}^2 - m_{targ}^2) / (2 m_{targ}) \f]
+   *
+   * @param p momentum.
+   * @param m particle mass.
+   * @return HEPEnergyType
+   */
+  HEPEnergyType constexpr calculate_lab_energy(detail::HEPEnergyTypeSqr sqrtS_sqr,
+                                               HEPMassType const m_proj,
+                                               HEPMassType const m_targ) {
+    return (sqrtS_sqr - static_pow<2>(m_proj) - static_pow<2>(m_targ)) / (2 * m_targ);
   }
 
 } // namespace corsika

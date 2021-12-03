@@ -372,7 +372,6 @@ namespace corsika::sibyll {
         Code const pid = pSec.getPID();
         HEPEnergyType const mass = get_mass(pid);
         HEPEnergyType const Ekin = sqrt(p3lab.getSquaredNorm() + mass * mass) - mass;
-
         view.addSecondary(std::make_tuple(pid, Ekin, p3lab.normalized()));
       }
     }

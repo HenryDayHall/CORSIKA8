@@ -14,21 +14,18 @@
 // to include it first...
 #include <corsika/framework/process/InteractionCounter.hpp>
 /* clang-format on */
+#include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/process/SwitchProcessSequence.hpp>
+#include <corsika/framework/process/InteractionCounter.hpp>
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
-
 #include <corsika/framework/core/Logging.hpp>
 #include <corsika/framework/core/EnergyMomentumOperations.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/Cascade.hpp>
-
 #include <corsika/framework/utility/SaveBoostHistogram.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
-
-#include <corsika/framework/process/ProcessSequence.hpp>
-#include <corsika/framework/process/SwitchProcessSequence.hpp>
-#include <corsika/framework/process/InteractionCounter.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 
 #include <corsika/output/OutputManager.hpp>

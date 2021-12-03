@@ -7,14 +7,14 @@
  */
 
 #include <corsika/modules/qgsjetII/InteractionModel.hpp>
-
-#include <corsika/framework/geometry/FourVector.hpp>
-#include <corsika/framework/geometry/Point.hpp>
-
 #include <corsika/modules/qgsjetII/ParticleConversion.hpp>
 #include <corsika/modules/qgsjetII/QGSJetIIFragmentsStack.hpp>
 #include <corsika/modules/qgsjetII/QGSJetIIStack.hpp>
 
+#include <corsika/framework/geometry/FourVector.hpp>
+#include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/core/Logging.hpp>
+#include <corsika/framework/core/EnergyMomentumOperations.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 
 #include <sstream>
@@ -73,9 +73,8 @@ namespace corsika::qgsjetII {
     auto const sqrtS2 = (projectileP4 + targetP4).getNormSqr();
     auto const sqrtS = sqrt(sqrtS2);
     if (!isValid(projectileId, targetId, sqrtS)) { return CrossSectionType::zero(); }
-    HEPEnergyType const Elab = (sqrtS2 - static_pow<2>(get_mass(projectileId)) -
-                                static_pow<2>(get_mass(targetId))) /
-                               (2 * get_mass(targetId));
+    HEPEnergyType const Elab =
+        calculate_lab_energy(sqrtS2, get_mass(projectileId), get_mass(targetId));
 
     int const iBeam = static_cast<QgsjetIIXSClassIntType>(
         corsika::qgsjetII::getQgsjetIIXSCode(projectileId));
@@ -111,9 +110,8 @@ namespace corsika::qgsjetII {
         !isValid(projectileId, targetId, sqrtS)) {
       throw std::runtime_error("invalid target/projectile/energy combination.");
     }
-    HEPEnergyType const Elab = (sqrtS2 - static_pow<2>(get_mass(projectileId)) -
-                                static_pow<2>(get_mass(targetId))) /
-                               (2 * get_mass(targetId));
+    HEPEnergyType const Elab =
+        calculate_lab_energy(sqrtS2, get_mass(projectileId), get_mass(targetId));
 
     int beamA = 0;
     if (is_nucleus(projectileId)) { beamA = get_nucleus_A(projectileId); }
@@ -241,8 +239,7 @@ namespace corsika::qgsjetII {
         MomentumVector momentum{
             csPrime,
             {0.0_GeV, 0.0_GeV,
-             sqrt((projectileEnergyLabPerNucleon * A + nucleusMass) *
-                  (projectileEnergyLabPerNucleon * A - nucleusMass))}};
+             calculate_momentum(projectileEnergyLabPerNucleon * A, nucleusMass)}};
 
         // this is not "CoM" here, but rather the system defined by projectile+target,
         // which in Cascade-mode is already lab
@@ -254,7 +251,7 @@ namespace corsika::qgsjetII {
 
         Code const idFragm = get_nucleus_code(A, Z);
         HEPEnergyType const mass = get_mass(idFragm);
-        HEPEnergyType const Ekin = sqrt(p3output.getSquaredNorm() + mass * mass) - mass;
+        HEPEnergyType const Ekin = calculate_kinetic_energy(p3output.getNorm(), mass);
 
         CORSIKA_LOG_DEBUG(
             "secondary fragment> id={}"
@@ -268,12 +265,11 @@ namespace corsika::qgsjetII {
         Plab_final += pnew.getMomentum();
         Elab_final += pnew.getEnergy();
       }
-    }
+    } // namespace corsika::qgsjetII
 
     // secondaries
     QGSJetIIStack qs;
     for (auto& psec : qs) {
-
       auto momentum = psec.getMomentum(csPrime);
       // this is not "CoM" here, but rather the system defined by projectile+target,
       // which in Cascade-mode is already lab
@@ -284,7 +280,7 @@ namespace corsika::qgsjetII {
 
       Code const pid = corsika::qgsjetII::convertFromQgsjetII(psec.getPID());
       HEPEnergyType const mass = get_mass(pid);
-      HEPEnergyType const Ekin = sqrt(p3output.getSquaredNorm() + mass * mass) - mass;
+      HEPEnergyType const Ekin = calculate_kinetic_energy(p3output.getNorm(), mass);
 
       CORSIKA_LOG_DEBUG("secondary> id= {}, p= {}", pid, p3output.getComponents());
       auto pnew = view.addSecondary(std::make_tuple(pid, Ekin, p3output.normalized()));
