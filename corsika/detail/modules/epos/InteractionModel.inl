@@ -76,7 +76,10 @@ namespace corsika::epos {
     ::epos::aaset_(iarg);
 
     // debug output settings
-    ::epos::prnt1_.ish = 0;    // debug level in epos, 0: off, 6: medium output
+    if (epos_listing_)
+      ::epos::prnt1_.ish = 4;
+    else
+      ::epos::prnt1_.ish = 0;  // debug level in epos, 0: off, 6: medium output
     ::epos::prnt3_.iwseed = 0; // 1: printout seeds, 0: off
     ::epos::files_.ifch = 6;   // output unit, 6: screen
 
@@ -366,19 +369,22 @@ namespace corsika::epos {
 
     count_ = count_ + 1;
 
-    // define projectile
-    // define projectile, in lab frame
-    auto const sqrtS2 = (projectileP4 + targetP4).getNormSqr();
-    HEPEnergyType const sqrtS = sqrt(sqrtS2);
-    if (!isValid(projectileId, targetId, sqrtS)) {
+    // define nucleon-nucleon center-of-mass frame
+    auto const projectileP4NN =
+        projectileP4 / (is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1);
+    auto const targetP4NN =
+        targetP4 / (is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
+    auto const SNN = (projectileP4NN + targetP4NN).getNormSqr();
+    HEPEnergyType const sqrtSNN = sqrt(SNN);
+    if (!isValid(projectileId, targetId, sqrtSNN)) {
       throw std::runtime_error("invalid projectile/target/energy combination.");
     }
-    HEPEnergyType const Elab = (sqrtS2 - static_pow<2>(get_mass(projectileId)) -
+    HEPEnergyType const Elab = (SNN - static_pow<2>(get_mass(projectileId)) -
                                 static_pow<2>(get_mass(targetId))) /
                                (2 * get_mass(targetId));
 
     // system of initial-state
-    COMBoost const boost(projectileP4, targetP4);
+    COMBoost const boost(projectileP4NN, targetP4NN);
 
     auto const& originalCS = boost.getOriginalCS();
     auto const& csPrime =
@@ -393,9 +399,15 @@ namespace corsika::epos {
                          projectileId, projectileP4.getTimeLikeComponent(),
                          projectileP4.getSpaceLikeComponents());
     CORSIKA_LOGGER_DEBUG(
+        logger_, "doInteraction: projectile per-nucleon ENN={}, p3NN={} ",
+        projectileP4NN.getTimeLikeComponent(), projectileP4NN.getSpaceLikeComponents());
+    CORSIKA_LOGGER_DEBUG(
         logger_, "doInteraction: interaction, target id={}, E={}, p3={} ", targetId,
         targetP4.getTimeLikeComponent(), targetP4.getSpaceLikeComponents());
-    CORSIKA_LOGGER_DEBUG(logger_, "doInteraction: Elab={}, sqrtS={} ", Elab, sqrtS);
+    CORSIKA_LOGGER_DEBUG(logger_, "doInteraction: target per-nucleon ENN={}, p3NN={} ",
+                         targetP4NN.getTimeLikeComponent(),
+                         targetP4NN.getSpaceLikeComponents());
+    CORSIKA_LOGGER_DEBUG(logger_, "doInteraction: Elab={}, sqrtSNN={} ", Elab, sqrtSNN);
 
     int beamA = 1;
     int beamZ = 1;
@@ -413,7 +425,7 @@ namespace corsika::epos {
       targetA = get_nucleus_A(targetId);
       targetZ = get_nucleus_Z(targetId);
     }
-    initializeEventCoM(projectileId, beamA, beamZ, targetId, targetA, targetZ, sqrtS);
+    initializeEventCoM(projectileId, beamA, beamZ, targetId, targetA, targetZ, sqrtSNN);
 
     // create event
     int iarg = 1;
