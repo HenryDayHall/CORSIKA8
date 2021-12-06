@@ -108,9 +108,9 @@ namespace corsika {
     if (is_nucleus(pid)) {
       // calculate energy per nucleon
       auto const ElabNuc = energyLab / get_nucleus_A(pid);
-      return (ElabNuc < get_kinetic_energy_threshold(pid));
+      return (ElabNuc < calculate_kinetic_energy_threshold(pid));
     } else {
-      return (energyLab < get_kinetic_energy_threshold(pid));
+      return (energyLab < calculate_kinetic_energy_threshold(pid));
     }
   }
 
@@ -183,7 +183,7 @@ namespace corsika {
 
   inline void ParticleCut::printThresholds() {
     for (auto p : get_all_particles()) {
-      auto const Eth = get_kinetic_energy_threshold(p);
+      auto const Eth = calculate_kinetic_energy_threshold(p);
       CORSIKA_LOG_INFO("kinetic energy threshold for particle {} is {} GeV", p,
                        Eth / 1_GeV);
     }

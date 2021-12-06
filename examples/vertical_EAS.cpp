@@ -252,9 +252,9 @@ int main(int argc, char** argv) {
   setup::Stack stack;
   stack.clear();
 
-  stack.addParticle(
-      std::make_tuple(beamCode, get_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
-                      plab.normalized(), injectionPos, 0_ns));
+  stack.addParticle(std::make_tuple(
+      beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
+      plab.normalized(), injectionPos, 0_ns));
 
   BetheBlochPDG emContinuous(showerAxis);
 

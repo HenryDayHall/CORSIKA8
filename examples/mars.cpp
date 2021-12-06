@@ -421,9 +421,9 @@ int main(int argc, char** argv) {
     stack.clear();
 
     // add the desired particle to the stack
-    stack.addParticle(
-        std::make_tuple(beamCode, get_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
-                        plab.normalized(), injectionPos, 0_ns));
+    stack.addParticle(std::make_tuple(
+        beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
+        plab.normalized(), injectionPos, 0_ns));
 
     // run the shower
     EAS.run();

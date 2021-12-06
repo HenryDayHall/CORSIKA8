@@ -48,6 +48,14 @@ namespace corsika {
      */
     typedef std::tuple<Code, HEPEnergyType, DirectionVector> secondary_data_type;
 
+    /**
+     * secondary particle data information content with position and time update.
+     *
+     * PID, Ekin, direction, delta-Position, delta-Time.
+     */
+    typedef std::tuple<Code, HEPEnergyType, DirectionVector, Vector<length_d>, TimeType>
+        secondary_extended_data_type;
+
     std::string asString() const;
 
     /**
@@ -68,6 +76,15 @@ namespace corsika {
      */
     void setParticleData(ParticleInterface<TStackIterator> const& parent,
                          secondary_data_type const& v);
+
+    /**
+     * Set data of new particle.
+     *
+     * @param parent parent particle
+     * @param v tuple containing of type secondary_extended_data_type.
+     */
+    void setParticleData(ParticleInterface<TStackIterator> const& parent,
+                         secondary_extended_data_type const& v);
 
     ///! Set particle corsika::Code
     void setPID(Code const id) {

@@ -44,6 +44,17 @@ namespace corsika {
   }
 
   template <typename StackIteratorInterface>
+  inline void ParticleInterface<StackIteratorInterface>::setParticleData(
+      ParticleInterface<StackIteratorInterface> const& parent,
+      secondary_extended_data_type const& v) {
+    this->setPID(std::get<0>(v));
+    this->setKineticEnergy(std::get<1>(v));
+    this->setDirection(std::get<2>(v));
+    this->setPosition(parent.getPosition() + std::get<3>(v)); // + position
+    this->setTime(parent.getTime() + std::get<4>(v));         // + parent time
+  }
+
+  template <typename StackIteratorInterface>
   inline std::string ParticleInterface<StackIteratorInterface>::asString() const {
     return fmt::format("particle: i={}, PID={}, Ekin={}GeV", super_type::getIndex(),
                        get_name(this->getPID()), this->getKineticEnergy() / 1_GeV);

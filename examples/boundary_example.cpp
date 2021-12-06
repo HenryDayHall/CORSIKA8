@@ -161,9 +161,9 @@ int main() {
         beamCode, theta, phi, plab.getComponents() / 1_GeV);
     // shoot particles from inside target out
     Point pos(rootCS, 0_m, 0_m, 0_m);
-    stack.addParticle(
-        std::make_tuple(beamCode, get_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
-                        plab.normalized(), pos, 0_ns));
+    stack.addParticle(std::make_tuple(
+        beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
+        plab.normalized(), pos, 0_ns));
   }
 
   // define air shower object, run simulation

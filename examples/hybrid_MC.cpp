@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
   std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
 
   stack.addParticle(std::make_tuple(
-      Code::Proton, get_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
+      Code::Proton, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
       plab.normalized(), injectionPos, 0_ns));
 
   std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.02
