@@ -6,13 +6,14 @@
  * the license.
  */
 
-#include <corsika/framework/core/Cascade.hpp>
 #include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
+#include <corsika/framework/core/Cascade.hpp>
 #include <corsika/framework/core/Logging.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/EnergyMomentumOperations.hpp>
 
 #include <corsika/output/OutputManager.hpp>
 
@@ -160,7 +161,9 @@ int main() {
         beamCode, theta, phi, plab.getComponents() / 1_GeV);
     // shoot particles from inside target out
     Point pos(rootCS, 0_m, 0_m, 0_m);
-    stack.addParticle(std::make_tuple(beamCode, plab, pos, 0_ns));
+    stack.addParticle(std::make_tuple(
+        beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
+        plab.normalized(), pos, 0_ns));
   }
 
   // define air shower object, run simulation

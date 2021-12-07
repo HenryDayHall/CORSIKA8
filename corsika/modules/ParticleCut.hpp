@@ -67,16 +67,16 @@ namespace corsika {
     void reset();
 
     HEPEnergyType getElectronKineticECut() const {
-      return get_kinetic_energy_threshold(Code::Electron);
+      return calculate_kinetic_energy_threshold(Code::Electron);
     }
     HEPEnergyType getPhotonKineticECut() const {
-      return get_kinetic_energy_threshold(Code::Photon);
+      return calculate_kinetic_energy_threshold(Code::Photon);
     }
     HEPEnergyType getMuonKineticECut() const {
-      return get_kinetic_energy_threshold(Code::MuPlus);
+      return calculate_kinetic_energy_threshold(Code::MuPlus);
     }
     HEPEnergyType getHadronKineticECut() const {
-      return get_kinetic_energy_threshold(Code::Proton);
+      return calculate_kinetic_energy_threshold(Code::Proton);
     }
     //! returns total energy of particles that were removed by cut for invisible particles
     HEPEnergyType getInvEnergy() const { return energy_invcut_; }

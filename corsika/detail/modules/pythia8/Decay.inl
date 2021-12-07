@@ -170,9 +170,6 @@ namespace corsika::pythia8 {
 
     auto projectile = view.getProjectile();
 
-    auto const& decayPoint = projectile.getPosition();
-    auto const t0 = projectile.getTime();
-
     auto const& labMomentum = projectile.getMomentum();
     [[maybe_unused]] CoordinateSystemPtr const& labCS = labMomentum.getCoordinateSystem();
 
@@ -230,14 +227,17 @@ namespace corsika::pythia8 {
             {event[i].px() * 1_GeV, event[i].py() * 1_GeV, event[i].pz() * 1_GeV});
         FourVector const fourMomRest{Erest, pRest};
         auto const fourMomLab = boost.fromCoM(fourMomRest);
+        auto const p3 = fourMomLab.getSpaceLikeComponents();
+
+        HEPEnergyType const mass = get_mass(pyId);
+        HEPEnergyType const Ekin = sqrt(p3.getSquaredNorm() + mass * mass) - mass;
 
         CORSIKA_LOG_TRACE(
             "particle: id={} momentum={} energy={} ", pyId,
             fourMomLab.getSpaceLikeComponents().getComponents(labCS) / 1_GeV,
             fourMomLab.getTimeLikeComponent());
 
-        view.addSecondary(
-            std::make_tuple(pyId, fourMomLab.getSpaceLikeComponents(), decayPoint, t0));
+        view.addSecondary(std::make_tuple(pyId, Ekin, p3.normalized()));
       }
 
     // set particle stable

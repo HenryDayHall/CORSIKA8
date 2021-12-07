@@ -247,8 +247,12 @@ namespace corsika::pythia8 {
       MomentumVector const pyPlab(labCS,
                                   {p8p.px() * 1_GeV, p8p.py() * 1_GeV, p8p.pz() * 1_GeV});
 
+      HEPEnergyType const mass = get_mass(pyId);
+      HEPEnergyType const Ekin = sqrt(pyPlab.getSquaredNorm() + mass * mass) - mass;
+
       // add to corsika stack
-      auto pnew = projectile.addSecondary(std::make_tuple(pyId, pyPlab, pOrig, tOrig));
+      auto pnew =
+          projectile.addSecondary(std::make_tuple(pyId, Ekin, pyPlab.normalized()));
 
       Plab_final += pnew.getMomentum();
       Elab_final += pnew.getEnergy();

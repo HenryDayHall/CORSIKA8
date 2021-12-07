@@ -259,10 +259,6 @@ namespace corsika::urqmd {
         iflb_; // flag for retrying interaction in case of empty event, 0 means retry
     ::urqmd::urqmd_(iflb);
 
-    auto projectile = view.getProjectile();
-    auto const& projectilePosition = projectile.getPosition();
-    auto const projectileTime = projectile.getTime();
-
     // now retrieve secondaries from UrQMD
     COMBoost const boost(projectileP4, targetP4);
     auto const& originalCS = boost.getOriginalCS();
@@ -283,8 +279,15 @@ namespace corsika::urqmd {
       momentum.rebase(originalCS); // transform back into standard lab frame
       CORSIKA_LOG_DEBUG(" {} {} {} ", i, code, momentum.getComponents());
 
-      view.addSecondary(
-          std::make_tuple(code, momentum, projectilePosition, projectileTime));
+      HEPEnergyType const mass = get_mass(code);
+      HEPEnergyType Ekin = sqrt(momentum.getSquaredNorm() + mass * mass) - mass;
+      if (Ekin <= 0_GeV) {
+        CORSIKA_LOG_WARN("Negative kinetic energy {} {}. Skipping.", code, Ekin);
+        view.addSecondary(
+            std::make_tuple(code, 0_eV, DirectionVector{originalCS, {0, 0, 0}}));
+      } else {
+        view.addSecondary(std::make_tuple(code, Ekin, momentum.normalized()));
+      }
     }
     CORSIKA_LOG_DEBUG("UrQMD generated {} secondaries!", ::urqmd::sys_.npart);
   }

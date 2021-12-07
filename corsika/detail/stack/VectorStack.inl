@@ -24,41 +24,6 @@ namespace corsika {
 
   template <typename StackIteratorInterface>
   inline void ParticleInterface<StackIteratorInterface>::setParticleData(
-      particle_data_momentum_type const& v) {
-    this->setPID(std::get<0>(v));
-    MomentumVector const p = std::get<1>(v);
-    auto const P2 = p.getSquaredNorm();
-    HEPMassType const M = getMass();
-    this->setKineticEnergy(sqrt(P2 + square(M)) - M);
-    if (P2 == static_pow<2>(0_eV)) {
-      this->setDirection(DirectionVector(p.getCoordinateSystem(), {0, 0, 0}));
-    } else {
-      this->setDirection(p / sqrt(P2));
-    }
-    this->setPosition(std::get<2>(v));
-    this->setTime(std::get<3>(v));
-  }
-
-  template <typename StackIteratorInterface>
-  inline void ParticleInterface<StackIteratorInterface>::setParticleData(
-      ParticleInterface<StackIteratorInterface> const& parent,
-      particle_data_momentum_type const& v) {
-    this->setPID(std::get<0>(v));
-    MomentumVector const p = std::get<1>(v);
-    auto const P2 = p.getSquaredNorm();
-    HEPMassType const M = getMass();
-    this->setKineticEnergy(sqrt(P2 + square(M)) - M);
-    if (P2 == static_pow<2>(0_eV)) {
-      this->setDirection(DirectionVector(p.getCoordinateSystem(), {0, 0, 0}));
-    } else {
-      this->setDirection(p / sqrt(P2));
-    }
-    this->setPosition(std::get<2>(v));
-    this->setTime(std::get<3>(v) + parent.getTime()); // parent time is added
-  }
-
-  template <typename StackIteratorInterface>
-  inline void ParticleInterface<StackIteratorInterface>::setParticleData(
       particle_data_type const& v) {
     this->setPID(std::get<0>(v));
     this->setKineticEnergy(std::get<1>(v));
@@ -70,12 +35,23 @@ namespace corsika {
   template <typename StackIteratorInterface>
   inline void ParticleInterface<StackIteratorInterface>::setParticleData(
       ParticleInterface<StackIteratorInterface> const& parent,
-      particle_data_type const& v) {
+      secondary_data_type const& v) {
     this->setPID(std::get<0>(v));
     this->setKineticEnergy(std::get<1>(v));
     this->setDirection(std::get<2>(v));
-    this->setPosition(std::get<3>(v));
-    this->setTime(std::get<4>(v) + parent.getTime()); // parent time is added
+    this->setPosition(parent.getPosition()); // position
+    this->setTime(parent.getTime());         // parent time
+  }
+
+  template <typename StackIteratorInterface>
+  inline void ParticleInterface<StackIteratorInterface>::setParticleData(
+      ParticleInterface<StackIteratorInterface> const& parent,
+      secondary_extended_data_type const& v) {
+    this->setPID(std::get<0>(v));
+    this->setKineticEnergy(std::get<1>(v));
+    this->setDirection(std::get<2>(v));
+    this->setPosition(parent.getPosition() + std::get<3>(v)); // + position
+    this->setTime(parent.getTime() + std::get<4>(v));         // + parent time
   }
 
   template <typename StackIteratorInterface>

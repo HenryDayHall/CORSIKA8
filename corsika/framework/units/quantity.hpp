@@ -454,7 +454,7 @@ namespace phys {
       // powers and roots
 
       template <int N, typename D, typename X>
-      friend detail::Power<D, N, X> nth_power(quantity<D, X> const& x);
+      friend constexpr detail::Power<D, N, X> nth_power(quantity<D, X> const& x);
 
       template <typename D, typename X>
       friend constexpr detail::Power<D, 2, X> square(quantity<D, X> const& x);
@@ -463,13 +463,13 @@ namespace phys {
       friend constexpr detail::Power<D, 3, X> cube(quantity<D, X> const& x);
 
       template <int N, typename D, typename X>
-      friend detail::Root<D, N, X> nth_root(quantity<D, X> const& x);
+      friend detail::Root<D, N, X> constexpr nth_root(quantity<D, X> const& x);
 
       template <typename D, typename X>
-      friend detail::Root<D, 2, X> sqrt(quantity<D, X> const& x);
+      friend detail::Root<D, 2, X> constexpr sqrt(quantity<D, X> const& x);
 
       template <typename D, typename X>
-      friend detail::Root<D, 3, X> cbrt(quantity<D, X> const& x);
+      friend detail::Root<D, 3, X> constexpr cbrt(quantity<D, X> const& x);
 
       // comparison
 
@@ -629,7 +629,7 @@ namespace phys {
     /// absolute value.
 
     template <typename D, typename X>
-    constexpr quantity<D, X> abs(quantity<D, X> const& x) {
+    quantity<D, X> constexpr abs(quantity<D, X> const& x) {
       return quantity<D, X>(std::abs(x.m_value));
     }
 
@@ -638,7 +638,7 @@ namespace phys {
     /// N-th power.
 
     template <int N, typename D, typename X>
-    detail::Power<D, N, X> nth_power(quantity<D, X> const& x) {
+    detail::Power<D, N, X> constexpr nth_power(quantity<D, X> const& x) {
       return detail::Power<D, N, X>(std::pow(x.m_value, X(N)));
     }
 
@@ -663,7 +663,7 @@ namespace phys {
     /// n-th root.
 
     template <int N, typename D, typename X>
-    detail::Root<D, N, X> nth_root(quantity<D, X> const& x) {
+    detail::Root<D, N, X> constexpr nth_root(quantity<D, X> const& x) {
       static_assert(detail::root<D, N, X>::all_even_multiples,
                     "root result dimensions must be integral");
 
@@ -675,7 +675,7 @@ namespace phys {
     /// square root.
 
     template <typename D, typename X>
-    detail::Root<D, 2, X> sqrt(quantity<D, X> const& x) {
+    detail::Root<D, 2, X> constexpr sqrt(quantity<D, X> const& x) {
       static_assert(detail::root<D, 2, X>::all_even_multiples,
                     "root result dimensions must be integral");
 
@@ -685,7 +685,7 @@ namespace phys {
     /// cubic root.
 
     template <typename D, typename X>
-    detail::Root<D, 3, X> cbrt(quantity<D, X> const& x) {
+    detail::Root<D, 3, X> constexpr cbrt(quantity<D, X> const& x) {
       static_assert(detail::root<D, 3, X>::all_even_multiples,
                     "root result dimensions must be integral");
 

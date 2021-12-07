@@ -92,7 +92,7 @@ namespace corsika {
   int16_t constexpr get_charge_number(Code const);     //!< electric charge in units of e
   ElectricChargeType constexpr get_charge(Code const); //!< electric charge
   HEPMassType constexpr get_mass(Code const);          //!< mass
-  HEPEnergyType constexpr get_kinetic_energy_threshold(
+  HEPEnergyType constexpr calculate_kinetic_energy_threshold(
       Code const); //!< get kinetic energy threshold below which the particle is
                    //!< discarded, by default set to zero
   void constexpr set_kinetic_energy_threshold(

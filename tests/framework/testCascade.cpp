@@ -98,10 +98,10 @@ public:
     ++calls_;
     auto vP = view.getProjectile();
     const HEPEnergyType Ekin = vP.getKineticEnergy();
-    vP.addSecondary(std::make_tuple(vP.getPID(), Ekin / 2, vP.getMomentum().normalized(),
-                                    vP.getPosition(), vP.getTime()));
-    vP.addSecondary(std::make_tuple(vP.getPID(), Ekin / 2, vP.getMomentum().normalized(),
-                                    vP.getPosition(), vP.getTime()));
+    vP.addSecondary(
+        std::make_tuple(vP.getPID(), Ekin / 2, vP.getMomentum().normalized()));
+    vP.addSecondary(
+        std::make_tuple(vP.getPID(), Ekin / 2, vP.getMomentum().normalized()));
   }
 
   int getCalls() const { return calls_; }
@@ -162,11 +162,10 @@ TEST_CASE("Cascade", "[Cascade]") {
   auto sequence = make_sequence(nullModel, stackInspect, split, cut);
   TestCascadeStack stack;
   stack.clear();
-  stack.addParticle(std::make_tuple(
-      Code::Electron,
-      MomentumVector(rootCS, {0_GeV, 0_GeV,
-                              -sqrt(E0 * E0 - static_pow<2>(get_mass(Code::Electron)))}),
-      Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
+  stack.addParticle(std::make_tuple(Code::Electron,
+                                    E0 - get_mass(Code::Electron), // Ekin
+                                    DirectionVector(rootCS, {0, 0, -1}),
+                                    Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
   DummyTracking tracking;
   DummyOutputManager output;

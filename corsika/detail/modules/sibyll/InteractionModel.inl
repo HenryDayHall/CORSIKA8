@@ -138,11 +138,6 @@ namespace corsika::sibyll {
 
     // add particles from sibyll to stack
 
-    // position and time of interaction, not used in Sibyll
-    auto const& projectile = secondaries.parent();
-    Point const& pOrig = projectile.getPosition();
-    TimeType const tOrig = projectile.getTime(); // no time in sibyll
-
     // link to sibyll stack
     SibStack ss;
 
@@ -163,9 +158,13 @@ namespace corsika::sibyll {
       auto const P4lab = boost.fromCoM(FourVector{eCoM, pCoM});
       auto const p3lab = P4lab.getSpaceLikeComponents();
 
+      Code const pid = corsika::sibyll::convertFromSibyll(psib.getPID());
+      HEPEnergyType const mass = get_mass(pid);
+      HEPEnergyType const Ekin = sqrt(p3lab.getSquaredNorm() + mass * mass) - mass;
+
       // add to corsika stack
-      auto pnew = secondaries.addSecondary(std::make_tuple(
-          corsika::sibyll::convertFromSibyll(psib.getPID()), p3lab, pOrig, tOrig));
+      auto pnew =
+          secondaries.addSecondary(std::make_tuple(pid, Ekin, p3lab.normalized()));
 
       Plab_final += pnew.getMomentum();
       Elab_final += pnew.getEnergy();

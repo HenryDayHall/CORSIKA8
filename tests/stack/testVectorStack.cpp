@@ -40,12 +40,6 @@ TEST_CASE("VectorStack", "stack") {
     CHECK(pout.getTime() == 100_s);
     CHECK(pout.getChargeNumber() == -1);
 
-    // particle with no momentum, has no direction
-    auto const p0 = s.addParticle(
-        std::make_tuple(Code::Proton, MomentumVector(dummyCS, {0_GeV, 0_GeV, 0_GeV}),
-                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
-    CHECK(p0.getDirection().getNorm() == 0);
-
     s.clear();
     CHECK(s.getEntries() == 0);
     CHECK(s.getSize() == 0);
@@ -57,7 +51,7 @@ TEST_CASE("VectorStack", "stack") {
     for (int i = 0; i < 99; ++i)
 
       s.addParticle(
-          std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+          std::make_tuple(Code::Electron, 1_GeV, DirectionVector(dummyCS, {1, 0, 0}),
                           Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
 
     CHECK(s.getSize() == 99);
@@ -160,5 +154,37 @@ TEST_CASE("VectorStack", "stack") {
 
     for (int i = 0; i < 99; ++i) s.last().erase();
     CHECK(s.getEntries() == 0);
+  }
+
+  SECTION("secondary generation") {
+
+    // check inheritance of time and location
+
+    VectorStack s;
+    auto p1 = s.addParticle(std::make_tuple(
+        Code::Photon, 1.5_GeV - Electron::mass, DirectionVector(dummyCS, {1, 0, 0}),
+        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 10_s));
+    auto p2 = p1.addSecondary(
+        std::make_tuple(Code::Photon, 10_GeV, DirectionVector(dummyCS, {1, 0, 0})));
+    auto const delta_pos = Vector<length_d>(dummyCS, {1_m, 0_m, 0_m});
+    auto const delta_time = 1_s;
+    auto p3 = p1.addSecondary(std::make_tuple(Code::Photon, 10_GeV,
+                                              DirectionVector(dummyCS, {1, 0, 0}),
+                                              delta_pos, delta_time));
+
+    CHECK(p1.getTime() / 10_s == Approx(1));
+    CHECK(p1.getPosition().getX(dummyCS) / 1_m == Approx(1));
+    CHECK(p1.getPosition().getY(dummyCS) / 1_m == Approx(1));
+    CHECK(p1.getPosition().getZ(dummyCS) / 1_m == Approx(1));
+
+    CHECK(p2.getTime() / 10_s == Approx(1));
+    CHECK(p2.getPosition().getX(dummyCS) / 1_m == Approx(1));
+    CHECK(p2.getPosition().getY(dummyCS) / 1_m == Approx(1));
+    CHECK(p2.getPosition().getZ(dummyCS) / 1_m == Approx(1));
+
+    CHECK(p3.getTime() / 11_s == Approx(1));
+    CHECK(p3.getPosition().getX(dummyCS) / 1_m == Approx(2));
+    CHECK(p3.getPosition().getY(dummyCS) / 1_m == Approx(1));
+    CHECK(p3.getPosition().getZ(dummyCS) / 1_m == Approx(1));
   }
 }

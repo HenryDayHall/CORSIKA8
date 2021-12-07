@@ -1,5 +1,5 @@
-Media Properties
-================
+Medium Properties
+=================
 
 .. toctree::
    media_classes

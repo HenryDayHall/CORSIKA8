@@ -292,14 +292,6 @@ namespace corsika::sibyll {
     }
     // (LCOV_EXCL_STOP)
 
-    // position and time of interaction, not used in NUCLIB
-    auto const& projectile = view.parent();
-    // position and time of interaction, not used in NUCLI
-    Point const& pOrig = projectile.getPosition();
-    TimeType const delay = projectile.getTime();
-
-    CORSIKA_LOG_DEBUG("Interaction: position of interaction: {}, {} ns",
-                      pOrig.getCoordinates(), delay / 1_ns);
     CORSIKA_LOG_DEBUG("number of fragments: {}", nFragments);
     CORSIKA_LOG_DEBUG("adding nuclear fragments to particle stack..");
     // put nuclear fragments on corsika stack
@@ -324,8 +316,11 @@ namespace corsika::sibyll {
       // CORSIKA 7 way
       // spectators inherit momentum from original projectile
       auto const p3lab = p3NucleonLab * nuclA;
+
+      HEPEnergyType const Ekin = sqrt(p3lab.getSquaredNorm() + mass * mass) - mass;
+
       CORSIKA_LOG_DEBUG("fragment momentum {}", p3lab.getComponents() / 1_GeV);
-      view.addSecondary(std::make_tuple(specCode, p3lab, pOrig, delay));
+      view.addSecondary(std::make_tuple(specCode, Ekin, p3lab.normalized()));
     }
 
     // add elastic nucleons to corsika stack
@@ -340,7 +335,11 @@ namespace corsika::sibyll {
       // elastic nucleons inherit momentum from original projectile
       // neglecting momentum transfer in interaction
       auto const p3lab = p3NucleonLab;
-      view.addSecondary(std::make_tuple(elaNucCode, p3lab, pOrig, delay));
+
+      HEPEnergyType const mass = get_mass(elaNucCode);
+      HEPEnergyType const Ekin = sqrt(p3lab.getSquaredNorm() + mass * mass) - mass;
+
+      view.addSecondary(std::make_tuple(elaNucCode, Ekin, p3lab.normalized()));
     }
 
     // add inelastic interactions
@@ -348,12 +347,18 @@ namespace corsika::sibyll {
     for (int j = 0; j < nInelNucleons; ++j) {
       // TODO: sample neutron or proton
       auto const pCode = Code::Proton;
+      HEPEnergyType const mass = get_mass(pCode);
+      HEPEnergyType const Ekin = sqrt(p3NucleonLab.getSquaredNorm() + mass * mass) - mass;
+
       // temporarily add to stack, will be removed after interaction in DoInteraction
       CORSIKA_LOG_DEBUG("inelastic interaction no. {}", j);
       typename TSecondaryView::inner_stack_value_type nucleonStack;
-      auto inelasticNucleon =
-          nucleonStack.addParticle(std::make_tuple(pCode, p3NucleonLab, pOrig, delay));
+      Point const pDummy(boost.getOriginalCS(), {0_m, 0_m, 0_m});
+      TimeType const tDummy = 0_ns;
+      auto inelasticNucleon = nucleonStack.addParticle(
+          std::make_tuple(pCode, Ekin, p3NucleonLab.normalized(), pDummy, tDummy));
       inelasticNucleon.setNode(view.getProjectile().getNode());
+
       // create inelastic interaction for each nucleon
       CORSIKA_LOG_TRACE("calling HadronicInteraction...");
       // create new StackView for each of the nucleons
@@ -362,8 +367,12 @@ namespace corsika::sibyll {
       hadronicInteraction_.doInteraction(nucleon_secondaries, pCode, targetId, nucleonP4,
                                          targetP4);
       for (const auto& pSec : nucleon_secondaries) {
-        view.addSecondary(std::make_tuple(pSec.getPID(), pSec.getMomentum(),
-                                          pSec.getPosition(), pSec.getTime()));
+
+        auto const p3lab = pSec.getMomentum();
+        Code const pid = pSec.getPID();
+        HEPEnergyType const mass = get_mass(pid);
+        HEPEnergyType const Ekin = sqrt(p3lab.getSquaredNorm() + mass * mass) - mass;
+        view.addSecondary(std::make_tuple(pid, Ekin, p3lab.normalized()));
       }
     }
   }
