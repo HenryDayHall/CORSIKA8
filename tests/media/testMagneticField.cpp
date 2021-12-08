@@ -95,7 +95,7 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   CHECK(Earth_B_2.getX(gCS) / 1_nT == Approx(39684.7));
   CHECK(Earth_B_2.getY(gCS) / 1_nT == Approx(-42.2));
   CHECK(Earth_B_2.getZ(gCS) / 1_nT == Approx(10809.5));
-  CHECK(Earth_B_3.getX(gCS) / 1_nT == Approx(6570.4));
-  CHECK(Earth_B_3.getY(gCS) / 1_nT == Approx(-146.3));
-  CHECK(Earth_B_3.getZ(gCS) / 1_nT == Approx(-54606));
+  CHECK(Earth_B_3.getX(gCS) / 1_nT == Approx(6261.8));
+  CHECK(Earth_B_3.getY(gCS) / 1_nT == Approx(-185.5));
+  CHECK(Earth_B_3.getZ(gCS) / 1_nT == Approx(-52429.1));
 }
