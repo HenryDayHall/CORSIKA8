@@ -89,10 +89,13 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   MagneticFieldVector Earth_B_1 = get_wmm(gCS, 2022.5, 100_km, -80, -120);
   MagneticFieldVector Earth_B_2 = get_wmm(gCS, 2022.5, 0_km, 0, 120);
   MagneticFieldVector Earth_B_3 = get_wmm(gCS, 2020, 100_km, 80, 0);
-  CHECK(Earth_B_1.getComponents(gCS) == 
-  MagneticFieldVector{gCS, 5815_nT, 14803_nT, -49755.3_nT}.getComponents(gCS));
-  CHECK(Earth_B_2.getComponents(gCS) == 
-  MagneticFieldVector{gCS, 39684.7_nT, -42.2_nT, 10809.5_nT}.getComponents(gCS));
-  CHECK(Earth_B_3.getComponents(gCS) == 
-  MagneticFieldVector{gCS, 6570.4_nT, -146.3_nT, -54606_nT}.getComponents(gCS));
+  CHECK(Earth_B_1.getX(gCS) / 1_nT == Approx(5815));
+  CHECK(Earth_B_1.getY(gCS) / 1_nT == Approx(14803));
+  CHECK(Earth_B_1.getZ(gCS) / 1_nT == Approx(49755.3));
+  CHECK(Earth_B_2.getX(gCS) / 1_nT == Approx(39684.7));
+  CHECK(Earth_B_2.getY(gCS) / 1_nT == Approx(-42.2));
+  CHECK(Earth_B_2.getZ(gCS) / 1_nT == Approx(10809.5));
+  CHECK(Earth_B_3.getX(gCS) / 1_nT == Approx(6570.4));
+  CHECK(Earth_B_3.getY(gCS) / 1_nT == Approx(-146.3));
+  CHECK(Earth_B_3.getZ(gCS) / 1_nT == Approx(-54606));
 }
