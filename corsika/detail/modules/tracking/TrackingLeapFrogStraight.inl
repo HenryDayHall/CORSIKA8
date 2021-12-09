@@ -100,9 +100,7 @@ namespace corsika {
       CORSIKA_LOG_DEBUG("gyroradius {}, Steplimit: {}", gyroradius, steplimit);
 
       // calculate first halve step for "steplimit"
-      auto const initialMomentum = particle.getMomentum();
-      auto const absMomentum = initialMomentum.getNorm();
-      DirectionVector const direction = initialVelocity.normalized();
+      DirectionVector const initialDirection = particle.getDirection();
 
       // avoid any intersections within first halve steplength
       // aim for intersection in second halve step
@@ -112,26 +110,28 @@ namespace corsika {
       CORSIKA_LOG_DEBUG("first halve step length {}, steplimit={}, initialTrackLength={}",
                         firstHalveSteplength, steplimit, initialTrackLength);
       // perform the first halve-step
-      Point const position_mid = initialPosition + direction * firstHalveSteplength;
+      Point const position_mid =
+          initialPosition + initialDirection * firstHalveSteplength;
       auto const k = charge / (constants::c * convert_HEP_to_SI<MassType::dimension_type>(
                                                   particle.getMomentum().getNorm()));
       DirectionVector const new_direction =
-          direction + direction.cross(magneticfield) * firstHalveSteplength * 2 * k;
+          initialDirection +
+          initialDirection.cross(magneticfield) * firstHalveSteplength * 2 * k;
       auto const new_direction_norm = new_direction.getNorm(); // by design this is >1
       CORSIKA_LOG_DEBUG(
           "position_mid={}, new_direction={}, (new_direction_norm)={}, deflection={}",
           position_mid.getCoordinates(), new_direction.getComponents(),
           new_direction_norm,
-          acos(std::min(1.0, direction.dot(new_direction) / new_direction_norm)) * 180 /
-              M_PI);
+          acos(std::min(1.0, initialDirection.dot(new_direction) / new_direction_norm)) *
+              180 / M_PI);
 
       // check, where the second halve-step direction has geometric intersections
       particle.setPosition(position_mid);
-      particle.setMomentum(new_direction * absMomentum);
+      particle.setDirection(new_direction);
       auto const [finalTrack, finalTrackNextVolume] =
           tracking_line::Tracking::getTrack(particle);
-      particle.setPosition(initialPosition); // this is not nice...
-      particle.setMomentum(initialMomentum); // this is not nice...
+      particle.setPosition(initialPosition);   // this is not nice...
+      particle.setDirection(initialDirection); // this is not nice...
 
       LengthType const finalTrackLength = finalTrack.getLength(1);
       LengthType const secondLeapFrogLength = firstHalveSteplength * new_direction_norm;

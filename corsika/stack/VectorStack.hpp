@@ -10,6 +10,7 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/EnergyMomentumOperations.hpp>
 #include <corsika/framework/stack/Stack.hpp>
 
 #include <corsika/framework/geometry/Point.hpp>
@@ -63,8 +64,6 @@ namespace corsika {
      *
      * @param v tuple containing of type particle_data_type
      *
-     * MomentumVector is only used to determine the DirectionVector, the normalization
-     * is lost.
      */
     void setParticleData(particle_data_type const& v);
 
@@ -102,23 +101,6 @@ namespace corsika {
       super_type::getStackData().setKineticEnergy(super_type::getIndex(), ekin);
     }
 
-    /**
-     * The MomentumVector v is used to determine the DirectionVector, and to update the
-     * particle energy.
-     */
-    void setMomentum(MomentumVector const& v) {
-      HEPMomentumType const P = v.getNorm();
-      if (P == 0_eV) {
-        super_type::getStackData().setKineticEnergy(super_type::getIndex(), 0_eV);
-        super_type::getStackData().setDirection(
-            super_type::getIndex(), DirectionVector(v.getCoordinateSystem(), {0, 0, 0}));
-      } else {
-        super_type::getStackData().setKineticEnergy(
-            super_type::getIndex(),
-            sqrt(square(getMass()) + square(P)) - this->getMass());
-        super_type::getStackData().setDirection(super_type::getIndex(), v / P);
-      }
-    }
     //! Set direction
     void setDirection(DirectionVector const& v) {
       super_type::getStackData().setDirection(super_type::getIndex(), v);
@@ -165,7 +147,7 @@ namespace corsika {
     }
     //! Get momentum
     MomentumVector getMomentum() const {
-      auto const P = sqrt(square(getEnergy()) - square(this->getMass()));
+      auto const P = calculate_momentum(this->getEnergy(), this->getMass());
       return super_type::getStackData().getDirection(super_type::getIndex()) * P;
     }
     //! Get mass of particle

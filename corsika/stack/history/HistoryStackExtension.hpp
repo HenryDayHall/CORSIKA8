@@ -67,10 +67,8 @@ namespace corsika::history {
   /**
    * @class HistoryDataInterface
    *
-   * corresponding defintion of a stack-readout object, the iteractor
-   * dereference operator will deliver access to these function
-  // defintion of a stack-readout object, the iteractor dereference
-  // operator will deliver access to these function
+   * corresponding definition of a stack-readout object, the iteractor
+   * dereference operator will deliver access to these function.
    */
   template <typename T, typename TEvent>
   class HistoryDataInterface : public T {

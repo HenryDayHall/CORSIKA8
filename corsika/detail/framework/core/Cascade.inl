@@ -211,7 +211,7 @@ namespace corsika {
     }
     particle.setTime(particle.getTime() + step.getDuration());
     particle.setPosition(step.getPosition(1));
-    particle.setMomentum(step.getDirection(1) * particle.getMomentum().getNorm());
+    particle.setDirection(step.getDirection(1));
 
     if (isContinuous) {
       return; // there is nothing further, step is finished

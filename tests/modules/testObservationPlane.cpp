@@ -100,7 +100,7 @@ TEST_CASE("ObservationPlane", "interface") {
 
     MomentumVector const pnew = MomentumVector(cs, {1_GeV, 0.5_GeV, -0.4_GeV});
     HEPEnergyType const enew = sqrt(pnew.dot(pnew));
-    particle.setMomentum(pnew);
+    particle.setDirection(pnew.normalized());
     particle.setEnergy(enew);
 
     Plane const obsPlane(Point(cs, {10_m, 5_m, 5_m}),
