@@ -394,3 +394,10 @@ TEMPLATE_TEST_CASE("TrackingPlane", "plane", tracking_leapfrog_curved::Tracking,
     CHECK(hit.getExit() == 1_s * std::numeric_limits<double>::infinity());
   }
 }
+
+TEST_CASE("Intersections") {
+  Intersections test;
+  CHECK(test.getEntry() ==
+        std::numeric_limits<TimeType::value_type>::infinity() * second);
+  CHECK(test.getExit() == std::numeric_limits<TimeType::value_type>::infinity() * second);
+}

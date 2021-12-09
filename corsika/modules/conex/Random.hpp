@@ -15,7 +15,7 @@
  * \file conex/Random.hpp
  *
  * This file is an integral part of the epos interface. It must be
- * linked to the executable linked to epos exactly once
+ * linked to the executable linked to epos exactly once.
  *
  * Note, that the fortran random numbe interface functions are all
  * defined in the epos corsika 8 interface:
@@ -34,6 +34,7 @@
 
 namespace conex {
 
+  // GCOV_EXCL_START : we don't want to unit-test the random interface
   float rndm_interface() {
     static corsika::default_prng_type& rng =
         corsika::RNGManager<>::getInstance().getRandomStream("conex");
@@ -47,5 +48,6 @@ namespace conex {
     std::uniform_real_distribution<double> dist;
     return dist(rng);
   }
+  // GCOV_EXCL_STOP
 
 } // namespace conex
