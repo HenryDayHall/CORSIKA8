@@ -10,6 +10,7 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/geometry/PhysicalGeometry.hpp>
 #include <corsika/framework/stack/Stack.hpp>
 
 #include <string>
@@ -22,8 +23,8 @@ namespace corsika::dummy_stack {
    */
 
   /**
-     however, conceptually we need to provide fake data. A stack without data does not
-     work...
+   * However, conceptually we need to provide fake data. A stack without data does not
+   * work...
    */
 
   struct NoData { /* nothing */
@@ -40,6 +41,14 @@ namespace corsika::dummy_stack {
     void setParticleData(super_type& /*parent*/, const std::tuple<NoData>& /*v*/) {}
 
     std::string asString() const { return "dummy-data"; }
+
+    // unfortunately we need those dummy getter
+    // for some more complex tests with "history"
+    HEPEnergyType getEnergy() const { return 0_GeV; }
+    MomentumVector getMomentum() const {
+      return MomentumVector(get_root_CoordinateSystem(), {0_GeV, 0_GeV, 0_GeV});
+    }
+    Code getPID() const { return Code::Unknown; }
   };
 
   /**
@@ -67,7 +76,7 @@ namespace corsika::dummy_stack {
     int getCapacity() const { return entries_; }
 
     /**
-     *   Function to copy particle at location i2 in stack to i1
+     *   Function to copy particle at location i2 in stack to i1.
      */
     void copy(const int /*i1*/, const int /*i2*/) {}
 

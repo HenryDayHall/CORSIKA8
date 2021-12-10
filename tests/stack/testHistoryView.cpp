@@ -9,52 +9,34 @@
 #include <corsika/stack/history/Event.hpp>
 #include <corsika/stack/history/HistorySecondaryProducer.hpp>
 #include <corsika/stack/history/HistoryStackExtension.hpp>
-
-#include <corsika/framework/stack/CombinedStack.hpp>
+#include <corsika/stack/history/HistorySecondaryProducer.hpp>
 #include <corsika/stack/DummyStack.hpp>
-#include <corsika/stack/NuclearStackExtension.hpp>
-
+#include <corsika/framework/stack/CombinedStack.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
 #include <catch2/catch.hpp>
 
 using namespace corsika;
 
-/**
-   Need to replicate setup::SetupStack in a maximally simplified
-   way, but with real particle data
- */
+// the GeometryNode stack needs to know the type of geometry-nodes from the DummyEnv:
+template <typename TStackIter>
+using DummyHistoryDataInterface =
+    typename history::MakeHistoryDataInterface<TStackIter, history::Event>::type;
 
 // combine dummy stack with geometry information for tracking
 template <typename TStackIter>
 using StackWithHistoryInterface =
-    CombinedParticleInterface<nuclear_stack::ParticleDataStack::pi_type,
-                              history::HistoryEventDataInterface, TStackIter>;
+    CombinedParticleInterface<dummy_stack::DummyStack::pi_type, DummyHistoryDataInterface,
+                              TStackIter>;
 
 using TestStack =
-    CombinedStack<typename nuclear_stack::ParticleDataStack::stack_data_type,
-                  history::HistoryEventData, StackWithHistoryInterface>;
-
-/*
-    See Issue 161
-
-    unfortunately clang does not support this in the same way (yet) as
-    gcc, so we have to distinguish here. If clang cataches up, we
-    could remove the clang branch here and also in
-    corsika::Cascade. The gcc code is much more generic and
-    universal. If we could do the gcc version, we won't had to define
-    StackView globally, we could do it with MakeView whereever it is
-    actually needed. Keep an eye on this!
-  */
-#if defined(__clang__)
-using TheTestStackView =
-    SecondaryView<typename TestStack::stack_data_type, StackWithHistoryInterface,
+    CombinedStack<typename dummy_stack::DummyStack::stack_data_type,
+                  history::HistoryData<history::Event>, StackWithHistoryInterface,
                   history::HistorySecondaryProducer>;
-#elif defined(__GNUC__) || defined(__GNUG__)
-using TheTestStackView = MakeView<TestStack, history::HistorySecondaryProducer>::type;
-#endif
 
-using TestStackView = TheTestStackView;
+// the correct secondary stack view
+using TestStackView = typename TestStack::stack_view_type;
+using EvtPtr = std::shared_ptr<history::Event>;
 
 template <typename Event>
 int count_generations(Event const* event) {
@@ -70,27 +52,24 @@ int count_generations(Event const* event) {
 TEST_CASE("HistoryStackExtensionView", "[stack]") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
-
-  CoordinateSystemPtr const& dummyCS = get_root_CoordinateSystem();
 
   // in this test we only use one singel stack !
+  const dummy_stack::NoData noData;
   TestStack stack;
 
   // add primary particle
-  auto p0 = stack.addParticle(
-      std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                      Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+  auto p0 = stack.addParticle(std::make_tuple(noData));
 
   CHECK(stack.getEntries() == 1);
-  corsika::history::EventPtr evt = p0.getEvent();
+  EvtPtr evt = p0.getEvent();
   CHECK(evt == nullptr);
   CHECK(count_generations(evt.get()) == 0);
 
   SECTION("interface test, view") {
 
     // add secondaries, 1st generation
-    TestStackView hview0(p0);
+    auto pnext = stack.getNextParticle();
+    TestStackView hview0(pnext);
 
     auto const ev0 = p0.getEvent();
     CHECK(ev0 == nullptr);
@@ -99,12 +78,10 @@ TEST_CASE("HistoryStackExtensionView", "[stack]") {
 
     // add 5 secondaries
     for (int i = 0; i < 5; ++i) {
-      auto sec = hview0.addSecondary(
-          std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+      auto sec = hview0.addSecondary(std::make_tuple(noData));
 
       CHECK(sec.getParentEventIndex() == i);
-      CHECK(sec.getEvent() != nullptr);
+      CHECK(sec.getEvent().get() != nullptr);
       CHECK(sec.getEvent()->parentEvent() == nullptr);
       CHECK(count_generations(sec.getEvent().get()) == 1);
     }
@@ -120,9 +97,7 @@ TEST_CASE("HistoryStackExtensionView", "[stack]") {
     // add second generation of secondaries
     // add 10 secondaries
     for (int i = 0; i < 10; ++i) {
-      auto sec = hview1.addSecondary(
-          std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+      auto sec = hview1.addSecondary(std::make_tuple(noData));
 
       CHECK(sec.getParentEventIndex() == i);
       CHECK(sec.getEvent()->parentEvent() == ev1);
@@ -146,9 +121,7 @@ TEST_CASE("HistoryStackExtensionView", "[stack]") {
     for (int i = 0; i < 15; ++i) {
       CORSIKA_LOG_TRACE("loop, view: " + std::to_string(i));
 
-      auto sec = hview2.addSecondary(
-          std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+      auto sec = hview2.addSecondary(std::make_tuple(noData));
       CORSIKA_LOG_TRACE("loop, ---- ");
 
       CHECK(sec.getParentEventIndex() == i);
@@ -175,9 +148,7 @@ TEST_CASE("HistoryStackExtensionView", "[stack]") {
     // add 5 secondaries
     for (int i = 0; i < 5; ++i) {
       CORSIKA_LOG_TRACE("loop " + std::to_string(i));
-      auto sec = proj0.addSecondary(
-          std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+      auto sec = proj0.addSecondary(std::make_tuple(noData));
 
       CHECK(sec.getParentEventIndex() == i);
       CHECK(sec.getEvent() != nullptr);
@@ -195,9 +166,7 @@ TEST_CASE("HistoryStackExtensionView", "[stack]") {
     // add second generation of secondaries
     // add 10 secondaries
     for (unsigned int i = 0; i < 10; ++i) {
-      auto sec = proj1.addSecondary(
-          std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+      auto sec = proj1.addSecondary(std::make_tuple(noData));
 
       CHECK(sec.getParentEventIndex() == int(i));
       CHECK(sec.getEvent()->parentEvent() == ev1);

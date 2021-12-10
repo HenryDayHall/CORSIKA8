@@ -163,8 +163,7 @@ namespace corsika {
     auto Enew = E + dE;
     CORSIKA_LOG_TRACE("EnergyLoss  dE={} MeV, E={} GeV, Ekin={} GeV, Enew={} GeV",
                       dE / 1_MeV, E / 1_GeV, Ekin / 1_GeV, Enew / 1_GeV);
-    p.setEnergy(Enew);
-    updateMomentum(p, Enew);
+    p.setEnergy(Enew); // kinetic energy on stack
     fillProfile(t, dE);
     return ProcessReturn::Ok;
   }
@@ -192,13 +191,6 @@ namespace corsika {
 
     return vParticle.getNode()->getModelProperties().getArclengthFromGrammage(
         vTrack, maxGrammage);
-  }
-
-  template <typename TParticle>
-  inline void BetheBlochPDG::updateMomentum(TParticle& vP, HEPEnergyType Enew) {
-    HEPMomentumType Pnew = elab2plab(Enew, vP.getMass());
-    auto pnew = vP.getMomentum();
-    vP.setMomentum(pnew * Pnew / pnew.getNorm());
   }
 
   template <typename TTrajectory>

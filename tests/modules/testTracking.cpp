@@ -35,31 +35,30 @@ int sgn(T val) {
 }
 
 /**
-   @file testTracking.cpp
-
-  This is the unified and common unit test for all Tracking algorithms:
-
-  - tracking_leapfrog_curved::Tracking
-  - tracking_leapfrog_straight::Tracking
-  - tracking_line::Tracking
-
-
-  The main part of tests are to inject particles at 10GeV momentum at
-  (-Rg,0,0) in +x direction into a sphere of radius Rg, where Rg is
-  the gyroradius (or 10m for neutral particles). Then it is checked
-  where the particles leaves the sphere for different charges
-  (-1,0,+1) and field strength (-50uT, 0T, +50uT).
-
-  Each test is perfromed once, with the particles starting logically
-  outside of the Rg sphere (thus it first has to enter insides) and a
-  second time with the particle already logically inside the sphere.
-
-  There is a second smaller, internal sphere at +z displacement. Only
-  neutral particles are allowed and expected to hit this.
-
-  All those tests are parameterized, thus, they can be easily extended
-  or applied to new algorithms.
-
+ * @file testTracking.cpp
+ *
+ * This is the unified and common unit test for all Tracking algorithms:
+ *
+ * - tracking_leapfrog_curved::Tracking
+ * - tracking_leapfrog_straight::Tracking
+ * - tracking_line::Tracking
+ *
+ *
+ * The main part of tests are to inject particles at 10GeV momentum at
+ * (-Rg,0,0) in +x direction into a sphere of radius Rg, where Rg is
+ * the gyroradius (or 10m for neutral particles). Then it is checked
+ * where the particles leaves the sphere for different charges
+ * (-1,0,+1) and field strength (-50uT, 0T, +50uT).
+ *
+ * Each test is perfromed once, with the particles starting logically
+ * outside of the Rg sphere (thus it first has to enter insides) and a
+ * second time with the particle already logically inside the sphere.
+ *
+ * There is a second smaller, internal sphere at +z displacement. Only
+ * neutral particles are allowed and expected to hit this.
+ *
+ * All those tests are parameterized, thus, they can be easily extended
+ * or applied to new algorithms.
  */
 
 TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
@@ -185,7 +184,7 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
     auto [traj, nextVol] = tracking.getTrack(particle);
     particle.setNode(nextVol);
     particle.setPosition(traj.getPosition(1));
-    particle.setMomentum(traj.getDirection(1) * particle.getMomentum().getNorm());
+    particle.setDirection(traj.getDirection(1));
     SpeedType const speed_0 = particle.getVelocity().getNorm();
     if (outer) {
       // now we know we are in target volume, depending on "outer"
@@ -206,7 +205,7 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
       nextVol = nextVol2;
       particle.setNode(nextVol);
       particle.setPosition(traj2.getPosition(1));
-      particle.setMomentum(traj2.getDirection(1) * particle.getMomentum().getNorm());
+      particle.setDirection(traj2.getDirection(1));
       CORSIKA_LOG_TRACE("pos={}, p={}, |p|={} |v|={}, delta-l={}, delta-t={}",
                         particle.getPosition(), particle.getMomentum(),
                         particle.getMomentum().getNorm(),
@@ -234,7 +233,7 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
   }
 }
 
-/** specifc test for curved leap-frog algorithm **/
+/** specifc test for curved leap-frog algorithm. */
 
 TEST_CASE("TrackingLeapFrogCurved") {
 
