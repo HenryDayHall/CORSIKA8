@@ -81,18 +81,15 @@ namespace corsika::proposal {
 
     // update particle direction after continuous loss caused by multiple
     // scattering
-    auto particle_momentum = vP.getMomentum().getNorm();
-    auto vec = QuantityVector(final_direction.GetX() * particle_momentum,
-                              final_direction.GetY() * particle_momentum,
-                              final_direction.GetZ() * particle_momentum);
-    vP.setMomentum(MomentumVector(vP_dir.getCoordinateSystem(), vec));
+    vP.setDirection(
+        {vP_dir.getCoordinateSystem(),
+         {final_direction.GetX(), final_direction.GetY(), final_direction.GetZ()}});
   }
 
   template <typename TParticle, typename TTrajectory>
   inline ProcessReturn ContinuousProcess::doContinuous(TParticle& vP,
                                                        TTrajectory const& vT,
                                                        bool const) {
-
     if (!canInteract(vP.getPID())) return ProcessReturn::Ok;
     if (vT.getLength() == 0_m) return ProcessReturn::Ok;
 
@@ -110,10 +107,7 @@ namespace corsika::proposal {
 
     // if the particle has a charge take multiple scattering into account
     if (vP.getChargeNumber() != 0) scatter(vP, dE, dX);
-    vP.setEnergy(final_energy);
-    auto new_momentum =
-        sqrt(vP.getEnergy() * vP.getEnergy() - vP.getMass() * vP.getMass());
-    vP.setMomentum(vP.getMomentum() * new_momentum / vP.getMomentum().getNorm());
+    vP.setEnergy(final_energy); // on the stack, this is just kinetic energy, E-m
     return ProcessReturn::Ok;
   }
 
@@ -123,8 +117,8 @@ namespace corsika::proposal {
     auto const code = vP.getPID();
     if (!canInteract(code)) return meter * std::numeric_limits<double>::infinity();
 
-    // Limit the step size of a conitnuous loss. The maximal continuous loss seems to be a
-    // hyper parameter which must be adjusted.
+    // Limit the step size of a conitnuous loss. The maximal continuous loss seems to be
+    // a hyper parameter which must be adjusted.
     //
     auto const energy = vP.getEnergy();
     auto const energy_lim =
