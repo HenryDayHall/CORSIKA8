@@ -25,14 +25,16 @@ namespace corsika {
    * @param  latitude    Latitude of the location to evaluate the field at,
                          in degrees between -90 and 90 (negative for southern hemisphere).
    * @param  longitute   Longitude of the location to evaluate the field at,
-                         in degrees between -180 and 180 (negative for western hemisphere).
+                         in degrees between -180 and 180 (negative for western
+   hemisphere).
    *
    * @returns    The magnetic field vector in nT.
    *
    */
-   
-   inline MagneticFieldVector get_wmm(const CoordinateSystemPtr Cs, const double year, 
-             const LengthType altitude, const double latitude, const double longitude);
+
+  inline MagneticFieldVector get_wmm(const CoordinateSystemPtr Cs, const double year,
+                                     const LengthType altitude, const double latitude,
+                                     const double longitude);
 } // namespace corsika
 
 #include <corsika/detail/media/WMM.inl>
