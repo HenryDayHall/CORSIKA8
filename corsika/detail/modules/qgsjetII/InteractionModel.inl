@@ -104,14 +104,25 @@ namespace corsika::qgsjetII {
         projectileId, corsika::qgsjetII::canInteract(projectileId));
 
     // define projectile, in lab frame
-    auto const sqrtS2 = (projectileP4 + targetP4).getNormSqr();
+    auto const sqrtS2 =
+        (projectileP4 / (is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1) +
+         targetP4 / (is_nucleus(targetId) ? get_nucleus_A(targetId) : 1))
+            .getNormSqr();
     auto const sqrtS = sqrt(sqrtS2);
     if (!corsika::qgsjetII::canInteract(projectileId) ||
         !isValid(projectileId, targetId, sqrtS)) {
       throw std::runtime_error("invalid target/projectile/energy combination.");
     }
-    HEPEnergyType const Elab =
-        calculate_lab_energy(sqrtS2, get_mass(projectileId), get_mass(targetId));
+    auto const projectileMass =
+        (is_nucleus(projectileId) ? constants::nucleonMass : get_mass(projectileId));
+    auto const targetMass =
+        (projectileId == Code::Proton
+             ? get_mass(Code::Proton)
+             : constants::nucleonMass); // qgsjet target is always proton or nucleon.
+                                        // always nucleon??
+
+    // lab energy/hadron
+    HEPEnergyType const Elab = calculate_lab_energy(sqrtS2, projectileMass, targetMass);
 
     int beamA = 0;
     if (is_nucleus(projectileId)) { beamA = get_nucleus_A(projectileId); }
@@ -163,18 +174,18 @@ namespace corsika::qgsjetII {
     // rest.
 
     // system of initial-state
-    COMBoost boost(projectileP4, targetP4);
+    COMBoost boost(projectileP4 / projectileMassNumber, targetP4 / targetMassNumber);
 
     auto const& originalCS = boost.getOriginalCS();
     auto const& csPrime =
         boost.getRotatedCS(); // z is along the CM motion (projectile, in Cascade)
 
     HEPMomentumType const pLabMag =
-        sqrt((Elab - get_mass(projectileId)) * (Elab + get_mass(projectileId)));
+        sqrt((Elab - projectileMass) * (Elab + projectileMass));
     MomentumVector pLab(csPrime, {0_eV, 0_eV, pLabMag});
 
-    // internal QGSJetII system
-    COMBoost boostInternal({Elab, pLab}, get_mass(targetId));
+    // internal QGSJetII system: hadron-nucleon lab. frame!
+    COMBoost boostInternal({Elab, pLab}, targetMass);
 
     // fragments
     QGSJetIIFragmentsStack qfs;
@@ -265,7 +276,7 @@ namespace corsika::qgsjetII {
         Plab_final += pnew.getMomentum();
         Elab_final += pnew.getEnergy();
       }
-    } // namespace corsika::qgsjetII
+    }
 
     // secondaries
     QGSJetIIStack qs;
