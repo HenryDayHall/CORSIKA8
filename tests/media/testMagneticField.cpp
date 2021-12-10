@@ -14,7 +14,7 @@
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/IMagneticFieldModel.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
-#include <corsika/media/WMM.hpp>
+#include <corsika/media/WorldMagneticModel.hpp>
 
 #include <SetupTestTrajectory.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -25,7 +25,7 @@ using namespace corsika;
 
 TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::trace);
 
   CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
   Point const gOrigin(gCS, {0_m, 0_m, 0_m});
@@ -74,18 +74,42 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   }
 
   SECTION("WorldMagneticModel") {
-    // create earth magnetic field vector
-    MagneticFieldVector Earth_B_1 = get_wmm(gCS, 2022.5, 100_km, -80, -120);
-    MagneticFieldVector Earth_B_2 = get_wmm(gCS, 2022.5, 0_km, 0, 120);
-    MagneticFieldVector Earth_B_3 = get_wmm(gCS, 2020, 100_km, 80, 0);
-    CHECK(Earth_B_1.getX(gCS) / 1_nT == Approx(5815).margin(0.03));
-    CHECK(Earth_B_1.getY(gCS) / 1_nT == Approx(14803).margin(0.03));
-    CHECK(Earth_B_1.getZ(gCS) / 1_nT == Approx(49755.3).margin(0.03));
-    CHECK(Earth_B_2.getX(gCS) / 1_nT == Approx(39684.7).margin(0.03));
-    CHECK(Earth_B_2.getY(gCS) / 1_nT == Approx(-42.2).margin(0.03));
-    CHECK(Earth_B_2.getZ(gCS) / 1_nT == Approx(10809.5).margin(0.03));
-    CHECK(Earth_B_3.getX(gCS) / 1_nT == Approx(6261.8).margin(0.03));
-    CHECK(Earth_B_3.getY(gCS) / 1_nT == Approx(-185.5).margin(0.03));
-    CHECK(Earth_B_3.getZ(gCS) / 1_nT == Approx(-52429.1).margin(0.03));
+
+    CHECK_THROWS(WorldMagneticModel(gOrigin, "GeoMag/IDoNotExist.COF"));
+
+    {
+      WorldMagneticModel wmm(gOrigin, "GeoMag/WMM.COF");
+
+      // create earth magnetic field vector
+      MagneticFieldVector Earth_B_1 = wmm.getField(2022.5, 100_km, -80, -120);
+      MagneticFieldVector Earth_B_2 = wmm.getField(2022.5, 0_km, 0, 120);
+      MagneticFieldVector Earth_B_3 = wmm.getField(2020, 100_km, 80, 0);
+      CHECK(Earth_B_1.getX(gCS) / 1_nT == Approx(5815).margin(0.03));
+      CHECK(Earth_B_1.getY(gCS) / 1_nT == Approx(14803).margin(0.03));
+      CHECK(Earth_B_1.getZ(gCS) / 1_nT == Approx(49755.3).margin(0.03));
+      CHECK(Earth_B_2.getX(gCS) / 1_nT == Approx(39684.7).margin(0.03));
+      CHECK(Earth_B_2.getY(gCS) / 1_nT == Approx(-42.2).margin(0.03));
+      CHECK(Earth_B_2.getZ(gCS) / 1_nT == Approx(10809.5).margin(0.03));
+      CHECK(Earth_B_3.getX(gCS) / 1_nT == Approx(6261.8).margin(0.03));
+      CHECK(Earth_B_3.getY(gCS) / 1_nT == Approx(-185.5).margin(0.03));
+      CHECK(Earth_B_3.getZ(gCS) / 1_nT == Approx(-52429.1).margin(0.03));
+    }
+    {
+      WorldMagneticModel wmm(gOrigin, "GeoMag/IGRF13.COF");
+
+      // create earth magnetic field vector
+      MagneticFieldVector Earth_B_1 = wmm.getField(2022.5, 100_km, -80, -120);
+      MagneticFieldVector Earth_B_2 = wmm.getField(2022.5, 0_km, 0, 120);
+      MagneticFieldVector Earth_B_3 = wmm.getField(2020, 100_km, 80, 0);
+      CHECK(Earth_B_1.getX(gCS) / 1_nT == Approx(5815).margin(0.03));
+      CHECK(Earth_B_1.getY(gCS) / 1_nT == Approx(14803).margin(0.03));
+      CHECK(Earth_B_1.getZ(gCS) / 1_nT == Approx(49755.3).margin(0.03));
+      CHECK(Earth_B_2.getX(gCS) / 1_nT == Approx(39684.7).margin(0.03));
+      CHECK(Earth_B_2.getY(gCS) / 1_nT == Approx(-42.2).margin(0.03));
+      CHECK(Earth_B_2.getZ(gCS) / 1_nT == Approx(10809.5).margin(0.03));
+      CHECK(Earth_B_3.getX(gCS) / 1_nT == Approx(6261.8).margin(0.03));
+      CHECK(Earth_B_3.getY(gCS) / 1_nT == Approx(-185.5).margin(0.03));
+      CHECK(Earth_B_3.getZ(gCS) / 1_nT == Approx(-52429.1).margin(0.03));
+    }
   }
 }
