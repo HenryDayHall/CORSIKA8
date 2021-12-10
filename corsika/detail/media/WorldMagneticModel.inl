@@ -2,8 +2,6 @@
 #include <corsika/framework/utility/CorsikaData.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/math/special_functions/factorials.hpp>
-#include <boost/math/special_functions/legendre.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -145,17 +143,17 @@ namespace corsika {
       p.g = p.g + (year - epoch) * p.dg;
       p.h = p.h + (year - epoch) * p.dh;
 
-      legendre = boost::math::legendre_p(p.n, p.m, sin(lat_sph));
-      next_legendre = boost::math::legendre_p(p.n + 1, p.m, sin(lat_sph));
+      legendre = pow(-1, p.m) * std::assoc_legendre(p.n, p.m, sin(lat_sph));
+      next_legendre = pow(-1, p.m) * std::assoc_legendre(p.n + 1, p.m, sin(lat_sph));
 
       // Schmidt semi-normalization and Condon-Shortley phase term
       if (p.m > 0) {
-        legendre *= sqrt(2 * boost::math::factorial<double>(p.n - p.m) /
-                         boost::math::factorial<double>(p.n + p.m)) *
+        // Note: n! = tgamma(n+1)
+        legendre *= sqrt(2 * std::tgamma(p.n - p.m + 1) / std::tgamma(p.n + p.m + 1)) *
                     pow(-1, p.m);
-        next_legendre *= sqrt(2 * boost::math::factorial<double>(p.n + 1 - p.m) /
-                              boost::math::factorial<double>(p.n + 1 + p.m)) *
-                         pow(-1, p.m);
+        next_legendre *=
+            sqrt(2 * std::tgamma(p.n + 1 - p.m + 1) / std::tgamma(p.n + 1 + p.m + 1)) *
+            pow(-1, p.m);
       }
       derivate_legendre =
           (p.n + 1) * tan(lat_sph) * legendre -
