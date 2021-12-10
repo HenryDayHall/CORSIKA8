@@ -147,18 +147,18 @@ namespace corsika::epos {
   inline void InteractionModel::initializeEventCoM(Code const idBeam, int const iBeamA,
                                                    int const iBeamZ, Code const idTarget,
                                                    int const iTargetA, int const iTargetZ,
-                                                   HEPEnergyType const Ecm) const {
+                                                   HEPEnergyType const EcmNN) const {
     CORSIKA_LOGGER_TRACE(logger_,
                          "initialize event in CoM frame!"
                          " Ecm={}",
-                         Ecm);
+                         EcmNN);
     ::epos::lept1_.engy = -1.;
     ::epos::enrgy_.ecms = -1.;
     ::epos::enrgy_.elab = -1.;
     ::epos::enrgy_.ekin = -1.;
     ::epos::hadr1_.pnll = -1.;
 
-    ::epos::enrgy_.ecms = Ecm / 1_GeV; // -> c.m.s. frame
+    ::epos::enrgy_.ecms = EcmNN / 1_GeV; // -> c.m.s. frame
 
     CORSIKA_LOGGER_TRACE(logger_, "inside EPOS: Ecm={}, Elab={}", ::epos::enrgy_.ecms,
                          ::epos::enrgy_.elab);
@@ -390,10 +390,6 @@ namespace corsika::epos {
     auto const& csPrime =
         boost.getRotatedCS(); // z is along the CM motion (projectile, in Cascade)
 
-    HEPMomentumType const pLabMag =
-        sqrt((Elab - get_mass(projectileId)) * (Elab + get_mass(projectileId)));
-    MomentumVector pLab(csPrime, {0_eV, 0_eV, pLabMag});
-
     CORSIKA_LOGGER_DEBUG(logger_,
                          "doInteraction: interaction, projectile id={}, E={}, p3={} ",
                          projectileId, projectileP4.getTimeLikeComponent(),
@@ -414,7 +410,7 @@ namespace corsika::epos {
     if (is_nucleus(projectileId)) {
       beamA = get_nucleus_A(projectileId);
       beamZ = get_nucleus_Z(projectileId);
-      CORSIKA_LOGGER_DEBUG(logger_, "A={}, Z={} ", beamA, beamZ);
+      CORSIKA_LOGGER_DEBUG(logger_, "projectile: A={}, Z={} ", beamA, beamZ);
     }
 
     // // from corsika7 interface
@@ -424,6 +420,7 @@ namespace corsika::epos {
     if (is_nucleus(targetId)) {
       targetA = get_nucleus_A(targetId);
       targetZ = get_nucleus_Z(targetId);
+      CORSIKA_LOGGER_DEBUG(logger_, "target: A={}, Z={} ", beamA, beamZ);
     }
     initializeEventCoM(projectileId, beamA, beamZ, targetId, targetA, targetZ, sqrtSNN);
 
