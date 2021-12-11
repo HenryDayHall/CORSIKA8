@@ -104,7 +104,7 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
       MagneticFieldVector Earth_B_4 = igrf.getField(2010, 0_km, 0, -120);
       CHECK(Earth_B_1.getX(gCS) / 1_nT == Approx(5821).margin(0.5));
       CHECK(Earth_B_1.getY(gCS) / 1_nT == Approx(-14796).margin(0.5));
-      CHECK(Earth_B_1.getZ(gCS) / 1_nT == Approx(497756).margin(0.5));
+      CHECK(Earth_B_1.getZ(gCS) / 1_nT == Approx(49776).margin(0.5));
       CHECK(Earth_B_2.getX(gCS) / 1_nT == Approx(3014).margin(0.5));
       CHECK(Earth_B_2.getY(gCS) / 1_nT == Approx(-1072).margin(0.5));
       CHECK(Earth_B_2.getZ(gCS) / 1_nT == Approx(-57594).margin(0.5));
