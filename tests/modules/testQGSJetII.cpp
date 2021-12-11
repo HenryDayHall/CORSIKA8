@@ -176,7 +176,7 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
     corsika::qgsjetII::InteractionModel model;
     model.doInteraction(view, pid, Code::Oxygen, projectileP4,
                         targetP4); // this also should produce some fragments
-    CHECK(view.getSize() == Approx(300).margin(150)); // this is not physics validation
+    CHECK(view.getSize() == Approx(150).margin(150)); // this is not physics validation
     int countFragments = 0;
     for (auto const& sec : view) { countFragments += (is_nucleus(sec.getPID())); }
     CHECK(countFragments == Approx(4).margin(2)); // this is not physics validation
@@ -218,7 +218,7 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
                           {sqrt(static_pow<2>(1_TeV) + static_pow<2>(Pi0::mass)),
                            MomentumVector{cs, 1_TeV, 0_GeV, 0_GeV}},
                           {Oxygen::mass, MomentumVector{cs, 0_eV, 0_eV, 0_eV}});
-      CHECK(view.getSize() == Approx(10).margin(8)); // this is not physics validation
+      CHECK(view.getSize() == Approx(20).margin(20)); // this is not physics validation
     }
     { // rho0 is internally converted into pi-/pi+
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
@@ -230,7 +230,7 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
                           {sqrt(static_pow<2>(1_TeV) + static_pow<2>(Rho0::mass)),
                            MomentumVector{cs, 1_TeV, 0_GeV, 0_GeV}},
                           {Oxygen::mass, MomentumVector{cs, 0_eV, 0_eV, 0_eV}});
-      CHECK(view.getSize() == Approx(50).margin(20)); // this is not physics validation
+      CHECK(view.getSize() == Approx(50).margin(50)); // this is not physics validation
     }
     { // Lambda is internally converted into neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
@@ -243,7 +243,7 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
                           {sqrt(static_pow<2>(100_GeV) + static_pow<2>(Lambda0::mass)),
                            MomentumVector{cs, 100_GeV, 0_GeV, 0_GeV}},
                           {Oxygen::mass, MomentumVector{cs, 0_eV, 0_eV, 0_eV}});
-      CHECK(view.getSize() == Approx(25).margin(20)); // this is not physics validation
+      CHECK(view.getSize() == Approx(50).margin(50)); // this is not physics validation
     }
     { // AntiLambda is internally converted into anti neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
