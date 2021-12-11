@@ -123,6 +123,8 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
 
   logging::set_level(logging::level::info);
 
+  RNGManager<>::getInstance().registerRandomStream("qgsjet");
+
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
@@ -228,7 +230,7 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
                           {sqrt(static_pow<2>(1_TeV) + static_pow<2>(Rho0::mass)),
                            MomentumVector{cs, 1_TeV, 0_GeV, 0_GeV}},
                           {Oxygen::mass, MomentumVector{cs, 0_eV, 0_eV, 0_eV}});
-      CHECK(view.getSize() == Approx(25).margin(20)); // this is not physics validation
+      CHECK(view.getSize() == Approx(50).margin(20)); // this is not physics validation
     }
     { // Lambda is internally converted into neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
