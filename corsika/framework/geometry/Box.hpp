@@ -14,24 +14,20 @@
 #include <corsika/framework/geometry/IVolume.hpp>
 
 namespace corsika {
+
+  /**
+   * Describes a sphere in space
+   *
+   *  The center point and the orintation of the Box is set by
+   *  a CoordinateSystemPtr at construction.
+   **/
   class Box : public IVolume {
 
   public:
-    // a CoordinateSystemPtr to specify the orintation of coordinate
-    Box(Point const& center, CoordinateSystemPtr cs, LengthType const x,
-        LengthType const y, LengthType const z)
-        : center_(center)
-        , cs_(make_translation(cs, center.getCoordinates(cs)))
-        , x_(x)
-        , y_(y)
-        , z_(z) {}
+    Box(CoordinateSystemPtr cs, LengthType const x, LengthType const y,
+        LengthType const z);
 
-    Box(Point const& center, CoordinateSystemPtr cs, LengthType const side)
-        : center_(center)
-        , cs_(make_translation(cs, center.getCoordinates(cs)))
-        , x_(side / 2)
-        , y_(side / 2)
-        , z_(side / 2) {}
+    Box(CoordinateSystemPtr cs, LengthType const side);
 
     //! returns true if the Point p is within the sphere
     bool contains(Point const& p) const override;

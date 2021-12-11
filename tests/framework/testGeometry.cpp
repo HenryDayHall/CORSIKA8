@@ -285,11 +285,12 @@ TEST_CASE("Geometry Sphere") {
 
 TEST_CASE("Geometry Box") {
   CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
-  Point center(rootCS, {0_m, 0_m, 5_m});
-  Box box(center, rootCS, 4_m, 5_m, 6_m);
+  auto initialCS = make_translation(rootCS, {0_m, 0_m, 5_m});
+  Point center = Point(initialCS, {0_m, 0_m, 0_m});
+  Box box(initialCS, 4_m, 5_m, 6_m);
 
   SECTION("getCenter") {
-    CHECK((box.getCenter().getCoordinates(rootCS) - center.getCoordinates())
+    CHECK((box.getCenter().getCoordinates(rootCS) - center.getCoordinates(rootCS))
               .getNorm()
               .magnitude() == Approx(0).margin(absMargin));
     CHECK(box.getX() / 4_m == Approx(1));
@@ -304,7 +305,7 @@ TEST_CASE("Geometry Box") {
 
   SECTION("internal coordinate") {
     CoordinateSystemPtr const internalCS = box.getCoordinateSystem();
-    auto coordinate = center.getCoordinates(internalCS);
+    auto coordinate = box.getCenter().getCoordinates(internalCS);
     CHECK(coordinate.getX() / 1_m == Approx(0));
     CHECK(coordinate.getY() / 1_m == Approx(0));
     CHECK(coordinate.getZ() / 1_m == Approx(0));
@@ -318,11 +319,10 @@ TEST_CASE("Geometry Box") {
   }
 
   SECTION("from different coordinate") {
-    CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
     QuantityVector<length_d> const axis_z{0_m, 0_m, 1_m};
-    auto rotatedCS = make_rotation(rootCS, axis_z, 90);
+    auto rotatedCS = make_rotation(initialCS, axis_z, 90);
     Point center(rootCS, {0_m, 0_m, 5_m});
-    Box box(center, rotatedCS, 4_m, 5_m, 6_m);
+    Box box(rotatedCS, 4_m, 5_m, 6_m);
     CHECK(box.contains(Point(rootCS, {4.5_m, 0_m, 0_m})));
     CHECK_FALSE(box.contains(Point(rootCS, {0_m, 4.5_m, 0_m})));
   }

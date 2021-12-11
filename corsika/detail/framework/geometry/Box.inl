@@ -6,7 +6,24 @@
  * the license.
  */
 
+#pragma once
+
 namespace corsika {
+  inline Box::Box(CoordinateSystemPtr cs, LengthType const x, LengthType const y,
+                  LengthType const z)
+      : center_(Point(cs, {0_m, 0_m, 0_m}))
+      , cs_(cs)
+      , x_(x)
+      , y_(y)
+      , z_(z) {}
+
+  inline Box::Box(CoordinateSystemPtr cs, LengthType const side)
+      : center_(Point(cs, {0_m, 0_m, 0_m}))
+      , cs_(cs)
+      , x_(side / 2)
+      , y_(side / 2)
+      , z_(side / 2) {}
+
   inline bool Box::contains(Point const& p) const {
     if ((abs(p.getX(cs_)) < x_) && (abs(p.getY(cs_)) < y_) && (abs(p.getZ(cs_)) < z_))
       return true;
