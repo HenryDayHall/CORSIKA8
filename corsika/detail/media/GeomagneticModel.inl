@@ -149,11 +149,9 @@ namespace corsika {
       // Schmidt semi-normalization and Condon-Shortley phase term
       if (p.m > 0) {
         // Note: n! = tgamma(n+1)
-        legendre *= sqrt(2 * std::tgamma(p.n - p.m + 1) / std::tgamma(p.n + p.m + 1)) *
-                    pow(-1, p.m);
+        legendre *= sqrt(2 * std::tgamma(p.n - p.m + 1) / std::tgamma(p.n + p.m + 1));
         next_legendre *=
-            sqrt(2 * std::tgamma(p.n + 1 - p.m + 1) / std::tgamma(p.n + 1 + p.m + 1)) *
-            pow(-1, p.m);
+            sqrt(2 * std::tgamma(p.n + 1 - p.m + 1) / std::tgamma(p.n + 1 + p.m + 1));
       }
       derivate_legendre =
           (p.n + 1) * tan(lat_sph) * legendre -
