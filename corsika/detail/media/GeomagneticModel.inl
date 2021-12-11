@@ -146,7 +146,7 @@ namespace corsika {
       legendre = pow(-1, p.m) * std::assoc_legendre(p.n, p.m, sin(lat_sph));
       next_legendre = pow(-1, p.m) * std::assoc_legendre(p.n + 1, p.m, sin(lat_sph));
 
-      // Schmidt semi-normalization and Condon-Shortley phase term
+      // Schmidt semi-normalization
       if (p.m > 0) {
         // Note: n! = tgamma(n+1)
         legendre *= sqrt(2 * std::tgamma(p.n - p.m + 1) / std::tgamma(p.n + p.m + 1));

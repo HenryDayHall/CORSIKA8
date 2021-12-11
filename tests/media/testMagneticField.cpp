@@ -99,17 +99,21 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
 
       // create earth magnetic field vector
       MagneticFieldVector Earth_B_1 = igrf.getField(2022.5, 100_km, -80, -120);
-      MagneticFieldVector Earth_B_2 = igrf.getField(2022.5, 0_km, 0, 120);
-      MagneticFieldVector Earth_B_3 = igrf.getField(2020, 100_km, 80, 0);
-      CHECK(Earth_B_1.getX(gCS) / 1_nT == Approx(5815).margin(0.03));
-      CHECK(Earth_B_1.getY(gCS) / 1_nT == Approx(-14803).margin(0.03));
-      CHECK(Earth_B_1.getZ(gCS) / 1_nT == Approx(49755.3).margin(0.03));
-      CHECK(Earth_B_2.getX(gCS) / 1_nT == Approx(39684.7).margin(0.03));
-      CHECK(Earth_B_2.getY(gCS) / 1_nT == Approx(42.2).margin(0.03));
-      CHECK(Earth_B_2.getZ(gCS) / 1_nT == Approx(10809.5).margin(0.03));
-      CHECK(Earth_B_3.getX(gCS) / 1_nT == Approx(6261.8).margin(0.03));
-      CHECK(Earth_B_3.getY(gCS) / 1_nT == Approx(185.5).margin(0.03));
-      CHECK(Earth_B_3.getZ(gCS) / 1_nT == Approx(-52429.1).margin(0.03));
+      MagneticFieldVector Earth_B_2 = igrf.getField(1937.5, 10_km, 80, 120);
+      MagneticFieldVector Earth_B_3 = igrf.getField(1990, 50_km, 80, 0);
+      MagneticFieldVector Earth_B_4 = igrf.getField(2012, 0_km, 0, -120);
+      CHECK(Earth_B_1.getX(gCS) / 1_nT == Approx(5821).margin(0.5));
+      CHECK(Earth_B_1.getY(gCS) / 1_nT == Approx(14796).margin(0.5));
+      CHECK(Earth_B_1.getZ(gCS) / 1_nT == Approx(-497756).margin(0.5));
+      CHECK(Earth_B_2.getX(gCS) / 1_nT == Approx(2957).margin(0.5));
+      CHECK(Earth_B_2.getY(gCS) / 1_nT == Approx(-1014).margin(0.5));
+      CHECK(Earth_B_2.getZ(gCS) / 1_nT == Approx(-57610).margin(0.5));
+      CHECK(Earth_B_3.getX(gCS) / 1_nT == Approx(6545).margin(0.5));
+      CHECK(Earth_B_3.getY(gCS) / 1_nT == Approx(1473).margin(0.5));
+      CHECK(Earth_B_3.getZ(gCS) / 1_nT == Approx(-52884).margin(0.5));
+      CHECK(Earth_B_4.getX(gCS) / 1_nT == Approx(30052).margin(0.5));
+      CHECK(Earth_B_4.getY(gCS) / 1_nT == Approx(-4738).margin(0.5));
+      CHECK(Earth_B_4.getZ(gCS) / 1_nT == Approx(-5190).margin(0.5));
     }
   }
 }
