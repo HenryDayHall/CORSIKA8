@@ -76,10 +76,7 @@ namespace corsika::epos {
     ::epos::aaset_(iarg);
 
     // debug output settings
-    if (epos_listing_)
-      ::epos::prnt1_.ish = 4;
-    else
-      ::epos::prnt1_.ish = 0;  // debug level in epos, 0: off, 6: medium output
+    ::epos::prnt1_.ish = 0;
     ::epos::prnt3_.iwseed = 0; // 1: printout seeds, 0: off
     ::epos::files_.ifch = 6;   // output unit, 6: screen
 
