@@ -70,11 +70,14 @@ namespace corsika::qgsjetII {
     }
 
     // define projectile, in lab frame
-    auto const sqrtS2 = (projectileP4 + targetP4).getNormSqr();
-    auto const sqrtS = sqrt(sqrtS2);
-    if (!isValid(projectileId, targetId, sqrtS)) { return CrossSectionType::zero(); }
+    auto const SNN =
+        (projectileP4 / (is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1) +
+         targetP4 / (is_nucleus(targetId) ? get_nucleus_A(targetId) : 1))
+            .getNormSqr();
+    auto const sqrtSNN = sqrt(SNN);
+    if (!isValid(projectileId, targetId, sqrtSNN)) { return CrossSectionType::zero(); }
     HEPEnergyType const Elab =
-        calculate_lab_energy(sqrtS2, get_mass(projectileId), get_mass(targetId));
+        calculate_lab_energy(SNN, get_mass(projectileId), get_mass(targetId));
 
     int const iBeam = static_cast<QgsjetIIXSClassIntType>(
         corsika::qgsjetII::getQgsjetIIXSCode(projectileId));
@@ -104,11 +107,11 @@ namespace corsika::qgsjetII {
         projectileId, corsika::qgsjetII::canInteract(projectileId));
 
     // define projectile, in lab frame
-    auto const sqrtS2 =
+    auto const SNN =
         (projectileP4 / (is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1) +
          targetP4 / (is_nucleus(targetId) ? get_nucleus_A(targetId) : 1))
             .getNormSqr();
-    auto const sqrtS = sqrt(sqrtS2);
+    auto const sqrtS = sqrt(SNN);
     if (!corsika::qgsjetII::canInteract(projectileId) ||
         !isValid(projectileId, targetId, sqrtS)) {
       throw std::runtime_error("invalid target/projectile/energy combination.");
@@ -122,7 +125,7 @@ namespace corsika::qgsjetII {
                                         // always nucleon??
 
     // lab energy/hadron
-    HEPEnergyType const Elab = calculate_lab_energy(sqrtS2, projectileMass, targetMass);
+    HEPEnergyType const Elab = calculate_lab_energy(SNN, projectileMass, targetMass);
 
     int beamA = 0;
     if (is_nucleus(projectileId)) { beamA = get_nucleus_A(projectileId); }
