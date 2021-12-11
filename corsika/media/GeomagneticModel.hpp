@@ -10,9 +10,11 @@ namespace corsika {
 
   /**
    * A magnetic field calculated with the WMM or IGRF model.
+   * WMM: https://geomag.bgs.ac.uk/documents/WMM2020_Report.pdf
+   * IGRF: https://www.ngdc.noaa.gov/IAGA/vmod/igrf.html
    */
 
-  class WorldMagneticModel {
+  class GeomagneticModel {
 
     /**
      * Internal data structure for a single shell of the spherical harmonic
@@ -34,7 +36,7 @@ namespace corsika {
      * @param center Center of Earth.
      * @param data Data table to read.
      */
-    WorldMagneticModel(Point const& center, std::string const& data = "GeoMag/WMM.COF");
+    GeomagneticModel(Point const& center, std::string const& data = "GeoMag/WMM.COF");
 
     /**
      * Calculates the value of the magnetic field.
@@ -59,4 +61,4 @@ namespace corsika {
   };
 } // namespace corsika
 
-#include <corsika/detail/media/WorldMagneticModel.inl>
+#include <corsika/detail/media/GeomagneticModel.inl>

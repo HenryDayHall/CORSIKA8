@@ -35,6 +35,7 @@
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
+#include <corsika/media/GeomagneticModel.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/IMagneticFieldModel.hpp>
 #include <corsika/media/NuclearComposition.hpp>
@@ -42,7 +43,6 @@
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
-#include <corsika/media/WMM.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
@@ -126,11 +126,12 @@ int main(int argc, char** argv) {
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
+  GeomagneticModel wmm(center, "GeoMag/WMM.COF");
 
   // build a Linsley US Standard atmosphere into `env`
   create_5layer_atmosphere<setup::EnvironmentInterface, MyExtraEnv>(
       env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
-      get_wmm(rootCS, 2022.5, 10_km, 49, 8.4));
+      wmm.getField(2022.5, 10_km, 49, 8.4));
 
   // pre-setup particle stack
   unsigned short const A = std::stoi(std::string(argv[1]));

@@ -9,7 +9,7 @@
 
 namespace corsika {
 
-  inline WorldMagneticModel::WorldMagneticModel(Point const& center,
+  inline GeomagneticModel::GeomagneticModel(Point const& center,
                                                 std::string const& dataFile)
       : center_(center) {
 
@@ -20,10 +20,10 @@ namespace corsika {
     // Exit if file opening failed
     if (!file.is_open()) {
       CORSIKA_LOG_ERROR("Failed opening data file {}", dataFile);
-      throw std::runtime_error("Cannot load WorldMagneticModel data.");
+      throw std::runtime_error("Cannot load GeomagneticModel data.");
     }
 
-    // WorldMagneticModel supports two types of input data: WMM.COF and IGRF.COF
+    // GeomagneticModel supports two types of input data: WMM.COF and IGRF.COF
     // They have only slightly different format and content and can be easily
     // differentiated here.
 
@@ -64,7 +64,7 @@ namespace corsika {
           CORSIKA_LOG_INFO("Reading WMM input data format.");
         } else {
           CORSIKA_LOG_ERROR("line: {}", line);
-          throw std::runtime_error("Incompatible input data for WorldMagneticModel");
+          throw std::runtime_error("Incompatible input data for GeomagneticModel");
         }
       }
 
@@ -74,7 +74,7 @@ namespace corsika {
 
       if (parameters_.count(iEpoch) != 0) {
         throw std::runtime_error(
-            "WorldMagneticModel input file has duplicate Epoch. Fix.");
+            "GeomagneticModel input file has duplicate Epoch. Fix.");
       }
       parameters_[iEpoch] = std::vector<ParameterLine>(nPar);
 
@@ -88,7 +88,7 @@ namespace corsika {
     file.close();
   }
 
-  inline MagneticFieldVector WorldMagneticModel::getField(double const year,
+  inline MagneticFieldVector GeomagneticModel::getField(double const year,
                                                           LengthType const altitude,
                                                           double const latitude,
                                                           double const longitude) {
@@ -182,7 +182,7 @@ namespace corsika {
                            magneticfield[2] * cos(lat_sph - lat_geo);
 
     return MagneticFieldVector{center_.getCoordinateSystem(), magneticfield_geo[0] * 1_nT,
-                               magneticfield_geo[1] * 1_nT, magneticfield_geo[2] * -1_nT};
+                               magneticfield_geo[1] * -1_nT, magneticfield_geo[2] * -1_nT};
   }
 
 } // namespace corsika
