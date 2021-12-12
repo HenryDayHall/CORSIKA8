@@ -149,8 +149,8 @@ namespace corsika {
       p.h = p.h + (year - epoch) * p.dh;
       if (next_Epoch != 0) {
         ParameterLine next_p = parameters_[next_Epoch][j];
-        p.g = p.g + (next_p.g - p.g) * (year - epoch) / (next_Epoch - epoch);
-        p.h = p.h + (next_p.h - p.h) * (year - epoch) / (next_Epoch - epoch);
+        p.g = p.g + (next_p.g - p.g) * (year - epoch) / (double(next_Epoch) - epoch);
+        p.h = p.h + (next_p.h - p.h) * (year - epoch) / (double(next_Epoch) - epoch);
       }
 
       legendre = pow(-1, p.m) * std::assoc_legendre(p.n, p.m, sin(lat_sph));
