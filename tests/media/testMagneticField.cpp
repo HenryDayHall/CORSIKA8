@@ -99,21 +99,21 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
 
       // create earth magnetic field vector
       MagneticFieldVector Earth_B_1 = igrf.getField(2022.5, 100_km, -80, -120);
-      MagneticFieldVector Earth_B_2 = igrf.getField(1935, 10_km, 80, 120);
+      MagneticFieldVector Earth_B_2 = igrf.getField(1937.5, 10_km, 80, 120);
       MagneticFieldVector Earth_B_3 = igrf.getField(1990, 50_km, 80, 0);
-      MagneticFieldVector Earth_B_4 = igrf.getField(2010, 0_km, 0, -120);
+      MagneticFieldVector Earth_B_4 = igrf.getField(2012, 0_km, 0, -120);
       CHECK(Earth_B_1.getX(gCS) / 1_nT == Approx(5821).margin(0.5));
       CHECK(Earth_B_1.getY(gCS) / 1_nT == Approx(-14796).margin(0.5));
-      CHECK(Earth_B_1.getZ(gCS) / 1_nT == Approx(49776).margin(0.5));
-      CHECK(Earth_B_2.getX(gCS) / 1_nT == Approx(3014).margin(0.5));
-      CHECK(Earth_B_2.getY(gCS) / 1_nT == Approx(-1072).margin(0.5));
-      CHECK(Earth_B_2.getZ(gCS) / 1_nT == Approx(-57594).margin(0.5));
+      CHECK(Earth_B_1.getZ(gCS) / 1_nT == Approx(497756).margin(0.5));
+      CHECK(Earth_B_2.getX(gCS) / 1_nT == Approx(2957).margin(0.5));
+      CHECK(Earth_B_2.getY(gCS) / 1_nT == Approx(-1014).margin(0.5));
+      CHECK(Earth_B_2.getZ(gCS) / 1_nT == Approx(-57610).margin(0.5));
       CHECK(Earth_B_3.getX(gCS) / 1_nT == Approx(6545).margin(0.5));
       CHECK(Earth_B_3.getY(gCS) / 1_nT == Approx(1473).margin(0.5));
       CHECK(Earth_B_3.getZ(gCS) / 1_nT == Approx(-52884).margin(0.5));
-      CHECK(Earth_B_4.getX(gCS) / 1_nT == Approx(30137).margin(0.5));
-      CHECK(Earth_B_4.getY(gCS) / 1_nT == Approx(-4805).margin(0.5));
-      CHECK(Earth_B_4.getZ(gCS) / 1_nT == Approx(-5161).margin(0.5));
+      CHECK(Earth_B_4.getX(gCS) / 1_nT == Approx(30052).margin(0.5));
+      CHECK(Earth_B_4.getY(gCS) / 1_nT == Approx(-4738).margin(0.5));
+      CHECK(Earth_B_4.getZ(gCS) / 1_nT == Approx(-5190).margin(0.5));
     }
   }
 }

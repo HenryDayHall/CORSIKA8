@@ -95,9 +95,14 @@ namespace corsika {
 
     int iYear = int(year);
     int iEpoch = 0;
+    int next_Epoch = 0;
     for (auto parIt = parameters_.rbegin(); parIt != parameters_.rend(); ++parIt) {
       if (parIt->first <= iYear) {
         iEpoch = parIt->first;
+        break;
+      }
+      if (parIt->first >= iYear) {
+        next_Epoch = parIt->first;
         break;
       }
     }
@@ -142,6 +147,11 @@ namespace corsika {
       // Time interpolation
       p.g = p.g + (year - epoch) * p.dg;
       p.h = p.h + (year - epoch) * p.dh;
+      if (next_Epoch != 0) {
+        ParameterLine next_p = parameters_[next_Epoch][j];
+        p.g = p.g + (next_p.g - p.g) * (year - epoch) / (next_Epoch - epoch);
+        p.h = p.h + (next_p.h - p.h) * (year - epoch) / (next_Epoch - epoch);
+      }
 
       legendre = pow(-1, p.m) * std::assoc_legendre(p.n, p.m, sin(lat_sph));
       next_legendre = pow(-1, p.m) * std::assoc_legendre(p.n + 1, p.m, sin(lat_sph));
