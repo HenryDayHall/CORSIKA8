@@ -95,14 +95,9 @@ namespace corsika {
 
     int iYear = int(year);
     int iEpoch = 0;
-    int next_Epoch = 0;
     for (auto parIt = parameters_.rbegin(); parIt != parameters_.rend(); ++parIt) {
       if (parIt->first <= iYear) {
         iEpoch = parIt->first;
-        break;
-      }
-      if (parIt->first >= iYear) {
-        next_Epoch = parIt->first;
         break;
       }
     }
@@ -111,8 +106,8 @@ namespace corsika {
     if (iEpoch == 0) {
       CORSIKA_LOG_WARN("Year {} is before first EPOCH. Results unclear.", year);
     }
-    if (altitude < -1_km || altitude > 850_km) {
-      CORSIKA_LOG_WARN("Altitude should be between -1_km and 850_km.");
+    if (altitude < -1_km || altitude > 600_km) {
+      CORSIKA_LOG_WARN("Altitude should be between -1_km and 600_km.");
     }
     if (latitude <= -90 || latitude >= 90) {
       CORSIKA_LOG_ERROR("Latitude has to be between -90 and 90 degree.");
@@ -147,10 +142,10 @@ namespace corsika {
       // Time interpolation
       p.g = p.g + (year - epoch) * p.dg;
       p.h = p.h + (year - epoch) * p.dh;
-      if (next_Epoch != 0) {
-        ParameterLine next_p = parameters_[next_Epoch][j];
-        p.g = p.g + (next_p.g - p.g) * (year - epoch) / (double(next_Epoch) - epoch);
-        p.h = p.h + (next_p.h - p.h) * (year - epoch) / (double(next_Epoch) - epoch);
+      if (iEpoch < 2020) {
+        ParameterLine next_p = parameters_[iEpoch + 5][j];
+        p.g = p.g + (next_p.g - p.g) * (year - epoch) / 5;
+        p.h = p.h + (next_p.h - p.h) * (year - epoch) / 5;
       }
 
       legendre = pow(-1, p.m) * std::assoc_legendre(p.n, p.m, sin(lat_sph));
