@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
 
   OutputManager output("em_shower_outputs");
 
-  EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis, 10_g / square(1_cm), 200};
+  EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
   // register energy losses as output
   output.add("dEdX", dEdX);
 
@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
   //  NOT possible right now, due to interface differenc in PROPOSAL
   //  InteractionCounter emCascadeCounted(emCascade);
 
-  TrackWriter<TrackWriterParquet> tracks;
+  TrackWriter tracks;
   output.add("tracks", tracks);
 
   // long. profile; columns for photon, e+, e- still need to be added

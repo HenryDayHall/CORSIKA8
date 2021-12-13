@@ -118,7 +118,7 @@ int main() {
       rootCS, {sin(theta) * cos(phi), sin(theta) * sin(phi), -cos(theta)});
 
   ShowerAxis const showerAxis{injectionPos, direction * 100_km, env};
-  EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis};
+  EnergyLossWriter dEdX{showerAxis};
   output.add("energyloss", dEdX);
 
   {

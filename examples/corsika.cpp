@@ -157,10 +157,6 @@ int main(int argc, char** argv) {
   app.add_flag("--force-interaction", force_interaction,
                "Force the location of the first interaction.")
       ->group("Misc.");
-  app.add_option("-v,--verbosity", "Verbosity level")
-      ->default_str("info")
-      ->check(CLI::IsMember({"warn", "info", "debug", "trace"}))
-      ->group("Misc.");
   app.add_option("-v,--verbosity", "Verbosity level: warn, info, debug, trace.")
       ->default_val("info")
       ->check(CLI::IsMember({"warn", "info", "debug", "trace"}))
@@ -285,7 +281,7 @@ int main(int argc, char** argv) {
   output.add("energyloss", dEdX);
 
   // create a track writer and register it with the output manager
-  TrackWriter<TrackWriterParquet> tracks;
+  TrackWriter tracks;
   output.add("tracks", tracks);
 
   corsika::sibyll::Interaction sibyll;
@@ -335,7 +331,7 @@ int main(int argc, char** argv) {
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted(urqmd);
-  StackInspector<setup::Stack> stackInspect(50000, false, E0);
+  StackInspector<setup::Stack> stackInspect(10000, false, E0);
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {

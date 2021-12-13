@@ -52,7 +52,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
   SECTION("cut on particle type: inv") {
 
     // particle cut with 20GeV threshold for all, also cut invisible
-    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, true, false);
+    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, true);
     CHECK(cut.getHadronKineticECut() == 20_GeV);
 
     // add primary particle to stack
@@ -75,13 +75,11 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     cut.doSecondaries(view);
 
     CHECK(view.getEntries() == 9);
-    CHECK(cut.getNumberInvParticles() == 2);
-    CHECK(cut.getInvEnergy() / 1_GeV == Approx(2000.));
   }
 
   SECTION("cut on particle type: em") {
 
-    ParticleCut cut(20_GeV, false, true);
+    ParticleCut cut(1_EeV, 1_EeV, 1_GeV, 1_GeV, false);
 
     // add primary particle to stack
     auto particle = stack.addParticle(std::make_tuple(
@@ -100,12 +98,10 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     cut.doSecondaries(view);
 
     CHECK(view.getEntries() == 10);
-    CHECK(cut.getNumberEmParticles() == 1);
-    CHECK(cut.getEmEnergy() / 1_GeV == 1000.);
   }
 
   SECTION("cut low energy") {
-    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, true, false);
+    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, true);
 
     // add primary particle to stack
     auto particle = stack.addParticle(std::make_tuple(
@@ -134,7 +130,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
   }
 
   SECTION("cut low energy: electrons, photons, hadrons and muons") {
-    ParticleCut cut(5_MeV, 5_MeV, 5_GeV, 5_GeV, true, false);
+    ParticleCut cut(5_MeV, 5_MeV, 5_GeV, 5_GeV, true);
 
     // add primary particle to stack
     auto particle = stack.addParticle(std::make_tuple(Code::Proton, Eabove - Proton::mass,
@@ -167,7 +163,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
   }
 
   SECTION("cut low energy:  reset thresholds of arbitrary set of particles") {
-    ParticleCut cut({{Code::Electron, 5_MeV}, {Code::Positron, 50_MeV}}, false, true);
+    ParticleCut cut({{Code::Electron, 5_MeV}, {Code::Positron, 50_MeV}}, false);
     CHECK(get_kinetic_energy_threshold(Code::Electron) !=
           get_kinetic_energy_threshold(Code::Positron));
     CHECK_FALSE(get_kinetic_energy_threshold(Code::Electron) == Electron::mass);
@@ -176,7 +172,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
   }
 
   SECTION("cut on time") {
-    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, false, false);
+    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, false);
     const TimeType too_late = 1_s;
 
     // add primary particle to stack
@@ -196,10 +192,6 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     cut.doSecondaries(view);
 
     CHECK(view.getEntries() == 0);
-    CHECK(cut.getTimeCutEnergy() == 11 * Eabove);
-    CHECK(cut.getCutEnergy() == 0_GeV);
-    cut.reset();
-    CHECK(cut.getTimeCutEnergy() == 0_GeV);
   }
 
   setup::Trajectory const track = setup::testing::make_track<setup::Trajectory>(
@@ -208,7 +200,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
 
   SECTION("cut on doContinous, just invisibles") {
 
-    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, true, false);
+    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, true);
 
     // add particles, all with energies above the threshold
     // only cut is by species
@@ -223,7 +215,5 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     }
 
     CHECK(stack.getEntries() == 9);
-    CHECK(cut.getNumberInvParticles() == 2);
-    CHECK(cut.getInvEnergy() / 1_GeV == 2000);
   }
 }
