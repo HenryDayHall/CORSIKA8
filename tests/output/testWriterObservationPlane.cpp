@@ -21,7 +21,9 @@ struct TestWriterPlane : public ParticleWriterParquet {
 
   YAML::Node getConfig() const { return YAML::Node(); }
 
-  void checkWrite() { ParticleWriterParquet::write(Code::Unknown, 1_eV, 2_m, 3_m, 0_m, 1.0); }
+  void checkWrite() {
+    ParticleWriterParquet::write(Code::Unknown, 1_eV, 2_m, 3_m, 0_m, 1.0);
+  }
 };
 
 TEST_CASE("ObservationPlaneWriterParquet") {

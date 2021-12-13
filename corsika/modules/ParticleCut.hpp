@@ -38,25 +38,31 @@ namespace corsika {
      * particle cut with kinetic energy thresholds for electrons, photons,
      * hadrons (including nuclei with energy per nucleon) and muons
      * invisible particles (neutrinos) can be cut or not.
+     *
+     * @param outputArgs - optional arguments of TOutput writer
      */
     template <typename... TArgs>
     ParticleCut(HEPEnergyType const eEleCut, HEPEnergyType const ePhoCut,
                 HEPEnergyType const eHadCut, HEPEnergyType const eMuCut, bool const inv,
-                bool const em, TArgs&&... args);
+                TArgs&&... args);
 
     /**
      * particle cut with kinetic energy thresholds for all particles.
+     *
+     * @param outputArgs - optional arguments of TOutput writer
      */
     template <typename... TArgs>
-    ParticleCut(HEPEnergyType const eCut, bool const inv, bool const em, TArgs&&... args);
+    ParticleCut(HEPEnergyType const eCut, bool const inv, TArgs&&... OutputArgs);
 
     /**
      * Threshold for specific particles redefined. EM and invisible particles can be set
      * to be discarded altogether.
+     *
+     * @param outputArgs - optional arguments of TOutput writer
      */
     template <typename... TArgs>
     ParticleCut(std::unordered_map<Code const, HEPEnergyType const> const& eCuts,
-                bool const inv, bool const em, TArgs&&... args);
+                bool const inv, TArgs&&... outputArgs);
 
     /**
      * Cut particles which are secondaries from discrete processes.
@@ -94,32 +100,11 @@ namespace corsika {
     }
 
     void printThresholds() const;
-    void showResults() const; // LCOV_EXCL_LINE
-    void reset();
 
-    HEPEnergyType getElectronKineticECut() const {
-      return get_kinetic_energy_threshold(Code::Electron);
-    }
-    HEPEnergyType getPhotonKineticECut() const {
-      return get_kinetic_energy_threshold(Code::Photon);
-    }
-    HEPEnergyType getMuonKineticECut() const {
-      return get_kinetic_energy_threshold(Code::MuPlus);
-    }
-    HEPEnergyType getHadronKineticECut() const {
-      return get_kinetic_energy_threshold(Code::Proton);
-    }
-    //! returns total energy of particles that were removed by cut for invisible particles
-    HEPEnergyType getInvEnergy() const { return energy_invcut_; }
-    //! returns total energy of particles that were removed by cut for invisible particles
-    HEPEnergyType getEmEnergy() const { return energy_emcut_; }
-    //! returns total energy of particles that were removed by cut in time
-    HEPEnergyType getTimeCutEnergy() const { return energy_timecut_; }
-    //! returns total energy of particles that were removed by cut in kinetic energy
-    HEPEnergyType getCutEnergy() const { return energy_cut_; }
-    //! returns number of invisible particles
-    size_t getNumberInvParticles() const { return inv_count_; }
-    size_t getNumberEmParticles() const { return em_count_; }
+    HEPEnergyType getElectronKineticECut() const { return cut_electrons_; }
+    HEPEnergyType getPhotonKineticECut() const { return cut_photons_; }
+    HEPEnergyType getMuonKineticECut() const { return cut_muons_; }
+    HEPEnergyType getHadronKineticECut() const { return cut_hadrons_; }
 
     //! get configuration of this node, for output
     YAML::Node getConfig() const override;
@@ -131,22 +116,14 @@ namespace corsika {
     template <typename TParticle>
     bool isBelowEnergyCut(TParticle const&) const;
 
-    //! defines which particles are invisible, by default only neutrinos
-    bool isInvisible(Code const&) const;
-
   private:
+    HEPEnergyType cut_electrons_;
+    HEPEnergyType cut_photons_;
+    HEPEnergyType cut_muons_;
+    HEPEnergyType cut_hadrons_;
     bool doCutInv_;
-    bool doCutEm_;
-    HEPEnergyType energy_cut_ = 0 * electronvolt;
-    HEPEnergyType energy_timecut_ = 0 * electronvolt;
-    HEPEnergyType energy_invcut_ = 0 * electronvolt;
-    HEPEnergyType energy_emcut_ = 0 * electronvolt;
-    size_t inv_count_ = 0;
-    size_t em_count_ = 0;
-    size_t energy_count_ = 0;
-
-    HEPEnergyType energy_event_; // per event sum
-  };
+    std::unordered_map<Code const, HEPEnergyType const> cuts_;
+  }; // namespace corsika
 
 } // namespace corsika
 

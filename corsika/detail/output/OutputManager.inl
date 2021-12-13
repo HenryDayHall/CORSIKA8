@@ -159,7 +159,7 @@ namespace corsika {
 
       // add the name keyword
       config["name"] = name;
-      
+
       // write the output configuration to config.yaml in the output directory
       writeYAML(config, root_ / name / ("config.yaml"));
     }

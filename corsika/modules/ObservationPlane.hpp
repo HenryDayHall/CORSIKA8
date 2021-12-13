@@ -24,6 +24,8 @@ namespace corsika {
    * central point of the plane into its output file. The particles are considered
    * "absorbed" afterwards.
    *
+   * The default output format is parquet.
+   *
    * **Note/Limitation:** as discussed in
    * https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/issues/397
    * you cannot put two ObservationPlanes exactly on top of each
@@ -31,7 +33,7 @@ namespace corsika {
    * small gap in between the two plane in such a scenario, or develop
    * another more specialized output class.
    */
-  template <typename TTracking, typename TOutput = WriterOff>
+  template <typename TTracking, typename TOutput = ParticleWriterParquet>
   class ObservationPlane : public ContinuousProcess<ObservationPlane<TTracking, TOutput>>,
                            public TOutput {
 

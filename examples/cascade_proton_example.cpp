@@ -133,7 +133,7 @@ int main() {
   output.add("energyloss", dEdX);
 
   BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss{dEdX};
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(60_GeV, true, true, dEdX);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(60_GeV, true, dEdX);
   cut.printThresholds();
 
   // RNGManager::getInstance().registerRandomStream("HadronicElasticModel");
@@ -152,12 +152,7 @@ int main() {
   EAS.run();
   output.endOfShower();
 
-  cout << "Result: E0=" << E0 / 1_GeV << endl;
-  cut.showResults();
-  const HEPEnergyType Efinal =
-      cut.getCutEnergy() + cut.getInvEnergy() + cut.getEmEnergy();
-  cout << "total energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1.) * 100 << endl;
+  CORSIKA_LOG_INFO("Done");
 
   output.endOfLibrary();
 }

@@ -164,8 +164,9 @@ namespace corsika {
     CORSIKA_LOG_TRACE("EnergyLoss  dE={} MeV, Ekin={} GeV, EkinNew={} GeV", dE / 1_MeV,
                       Ekin / 1_GeV, EkinNew / 1_GeV);
     particle.setKineticEnergy(EkinNew);
+
     // also send to output
-    this->write(track, particle.getPID(), -dE);
+    TOutput::write(track, particle.getPID(), -dE);
     return ProcessReturn::Ok;
   }
 
@@ -193,16 +194,6 @@ namespace corsika {
 
     return vParticle.getNode()->getModelProperties().getArclengthFromGrammage(
         vTrack, maxGrammage);
-  }
-
-  template <typename TOutput>
-  inline void BetheBlochPDG<TOutput>::showResults() const {
-    CORSIKA_LOG_INFO("energy lost dE (GeV)      : {}  ", energy_lost_ / 1_GeV);
-  }
-
-  template <typename TOutput>
-  inline void BetheBlochPDG<TOutput>::reset() {
-    energy_lost_ = 0_GeV;
   }
 
   template <typename TOutput>

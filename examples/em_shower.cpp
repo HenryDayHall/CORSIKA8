@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
 
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(60_GeV, 60_GeV, 100_PeV, 100_PeV, true, true,
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(60_GeV, 60_GeV, 100_PeV, 100_PeV, true,
                                              dEdX);
   corsika::proposal::Interaction emCascade(env);
   corsika::proposal::ContinuousProcess emContinuous(env);
@@ -187,17 +187,9 @@ int main(int argc, char** argv) {
   EAS.run();
   output.endOfShower();
 
-  cut.showResults();
-  emContinuous.showResults();
-  observationLevel.showResults();
-  const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                               cut.getEmEnergy() + emContinuous.getEnergyLost() +
-                               observationLevel.getEnergyGround();
+  const HEPEnergyType Efinal = dEdX.getTotal();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  observationLevel.reset();
-  cut.reset();
-  emContinuous.reset();
 
   output.endOfLibrary();
 }

@@ -118,7 +118,7 @@ int main() {
   // setup processes, decays and interactions
   setup::Tracking tracking;
 
-  ParticleCut cut(50_GeV, true, true);
+  ParticleCut cut(50_GeV, true);
 
   TrackWriter trackWriter;
   output.add("tracks", trackWriter); // register TrackWriter
@@ -143,10 +143,7 @@ int main() {
     double const theta = distTheta(rng);
     double const phi = distPhi(rng);
 
-    auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-      return sqrt((Elab - m) * (Elab + m));
-    };
-    HEPMomentumType P0 = elab2plab(E0, mass);
+    HEPMomentumType const P0 = calculate_momentum(E0, mass);
     auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
       return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
                              -ptot * cos(theta));
@@ -173,12 +170,7 @@ int main() {
   EAS.run();
   output.endOfShower();
 
-  CORSIKA_LOG_INFO("Result: E0={}GeV", E0 / 1_GeV);
-  cut.showResults();
-  [[maybe_unused]] const HEPEnergyType Efinal =
-      (cut.getCutEnergy() + cut.getInvEnergy() + cut.getEmEnergy());
-  CORSIKA_LOG_INFO("Total energy (GeV): {} relative difference (%): {}", Efinal / 1_GeV,
-                   (Efinal / E0 - 1.) * 100);
+  CORSIKA_LOG_INFO("Done");
 
   output.endOfLibrary();
 }

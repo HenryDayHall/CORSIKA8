@@ -281,7 +281,7 @@ int main(int argc, char** argv) {
   OutputManager output(app["--filename"]->as<std::string>());
 
   // register energy losses as output
-  EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis, 10_g / square(1_cm), 200};
+  EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
   output.add("energyloss", dEdX);
 
   // create a track writer and register it with the output manager
@@ -321,8 +321,7 @@ int main(int argc, char** argv) {
 
   HEPEnergyType const emcut = 50_GeV;
   HEPEnergyType const hadcut = 50_GeV;
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, true,
-                                             dEdX);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, dEdX);
 
   corsika::proposal::Interaction emCascade(env);
   // NOT available for PROPOSAL due to interface trouble:
@@ -413,15 +412,10 @@ int main(int argc, char** argv) {
     // run the shower
     EAS.run();
 
-    cut.showResults();
-    // emContinuous.showResults();
-    observationLevel.showResults();
-    HEPEnergyType const Efinal = dEdX.getTotal() + observationLevel.getTotalEnergy();
+    HEPEnergyType const Efinal = dEdX.getTotal();
+    //  +observationLevel.getTotalEnergy();
     cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
          << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-    observationLevel.reset();
-    cut.reset();
-    // emContinuous.reset();
 
     // auto const hists = heModelCounted.getHistogram() + urqmdCounted.getHistogram();
     auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +

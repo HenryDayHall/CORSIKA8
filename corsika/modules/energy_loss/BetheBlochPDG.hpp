@@ -69,19 +69,6 @@ namespace corsika {
     static HEPEnergyType getTotalEnergyLoss(TParticle const&, const GrammageType);
 
     YAML::Node getConfig() const override;
-
-    void showResults() const;
-    void reset();
-    HEPEnergyType getEnergyLost() const { return energy_lost_; }
-
-  private:
-    template <typename TParticle>
-    void updateMomentum(TParticle&, HEPEnergyType Enew);
-
-    template <typename TTrajectory>
-    void fillProfile(TTrajectory const&, HEPEnergyType);
-
-    HEPEnergyType energy_lost_ = HEPEnergyType::zero();
   };
 
 } // namespace corsika

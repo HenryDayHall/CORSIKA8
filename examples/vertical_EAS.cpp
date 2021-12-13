@@ -154,10 +154,7 @@ int main(int argc, char** argv) {
   auto const thetaRad = theta / 180. * constants::pi;
   auto const phiRad = phi / 180. * constants::pi;
 
-  auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-    return sqrt((Elab - m) * (Elab + m));
-  };
-  HEPMomentumType P0 = elab2plab(E0, mass);
+  HEPMomentumType P0 = calculate_momentum(E0, mass);
   auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
     return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
                            -ptot * cos(theta));
@@ -208,8 +205,7 @@ int main(int argc, char** argv) {
   BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
   // construct a particle cut
-  ParticleCut<SubWriter<decltype(dEdX)>> cut{60_GeV, 60_GeV, 60_GeV, 60_GeV,
-                                             true,   false,  dEdX};
+  ParticleCut<SubWriter<decltype(dEdX)>> cut{E0, E0, 60_GeV, 60_GeV, true, dEdX};
 
   // setup longitudinal profile
   LongitudinalProfile<corsika::LongitudinalProfileWriterParquet> profile{showerAxis};
@@ -296,9 +292,6 @@ int main(int argc, char** argv) {
   output.startOfShower();
   EAS.run();
   output.endOfShower();
-
-  observationLevel.showResults();
-  observationLevel.reset();
 
   auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                      urqmdCounted.getHistogram();

@@ -9,18 +9,41 @@
 #pragma once
 
 #include <corsika/output/BaseOutput.hpp>
-#include <corsika/output/ParquetStreamer.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/modules/writers/WriterOff.hpp>
+#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
 
 #include <vector>
 #include <array>
 
 namespace corsika {
 
-  template <typename TOutput = WriterOff>
+  /**
+   * The energy loss writer can be used to pool several energy loss processes into one
+   * output file/stream.
+   *
+   * Typically many processes/modules can lead to energy losses in the shower. The
+   * EnergyLossWriter can be used in combination with the SubWriter class to collect all
+   * of them into a single output stream:
+   * \code {.cpp}
+   * # showerAxis must be a ShowerAxis object
+   * # the X binning can be specified.
+   * EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
+   * # add to OutputManager:
+   * output.add("energyloss", dEdX);
+   * # add SubWriters, e.g. Bethe-Bloch:
+   * BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss{dEdX};
+   * ...
+   * \endcode
+   *
+   * The default output option is parquet format.
+   *
+   * @tparam TOutput
+   */
+
+  template <typename TOutput = EnergyLossWriterParquet>
   class EnergyLossWriter : public TOutput {
 
     enum class ProfileIndex { Total, Entries };

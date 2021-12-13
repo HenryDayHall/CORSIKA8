@@ -15,6 +15,9 @@
 namespace corsika {
 
   /**
+   * @ingroup Modules
+   * @{
+   *
    * To write 3D track data to disk.
    *
    * Since the only sole purpose of this module is to generate track
@@ -40,6 +43,8 @@ namespace corsika {
 
   private:
   };
+
+  //! @}
 
 } // namespace corsika
 

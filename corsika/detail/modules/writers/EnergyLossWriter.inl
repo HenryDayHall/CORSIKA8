@@ -37,6 +37,9 @@ namespace corsika {
   template <typename TOutput>
   inline void EnergyLossWriter<TOutput>::startOfShower(unsigned int const showerId) {
     TOutput::startOfShower(showerId);
+    // reset profile
+    profile_.clear();
+    profile_.resize(nBins_);
   }
 
   template <typename TOutput>
@@ -49,15 +52,12 @@ namespace corsika {
 
     int iRow{0};
     for (Profile const& row : profile_) {
+      // here: write to underlying writer (e.g. parquet)
       TOutput::write(showerId, iRow * dX_, row.at(static_cast<int>(ProfileIndex::Total)));
       iRow++;
     }
 
     TOutput::endOfShower(showerId);
-
-    // reset profile
-    profile_.clear();
-    profile_.resize(nBins_);
   }
 
   template <typename TOutput>
@@ -89,20 +89,19 @@ namespace corsika {
     if (binEnd > maxBin) binEnd = maxBin;
 
     CORSIKA_LOGGER_TRACE(
-        TOutput::getLogger(), "energy deposit of dE={} GeV between {} and {}", dE / 1_GeV,
-        grammageStart / 1_g * square(1_cm), grammageEnd / 1_g * square(1_cm));
+        TOutput::getLogger(), "energy deposit of dE={} GeV between {} and {} g/cm2",
+        dE / 1_GeV, grammageStart / 1_g * square(1_cm), grammageEnd / 1_g * square(1_cm));
 
     auto energyCount = HEPEnergyType::zero();
 
     auto const factor = dE / deltaX;
     auto fill = [&](int const bin, GrammageType const weight) {
       auto const increment = factor * weight;
-      profile_[bin][static_cast<int>(ProfileIndex::Total)] += increment;
-      energyCount += increment;
-
       CORSIKA_LOGGER_TRACE(TOutput::getLogger(),
                            "filling bin={} with weight {} : dE={} GeV ", bin, weight,
                            increment / 1_GeV);
+      profile_[bin][static_cast<int>(ProfileIndex::Total)] += increment;
+      energyCount += increment;
     };
 
     // fill longitudinal profile
@@ -144,7 +143,7 @@ namespace corsika {
         abs(bend - floor(bend + 0.5)) > 1e-2 || abs(bend - bstart - 1) > 1e-2) {
       CORSIKA_LOGGER_ERROR(TOutput::getLogger(),
                            "CONEX and Corsika8 dX grammage binning are not the same! "
-                           "Xstart={} Xend={} dX={}",
+                           "Xstart={} Xend={} dX={} g/cm2",
                            Xstart / 1_g * square(1_cm), Xend / 1_g * square(1_cm),
                            dX_ / 1_g * square(1_cm));
       throw std::runtime_error(

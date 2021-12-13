@@ -319,8 +319,7 @@ int main(int argc, char** argv) {
 
   HEPEnergyType const emcut = 1_GeV;
   HEPEnergyType const hadcut = 1_GeV;
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, true,
-                                             dEdX);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, dEdX);
 
   /* === START: SETUP PROCESS LIST === */
   corsika::sibyll::Interaction sibyll;
@@ -436,17 +435,10 @@ int main(int argc, char** argv) {
     // run the shower
     EAS.run();
 
-    cut.showResults();
-    // emContinuous.showResults();
-    observationLevel.showResults();
-    const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                                 cut.getEmEnergy() + // emContinuous.getEnergyLost() +
-                                 observationLevel.getEnergyGround();
+    const HEPEnergyType Efinal = dEdX.getTotal();
+    //  +observationLevel.getEnergyGround();
     cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
          << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-    observationLevel.reset();
-    cut.reset();
-    // emContinuous.reset();
 
     auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                        urqmdCounted.getHistogram();
