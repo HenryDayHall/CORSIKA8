@@ -81,7 +81,7 @@ namespace corsika {
   private:
     ShowerAxis const& showerAxis_; ///< conversion between geometry and grammage
     GrammageType dX_;              ///< binning of profile.
-    unsigned int nBins_;           ///< number of profile bins.
+    size_t nBins_;                 ///< number of profile bins.
     GrammageType dX_threshold_;    ///< too short tracks are discarded.
     std::vector<Profile> profile_; // longitudinal profile
 

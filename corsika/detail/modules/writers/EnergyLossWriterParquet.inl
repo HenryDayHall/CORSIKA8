@@ -52,7 +52,7 @@ namespace corsika {
 
   inline void EnergyLossWriterParquet::startOfShower(unsigned int const) {}
 
-  inline void EnergyLossWriterParquet::endOfShower(unsigned int const showerId) {}
+  inline void EnergyLossWriterParquet::endOfShower(unsigned int const) {}
 
   inline void EnergyLossWriterParquet::endOfLibrary() { output_.closeStreamer(); }
 

@@ -14,7 +14,7 @@
 
 namespace corsika {
 
-  inline HEPEnergyType constexpr calculate_kinetic_energy_threshold(Code const code) {
+  inline HEPEnergyType constexpr get_kinetic_energy_threshold(Code const code) {
     if (is_nucleus(code)) return particle::detail::threshold_nuclei;
     return particle::detail::thresholds[static_cast<CodeIntType>(code)];
   }
@@ -31,6 +31,8 @@ namespace corsika {
     if (is_nucleus(code)) { return get_nucleus_mass(code); }
     return particle::detail::masses[static_cast<CodeIntType>(code)];
   }
+
+  inline bool constexpr is_charged(Code const c) { return get_charge_number(c) != 0; }
 
   inline bool constexpr is_nucleus(Code const code) { return code >= Code::Nucleus; }
 

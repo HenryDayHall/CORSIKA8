@@ -30,8 +30,9 @@ namespace corsika {
   } // namespace conex
 
   template <typename TOutput = WriterOff, typename TProfileOutput = WriterOff>
-  class CONEXhybrid : public CascadeEquationsProcess<CONEXhybrid<TOutput, TProfileOutput>>,
-                      public SecondariesProcess<CONEXhybrid<TOutput, TProfileOutput>> {
+  class CONEXhybrid
+      : public CascadeEquationsProcess<CONEXhybrid<TOutput, TProfileOutput>>,
+        public SecondariesProcess<CONEXhybrid<TOutput, TProfileOutput>> {
 
   public:
     /**
@@ -78,7 +79,7 @@ namespace corsika {
     void initCascadeEquations();
 
     /**
-     * Cascade equations are solved basoned on the data in the tables
+     * Cascade equations are solved basoned on the data in the tables.
      */
     template <typename TStack>
     void doCascadeEquations(TStack& stack);

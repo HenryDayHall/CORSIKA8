@@ -27,6 +27,9 @@
 #include <corsika/framework/random/RNGManager.hpp>
 
 #include <corsika/output/OutputManager.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -157,10 +160,7 @@ int main(int argc, char** argv) {
   double theta = 0.;
   auto const thetaRad = theta / 180. * M_PI;
 
-  auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-    return sqrt((Elab - m) * (Elab + m));
-  };
-  HEPMomentumType P0 = elab2plab(E0, mass);
+  HEPMomentumType P0 = calculate_momentum(E0, mass);
   auto momentumComponents = [](double thetaRad, HEPMomentumType ptot) {
     return std::make_tuple(ptot * sin(thetaRad), 0_eV, -ptot * cos(thetaRad));
   };
@@ -228,13 +228,23 @@ int main(int argc, char** argv) {
 
   decaySibyll.printDecayConfig();
 
-  ParticleCut cut(3_GeV, false, true);
-  BetheBlochPDG eLoss(showerAxis);
+  // register energy losses as output
+  EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis, 10_g / square(1_cm), 200};
+  output.add("energyloss", dEdX);
+
+  // create a track writer and register it with the output manager
+  TrackWriter<TrackWriterParquet> tracks;
+  output.add("tracks", tracks);
+
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(3_GeV, false, true, dEdX);
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss(dEdX);
 
   CONEXhybrid conex_model(center, showerAxis, t, injectionHeight, E0,
                           get_PDG(Code::Proton));
 
-  OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
+  LongitudinalProfile<corsika::LongitudinalProfileWriterParquet> longprof{
+      showerAxis, 10_g / square(1_cm), 200};
+  output.add("profile", longprof);
 
   LongitudinalProfile longprof(showerAxis);
 

@@ -27,7 +27,9 @@
 #include <corsika/framework/random/RNGManager.hpp>
 
 #include <corsika/output/OutputManager.hpp>
-#include <corsika/output/NoOutput.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -278,17 +280,12 @@ int main(int argc, char** argv) {
   // create the output manager that we then register outputs with
   OutputManager output(app["--filename"]->as<std::string>());
 
-  EnergyLossWriterParquet dEdX_output{showerAxis, 10_g / square(1_cm), 200};
   // register energy losses as output
-  output.add("dEdX", dEdX_output);
-  // register profile output
-  LongitudinalProfileWriterParquet profile{showerAxis};
-  output.add("profile", profile);
-  // register ground particle output
-  ParticleWriterParquet particles;
-  output.add("particles", particles);
-  // register TrackWriter
-  TrackWriterParquet tracks;
+  EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis, 10_g / square(1_cm), 200};
+  output.add("energyloss", dEdX);
+
+  // create a track writer and register it with the output manager
+  TrackWriter<TrackWriterParquet> tracks;
   output.add("tracks", tracks);
 
   corsika::sibyll::Interaction sibyll;
@@ -322,20 +319,20 @@ int main(int argc, char** argv) {
 
   // decaySibyll.printDecayConfig();
 
-  HEPEnergyType const emcut = 1_GeV;
-  HEPEnergyType const hadcut = 1_GeV;
-  ParticleCut cut(emcut, emcut, hadcut, hadcut, true);
+  HEPEnergyType const emcut = 50_GeV;
+  HEPEnergyType const hadcut = 50_GeV;
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, true,
+                                             dEdX);
 
-  ParticleCut cut{dEdX_output, 50_GeV, 50_GeV, 50_GeV, 50_GeV, false};
   corsika::proposal::Interaction emCascade(env);
   // NOT available for PROPOSAL due to interface trouble:
   //  InteractionCounter emCascadeCounted(emCascade);
-  // corsika::proposal::ContinuousProcess emContinuous(env);
-  BetheBlochPDG emContinuous(showerAxis);
+  // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env);
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
-  // cut.printThresholds();
-
-  LongitudinalProfile longprof{profile};
+  LongitudinalProfile<corsika::LongitudinalProfileWriterParquet> longprof{
+      showerAxis, 10_g / square(1_cm), 200};
+  output.add("profile", longprof);
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted(urqmd);
@@ -355,8 +352,10 @@ int main(int argc, char** argv) {
 
   // observation plane
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane observationLevel{obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
-                                    particles};
+  ObservationPlane<setup::Tracking, ParticleWriterParquet> observationLevel{
+      obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
+  // register ground particle output
+  output.add("particles", observationLevel);
 
   // assemble the final process sequence
   auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, cut,
@@ -417,8 +416,7 @@ int main(int argc, char** argv) {
     cut.showResults();
     // emContinuous.showResults();
     observationLevel.showResults();
-    HEPEnergyType const Efinal =
-        dEdX_output.getTotal() + particleOutput.getEnergyGround();
+    HEPEnergyType const Efinal = dEdX.getTotal() + observationLevel.getTotalEnergy();
     cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
          << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
     observationLevel.reset();

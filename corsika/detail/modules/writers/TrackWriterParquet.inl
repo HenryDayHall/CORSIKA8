@@ -57,12 +57,12 @@ namespace corsika {
 
   inline void TrackWriterParquet::endOfLibrary() { output_.closeStreamer(); }
 
-  inline void TrackWriterParquet::write(Code const& pid, HEPEnergyType const& energy,
+  inline void TrackWriterParquet::write(Code const pid, HEPEnergyType const energy,
                                         double const weight,
                                         QuantityVector<length_d> const& start,
-                                        TimeType const& t_start,
+                                        TimeType const t_start,
                                         QuantityVector<length_d> const& end,
-                                        TimeType const& t_end) {
+                                        TimeType const t_end) {
 
     // write the next row - we must write `shower_` first.
     // clang-format off

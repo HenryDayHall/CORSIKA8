@@ -13,7 +13,6 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
 
-
 #include <corsika/modules/writers/WriterOff.hpp>
 
 #include <map>
@@ -58,9 +57,8 @@ namespace corsika {
                                bool const limitFlag);
 
     template <typename TParticle, typename TTrajectory>
-    LengthType getMaxStepLength(TParticle const&,
-                                TTrajectory const&);
-    
+    LengthType getMaxStepLength(TParticle const&, TTrajectory const&) const;
+
     template <typename TParticle>
     static HEPEnergyType getBetheBloch(TParticle const&, const GrammageType);
 

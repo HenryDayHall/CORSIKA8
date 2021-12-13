@@ -17,6 +17,9 @@
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 
 #include <corsika/output/OutputManager.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -124,7 +127,13 @@ int main() {
   RNGManager<>::getInstance().registerRandomStream("pythia");
   corsika::pythia8::Interaction pythia;
   corsika::pythia8::Decay decay;
-  ParticleCut cut(60_GeV, true, true);
+
+  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
+  EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis};
+  output.add("energyloss", dEdX);
+
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss{dEdX};
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(60_GeV, true, true, dEdX);
   cut.printThresholds();
 
   // RNGManager::getInstance().registerRandomStream("HadronicElasticModel");
@@ -133,9 +142,6 @@ int main() {
 
   TrackWriter trackWriter;
   output.add("tracks", trackWriter); // register TrackWriter
-
-  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
-  BetheBlochPDG eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
   auto sequence = make_sequence(pythia, decay, eLoss, cut, trackWriter, stackInspect);

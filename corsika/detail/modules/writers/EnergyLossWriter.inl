@@ -178,7 +178,7 @@ namespace corsika {
     node["nbins"] = nBins_;
     node["grammage_threshold"] = dX_threshold_ / (1_g / square(1_cm));
 
-    // TODO: add shower axis to config
+    //! \todo add shower axis to config
 
     return node;
   }

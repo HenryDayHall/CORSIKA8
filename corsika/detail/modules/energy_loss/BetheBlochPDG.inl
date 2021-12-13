@@ -19,19 +19,15 @@
 
 namespace corsika {
 
-  auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-    return sqrt((Elab - m) * (Elab + m));
-  };
-
   template <typename TOutput>
   template <typename... TArgs>
   inline BetheBlochPDG<TOutput>::BetheBlochPDG(TArgs&&... args)
       : TOutput(std::forward<TArgs>(args)...) {}
 
-  template <typename TParticle>
   template <typename TOutput>
-  inline HEPEnergyType BetheBlochPDG<TOutput>::getBetheBloch(
-      TParticle const& p, GrammageType const dX) {
+  template <typename TParticle>
+  inline HEPEnergyType BetheBlochPDG<TOutput>::getBetheBloch(TParticle const& p,
+                                                             GrammageType const dX) {
 
     // all these are material constants and have to come through Environment
     // right now: values for nitrogen_D
@@ -124,8 +120,8 @@ namespace corsika {
   }
 
   // radiation losses according to PDG 2018, ch. 33 ref. [5]
-  template <typename TParticle>
   template <typename TOutput>
+  template <typename TParticle>
   inline HEPEnergyType BetheBlochPDG<TOutput>::getRadiationLosses(
       TParticle const& vP, GrammageType const vDX) {
     // simple-minded hard-coded value for b(E) inspired by data from
@@ -134,17 +130,18 @@ namespace corsika {
     return -vP.getEnergy() * b * vDX;
   }
 
-  template <typename TParticle>
   template <typename TOutput>
+  template <typename TParticle>
   inline HEPEnergyType BetheBlochPDG<TOutput>::getTotalEnergyLoss(
       TParticle const& vP, GrammageType const vDX) {
     return getBetheBloch(vP, vDX) + getRadiationLosses(vP, vDX);
   }
 
-  template <typename TParticle, typename TTrajectory>
   template <typename TOutput>
-  inline ProcessReturn BetheBlochPDG<TOutput>::doContinuous(
-      TParticle& particle, TTrajectory const& track, bool const) {
+  template <typename TParticle, typename TTrajectory>
+  inline ProcessReturn BetheBlochPDG<TOutput>::doContinuous(TParticle& particle,
+                                                            TTrajectory const& track,
+                                                            bool const) {
 
     // if this step was limiting the CORSIKA stepping, the particle is lost
     /* see Issue https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/issues/389
@@ -158,8 +155,7 @@ namespace corsika {
     if (particle.getChargeNumber() == 0) return ProcessReturn::Ok;
 
     GrammageType const dX =
-        particle.getNode()->getModelProperties().getIntegratedGrammage(track,
-                                                                       track.getLength());
+        particle.getNode()->getModelProperties().getIntegratedGrammage(track);
     CORSIKA_LOG_TRACE("EnergyLoss pid={}, z={}, dX={} g/cm2", particle.getPID(),
                       particle.getChargeNumber(), dX / 1_g * square(1_cm));
     HEPEnergyType const dE = getTotalEnergyLoss(particle, dX);
@@ -173,10 +169,10 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
-  template <typename TParticle, typename TTrajectory>
   template <typename TOutput>
-  inline LengthType BetheBlochPDG<TOutput>::getMaxStepLength(TParticle const& vParticle,
-                                                             TTrajectory const& vTrack) const {
+  template <typename TParticle, typename TTrajectory>
+  inline LengthType BetheBlochPDG<TOutput>::getMaxStepLength(
+      TParticle const& vParticle, TTrajectory const& vTrack) const {
     if (vParticle.getChargeNumber() == 0) {
       return meter * std::numeric_limits<double>::infinity();
     }
@@ -186,7 +182,7 @@ namespace corsika {
     auto const energy = vParticle.getKineticEnergy();
     auto const energy_lim =
         std::max(energy * 0.9, // either 10% relative loss max., or
-                 calculate_kinetic_energy_threshold(
+                 get_kinetic_energy_threshold(
                      vParticle.getPID()) // energy thresholds globally defined
                                          // for individual particles
                      * 0.99999 // need to go slightly below global e-cut to assure
@@ -198,7 +194,6 @@ namespace corsika {
     return vParticle.getNode()->getModelProperties().getArclengthFromGrammage(
         vTrack, maxGrammage);
   }
-
 
   template <typename TOutput>
   inline void BetheBlochPDG<TOutput>::showResults() const {

@@ -29,7 +29,9 @@
 #include <corsika/framework/random/RNGManager.hpp>
 
 #include <corsika/output/OutputManager.hpp>
-#include <corsika/output/NoOutput.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -41,17 +43,12 @@
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
 
-#include <corsika/modules/writers/SubWriter.hpp>
-#include <corsika/modules/writers/EnergyLossWriter.hpp>
-#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
 #include <corsika/modules/BetheBlochPDG.hpp>
-#include <corsika/modules/writers/BetheBlochPDGWriterParquet.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
 #include <corsika/modules/StackInspector.hpp>
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/ParticleCut.hpp>
-#include <corsika/modules/writers/ParticleCutWriterParquet.hpp>
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/UrQMD.hpp>
@@ -209,11 +206,10 @@ int main(int argc, char** argv) {
 
   // construct the continuous energy loss model
   BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
-  // output.add("bethebloch", emContinuous);
 
   // construct a particle cut
-  ParticleCut<SubWriter<decltype(dEdX)>> cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true, dEdX};
-  // output.add("cuts", cut);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut{60_GeV, 60_GeV, 60_GeV, 60_GeV,
+                                             true,   false,  dEdX};
 
   // setup longitudinal profile
   LongitudinalProfile<corsika::LongitudinalProfileWriterParquet> profile{showerAxis};
@@ -284,8 +280,8 @@ int main(int argc, char** argv) {
       plab.normalized(), injectionPos, 0_ns));
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane<<setup::Tracking,ParticleWriterParquet> observationLevel{
-										    obsPlane, DirectionVector(rootCS, {1., 0., 0.}), particleOutput};
+  ObservationPlane<setup::Tracking, ParticleWriterParquet> observationLevel{
+      obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
   output.add("particles", observationLevel);
 
   // auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence,
@@ -301,14 +297,8 @@ int main(int argc, char** argv) {
   EAS.run();
   output.endOfShower();
 
-  // cut.showResults();
-  // emContinuous.showResults();
   observationLevel.showResults();
-  // HEPEnergyType const Efinal = dEdX_output.getTotal() +
-  // particleOutput.getTotalEnergy(); 
   observationLevel.reset();
-  // cut.reset();
-  // emContinuous.reset();
 
   auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                      urqmdCounted.getHistogram();

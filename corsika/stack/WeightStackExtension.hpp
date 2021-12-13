@@ -23,7 +23,7 @@ namespace corsika::weights {
    * Corresponding defintion of a stack-readout object, the iteractor
    * dereference operator will deliver access to these function
    * defintion of a stack-readout object, the iteractor dereference
-   * operator will deliver access to these function
+   * operator will deliver access to these function.
    */
 
   /**
@@ -53,7 +53,7 @@ namespace corsika::weights {
   /**
    * @class WeightData
    *
-   * definition of stack-data object to store geometry information
+   * definition of stack-data object to store geometry information.
    */
   class WeightData {
 

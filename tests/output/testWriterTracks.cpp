@@ -21,7 +21,8 @@ struct TestWriterTrack : public TrackWriterParquet {
   YAML::Node getConfig() const { return YAML::Node(); }
 
   void checkWrite() {
-    TrackWriterParquet::write(Code::Unknown, 1_eV, 1.0, {2_m, 3_m, 4_m}, {5_m, 6_m, 7_m});
+    TrackWriterParquet::write(Code::Unknown, 1_eV, 1.0, {2_m, 3_m, 4_m}, 1_ns,
+                              {5_m, 6_m, 7_m}, 2_ns);
   }
 };
 

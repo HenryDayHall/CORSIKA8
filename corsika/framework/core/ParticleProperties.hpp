@@ -92,7 +92,7 @@ namespace corsika {
   int16_t constexpr get_charge_number(Code const);     //!< electric charge in units of e
   ElectricChargeType constexpr get_charge(Code const); //!< electric charge
   HEPMassType constexpr get_mass(Code const);          //!< mass
-  HEPEnergyType constexpr calculate_kinetic_energy_threshold(
+  HEPEnergyType constexpr get_kinetic_energy_threshold(
       Code const); //!< get kinetic energy threshold below which the particle is
                    //!< discarded, by default set to zero
   void constexpr set_kinetic_energy_threshold(
@@ -117,7 +117,7 @@ namespace corsika {
   bool constexpr is_em(Code const); //!< true if particle is electron, positron or photon
   bool constexpr is_muon(Code const);     //!< true if particle is mu+ or mu-
   bool constexpr is_neutrino(Code const); //!< true if particle is (anti-) neutrino
-  bool constexpr is_charged(Code const); //!< true if particle is charged
+  bool constexpr is_charged(Code const);  //!< true if particle is charged
 
   /**
    * @brief Creates the Code for a nucleus of type 10LZZZAAAI.

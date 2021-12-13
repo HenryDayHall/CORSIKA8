@@ -14,13 +14,13 @@ namespace corsika {
                                                          DirectionVector const& x_axis,
                                                          bool const deleteOnHit,
                                                          TArgs&&... args)
-      : plane_(obsPlane)
-      , deleteOnHit_(deleteOnHit)
-      , energy_ground_(0_GeV)
-      , count_ground_(0)
+      : TOutput(std::forward<TArgs>(args)...)
+      , plane_(obsPlane)
       , xAxis_(x_axis.normalized())
       , yAxis_(obsPlane.getNormal().cross(xAxis_))
-      , TOutput(std::forward<TArgs>(args)...) {}
+      , deleteOnHit_(deleteOnHit)
+      , energy_ground_(0_GeV)
+      , count_ground_(0) {}
 
   template <typename TTracking, typename TOutput>
   template <typename TParticle, typename TTrajectory>
@@ -52,17 +52,10 @@ namespace corsika {
     Point const pointOfIntersection = step.getPosition(1);
     Vector const displacement = pointOfIntersection - plane_.getCenter();
 
-    double const weight = 1.0;
-    Code const pid = particle.getPID();
-    if (pid == Code::Nucleus) {
-      // add our particles to the output file stream
-      this->write(particle.getNuclearA(), particle.getNuclearZ(), energy,
-                  displacement.dot(xAxis_), displacement.dot(yAxis_), 0_m, weight);
-    } else {
-      // add our particles to the output file stream
-      this->write(particle.getPID(), energy, displacement.dot(xAxis_),
-                  displacement.dot(yAxis_), 0_m, weight);
-    }
+    // add our particles to the output file stream
+    double const weight = 1.; // particle.getWeight()
+    this->write(particle.getPID(), energy, displacement.dot(xAxis_),
+                displacement.dot(yAxis_), 0_m, weight);
 
     CORSIKA_LOG_TRACE("Particle detected absorbed={}", deleteOnHit_);
 
@@ -73,7 +66,7 @@ namespace corsika {
     } else {
       return ProcessReturn::Ok;
     }
-  }
+  } // namespace corsika
 
   template <typename TTracking, typename TOutput>
   template <typename TParticle, typename TTrajectory>

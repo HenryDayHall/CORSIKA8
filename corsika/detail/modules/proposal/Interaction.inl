@@ -33,7 +33,7 @@ namespace corsika::proposal {
     // take some minutes if you have to build the tables and cannot read the
     // from disk
     auto const emCut =
-        calculate_kinetic_energy_threshold(code) +
+        get_kinetic_energy_threshold(code) +
         get_mass(code); //! energy thresholds globally defined for individual particles
 
     auto c = p_cross->second(media.at(comp.getHash()), emCut);

@@ -41,6 +41,9 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     CHECK(Positron::charge / constants::e == Approx(+1));
     CHECK(get_charge(Positron::anti_code) / constants::e == Approx(-1));
     CHECK(Photon::charge / constants::e == 0.);
+    CHECK_FALSE(is_charged(Code::Photon));
+    CHECK(is_charged(Code::Iron));
+    CHECK(is_charged(Code::PiPlus));
   }
 
   SECTION("Names") {
@@ -87,11 +90,11 @@ TEST_CASE("ParticleProperties", "[Particles]") {
 
   SECTION("Energy threshold") {
     //! by default energy thresholds are set to zero
-    CHECK(calculate_kinetic_energy_threshold(Electron::code) == 0_GeV);
+    CHECK(get_kinetic_energy_threshold(Electron::code) == 0_GeV);
 
     set_kinetic_energy_threshold(Electron::code, 10_GeV);
-    CHECK_FALSE(calculate_kinetic_energy_threshold(Code::Electron) == 1_GeV);
-    CHECK(calculate_kinetic_energy_threshold(Code::Electron) == 10_GeV);
+    CHECK_FALSE(get_kinetic_energy_threshold(Code::Electron) == 1_GeV);
+    CHECK(get_kinetic_energy_threshold(Code::Electron) == 10_GeV);
   }
 
   SECTION("Particle groups: electromagnetic") {

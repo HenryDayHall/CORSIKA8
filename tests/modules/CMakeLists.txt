@@ -7,7 +7,7 @@ set (test_modules_sources
   testQGSJetII.cpp
   testPythia8.cpp
   testUrQMD.cpp
-  testCONEX.cpp
+#  testCONEX.cpp
   testParticleCut.cpp
   testSibyll.cpp
   testEpos.cpp

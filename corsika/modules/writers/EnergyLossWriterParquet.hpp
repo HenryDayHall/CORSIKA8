@@ -51,7 +51,7 @@ namespace corsika {
     void endOfLibrary() override;
 
     /**
-     * Write energy lost to the file
+     * Write energy lost to the file.
      */
     void write(unsigned int const showerId, GrammageType const grammage,
                HEPEnergyType const total);

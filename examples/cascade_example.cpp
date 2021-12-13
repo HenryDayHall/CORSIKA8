@@ -17,6 +17,9 @@
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 
 #include <corsika/output/OutputManager.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -110,6 +113,8 @@ int main() {
   OutputManager output("cascade_outputs");
 
   ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
+  EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis};
+  output.add("energyloss", dEdX);
 
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
@@ -140,13 +145,13 @@ int main() {
   corsika::sibyll::Interaction sibyll;
   corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   corsika::sibyll::Decay decay;
+
   // cascade with only HE model ==> HE cut
-  ParticleCut cut(80_GeV, true, true);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(80_GeV, true, true, dEdX);
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss{dEdX};
 
   TrackWriter trackWriter;
   output.add("tracks", trackWriter); // register TrackWriter
-
-  BetheBlochPDG eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
   auto sequence = make_sequence(stackInspect, make_sequence(sibyllNuc, sibyll), decay,
@@ -159,15 +164,13 @@ int main() {
   EAS.run();
   output.endOfShower();
 
-  eLoss.printProfile(); // print longitudinal profile
-
   cut.showResults();
   const HEPEnergyType Efinal =
       cut.getCutEnergy() + cut.getInvEnergy() + cut.getEmEnergy();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  cout << "total dEdX energy (GeV): " << eLoss.getTotal() / 1_GeV << endl
-       << "relative difference (%): " << eLoss.getTotal() / E0 * 100 << endl;
+  cout << "total dEdX energy (GeV): " << eLoss.getEnergyLost() / 1_GeV << endl
+       << "relative difference (%): " << eLoss.getEnergyLost() / E0 * 100 << endl;
   cut.reset();
 
   output.endOfLibrary();

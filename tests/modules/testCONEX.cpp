@@ -48,7 +48,7 @@ using MExtraEnvirnoment = MediumPropertyModel<UniformMagneticField<T>>;
 
 struct DummyStack {};
 
-TEST_CASE("CONEXSourceCut") {
+TEST_CASE("CONEX") {
 
   logging::set_level(logging::level::info);
 
