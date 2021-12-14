@@ -29,7 +29,7 @@
 #include <corsika/output/OutputManager.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
-#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
+#include <corsika/modules/writers/LongitudinalParquet.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -242,11 +242,9 @@ int main(int argc, char** argv) {
   CONEXhybrid conex_model(center, showerAxis, t, injectionHeight, E0,
                           get_PDG(Code::Proton));
 
-  LongitudinalProfile<corsika::LongitudinalProfileWriterParquet> longprof{
-      showerAxis, 10_g / square(1_cm), 200};
-  output.add("profile", longprof);
-
-  LongitudinalProfile longprof(showerAxis);
+  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
+  output.add("profile", profile);
+  LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane<setup::Tracking> observationLevel(

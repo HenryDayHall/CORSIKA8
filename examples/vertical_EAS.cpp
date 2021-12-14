@@ -31,7 +31,7 @@
 #include <corsika/output/OutputManager.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
-#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
+#include <corsika/modules/writers/LongitudinalWriter.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
   // register profile output
 
   // construct the overall energy loss writer and register it
-  EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis};
+  EnergyLossWriter dEdX{showerAxis};
   output.add("energyloss", dEdX);
 
   // construct the continuous energy loss model
@@ -208,8 +208,10 @@ int main(int argc, char** argv) {
   ParticleCut<SubWriter<decltype(dEdX)>> cut{E0, E0, 60_GeV, 60_GeV, true, dEdX};
 
   // setup longitudinal profile
-  LongitudinalProfile<corsika::LongitudinalProfileWriterParquet> profile{showerAxis};
-  output.add("profile", profile);
+  LongitudinalWriter longProf{showerAxis};
+  output.add("profile", longProf);
+
+  LongitudinalProfile<SubWriter<decltype(longProf)>> profile{longProf};
 
   // create a track writer and register it with the output manager
   TrackWriter<TrackWriterParquet> trackWriter;

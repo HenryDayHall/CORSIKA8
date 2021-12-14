@@ -29,7 +29,7 @@
 #include <corsika/output/OutputManager.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
-#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
+#include <corsika/modules/writers/LongitudinalWriter.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -64,7 +64,6 @@
 #include <CLI/Config.hpp>
 
 #include <iomanip>
-#include <iostream>
 #include <limits>
 #include <string>
 
@@ -187,8 +186,7 @@ int main(int argc, char** argv) {
   // gets all messed up
   if (app.count("--pdg") == 0) {
     if ((app.count("-A") == 0) || (app.count("-Z") == 0)) {
-      std::cerr << "If --pdg is not provided, then both -A and -Z are required."
-                << std::endl;
+      CORSIKA_LOG_ERROR("If --pdg is not provided, then both -A and -Z are required.");
       return 1;
     }
   }
@@ -246,7 +244,7 @@ int main(int argc, char** argv) {
   auto const phiRad = app["--azimuth"]->as<double>() / 180. * M_PI;
 
   // convert Elab to Plab
-  HEPMomentumType P0 = sqrt((E0 - mass) * (E0 + mass));
+  HEPMomentumType P0 = calculate_momentum(E0, mass);
 
   // convert the momentum to the zenith and azimuth angle of the primary
   auto const [px, py, pz] =
@@ -321,13 +319,13 @@ int main(int argc, char** argv) {
 
   corsika::proposal::Interaction emCascade(env);
   // NOT available for PROPOSAL due to interface trouble:
-  //  InteractionCounter emCascadeCounted(emCascade);
+  // InteractionCounter emCascadeCounted(emCascade);
   // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env);
   BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
-  LongitudinalProfile<corsika::LongitudinalProfileWriterParquet> longprof{
-      showerAxis, 10_g / square(1_cm), 200};
-  output.add("profile", longprof);
+  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
+  output.add("profile", profile);
+  LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted(urqmd);
@@ -389,7 +387,6 @@ int main(int argc, char** argv) {
     string const outdir(app["--filename"]->as<std::string>());
     string const labHist_file = outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
     string const cMSHist_file = outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
-    string const longprof_file = outdir + "/longprof_" + to_string(i_shower) + ".txt";
 
     // setup particle stack, and add primary particle
     stack.clear();
@@ -408,10 +405,14 @@ int main(int argc, char** argv) {
     // run the shower
     EAS.run();
 
-    HEPEnergyType const Efinal = dEdX.getTotal();
-    //  +observationLevel.getTotalEnergy();
-    cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-         << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
+    HEPEnergyType const Efinal =
+        dEdX.getEnergyLost() + observationLevel.getEnergyGround();
+
+    CORSIKA_LOG_INFO(
+        "total energy budget (GeV): {} (dEdX={} ground={}), "
+        "relative difference (%): {}",
+        Efinal / 1_GeV, dEdX.getEnergyLost() / 1_GeV,
+        observationLevel.getEnergyGround() / 1_GeV, (Efinal / E0 - 1) * 100);
 
     // auto const hists = heModelCounted.getHistogram() + urqmdCounted.getHistogram();
     auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +

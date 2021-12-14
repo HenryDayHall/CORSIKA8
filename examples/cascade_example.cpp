@@ -19,7 +19,6 @@
 #include <corsika/output/OutputManager.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
-#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -160,15 +159,15 @@ int main() {
   EAS.run();
   output.endOfShower();
 
-  const HEPEnergyType Efinal = dEdX.getTotal();
+  const HEPEnergyType Efinal = dEdX.getEnergyLost();
   CORSIKA_LOG_INFO(
       "\n"
       "total cut energy (GeV) : {}\n"
       "relative difference (%): {}\n"
       "total dEdX energy (GeV): {}\n"
       "relative difference (%): {}\n",
-      Efinal / 1_GeV, (Efinal / E0 - 1) * 100, dEdX.getTotal() / 1_GeV,
-      dEdX.getTotal() / E0 * 100);
+      Efinal / 1_GeV, (Efinal / E0 - 1) * 100, dEdX.getEnergyLost() / 1_GeV,
+      dEdX.getEnergyLost() / E0 * 100);
 
   output.endOfLibrary();
 }

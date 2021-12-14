@@ -23,7 +23,8 @@ namespace corsika {
                                                      GrammageType dX,
                                                      unsigned int const nBins,
                                                      GrammageType dX_threshold)
-      : showerAxis_(axis)
+      : TOutput(dEdX_output::ProfileIndexNames)
+      , showerAxis_(axis)
       , dX_(dX)
       , nBins_(nBins)
       , dX_threshold_(dX_threshold) {}
@@ -51,9 +52,9 @@ namespace corsika {
   inline void EnergyLossWriter<TOutput>::endOfShower(unsigned int const showerId) {
 
     int iRow{0};
-    for (Profile const& row : profile_) {
+    for (dEdX_output::Profile const& row : profile_) {
       // here: write to underlying writer (e.g. parquet)
-      TOutput::write(showerId, iRow * dX_, row.at(static_cast<int>(ProfileIndex::Total)));
+      TOutput::write(showerId, iRow * dX_, row);
       iRow++;
     }
 
@@ -100,7 +101,7 @@ namespace corsika {
       CORSIKA_LOGGER_TRACE(TOutput::getLogger(),
                            "filling bin={} with weight {} : dE={} GeV ", bin, weight,
                            increment / 1_GeV);
-      profile_[bin][static_cast<int>(ProfileIndex::Total)] += increment;
+      profile_[bin][static_cast<int>(dEdX_output::ProfileIndex::Total)] += increment;
       energyCount += increment;
     };
 
@@ -129,7 +130,7 @@ namespace corsika {
     CORSIKA_LOGGER_TRACE(TOutput::getLogger(), "add local energy loss bin={} dE={} GeV ",
                          bin, dE / 1_GeV);
 
-    profile_[bin][static_cast<int>(ProfileIndex::Total)] += dE;
+    profile_[bin][static_cast<int>(dEdX_output::ProfileIndex::Total)] += dE;
   }
 
   template <typename TOutput>
@@ -141,11 +142,12 @@ namespace corsika {
 
     if (abs(bstart - floor(bstart + 0.5)) > 1e-2 ||
         abs(bend - floor(bend + 0.5)) > 1e-2 || abs(bend - bstart - 1) > 1e-2) {
-      CORSIKA_LOGGER_ERROR(TOutput::getLogger(),
-                           "CONEX and Corsika8 dX grammage binning are not the same! "
-                           "Xstart={} Xend={} dX={} g/cm2",
-                           Xstart / 1_g * square(1_cm), Xend / 1_g * square(1_cm),
-                           dX_ / 1_g * square(1_cm));
+      CORSIKA_LOGGER_ERROR(
+          TOutput::getLogger(),
+          "CascadeEquation (CONEX) and Corsika8 dX grammage binning are not the same! "
+          "Xstart={} Xend={} dX={} g/cm2",
+          Xstart / 1_g * square(1_cm), Xend / 1_g * square(1_cm),
+          dX_ / 1_g * square(1_cm));
       throw std::runtime_error(
           "CONEX and Corsika8 dX grammage binning are not the same!");
     }
@@ -154,14 +156,14 @@ namespace corsika {
     CORSIKA_LOGGER_TRACE(TOutput::getLogger(),
                          "add binned energy loss {} {} bin={} dE={} GeV ", bstart, bend,
                          bin, dE / 1_GeV);
-    profile_[bin][static_cast<int>(ProfileIndex::Total)] += dE;
+    profile_[bin][static_cast<int>(dEdX_output::ProfileIndex::Total)] += dE;
   }
 
   template <typename TOutput>
-  inline HEPEnergyType EnergyLossWriter<TOutput>::getTotal() const {
+  inline HEPEnergyType EnergyLossWriter<TOutput>::getEnergyLost() const {
     HEPEnergyType tot = HEPEnergyType::zero();
-    for (Profile const& row : profile_)
-      tot += row.at(static_cast<int>(ProfileIndex::Total));
+    for (dEdX_output::Profile const& row : profile_)
+      tot += row.at(static_cast<int>(dEdX_output::ProfileIndex::Total));
     return tot;
   }
 
@@ -177,8 +179,6 @@ namespace corsika {
     node["nbins"] = nBins_;
     node["grammage_threshold"] = dX_threshold_ / (1_g / square(1_cm));
 
-    //! \todo add shower axis to config
-
     return node;
   }
 
@@ -187,12 +187,13 @@ namespace corsika {
 
     // determined Xmax and dEdXmax from quadratic interpolation
     double maximum = 0;
-    unsigned int iMaximum = 0;
-    for (unsigned int i = 0; i < profile_.size() - 3; ++i) {
-      double value = (profile_[i + 0].at(static_cast<int>(ProfileIndex::Total)) +
-                      profile_[i + 1].at(static_cast<int>(ProfileIndex::Total)) +
-                      profile_[i + 2].at(static_cast<int>(ProfileIndex::Total))) /
-                     1_GeV;
+    size_t iMaximum = 0;
+    for (size_t i = 0; i < profile_.size() - 3; ++i) {
+      double value =
+          (profile_[i + 0].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) +
+           profile_[i + 1].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) +
+           profile_[i + 2].at(static_cast<int>(dEdX_output::ProfileIndex::Total))) /
+          1_GeV;
       if (value > maximum) {
         maximum = value;
         iMaximum = i;
@@ -203,12 +204,15 @@ namespace corsika {
 
     auto [Xmax, dEdXmax] = FindXmax::interpolateProfile(
         dX * (0.5 + iMaximum), dX * (1.5 + iMaximum), dX * (2.5 + iMaximum),
-        profile_[iMaximum + 0].at(static_cast<int>(ProfileIndex::Total)) / 1_GeV,
-        profile_[iMaximum + 1].at(static_cast<int>(ProfileIndex::Total)) / 1_GeV,
-        profile_[iMaximum + 2].at(static_cast<int>(ProfileIndex::Total)) / 1_GeV);
+        profile_[iMaximum + 0].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) /
+            1_GeV,
+        profile_[iMaximum + 1].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) /
+            1_GeV,
+        profile_[iMaximum + 2].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) /
+            1_GeV);
 
     YAML::Node summary;
-    summary["total"] = getTotal() / 1_GeV;
+    summary["sum_dEdX"] = getEnergyLost() / 1_GeV;
     summary["Xmax"] = Xmax;
     summary["dEdXmax"] = dEdXmax;
     return summary;

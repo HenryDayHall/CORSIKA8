@@ -18,8 +18,13 @@
 #include <vector>
 #include <array>
 
+/**
+ * @file EnergyLossWriter.hpp
+ */
+
 namespace corsika {
 
+  // clang-format-off
   /**
    * The energy loss writer can be used to pool several energy loss processes into one
    * output file/stream.
@@ -27,6 +32,7 @@ namespace corsika {
    * Typically many processes/modules can lead to energy losses in the shower. The
    * EnergyLossWriter can be used in combination with the SubWriter class to collect all
    * of them into a single output stream:
+   *
    * \code {.cpp}
    * # showerAxis must be a ShowerAxis object
    * # the X binning can be specified.
@@ -38,16 +44,68 @@ namespace corsika {
    * ...
    * \endcode
    *
+   * The EnergyLossWriter processes data on single-particle-level. The final output
+   * writer, e.g. EnergyLossWriterParquet, processes data on profile-level (bins in X).
+   * The default output option is parquet format.
+   *
+   * @tparam TOutput
+   */
+  // clang-format-on
+
+  /**
+   * Local helper namespace to store number and names of dEdX profile columns.
+   */
+  namespace dEdX_output {
+
+    /**
+     * Definition of longitudinal profile columns.
+     */
+    enum class ProfileIndex { Total, Entries };
+
+    /**
+     * Number of columns (static).
+     */
+    size_t constexpr NColumns = static_cast<int>(ProfileIndex::Entries);
+
+    /**
+     * Names of columns in output.
+     */
+    static std::array<char const*, NColumns> constexpr ProfileIndexNames{{"total"}};
+
+    /**
+     * Data type to store column data.
+     */
+    typedef std::array<HEPEnergyType, NColumns> Profile;
+
+  } // namespace dEdX_output
+
+  /**
+   * The EnergyLossWriter can be used to pool the dEdX energy loss of several
+   * processes/modules into one output file/stream.
+   *
+   * Typically several processes/modules can lead to energy losses along the shower axis
+   * in the shower. The EnergyLossWriter can be used in combination with the SubWriter
+   * class to collect all of them into a single output stream:
+   *
+   * \code {.cpp}
+   * # showerAxis must be a ShowerAxis object
+   * # the X binning can be specified.
+   * EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
+   * # add to OutputManager:
+   * output.add("energyloss", dEdX);
+   * # add SubWriters, e.g. BetheBlochPDG, CONEX:
+   * BetheBlochPDG<SubWriter<decltype(dEdX)>> long{dEdX};
+   * CONEXhybrid<SubWriter<decltype(dEdX)>> conex{..., dEdX};
+   * ...
+   * \endcode
+   *
    * The default output option is parquet format.
    *
    * @tparam TOutput
    */
 
-  template <typename TOutput = EnergyLossWriterParquet>
+  template <typename TOutput = EnergyLossWriterParquet<dEdX_output::NColumns>>
   class EnergyLossWriter : public TOutput {
-
-    enum class ProfileIndex { Total, Entries };
-    typedef std::array<HEPEnergyType, static_cast<int>(ProfileIndex::Entries)> Profile;
 
   public:
     /**
@@ -89,7 +147,7 @@ namespace corsika {
      *
      * @return HEPEnergyType The total energy.
      */
-    HEPEnergyType getTotal() const;
+    HEPEnergyType getEnergyLost() const;
 
     /**
      * Return a summary.
@@ -106,7 +164,7 @@ namespace corsika {
     GrammageType dX_;              ///< binning of profile.
     size_t nBins_;                 ///< number of profile bins.
     GrammageType dX_threshold_;    ///< too short tracks are discarded.
-    std::vector<Profile> profile_; // longitudinal profile
+    std::vector<dEdX_output::Profile> profile_; // longitudinal profile
 
   }; // namespace corsika
 

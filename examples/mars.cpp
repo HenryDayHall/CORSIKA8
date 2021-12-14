@@ -31,7 +31,7 @@
 #include <corsika/output/OutputManager.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
-#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
+#include <corsika/modules/writers/LongitudinalWriter.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -47,7 +47,6 @@
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
-#include <corsika/modules/OnShellCheck.hpp>
 #include <corsika/modules/StackInspector.hpp>
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/ParticleCut.hpp>
@@ -210,8 +209,7 @@ int main(int argc, char** argv) {
   // gets all messed up
   if (app.count("--pdg") == 0) {
     if ((app.count("-A") == 0) || (app.count("-Z") == 0)) {
-      std::cerr << "If --pdg is not provided, then both -A and -Z are required."
-                << std::endl;
+      CORSIKA_LOG_ERROR("If --pdg is not provided, then both -A and -Z are required.");
       return 1;
     }
   }
@@ -314,7 +312,7 @@ int main(int argc, char** argv) {
 
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
 
-  EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis};
+  EnergyLossWriter dEdX{showerAxis};
   output.add("energyloss", dEdX);
 
   HEPEnergyType const emcut = 1_GeV;
@@ -359,8 +357,9 @@ int main(int argc, char** argv) {
   // corsika::proposal::ContinuousProcess emContinuous(env);
   BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
-  LongitudinalProfile<corsika::LongitudinalProfileWriterParquet> profile{showerAxis};
-  output.add("profile", profile);
+  LongitudinalWriter longprof{showerAxis};
+  output.add("profile", longprof);
+  LongitudinalProfile<SubWriter<decltype(longprof)>> profile{longprof};
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
@@ -435,10 +434,13 @@ int main(int argc, char** argv) {
     // run the shower
     EAS.run();
 
-    const HEPEnergyType Efinal = dEdX.getTotal();
-    //  +observationLevel.getEnergyGround();
-    cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-         << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
+    HEPEnergyType const Efinal =
+        dEdX.getEnergyLost() + observationLevel.getEnergyGround();
+
+    CORSIKA_LOG_INFO(
+        "total energy budget (GeV): {}, "
+        "relative difference (%): {}",
+        Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
 
     auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                        urqmdCounted.getHistogram();

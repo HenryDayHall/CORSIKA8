@@ -18,9 +18,7 @@ namespace corsika {
       , plane_(obsPlane)
       , xAxis_(x_axis.normalized())
       , yAxis_(obsPlane.getNormal().cross(xAxis_))
-      , deleteOnHit_(deleteOnHit)
-      , energy_ground_(0_GeV)
-      , count_ground_(0) {}
+      , deleteOnHit_(deleteOnHit) {}
 
   template <typename TTracking, typename TOutput>
   template <typename TParticle, typename TTrajectory>
@@ -60,8 +58,6 @@ namespace corsika {
     CORSIKA_LOG_TRACE("Particle detected absorbed={}", deleteOnHit_);
 
     if (deleteOnHit_) {
-      count_ground_++;
-      energy_ground_ += energy;
       return ProcessReturn::ParticleAbsorbed;
     } else {
       return ProcessReturn::Ok;
@@ -92,17 +88,6 @@ namespace corsika {
                       trajectory.getLength(fractionOfIntersection) / 1_m,
                       trajectory.getPosition(fractionOfIntersection));
     return trajectory.getLength(fractionOfIntersection);
-  }
-
-  template <typename TTracking, typename TOutput>
-  inline void ObservationPlane<TTracking, TOutput>::showResults() const {
-    CORSIKA_LOG_INFO(
-        "\n ******************************\n"
-        " ObservationPlane: \n"
-        " energy an ground (GeV)     :  {}\n"
-        " no. of particles at ground :  {}\n"
-        " ******************************",
-        energy_ground_ / 1_GeV, count_ground_);
   }
 
   template <typename TTracking, typename TOutput>
@@ -146,12 +131,6 @@ namespace corsika {
     node["delete_on_hit"] = deleteOnHit_;
 
     return node;
-  }
-
-  template <typename TTracking, typename TOutput>
-  inline void ObservationPlane<TTracking, TOutput>::reset() {
-    energy_ground_ = 0_GeV;
-    count_ground_ = 0;
   }
 
 } // namespace corsika

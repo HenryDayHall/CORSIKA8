@@ -13,6 +13,7 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/EnergyMomentumOperations.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
@@ -280,9 +281,11 @@ namespace corsika::urqmd {
       CORSIKA_LOG_DEBUG(" {} {} {} ", i, code, momentum.getComponents());
 
       HEPEnergyType const mass = get_mass(code);
-      HEPEnergyType Ekin = sqrt(momentum.getSquaredNorm() + mass * mass) - mass;
+      HEPEnergyType const Ekin = calculate_kinetic_energy(momentum.getNorm(), mass);
       if (Ekin <= 0_GeV) {
-        CORSIKA_LOG_WARN("Negative kinetic energy {} {}. Skipping.", code, Ekin);
+        if (Ekin < 0_GeV) {
+          CORSIKA_LOG_WARN("Negative kinetic energy {} {}. Skipping.", code, Ekin);
+        }
         view.addSecondary(
             std::make_tuple(code, 0_eV, DirectionVector{originalCS, {0, 0, 0}}));
       } else {

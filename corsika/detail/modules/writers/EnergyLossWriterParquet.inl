@@ -18,9 +18,13 @@
 
 namespace corsika {
 
-  inline EnergyLossWriterParquet::EnergyLossWriterParquet() {}
+  template <size_t NColumns>
+  inline EnergyLossWriterParquet<NColumns>::EnergyLossWriterParquet(
+      std::array<const char*, NColumns> const& colNames)
+      : columns_(colNames) {}
 
-  inline void EnergyLossWriterParquet::startOfLibrary(
+  template <size_t NColumns>
+  inline void EnergyLossWriterParquet<NColumns>::startOfLibrary(
       boost::filesystem::path const& directory) {
 
     // setup the streamer
@@ -32,28 +36,38 @@ namespace corsika {
     // build the schema
     output_.addField("X", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
-    output_.addField("total", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
-                     parquet::ConvertedType::NONE);
+    for (auto const& col : columns_) {
+      output_.addField(col, parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                       parquet::ConvertedType::NONE);
+    }
 
     // and build the streamer
     output_.buildStreamer();
   }
 
-  inline void EnergyLossWriterParquet::write(unsigned int const showerId,
-                                             GrammageType const grammage,
-                                             HEPEnergyType const total) {
-
-    double const dX = grammage / 1_g * square(1_cm); // g/cm2
+  template <size_t NColumns>
+  inline void EnergyLossWriterParquet<NColumns>::write(
+      unsigned int const showerId, GrammageType const grammage,
+      std::array<HEPEnergyType, NColumns> const& data) {
 
     // and write the data into the column
-    *(output_.getWriter()) << showerId << static_cast<float>(dX)
-                           << static_cast<float>(total / 1_GeV) << parquet::EndRow;
+    *(output_.getWriter()) << showerId
+                           << static_cast<float>(grammage / 1_g * square(1_cm));
+    for (HEPEnergyType const dedx : data) {
+      *(output_.getWriter()) << static_cast<float>(dedx / 1_GeV);
+    }
+    *(output_.getWriter()) << parquet::EndRow;
   }
 
-  inline void EnergyLossWriterParquet::startOfShower(unsigned int const) {}
+  template <size_t NColumns>
+  inline void EnergyLossWriterParquet<NColumns>::startOfShower(unsigned int const) {}
 
-  inline void EnergyLossWriterParquet::endOfShower(unsigned int const) {}
+  template <size_t NColumns>
+  inline void EnergyLossWriterParquet<NColumns>::endOfShower(unsigned int const) {}
 
-  inline void EnergyLossWriterParquet::endOfLibrary() { output_.closeStreamer(); }
+  template <size_t NColumns>
+  inline void EnergyLossWriterParquet<NColumns>::endOfLibrary() {
+    output_.closeStreamer();
+  }
 
 } // namespace corsika

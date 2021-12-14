@@ -24,7 +24,7 @@
 #include <corsika/output/OutputManager.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
-#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
+#include <corsika/modules/writers/LongitudinalWriter.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
@@ -163,10 +163,10 @@ int main(int argc, char** argv) {
   TrackWriter tracks;
   output.add("tracks", tracks);
 
-  // long. profile; columns for photon, e+, e- still need to be added
-  LongitudinalProfile<corsika::LongitudinalProfileWriterParquet> longprof{
-      showerAxis, 10_g / square(1_cm), 200};
-  output.add("profile", longprof);
+  // long. profile
+  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
+  output.add("profile", profile);
+  LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane<setup::Tracking, ParticleWriterParquet> observationLevel{
@@ -187,9 +187,12 @@ int main(int argc, char** argv) {
   EAS.run();
   output.endOfShower();
 
-  const HEPEnergyType Efinal = dEdX.getTotal();
-  cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
+  HEPEnergyType const Efinal = dEdX.getEnergyLost() + observationLevel.getEnergyGround();
+
+  CORSIKA_LOG_INFO(
+      "total energy budget (GeV): {}, "
+      "relative difference (%): {}",
+      Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
 
   output.endOfLibrary();
 }

@@ -62,9 +62,6 @@ namespace corsika {
     template <typename TParticle, typename TTrajectory>
     LengthType getMaxStepLength(TParticle const&, TTrajectory const& vTrajectory);
 
-    void showResults() const;
-    void reset();
-    HEPEnergyType getEnergyGround() const { return energy_ground_; }
     YAML::Node getConfig() const;
 
   private:
@@ -72,8 +69,6 @@ namespace corsika {
     DirectionVector const xAxis_;
     DirectionVector const yAxis_;
     bool const deleteOnHit_;
-    HEPEnergyType energy_ground_;
-    unsigned int count_ground_;
   };
   //! @}
 } // namespace corsika

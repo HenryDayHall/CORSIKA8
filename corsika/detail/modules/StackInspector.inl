@@ -54,20 +54,24 @@ namespace corsika {
       }
     }
 
-    auto const now = std::chrono::system_clock::now();
-    std::chrono::duration<double> const elapsed_seconds = now - StartTime_;
-    std::time_t const now_time = std::chrono::system_clock::to_time_t(now);
+    std::chrono::system_clock::time_point const now = std::chrono::system_clock::now();
+    std::chrono::duration<double> const elapsed_seconds = now - StartTime_; // seconds
     auto const dE = E0_ - Etot;
     if (dE < dE_threshold_) return;
     double const progress = dE / E0_;
 
+    // for printout
+    std::time_t const now_time = std::chrono::system_clock::to_time_t(now);
     std::time_t const start_time = std::chrono::system_clock::to_time_t(StartTime_);
 
     if (progress > 0) {
 
       double const eta_seconds = elapsed_seconds.count() / progress;
-      std::time_t const eta_time = std::chrono::system_clock::to_time_t(
-          StartTime_ + std::chrono::seconds((int)eta_seconds));
+      std::chrono::system_clock::time_point const eta =
+          StartTime_ + std::chrono::seconds((int)eta_seconds);
+
+      // for printout
+      std::time_t const eta_time = std::chrono::system_clock::to_time_t(eta);
 
       int const yday0 = std::localtime(&start_time)->tm_yday;
       int const yday1 = std::localtime(&eta_time)->tm_yday;

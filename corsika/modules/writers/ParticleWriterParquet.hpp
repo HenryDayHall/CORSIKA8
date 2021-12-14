@@ -69,7 +69,7 @@ namespace corsika {
     /**
      * If plane is absorbing particles: return the total energy absorbed.
      */
-    HEPEnergyType getTotalEnergy() const { return totalEnergy_; }
+    HEPEnergyType getEnergyGround() const { return totalEnergy_; }
 
   private:
     ParquetStreamer output_; ///< The primary output file.

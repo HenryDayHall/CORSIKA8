@@ -44,15 +44,15 @@ namespace corsika {
     output_.buildStreamer();
 
     showerId_ = 0;
+  }
+
+  inline void ParticleWriterParquet::startOfShower(unsigned int const showerId) {
+    showerId_ = showerId;
     totalEnergy_ = 0_eV;
     countHadrons_ = 0;
     countOthers_ = 0;
     countEM_ = 0;
     countMuons_ = 0;
-  }
-
-  inline void ParticleWriterParquet::startOfShower(unsigned int const showerId) {
-    showerId_ = showerId;
   }
 
   inline void ParticleWriterParquet::endOfShower(unsigned int const) {}
@@ -103,6 +103,7 @@ namespace corsika {
    */
   YAML::Node ParticleWriterParquet::getSummary() const {
     YAML::Node summary;
+    summary["Eground"] = totalEnergy_ / 1_GeV;
     summary["hadrons"] = countHadrons_;
     summary["muons"] = countMuons_;
     summary["em"] = countEM_;

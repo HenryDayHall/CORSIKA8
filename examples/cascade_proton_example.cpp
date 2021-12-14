@@ -19,7 +19,6 @@
 #include <corsika/output/OutputManager.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
-#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -129,7 +128,7 @@ int main() {
   corsika::pythia8::Decay decay;
 
   ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
-  EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis};
+  EnergyLossWriter dEdX{showerAxis};
   output.add("energyloss", dEdX);
 
   BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss{dEdX};
