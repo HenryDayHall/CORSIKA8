@@ -30,6 +30,7 @@ namespace corsika {
    * @tparam NColumn -- the number of columns written to output. column names and data
    * must be provided consistently.
    */
+
   template <size_t NColumns>
   class EnergyLossWriterParquet : public BaseOutput {
 

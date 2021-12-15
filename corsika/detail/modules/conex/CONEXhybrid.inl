@@ -22,13 +22,14 @@
 
 namespace corsika {
 
-  template <typename TOutput, typename TProfileOutput>
-  inline CONEXhybrid<TOutput, TProfileOutput>::CONEXhybrid(
-      TOutput& output, TProfileOutput& profileOutput, Point const& center,
-      ShowerAxis const& showerAxis, LengthType groundDist, LengthType injectionHeight,
-      HEPEnergyType primaryEnergy, PDGCode primaryPDG)
-      : output_{output}
-      , profileOutput_(profileOutput)
+  template <typename TOutputE, typename TOutputN>
+  //  template <typename... TArgs1, typename... TArgs2>
+  inline CONEXhybrid<TOutputE, TOutputN>::CONEXhybrid(
+      Point const& center, ShowerAxis const& showerAxis, LengthType groundDist,
+      LengthType injectionHeight, HEPEnergyType primaryEnergy, PDGCode primaryPDG,
+      TOutputE& args1, TOutputN& args2)
+      : SubWriter<TOutputE>(args1) //(std::forward<TArgs1>(args1)...)
+      , SubWriter<TOutputN>(args2) // std::forward<TArgs2>(args2)...)
       , center_{center}
       , showerAxis_{showerAxis}
       , groundDist_{groundDist}
@@ -61,8 +62,7 @@ namespace corsika {
 
         return b.normalized();
       })}
-      , y_sf_{showerAxis_.getDirection().cross(x_sf_)}
-      , energy_em_(0_GeV) {
+      , y_sf_{showerAxis_.getDirection().cross(x_sf_)} {
 
     CORSIKA_LOG_DEBUG("x_sf (conexObservationCS): {}",
                       x_sf_.getComponents(conexObservationCS_));
@@ -103,7 +103,8 @@ namespace corsika {
                         configPath.c_str(), configPath.size());
   }
 
-  inline void CONEXhybrid::initCascadeEquations() {
+  template <typename TOutputE, typename TOutputN>
+  inline void CONEXhybrid<TOutputE, TOutputN>::initCascadeEquations() {
 
     // set phi, theta
     Vector<length_d> ez{conexObservationCS_, {0._m, 0._m, -1_m}};
@@ -136,9 +137,9 @@ namespace corsika {
     ::conex::conexrun_(ipart, eprima, theta, phi, xminp, dimpact, ioseed.data());
   }
 
+  template <typename TOutputE, typename TOutputN>
   template <typename TStackView>
-  template <typename TOutput, typename TProfileOutput>
-  inline void CONEXhybrid<TOutput, TProfileOutput>::doSecondaries(TStackView& vS) {
+  inline void CONEXhybrid<TOutputE, TOutputN>::doSecondaries(TStackView& vS) {
     auto p = vS.begin();
     while (p != vS.end()) {
       Code const pid = p.getPID();
@@ -150,8 +151,8 @@ namespace corsika {
     }
   }
 
-  template <typename TOutput, typename TProfileOutput>
-  inline bool CONEXhybrid<TOutput, TProfileOutput>::addParticle(
+  template <typename TOutputE, typename TOutputN>
+  inline bool CONEXhybrid<TOutputE, TOutputN>::addParticle(
       Code pid, HEPEnergyType energy, HEPEnergyType mass, Point const& position,
       DirectionVector const& direction, TimeType t) {
 
@@ -196,7 +197,6 @@ namespace corsika {
 
     double const E = energy / 1_GeV;
     double const m = mass / 1_GeV;
-    energy_em_ += energy;
 
     CORSIKA_LOG_DEBUG("CONEXhybrid: removing {} {:5e} GeV", egs_pid, energy);
 
@@ -239,9 +239,9 @@ namespace corsika {
     return true;
   }
 
+  template <typename TOutputE, typename TOutputN>
   template <typename TStack>
-  template <typename TOutput, typename TProfileOutput>
-  inline void CONEXhybrid<TOutput, TProfileOutput>::doCascadeEquations(TStack&) {
+  inline void CONEXhybrid<TOutputE, TOutputN>::doCascadeEquations(TStack&) {
 
     ::conex::conexcascade_();
 
@@ -281,46 +281,19 @@ namespace corsika {
 
     for (int i = 0; i < nX; ++i) {
       GrammageType curX = X[i] * 1_g / square(1_cm);
-      output_.write(curX, curX + dX, dEdX[i] * 1_GeV / 1_g * square(1_cm) * dX);
-      profileOutput_.write(curX, curX + dX, Code::Photon, Photon[i]);
-      profileOutput_.write(curX, curX + dX, Code::Proton /*hadron*/, Hadrons[i]);
-      profileOutput_.write(curX, curX + dX, Code::Electron, Electrons[i]);
-      profileOutput_.write(curX, curX + dX, Code::MuMinus, Mu[i]);
+      SubWriter<TOutputE>::write(curX, curX + dX,
+                                 dEdX[i] * 1_GeV / 1_g * square(1_cm) * dX);
+      SubWriter<TOutputN>::write(curX, curX + dX, Code::Photon, Photon[i]);
+      SubWriter<TOutputN>::write(curX, curX + dX, Code::Proton, Hadrons[i]);
+      SubWriter<TOutputN>::write(curX, curX + dX, Code::Electron, Electrons[i]);
+      SubWriter<TOutputN>::write(curX, curX + dX, Code::MuMinus, Mu[i]);
     }
-
-    std::ofstream file{"conex_output.txt"};
-    file << fmt::format("#{:>10} {:>13} {:>13} {:>13} {:>13} {:>13} {:>13} {:>13}\n", "X",
-                        "N", "dEdX", "Mu", "dMu", "Photon", "El", "Had");
-    for (int i = 0; i < nX; ++i) {
-      file << fmt::format(" {:>10.2f} {:.5e} {:.5e} {:.5e} {:.5e} {:.5e} {:.5e} {:.5e}\n",
-                          X[i], N[i], dEdX[i], Mu[i], dMu[i], Photon[i], Electrons[i],
-                          Hadrons[i]);
-    }
-
-    std::ofstream fitout{"conex_fit.txt"};
-    fitout << fitpars[1 - 1] << " # log10(eprima/eV)" << std::endl;
-    fitout << fitpars[2 - 1] << " # theta" << std::endl;
-    fitout << fitpars[3 - 1] << " # X1 (first interaction)" << std::endl;
-    fitout << fitpars[4 - 1] << " # Nmax" << std::endl;
-    fitout << fitpars[5 - 1] << " # X0" << std::endl;
-    fitout << fitpars[6 - 1] << " # P1" << std::endl;
-    fitout << fitpars[7 - 1] << " # P2" << std::endl;
-    fitout << fitpars[8 - 1] << " # P3" << std::endl;
-    fitout << fitpars[9 - 1] << " # chi^2 / sqrt(Nmax)" << std::endl;
-    fitout << fitpars[10 - 1] << " # Xmax" << std::endl;
-    fitout << fitpars[11 - 1] << " # phi" << std::endl;
-    fitout << fitpars[12 - 1] << " # inelasticity 1st int." << std::endl;
-    fitout << fitpars[13 - 1] << " # ???" << std::endl;
   }
 
-  template <typename TOutput, typename TProfileOutput>
-  inline HEPEnergyType CONEXhybrid<TOutput, TProfileOutput>::getEnergyEM() const {
-    return energy_em_;
-  }
+  template <typename TOutputE, typename TOutputN>
+  inline YAML::Node CONEXhybrid<TOutputE, TOutputN>::getConfig() const {
 
-  template <typename TOutput, typename TProfileOutput>
-  inline void CONEXhybrid<TOutput, TProfileOutput>::reset() {
-    energy_em_ = 0_GeV;
+    return YAML::Node();
   }
 
 } // namespace corsika

@@ -47,11 +47,11 @@ namespace corsika {
      * @param plane The plane.
      * @param x_dir The x-direction/axis.
      * @param absorbing Flag to make the plane absorbing.
-     * @param args
+     * @param outputArgs
      */
     template <typename... TArgs>
     ObservationPlane(Plane const& plane, DirectionVector const& x_dir,
-                     bool const absorbing = true, TArgs&&... args);
+                     bool const absorbing = true, TArgs&&... outputArgs);
 
     ~ObservationPlane() {}
 

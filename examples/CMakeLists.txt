@@ -53,9 +53,9 @@ add_executable (em_shower em_shower.cpp)
 target_link_libraries (em_shower CORSIKA8::CORSIKA8)
 CORSIKA_REGISTER_EXAMPLE (em_shower RUN_OPTIONS "100.")
 
-#add_executable (hybrid_MC hybrid_MC.cpp)
-#target_link_libraries (hybrid_MC  CORSIKA8::CORSIKA8)
-#CORSIKA_REGISTER_EXAMPLE (hybrid_MC RUN_OPTIONS 4 2 10000.)
+add_executable (hybrid_MC hybrid_MC.cpp)
+target_link_libraries (hybrid_MC  CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (hybrid_MC RUN_OPTIONS 4 2 10000.)
 
 add_executable (corsika corsika.cpp)
 target_link_libraries (corsika CORSIKA8::CORSIKA8)

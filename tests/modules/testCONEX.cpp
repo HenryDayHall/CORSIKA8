@@ -21,6 +21,7 @@
 
 #include <corsika/modules/CONEX.hpp>
 #include <corsika/modules/Sibyll.hpp>
+#include <corsika/modules/writers/WriterOff.hpp>
 
 #include <corsika/framework/random/RNGManager.hpp>
 
@@ -93,8 +94,7 @@ TEST_CASE("CONEX") {
                       static_pow<2>(injectionHeight));
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =
-      showerCore +
-      Vector<dimensionless_d>{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
+      showerCore + DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env};
 
@@ -102,7 +102,10 @@ TEST_CASE("CONEX") {
   corsika::sibyll::Interaction sibyll;
   [[maybe_unused]] corsika::sibyll::NuclearInteractionModel sibyllNuc(sibyll, env);
 
-  CONEXhybrid conex(center, showerAxis, t, injectionHeight, E0, get_PDG(Code::Proton));
+  WriterOff w1;
+  WriterOff2 w2;
+  CONEXhybrid<WriterOff, WriterOff2> conex(center, showerAxis, t, injectionHeight, E0,
+                                           get_PDG(Code::Proton), w1, w2);
   conex.initCascadeEquations();
 
   HEPEnergyType const Eem{1_PeV};

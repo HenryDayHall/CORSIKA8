@@ -29,7 +29,7 @@
 #include <corsika/output/OutputManager.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
-#include <corsika/modules/writers/LongitudinalParquet.hpp>
+#include <corsika/modules/writers/LongitudinalWriter.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -43,7 +43,7 @@
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
-#include <corsika/modules/OnShellCheck.hpp>
+#include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Sibyll.hpp>
@@ -192,8 +192,8 @@ int main(int argc, char** argv) {
             << std::endl;
 
   OutputManager output("hybrid_MC_outputs");
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env, true,
-                              1000};
+  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
+                              false, 1000};
 
   // setup processes, decays and interactions
 
@@ -229,22 +229,23 @@ int main(int argc, char** argv) {
   decaySibyll.printDecayConfig();
 
   // register energy losses as output
-  EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis, 10_g / square(1_cm), 200};
+  EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
   output.add("energyloss", dEdX);
 
   // create a track writer and register it with the output manager
   TrackWriter<TrackWriterParquet> tracks;
   output.add("tracks", tracks);
 
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(3_GeV, false, true, dEdX);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(3_GeV, false, dEdX);
   BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss(dEdX);
-
-  CONEXhybrid conex_model(center, showerAxis, t, injectionHeight, E0,
-                          get_PDG(Code::Proton));
 
   LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
+
+  CONEXhybrid // SubWriter<decltype(dEdX>, SubWriter<decltype(profile)>>
+      conex_model(center, showerAxis, t, injectionHeight, E0, get_PDG(Code::Proton), dEdX,
+                  profile);
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane<setup::Tracking> observationLevel(
@@ -266,8 +267,8 @@ int main(int argc, char** argv) {
   auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted,
                                     make_sequence(sibyllNucCounted, sibyllCounted));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
-  auto sequence = make_sequence(hadronSequence, reset_particle_mass, decaySequence, eLoss,
-                                cut, conex_model, longprof, observationLevel);
+  auto sequence = make_sequence(hadronSequence, decaySequence, eLoss, cut, conex_model,
+                                longprof, observationLevel);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
@@ -281,17 +282,9 @@ int main(int argc, char** argv) {
   EAS.run();
   output.endOfShower();
 
-  cut.showResults();
-  eLoss.showResults();
-  observationLevel.showResults();
-  const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                               cut.getEmEnergy() + eLoss.getEnergyLost() +
-                               observationLevel.getEnergyGround();
+  const HEPEnergyType Efinal = dEdX.getEnergyLost() + observationLevel.getEnergyGround();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  observationLevel.reset();
-  cut.reset();
-  eLoss.reset();
 
   auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                      urqmdCounted.getHistogram();
@@ -299,10 +292,7 @@ int main(int argc, char** argv) {
   save_hist(hists.labHist(), "inthist_lab_hybrid.npz", true);
   save_hist(hists.CMSHist(), "inthist_cms_hybrid.npz", true);
 
-  longprof.save("longprof.txt");
-
-  std::ofstream finish("finished");
-  finish << "run completed without error" << std::endl;
-
   output.endOfLibrary();
+
+  CORSIKA_LOG_INFO("done");
 }

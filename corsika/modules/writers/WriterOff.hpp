@@ -30,10 +30,29 @@ namespace corsika {
 
     void endOfLibrary() final override {}
 
-    //    YAML::Node getConfig() const final override { return YAML::Node(); }
+    template <typename... TArgs>
+    void write(TArgs&&...) {}
+
+    virtual YAML::Node getConfig() const override { return YAML::Node(); }
+
+  }; // class WriterOff
+
+  class WriterOff2 : public BaseOutput {
+
+  public:
+    WriterOff2() {}
+    virtual ~WriterOff2() {}
+
+    void startOfLibrary(boost::filesystem::path const&) final override {}
+
+    void endOfShower(unsigned int const) final override {}
+
+    void endOfLibrary() final override {}
 
     template <typename... TArgs>
     void write(TArgs&&...) {}
+
+    virtual YAML::Node getConfig() const override { return YAML::Node(); }
 
   }; // class WriterOff
 
