@@ -95,7 +95,7 @@ namespace corsika {
      */
     bool addParticle(Code pid, HEPEnergyType energy, HEPEnergyType mass,
                      Point const& position, Vector<dimensionless_d> const& direction,
-                     TimeType t);
+                     TimeType t, double weight = 1);
 
     CoordinateSystemPtr const& getObserverCS() const { return conexObservationCS_; }
 

@@ -23,13 +23,12 @@
 namespace corsika {
 
   template <typename TOutputE, typename TOutputN>
-  //  template <typename... TArgs1, typename... TArgs2>
   inline CONEXhybrid<TOutputE, TOutputN>::CONEXhybrid(
       Point const& center, ShowerAxis const& showerAxis, LengthType groundDist,
       LengthType injectionHeight, HEPEnergyType primaryEnergy, PDGCode primaryPDG,
       TOutputE& args1, TOutputN& args2)
-      : SubWriter<TOutputE>(args1) //(std::forward<TArgs1>(args1)...)
-      , SubWriter<TOutputN>(args2) // std::forward<TArgs2>(args2)...)
+      : SubWriter<TOutputE>(args1)
+      , SubWriter<TOutputN>(args2)
       , center_{center}
       , showerAxis_{showerAxis}
       , groundDist_{groundDist}
@@ -154,7 +153,7 @@ namespace corsika {
   template <typename TOutputE, typename TOutputN>
   inline bool CONEXhybrid<TOutputE, TOutputN>::addParticle(
       Code pid, HEPEnergyType energy, HEPEnergyType mass, Point const& position,
-      DirectionVector const& direction, TimeType t) {
+      DirectionVector const& direction, TimeType t, double weight) {
 
     auto const it = std::find_if(egs_em_codes_.cbegin(), egs_em_codes_.cend(),
                                  [=](auto const& p) { return pid == p.first; });
@@ -188,9 +187,6 @@ namespace corsika {
     double const u = direction.dot(y_sf_).magnitude();
     double const v = direction.dot(x_sf_).magnitude();
     double const w = direction.dot(showerAxis_.getDirection()).magnitude();
-
-    double const weight =
-        1; // particle.getWeight(); // NEEDS TO BE CHANGED WHEN WE HAVE WEIGHTS!
 
     // generation, TO BE CHANGED WHEN WE HAVE THAT INFORMATION AVAILABLE
     int const latchin = 1;
@@ -282,6 +278,7 @@ namespace corsika {
     for (int i = 0; i < nX; ++i) {
       GrammageType curX = X[i] * 1_g / square(1_cm);
       SubWriter<TOutputE>::write(curX, curX + dX,
+                                 Code::Unknown, // this is sum of all dEdX
                                  dEdX[i] * 1_GeV / 1_g * square(1_cm) * dX);
       SubWriter<TOutputN>::write(curX, curX + dX, Code::Photon, Photon[i]);
       SubWriter<TOutputN>::write(curX, curX + dX, Code::Proton, Hadrons[i]);

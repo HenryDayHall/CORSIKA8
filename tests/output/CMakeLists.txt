@@ -5,6 +5,8 @@ set (test_output_sources
   testParquetStreamer.cpp
   testWriterObservationPlane.cpp
   testWriterTracks.cpp
+  testWriterEnergyLoss.cpp
+  testWriterLongitudinal.cpp
   )
 
 CORSIKA_ADD_TEST (testOutput SOURCES ${test_output_sources})

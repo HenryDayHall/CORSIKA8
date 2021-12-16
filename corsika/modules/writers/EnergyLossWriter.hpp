@@ -139,7 +139,7 @@ namespace corsika {
     /**
      * Add binned energy loss.
      */
-    void write(GrammageType const Xstart, GrammageType const Xend,
+    void write(GrammageType const Xstart, GrammageType const Xend, Code const PID,
                HEPEnergyType const dE);
 
     /**

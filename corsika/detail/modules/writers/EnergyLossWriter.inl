@@ -119,7 +119,7 @@ namespace corsika {
   }
 
   template <typename TOutput>
-  inline void EnergyLossWriter<TOutput>::write(Point const& point, Code const PID,
+  inline void EnergyLossWriter<TOutput>::write(Point const& point, Code const,
                                                HEPEnergyType const dE) {
     GrammageType grammage = showerAxis_.getProjectedX(point);
     int const maxBin = int(profile_.size() - 1);
@@ -135,7 +135,7 @@ namespace corsika {
 
   template <typename TOutput>
   inline void EnergyLossWriter<TOutput>::write(GrammageType const Xstart,
-                                               GrammageType const Xend,
+                                               GrammageType const Xend, Code const,
                                                HEPEnergyType const dE) {
     double const bstart = Xstart / dX_;
     double const bend = Xend / dX_;

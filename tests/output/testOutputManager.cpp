@@ -24,7 +24,6 @@ struct DummyNoOutput : public NoOutput {
     NoOutput::endOfShower(0);
     NoOutput::endOfLibrary();
   }
-  YAML::Node getConfig() const final override { return YAML::Node(); }
   void checkWrite() { NoOutput::write(Code::Unknown, 1_eV, 1_m, 1_m, 1_ns); }
 };
 
@@ -37,16 +36,17 @@ struct DummyOutput : public BaseOutput {
 
   void startOfLibrary(boost::filesystem::path const&) override { startLibrary_ = true; }
 
+  YAML::Node getConfig() const final override { return YAML::Node(); }
+
   void startOfShower(unsigned int const shower = 0) override {
     BaseOutput::startOfShower(shower);
+    setInit(true);
     startShower_ = true;
   }
 
   void endOfShower(unsigned int const) override { endShower_ = true; }
 
   void endOfLibrary() override { endLibrary_ = true; }
-
-  YAML::Node getConfig() const final override { return YAML::Node(); }
 
   YAML::Node getSummary() const final override {
     YAML::Node summary;
@@ -82,7 +82,9 @@ TEST_CASE("OutputManager") {
     CHECK(test.startLibrary_);
     test.startLibrary_ = false;
 
+    CHECK_FALSE(test.isInit());
     output.startOfShower();
+    CHECK(test.isInit());
     CHECK(test.startShower_);
     test.startShower_ = false;
 
@@ -156,5 +158,7 @@ TEST_CASE("OutputManager") {
 
     nothing.check();
     nothing.checkWrite();
+    nothing.getConfig();
+    nothing.getSummary();
   }
 }
