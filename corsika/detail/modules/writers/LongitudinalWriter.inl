@@ -113,7 +113,13 @@ namespace corsika {
           "CONEX and Corsika8 dX grammage binning are not the same!");
     }
 
-    int const bin = int((bend + bstart) / 2);
+    size_t const bin = size_t((bend + bstart) / 2);
+    if (bin >= profile_.size()) {
+      CORSIKA_LOGGER_WARN(TOutput::getLogger(),
+                          "Grammage bin {} outside of profile {}. skipping.", bin,
+                          profile_.size());
+      return;
+    }
 
     if (pid == Code::Photon) {
       profile_.at(bin)[static_cast<int>(number_profile::ProfileIndex::Photon)] += weight;

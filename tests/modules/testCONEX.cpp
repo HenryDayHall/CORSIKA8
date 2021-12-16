@@ -102,10 +102,16 @@ TEST_CASE("CONEX") {
   corsika::sibyll::Interaction sibyll;
   [[maybe_unused]] corsika::sibyll::NuclearInteractionModel sibyllNuc(sibyll, env);
 
-  WriterOff w1;
-  WriterOff2 w2;
-  CONEXhybrid<WriterOff, WriterOff2> conex(center, showerAxis, t, injectionHeight, E0,
-                                           get_PDG(Code::Proton), w1, w2);
+  EnergyLossWriter<WriterOff> w1(showerAxis);
+  LongitudinalWriter<WriterOff> w2(showerAxis);
+  CONEXhybrid<decltype(w1), decltype(w2)> conex(center, showerAxis, t, injectionHeight,
+                                                E0, get_PDG(Code::Proton), w1, w2);
+  // initialize writers
+  w1.startOfLibrary("test");
+  w1.startOfShower(0);
+  w2.startOfLibrary("test");
+  w2.startOfShower(0);
+  // init conex
   conex.initCascadeEquations();
 
   HEPEnergyType const Eem{1_PeV};
@@ -123,45 +129,14 @@ TEST_CASE("CONEX") {
                     emPosition.getCoordinates(conex.getObserverCS()),
                     emPosition.getCoordinates(rootCS));
 
-  conex.addParticle(Code::Proton, Eem, 0_eV, emPosition, momentum.normalized(), 0_s);
+  conex.addParticle(Code::Proton, Eem, Proton::mass, emPosition, momentum.normalized(),
+                    0_s);
   // supperimpose a photon
   auto const momentumPhoton = showerAxis.getDirection() * 1_TeV;
   conex.addParticle(Code::Photon, 1_TeV, 0_eV, emPosition, momentumPhoton.normalized(),
                     0_s);
   DummyStack stack;
   conex.doCascadeEquations(stack);
-}
 
-#include <algorithm>
-#include <iterator>
-#include <string>
-#include <fstream>
-
-TEST_CASE("ConexOutput", "[output validation]") {
-
-  logging::set_level(logging::level::info);
-
-  auto file = GENERATE(as<std::string>{}, "conex_fit", "conex_output");
-
-  SECTION(std::string("check saved data, ") + file + ".txt") {
-
-    // compare to reference data
-    std::ifstream file1(file + ".txt");
-    std::ifstream file1ref(refDataDir + "/" + file + "_REF.txt");
-
-    std::istreambuf_iterator<char> begin1(file1);
-    std::istreambuf_iterator<char> begin1ref(file1ref);
-
-    std::istreambuf_iterator<char> end;
-
-    while (begin1 != end && begin1ref != end) {
-      CHECK(*begin1 == *begin1ref);
-      ++begin1;
-      ++begin1ref;
-    }
-    CHECK(begin1 == end);
-    CHECK(begin1ref == end);
-    file1.close();
-    file1ref.close();
-  }
+  CHECK(w1.getEnergyLost() / 1_TeV == Approx(1.0).epsilon(0.1));
 }

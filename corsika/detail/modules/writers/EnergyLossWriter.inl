@@ -152,10 +152,16 @@ namespace corsika {
           "CONEX and Corsika8 dX grammage binning are not the same!");
     }
 
-    int const bin = int((bend + bstart) / 2);
+    size_t const bin = size_t((bend + bstart) / 2);
     CORSIKA_LOGGER_TRACE(TOutput::getLogger(),
                          "add binned energy loss {} {} bin={} dE={} GeV ", bstart, bend,
                          bin, dE / 1_GeV);
+    if (bin >= profile_.size()) {
+      CORSIKA_LOGGER_WARN(TOutput::getLogger(),
+                          "Grammage bin {} outside of profile {}. skipping.", bin,
+                          profile_.size());
+      return;
+    }
     profile_[bin][static_cast<int>(dEdX_output::ProfileIndex::Total)] += dE;
   }
 

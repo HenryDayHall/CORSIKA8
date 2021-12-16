@@ -17,10 +17,7 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 
-#include <corsika/modules/writers/WriterOff.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
-#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
-#include <corsika/modules/writers/LongitudinalProfileWriterParquet.hpp>
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
 #include <corsika/modules/writers/LongitudinalWriter.hpp>
 
@@ -52,7 +49,7 @@ namespace corsika {
    * @tparam TOutputE -- Output writer for dEdX data.
    * @tparam TOutputN -- Output writer for particle number profile data.
    */
-  template <typename TOutputE = WriterOff, typename TOutputN = WriterOff2>
+  template <typename TOutputE, typename TOutputN>
   class CONEXhybrid : public CascadeEquationsProcess<CONEXhybrid<TOutputE, TOutputN>>,
                       public SecondariesProcess<CONEXhybrid<TOutputE, TOutputN>>,
                       public SubWriter<TOutputE>,

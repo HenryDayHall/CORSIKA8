@@ -128,6 +128,11 @@ namespace corsika {
      */
     YAML::Node getConfig() const;
 
+    number_profile::ProfileData const& getProfile(
+        number_profile::ProfileIndex index) const {
+      return profile_.at(static_cast<int>(index));
+    }
+
   private:
     ShowerAxis const& showerAxis_; ///< conversion between geometry and grammage
     GrammageType dX_;              ///< binning of profile.
