@@ -12,6 +12,7 @@
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
+#include <corsika/framework/geometry/Box.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/geometry/StraightTrajectory.hpp>
 #include <corsika/framework/geometry/Intersections.hpp>
@@ -49,6 +50,9 @@ namespace corsika::tracking_line {
     //! find intersection of Sphere with Track
     template <typename TParticle>
     static Intersections intersect(TParticle const& particle, Sphere const& sphere);
+
+    template <typename TParticle>
+    static Intersections intersect(TParticle const& particle, Box const& box);
 
     //! find intersection of Volume node with Track of particle
     template <typename TParticle, typename TBaseNodeType>

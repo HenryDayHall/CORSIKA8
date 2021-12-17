@@ -2,6 +2,11 @@
 **/*~
 **/*.bak
 build/
+<<<<<<< HEAD
+=======
+install/
+.vscode/
+>>>>>>> ignore vscode - step1
 Framework/Particles/GeneratedParticleProperties.inc
 flymd.html
 flymd.md

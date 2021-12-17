@@ -99,6 +99,9 @@ TEST_CASE("QgsjetII", "[processes]") {
     CHECK_FALSE(model.isValid(Code::Electron, Code::Proton, 1_TeV));
     CHECK_FALSE(model.isValid(Code::Proton, Code::Electron, 1_TeV));
     CHECK_FALSE(model.isValid(Code::Proton, Code::Proton, 1_GeV));
+
+    CHECK(model.isValid(Code::Proton, Code::Helium, 1_TeV));
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Helium, 1_GeV));
   }
 }
 
