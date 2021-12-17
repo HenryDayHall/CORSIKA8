@@ -37,7 +37,7 @@ namespace corsika {
   inline void Cascade<TTracking, TProcessList, TOutput, TStack>::run() {
 
     // trigger the start of the outputs for this shower
-    output.startOfShower();
+    output_.startOfShower();
 
     setNodes(); // put each particle on stack in correct environment volume
 
@@ -66,7 +66,7 @@ namespace corsika {
     }
 
     // indicate end of shower
-    output.endOfShower();
+    output_.endOfShower();
   }
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
