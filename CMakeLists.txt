@@ -138,19 +138,32 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   # compile coverage under -O0 to avoid any optimization, function elimation etc.
   add_compile_options ("-O0")
 
+  # search for local lcov
+  find_program (c8_lcov_bin lcov)
+  if (NOT c8_lcov_bin)
+    set (c8_lcov_bin "${PROJECT_SOURCE_DIR}/externals/lcov/bin/lcov")
+    message ("use C8 version of lcov ${c8_lcov_bin}")
+  endif ()
+
+  # search for local genhtml
+  find_program (c8_genhtml_bin genhtml)
+  if (NOT c8_genhtml_bin)
+    set (c8_genhtml_bin "${PROJECT_SOURCE_DIR}/externals/lcov/bin/genhtml")
+    message ("use C8 version of genhtml ${c8_genhtml_bin}")
+  endif ()
+
   set (GCOV gcov CACHE STRING "gcov executable" FORCE)
-  set (LCOV_BIN_DIR "${PROJECT_SOURCE_DIR}/externals/lcov/bin")
   # collect coverage data
   add_custom_command (
     OUTPUT raw-coverage.info
     COMMAND ${CMAKE_COMMAND} -E echo "Note: you need to run ctest at least once to generate the coverage data"
-    COMMAND ${LCOV_BIN_DIR}/lcov --gcov-tool=${GCOV} --directory . --capture --output-file raw-coverage.info
+    COMMAND ${c8_lcov_bin} --gcov-tool=${GCOV} --directory . --capture --output-file raw-coverage.info
     )
   # remove uninteresting entries
   add_custom_command (
     OUTPUT coverage.info
-    COMMAND ${LCOV_BIN_DIR}/lcov -q --remove raw-coverage.info "*/usr/*" "/usr/*" --output-file coverage2.info
-    COMMAND ${LCOV_BIN_DIR}/lcov --remove coverage2.info 
+    COMMAND ${c8_lcov_bin} -q --remove raw-coverage.info "*/usr/*" "/usr/*" --output-file coverage2.info
+    COMMAND ${c8_lcov_bin} --remove coverage2.info 
                         "*/externals/*" "*/tests/*" "*/sibyll2.3d.cpp" "*/.conan/*" 
                         "*/include/Pythia8/*" "*/install/*" "${CMAKE_SOURCE_DIR}/modules/*" 
                         "${CMAKE_BINARY_DIR}/modules/*" 
@@ -161,7 +174,7 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   # generate html report
   add_custom_command (
     OUTPUT coverage-report
-    COMMAND ${LCOV_BIN_DIR}/genhtml --demangle-cpp coverage.info -o coverage-report
+    COMMAND ${c8_genhtml_bin} --demangle-cpp coverage.info -o coverage-report
     DEPENDS coverage.info
     )
   add_custom_target (coverage DEPENDS coverage-report)
