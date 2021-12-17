@@ -183,9 +183,9 @@ int main(int argc, char** argv) {
   //  EAS.setNodes();
   //  EAS.forceInteraction();
 
-  output.startOfShower();
+  output.startOfLibrary();
   EAS.run();
-  output.endOfShower();
+  output.endOfLibrary();
 
   HEPEnergyType const Efinal = dEdX.getEnergyLost() + observationLevel.getEnergyGround();
 
@@ -193,6 +193,4 @@ int main(int argc, char** argv) {
       "total energy budget (GeV): {}, "
       "relative difference (%): {}",
       Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
-
-  output.endOfLibrary();
 }

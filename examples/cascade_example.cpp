@@ -155,9 +155,9 @@ int main() {
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);
 
-  output.startOfShower();
+  output.startOfLibrary();
   EAS.run();
-  output.endOfShower();
+  output.endOfLibrary();
 
   const HEPEnergyType Efinal = dEdX.getEnergyLost();
   CORSIKA_LOG_INFO(
@@ -168,6 +168,4 @@ int main() {
       "relative difference (%): {}\n",
       Efinal / 1_GeV, (Efinal / E0 - 1) * 100, dEdX.getEnergyLost() / 1_GeV,
       dEdX.getEnergyLost() / E0 * 100);
-
-  output.endOfLibrary();
 }

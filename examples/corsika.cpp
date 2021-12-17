@@ -380,9 +380,6 @@ int main(int argc, char** argv) {
 
     CORSIKA_LOG_INFO("Shower {} / {} ", i_shower, nevent);
 
-    // trigger the start of the outputs for this shower
-    output.startOfShower();
-
     // directory for outputs
     string const outdir(app["--filename"]->as<std::string>());
     string const labHist_file = outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
@@ -420,7 +417,6 @@ int main(int argc, char** argv) {
 
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);
-    output.endOfShower();
   }
 
   // and finalize the output on disk

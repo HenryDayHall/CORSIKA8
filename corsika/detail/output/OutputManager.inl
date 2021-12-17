@@ -46,6 +46,15 @@ namespace corsika {
 
   template <typename TOutput>
   inline void OutputManager::add(std::string const& name, TOutput& output) {
+
+    if (state_ == OutputState::NoInit) {
+      // if "add" is called after the ouptput has started, this is an ERROR.
+      CORSIKA_LOGGER_ERROR(
+          logger_, "Cannot add more outputs to OutputManager after output was started.");
+      throw std::runtime_error(
+          "Cannot add more outputs to OutputManager after output was started.");
+    }
+
     // check if that name is already in the map
     if (outputs_.count(name) > 0) {
       CORSIKA_LOGGER_ERROR(

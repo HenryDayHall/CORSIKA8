@@ -166,11 +166,9 @@ int main() {
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);
 
-  output.startOfShower();
+  output.startOfLibrary();
   EAS.run();
-  output.endOfShower();
+  output.endOfLibrary();
 
   CORSIKA_LOG_INFO("Done");
-
-  output.endOfLibrary();
 }

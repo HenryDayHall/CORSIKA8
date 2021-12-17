@@ -316,9 +316,9 @@ int main(int argc, char** argv) {
   //  EAS.SetNodes();
   //  EAS.forceInteraction();
 
-  output.startOfShower();
+  output.startOfLibrary();
   EAS.run();
-  output.endOfShower();
+  output.endOfLibrary();
 
   const HEPEnergyType Efinal = dEdX.getEnergyLost() + observationLevel.getEnergyGround();
   CORSIKA_LOG_INFO(
@@ -331,8 +331,6 @@ int main(int argc, char** argv) {
 
   save_hist(hists.labHist(), "inthist_lab_hybrid.npz", true);
   save_hist(hists.CMSHist(), "inthist_cms_hybrid.npz", true);
-
-  output.endOfLibrary();
 
   CORSIKA_LOG_INFO("done");
 }
