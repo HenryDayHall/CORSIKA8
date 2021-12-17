@@ -23,6 +23,8 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
+#include <string>
+
 using namespace corsika;
 
 const auto density = 1_kg / (1_m * 1_m * 1_m);
@@ -50,8 +52,6 @@ class TestLongitudinal : public corsika::LongitudinalWriter<> {
 public:
   TestLongitudinal(corsika::ShowerAxis const& axis)
       : LongitudinalWriter(axis) {}
-
-  YAML::Node getConfig() const { return YAML::Node(); }
 };
 
 TEST_CASE("LongitudinalWriter") {
@@ -85,17 +85,42 @@ TEST_CASE("LongitudinalWriter") {
 
   // generate straight simple track
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
-  Point r0(rootCS, {0_km, 0_m, 5_m});
+  Point r0(rootCS, {0_km, 0_m, 7_m});
   SpeedType const V0 = constants::c;
   VelocityVector v0(rootCS, {V0, 0_m / second, 0_m / second});
   Line const line(r0, v0);
-  auto const time = 10_ns;
+  auto const time = 1000_ns;
   StraightTrajectory track(line, time);
   // test write
   test.write(track, Code::Proton, 1.0);
+  test.write(track, Code::Photon, 1.0);
+  test.write(track, Code::Electron, 1.0);
+  test.write(track, Code::Positron, 1.0);
+  test.write(track, Code::MuPlus, 1.0);
+  test.write(track, Code::MuMinus, 1.0);
+
+  test.write(10_g / square(1_cm), 20_g / square(1_cm), Code::PiPlus, 1.0);
+  test.write(10_g / square(1_cm), 20_g / square(1_cm), Code::Electron, 1.0);
+  test.write(10_g / square(1_cm), 20_g / square(1_cm), Code::Positron, 1.0);
+  test.write(10_g / square(1_cm), 20_g / square(1_cm), Code::Photon, 1.0);
+  test.write(10_g / square(1_cm), 20_g / square(1_cm), Code::MuPlus, 1.0);
+  test.write(10_g / square(1_cm), 20_g / square(1_cm), Code::MuMinus, 1.0);
+
+  // wrong binning
+  CHECK_THROWS(test.write(10_g / square(1_cm), 10.1_g / square(1_cm), Code::PiPlus, 1.0));
+  test.write(100000_g / square(1_cm), 100010_g / square(1_cm), Code::PiPlus,
+             1.0); // this doesn't throw, it just skips
 
   test.endOfShower(0);
   test.endOfLibrary();
 
   CHECK(boost::filesystem::exists("./output_dir_long/profile.parquet"));
+
+  auto const config = test.getConfig();
+  CHECK(config["type"].as<std::string>() == "LongitudinalProfile");
+  CHECK(config["units"]["grammage"].as<std::string>() == "g/cm^2");
+  CHECK(config["bin-size"].as<double>() == 10.);
+  CHECK(config["nbins"].as<int>() == 200);
+
+  auto const summary = test.getSummary(); // nothing to check yet
 }

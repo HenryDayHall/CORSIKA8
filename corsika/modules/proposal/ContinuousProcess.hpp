@@ -29,9 +29,11 @@ namespace corsika::proposal {
   //! use of interpolation tables which are runtime intensive calculation, but can be
   //! reused by setting the \param PROPOSAL::InterpolationDef::path_to_tables variable.
   //!
+  template <typename TOutput = WriterOff>
   class ContinuousProcess
-      : public corsika::ContinuousProcess<proposal::ContinuousProcess>,
-        ProposalProcessBase {
+      : public corsika::ContinuousProcess<proposal::ContinuousProcess<TOutput>>,
+        public ProposalProcessBase,
+        public TOutput {
 
     struct Calculator {
       std::unique_ptr<PROPOSAL::Displacement> disp;
@@ -40,8 +42,6 @@ namespace corsika::proposal {
 
     std::unordered_map<calc_key_t, Calculator, hash>
         calc; //!< Stores the displacement and scattering calculators.
-
-    HEPEnergyType energy_lost_ = 0 * electronvolt;
 
     //!
     //! Build the displacement and scattering calculators and add it to calc.
@@ -53,8 +53,8 @@ namespace corsika::proposal {
     //! Produces the continuous loss calculator for leptons based on nuclear
     //! compositions and stochastic description limited by the particle cut.
     //!
-    template <typename TEnvironment>
-    ContinuousProcess(TEnvironment const&);
+    template <typename TEnvironment, typename... TOutputArgs>
+    ContinuousProcess(TEnvironment const&, TOutputArgs&&...);
 
     //!
     //! Multiple Scattering of the lepton. Stochastic deflection is not yet taken into
@@ -80,10 +80,6 @@ namespace corsika::proposal {
     //!
     template <typename TParticle, typename TTrack>
     LengthType getMaxStepLength(TParticle const&, TTrack const&);
-
-    void showResults() const;
-    void reset();
-    HEPEnergyType getEnergyLost() const { return energy_lost_; }
   };
 } // namespace corsika::proposal
 

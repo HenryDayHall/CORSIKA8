@@ -49,8 +49,6 @@ class TestEnergyLoss : public corsika::EnergyLossWriter<> {
 public:
   TestEnergyLoss(corsika::ShowerAxis const& axis)
       : EnergyLossWriter(axis) {}
-
-  YAML::Node getConfig() const { return YAML::Node(); }
 };
 
 TEST_CASE("EnergyLossWriter") {
@@ -90,21 +88,37 @@ TEST_CASE("EnergyLossWriter") {
 
   // generate straight simple track
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
-  Point r0(rootCS, {0_m, 0_m, 5_km});
+  Point r0(rootCS, {0_m, 0_m, 7_km});
   SpeedType const V0 = constants::c;
   VelocityVector v0(rootCS, {V0, 0_m / second, 0_m / second});
   Line const line(r0, v0);
-  auto const time = 10_ns;
+  auto const time = 1000_ns;
   StraightTrajectory track(line, time);
   // test write
   test.write(track, Code::Proton, 100_GeV);
 
   // incompatible binning
-  CHECK_THROWS(
-      test.write(100_g / square(1_cm), 120_g / square(1_cm), Code::Photon, 100_GeV));
+  CHECK_THROWS(test.write(100_g / square(1_cm), // extra line break by purpose
+                          120_g / square(1_cm), Code::Photon, 100_GeV));
+  test.write(100000_g / square(1_cm), 100010_g / square(1_cm), Code::Photon,
+             100_GeV); // this doesn't throw, but it skips
 
   test.endOfShower(0);
   test.endOfLibrary();
 
   CHECK(boost::filesystem::exists("./output_dir_eloss/dEdX.parquet"));
+
+  auto const config = test.getConfig();
+  CHECK(config["type"].as<std::string>() == "EnergyLoss");
+  CHECK(config["units"]["energy"].as<std::string>() == "GeV");
+  CHECK(config["units"]["grammage"].as<std::string>() == "g/cm^2");
+  CHECK(config["bin-size"].as<double>() == 10.);
+  CHECK(config["nbins"].as<int>() == 200);
+  CHECK(config["grammage_threshold"].as<double>() == Approx(0.0001));
+
+  auto const summary = test.getSummary();
+  CHECK(summary["sum_dEdX"].as<double>() == 300);
+  // makes not yet sense:
+  // CHECK(summary["Xmax"].as<double>() == 200);
+  // CHECK(summary["dEdXmax"].as<double>() == 200);
 }

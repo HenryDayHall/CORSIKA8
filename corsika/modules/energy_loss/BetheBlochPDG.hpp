@@ -40,8 +40,8 @@ namespace corsika {
     using MeVgcm2 = decltype(1e6 * electronvolt / gram * square(1e-2 * meter));
 
   public:
-    template <typename... TArgs>
-    BetheBlochPDG(TArgs&&... args);
+    template <typename... TOutputArgs>
+    BetheBlochPDG(TOutputArgs&&... args);
 
     /**
      * Interface function of ContinuousProcess.

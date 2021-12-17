@@ -48,9 +48,11 @@ namespace corsika::proposal {
     calc[std::make_pair(comp.getHash(), code)] = std::move(calculator);
   }
 
-  template <typename TEnvironment>
-  inline ContinuousProcess::ContinuousProcess(TEnvironment const& _env)
-      : ProposalProcessBase(_env) {}
+  template <typename TEnvironment, typename... TOutputArgs>
+  inline ContinuousProcess::ContinuousProcess(TEnvironment const& _env,
+                                              TOutputArgs&&... args)
+      : ProposalProcessBase(_env)
+      , TOutput(args) {}
 
   template <typename TParticle>
   inline void ContinuousProcess::scatter(TParticle& vP, HEPEnergyType const& loss,
@@ -103,11 +105,14 @@ namespace corsika::proposal {
                             vP.getEnergy() / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
                         1_MeV;
     auto dE = vP.getEnergy() - final_energy;
-    energy_lost_ += dE;
 
     // if the particle has a charge take multiple scattering into account
     if (vP.getChargeNumber() != 0) scatter(vP, dE, dX);
     vP.setEnergy(final_energy); // on the stack, this is just kinetic energy, E-m
+
+    // also send to output
+    TOutput::write(vT, vP.getPID(), dE);
+
     return ProcessReturn::Ok;
   }
 
@@ -142,15 +147,5 @@ namespace corsika::proposal {
                       grammage / 1_g * square(1_cm), dist / 1_m);
     return dist;
   }
-
-  inline void ContinuousProcess::showResults() const {
-    CORSIKA_LOG_DEBUG(
-        " ******************************\n"
-        " PROCESS::ContinuousProcess: \n"
-        " energy lost dE (GeV)      :  {}",
-        energy_lost_ / 1_GeV);
-  }
-
-  inline void ContinuousProcess::reset() { energy_lost_ = 0_GeV; }
 
 } // namespace corsika::proposal
