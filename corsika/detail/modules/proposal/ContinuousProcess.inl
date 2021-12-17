@@ -18,8 +18,9 @@
 
 namespace corsika::proposal {
 
-  inline void ContinuousProcess::buildCalculator(Code code,
-                                                 NuclearComposition const& comp) {
+  template <typename TOutput>
+  inline void ContinuousProcess<TOutput>::buildCalculator(
+      Code code, NuclearComposition const& comp) {
     // search crosssection builder for given particle
     auto p_cross = cross.find(code);
     if (p_cross == cross.end())
@@ -48,26 +49,29 @@ namespace corsika::proposal {
     calc[std::make_pair(comp.getHash(), code)] = std::move(calculator);
   }
 
+  template <typename TOutput>
   template <typename TEnvironment, typename... TOutputArgs>
-  inline ContinuousProcess::ContinuousProcess(TEnvironment const& _env,
-                                              TOutputArgs&&... args)
+  inline ContinuousProcess<TOutput>::ContinuousProcess(TEnvironment const& _env,
+                                                       TOutputArgs&&... args)
       : ProposalProcessBase(_env)
-      , TOutput(args) {}
+      , TOutput(args...) {}
 
+  template <typename TOutput>
   template <typename TParticle>
-  inline void ContinuousProcess::scatter(TParticle& vP, HEPEnergyType const& loss,
-                                         GrammageType const& grammage) {
+  inline void ContinuousProcess<TOutput>::scatter(TParticle& particle,
+                                                  HEPEnergyType const& loss,
+                                                  GrammageType const& grammage) {
 
     // get or build corresponding calculators
-    auto c = getCalculator(vP, calc);
+    auto c = getCalculator(particle, calc);
 
     // Cast corsika vector to proposal vector
-    auto vP_dir = vP.getDirection();
-    auto d = vP_dir.getComponents();
+    auto particle_dir = particle.getDirection();
+    auto d = particle_dir.getComponents();
     auto direction = PROPOSAL::Cartesian3D(d.getX().magnitude(), d.getY().magnitude(),
                                            d.getZ().magnitude());
 
-    auto E_f = vP.getEnergy() - loss;
+    auto E_f = particle.getEnergy() - loss;
 
     // draw random numbers required for scattering process
     std::uniform_real_distribution<double> distr(0., 1.);
@@ -76,27 +80,28 @@ namespace corsika::proposal {
 
     // calculate deflection based on particle energy, loss
     auto deflection = (c->second).scatter->CalculateMultipleScattering(
-        grammage / 1_g * square(1_cm), vP.getEnergy() / 1_MeV, E_f / 1_MeV, rnd);
+        grammage / 1_g * square(1_cm), particle.getEnergy() / 1_MeV, E_f / 1_MeV, rnd);
 
     [[maybe_unused]] auto [unused1, final_direction] =
         PROPOSAL::multiple_scattering::ScatterInitialDirection(direction, deflection);
 
     // update particle direction after continuous loss caused by multiple
     // scattering
-    vP.setDirection(
-        {vP_dir.getCoordinateSystem(),
+    particle.setDirection(
+        {particle_dir.getCoordinateSystem(),
          {final_direction.GetX(), final_direction.GetY(), final_direction.GetZ()}});
   }
 
+  template <typename TOutput>
   template <typename TParticle, typename TTrajectory>
-  inline ProcessReturn ContinuousProcess::doContinuous(TParticle& vP,
-                                                       TTrajectory const& vT,
-                                                       bool const) {
+  inline ProcessReturn ContinuousProcess<TOutput>::doContinuous(TParticle& vP,
+                                                                TTrajectory const& track,
+                                                                bool const) {
     if (!canInteract(vP.getPID())) return ProcessReturn::Ok;
-    if (vT.getLength() == 0_m) return ProcessReturn::Ok;
+    if (track.getLength() == 0_m) return ProcessReturn::Ok;
 
     // calculate passed grammage
-    auto dX = vP.getNode()->getModelProperties().getIntegratedGrammage(vT);
+    auto dX = vP.getNode()->getModelProperties().getIntegratedGrammage(track);
 
     // get or build corresponding track integral calculator and solve the
     // integral
@@ -111,14 +116,15 @@ namespace corsika::proposal {
     vP.setEnergy(final_energy); // on the stack, this is just kinetic energy, E-m
 
     // also send to output
-    TOutput::write(vT, vP.getPID(), dE);
+    TOutput::write(track, vP.getPID(), dE);
 
     return ProcessReturn::Ok;
   }
 
+  template <typename TOutput>
   template <typename TParticle, typename TTrajectory>
-  inline LengthType ContinuousProcess::getMaxStepLength(TParticle const& vP,
-                                                        TTrajectory const& vT) {
+  inline LengthType ContinuousProcess<TOutput>::getMaxStepLength(
+      TParticle const& vP, TTrajectory const& track) {
     auto const code = vP.getPID();
     if (!canInteract(code)) return meter * std::numeric_limits<double>::infinity();
 
@@ -142,7 +148,8 @@ namespace corsika::proposal {
         square(1_cm);
 
     // return it in distance aequivalent
-    auto dist = vP.getNode()->getModelProperties().getArclengthFromGrammage(vT, grammage);
+    auto dist =
+        vP.getNode()->getModelProperties().getArclengthFromGrammage(track, grammage);
     CORSIKA_LOG_TRACE("PROPOSAL::getMaxStepLength X={} g/cm2, l={} m ",
                       grammage / 1_g * square(1_cm), dist / 1_m);
     return dist;

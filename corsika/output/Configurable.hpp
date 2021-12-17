@@ -28,7 +28,7 @@ namespace corsika {
     /**
      * Provide YAML configuration for this BaseOutput.
      */
-    virtual YAML::Node getConfig() const = 0;
+    virtual YAML::Node getConfig() const = 0; // LCOV_EXCL_LINE
   };
 
 } // namespace corsika

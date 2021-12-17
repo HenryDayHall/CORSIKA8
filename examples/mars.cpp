@@ -354,7 +354,7 @@ int main(int argc, char** argv) {
   corsika::proposal::Interaction emCascade(env);
   // NOT possible right now, due to interface difference for PROPOSAL:
   //  InteractionCounter emCascadeCounted(emCascade);
-  // corsika::proposal::ContinuousProcess emContinuous(env);
+  // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env);
   BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
   LongitudinalWriter longprof{showerAxis};

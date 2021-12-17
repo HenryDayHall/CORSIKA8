@@ -75,6 +75,12 @@ namespace corsika {
 
     GrammageType const deltaX = grammageEnd - grammageStart;
 
+    CORSIKA_LOGGER_TRACE(
+        TOutput::getLogger(),
+        "dE={} GeV, grammageStart={} g/cm2, End={}g /cm2, deltaX={} g/cm2", dE / 1_GeV,
+        grammageStart / 1_g * square(1_cm), grammageEnd / 1_g * square(1_cm),
+        deltaX / 1_g * square(1_cm));
+
     if (deltaX < dX_threshold_) {
       this->write(track.getPosition(0), PID, dE);
       return;
@@ -89,9 +95,8 @@ namespace corsika {
     if (binEnd < 0) binEnd = 0;
     if (binEnd > maxBin) binEnd = maxBin;
 
-    CORSIKA_LOGGER_TRACE(
-        TOutput::getLogger(), "energy deposit of dE={} GeV between {} and {} g/cm2",
-        dE / 1_GeV, grammageStart / 1_g * square(1_cm), grammageEnd / 1_g * square(1_cm));
+    CORSIKA_LOGGER_TRACE(TOutput::getLogger(), "maxBin={}, binStart={}, binEnd={}",
+                         maxBin, binStart, binEnd);
 
     auto energyCount = HEPEnergyType::zero();
 

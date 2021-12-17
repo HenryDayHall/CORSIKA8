@@ -72,6 +72,11 @@
 using namespace corsika;
 using namespace std;
 
+/**
+ * Random number stream initialization
+ *
+ * @param seed
+ */
 void registerRandomStreams(uint64_t seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
@@ -84,17 +89,34 @@ void registerRandomStreams(uint64_t seed) {
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
-    cout << "new random seed (auto) " << seed << endl;
+    CORSIKA_LOG_INFO("new random seed (auto) {}", seed);
   }
   RNGManager<>::getInstance().setSeed(seed);
 }
 
+/**
+ * New (for demonstration) ContinuousProcess which will check if a particles has traversed
+ * below the observation level.
+ */
 class TrackCheck : public ContinuousProcess<TrackCheck> {
 
 public:
+  /**
+   * Construct a new Track Check object.
+   *
+   * @param plane -- the actual observation level
+   */
   TrackCheck(Plane const& plane)
       : plane_(plane) {}
 
+  /**
+   * The doContinous method to check a particular particle.
+   *
+   * @tparam TParticle
+   * @tparam TTrack
+   * @param particle
+   * @return ProcessReturn
+   */
   template <typename TParticle, typename TTrack>
   ProcessReturn doContinuous(TParticle const& particle, TTrack const&, bool const) {
     auto const delta = particle.getPosition() - plane_.getCenter();
@@ -108,6 +130,13 @@ public:
     return ProcessReturn::Ok;
   }
 
+  /**
+   * No limit on tracking step length imposed here, of course.
+   *
+   * @tparam TParticle
+   * @tparam TTrack
+   * @return LengthType
+   */
   template <typename TParticle, typename TTrack>
   LengthType getMaxStepLength(TParticle const&, TTrack const&) const {
     return std::numeric_limits<double>::infinity() * 1_m;
@@ -117,6 +146,9 @@ private:
   Plane plane_;
 };
 
+/**
+ * Selection of environment interface implementation:
+ */
 template <typename T>
 using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
@@ -127,8 +159,10 @@ int main(int argc, char** argv) {
   CORSIKA_LOG_INFO("hybrid_MC");
 
   if (argc < 4) {
-    std::cerr << "usage: hybrid_MC <A> <Z> <energy/GeV> [seed]" << std::endl;
-    std::cerr << "       if no seed is given, a random seed is chosen" << std::endl;
+    CORSIKA_LOG_ERROR(
+        "\n"
+        "usage: hybrid_MC <A> <Z> <energy/GeV> [seed] \n"
+        "       if no seed is given, a random seed is chosen");
     return 1;
   }
   feenableexcept(FE_INVALID);
@@ -167,10 +201,12 @@ int main(int argc, char** argv) {
 
   auto const [px, py, pz] = momentumComponents(thetaRad, P0);
   auto plab = MomentumVector(rootCS, {px, py, pz});
-  cout << "input particle: " << beamCode << endl;
-  cout << "input angles: theta=" << theta << endl;
-  cout << "input momentum: " << plab.getComponents() / 1_GeV
-       << ", norm = " << plab.getNorm() << endl;
+  CORSIKA_LOG_INFO(
+      "input particle: {}, "
+      "input angles: theta={}, "
+      "input momentum: {} GeV, "
+      ", norm={}",
+      beamCode, theta, plab.getComponents() / 1_GeV, plab.getNorm());
 
   auto const observationHeight = 0_km + constants::EarthRadius::Mean;
   auto const injectionHeight = 112.75_km + constants::EarthRadius::Mean;
@@ -182,14 +218,14 @@ int main(int argc, char** argv) {
       showerCore +
       Vector<dimensionless_d>{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
-  std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
+  CORSIKA_LOG_INFO("point of injection: {} ", injectionPos.getCoordinates());
 
   stack.addParticle(std::make_tuple(
       Code::Proton, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
       plab.normalized(), injectionPos, 0_ns));
 
-  std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.02
-            << std::endl;
+  CORSIKA_LOG_INFO("shower axis length: {} m",
+                   (showerCore - injectionPos).getNorm() * 1.02);
 
   OutputManager output("hybrid_MC_outputs");
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
@@ -283,8 +319,10 @@ int main(int argc, char** argv) {
   output.endOfShower();
 
   const HEPEnergyType Efinal = dEdX.getEnergyLost() + observationLevel.getEnergyGround();
-  cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
+  CORSIKA_LOG_INFO(
+      "total cut energy (GeV): {}, "
+      "relative difference (%): {}",
+      Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
 
   auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                      urqmdCounted.getHistogram();

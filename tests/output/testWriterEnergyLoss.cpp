@@ -53,7 +53,8 @@ public:
 
 TEST_CASE("EnergyLossWriter") {
 
-  logging::set_level(logging::level::info);
+  // best to run unit-tests with TRACE output
+  logging::set_level(logging::level::trace);
 
   auto [env, csPtr, nodePtr] = setupEnvironment(Code::Nitrogen);
   auto const& cs = *csPtr;
@@ -94,8 +95,10 @@ TEST_CASE("EnergyLossWriter") {
   Line const line(r0, v0);
   auto const time = 1000_ns;
   StraightTrajectory track(line, time);
+  StraightTrajectory trackInverse({track.getPosition(1), -v0}, time);
   // test write
   test.write(track, Code::Proton, 100_GeV);
+  test.write(trackInverse, Code::Proton, 100_GeV); // equivalent
 
   // incompatible binning
   CHECK_THROWS(test.write(100_g / square(1_cm), // extra line break by purpose

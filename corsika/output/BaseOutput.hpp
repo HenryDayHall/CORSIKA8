@@ -42,12 +42,12 @@ namespace corsika {
      *
      * @param showerId Shower counter.
      */
-    virtual void endOfShower(unsigned int const showerId) = 0;
+    virtual void endOfShower(unsigned int const showerId) = 0; // LCOV_EXCL_LINE
 
     /**
      * Called at the end of each run.
      */
-    virtual void endOfLibrary() = 0;
+    virtual void endOfLibrary() = 0; // LCOV_EXCL_LINE
 
     /**
      * Flag to indicate readiness.
