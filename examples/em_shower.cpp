@@ -154,7 +154,7 @@ int main(int argc, char** argv) {
   ParticleCut<SubWriter<decltype(dEdX)>> cut(60_GeV, 60_GeV, 100_PeV, 100_PeV, true,
                                              dEdX);
   corsika::proposal::Interaction emCascade(env);
-  corsika::proposal::ContinuousProcess<decltype(dEdX)> emContinuous(env);
+  corsika::proposal::ContinuousProcess<decltype(dEdX)> emContinuous(env, dEdX);
   //  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
   //  NOT possible right now, due to interface differenc in PROPOSAL

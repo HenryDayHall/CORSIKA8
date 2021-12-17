@@ -120,7 +120,7 @@ TEST_CASE("EnergyLossWriter") {
   CHECK(config["grammage_threshold"].as<double>() == Approx(0.0001));
 
   auto const summary = test.getSummary();
-  CHECK(summary["sum_dEdX"].as<double>() == 300);
+  CHECK(summary["sum_dEdX"].as<double>() == 400);
   // makes not yet sense:
   // CHECK(summary["Xmax"].as<double>() == 200);
   // CHECK(summary["dEdXmax"].as<double>() == 200);

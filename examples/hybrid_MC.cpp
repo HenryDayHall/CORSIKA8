@@ -291,6 +291,8 @@ int main(int argc, char** argv) {
   corsika::urqmd::UrQMD urqmd_model;
   InteractionCounter urqmdCounted{urqmd_model};
 
+  TrackCheck trackCheck;
+
   // assemble all processes into an ordered process list
   struct EnergySwitch {
     HEPEnergyType cutE_;
@@ -304,7 +306,7 @@ int main(int argc, char** argv) {
                                     make_sequence(sibyllNucCounted, sibyllCounted));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
   auto sequence = make_sequence(hadronSequence, decaySequence, eLoss, cut, conex_model,
-                                longprof, observationLevel);
+                                longprof, observationLevel, trackCheck);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
