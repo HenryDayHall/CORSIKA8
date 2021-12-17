@@ -2,7 +2,7 @@
 
 The CORSIKA Project very much welcomes contributions. Here we outlined
 how you can find the right place to contribute, and how to do that.
-Connect to https://gitlab.ikp.kit.edu and corsika-devel@lists.kit.edu (self-register at https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in touch with the project.
+Connect to https://gitlab.iap.kit.edu and corsika-devel@lists.kit.edu (self-register at https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in touch with the project.
 The CORSIKA Project decides on the [GUIDELINES](CONTRIBUTING.md) and can decide to
 change/improve them.
 
@@ -20,7 +20,7 @@ change/improve them.
   - Proposed code to close one issue (located in a specific git
     branch) is reviewed, discussed, and eventually merged
     into the master branch via a merge-request (MR) to close the issue.
-  - all merge request will undergo a code review, and must be approved before merge, in order to ensure high code qualtiy: [Code Approval Procedure](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/wikis/Code-Approval-Procedure)
+  - all merge request will undergo a code review, and must be approved before merge, in order to ensure high code qualtiy: [Code Approval Procedure](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/wikis/Code-Approval-Procedure)
 
 
 ## Code formatting
@@ -45,7 +45,7 @@ e.g. [link1](https://clangformat.com/) or
 
 ## Coding rules, conventions and guidelines
 
-Please read the [Coding wiki page](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/wikis/Coding-Conventions-and-Guidelines).
+Please read the [Coding wiki page](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/wikis/Coding-Conventions-and-Guidelines).
 
 
 
@@ -72,7 +72,7 @@ required all the time:
   - responsibility for a particular functionality or software/management part 
   - have read and follow these [GUIDELINES](CONTRIBUTING.md)
   - active in the CORSIKA Project, that means responsive to
-    discussions and problems in corsika-devel@list.kit.edu or on https//gitlab.ikp.kit.edu, 
+    discussions and problems in corsika-devel@list.kit.edu or on https//gitlab.iap.kit.edu, 
     of relevant *Issues*, or in (phone) meetings
   - agreement to the [COLLABORATION_AGREEMENT](COLLABORATION_AGREEMENT.md) 
   - the members of the CORSIKA Project must agree
