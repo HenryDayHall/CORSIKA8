@@ -69,6 +69,11 @@ namespace corsika {
     int const binStart = std::ceil(grammageStart / dX_);
     int const binEnd = std::floor(grammageEnd / dX_);
 
+    CORSIKA_LOGGER_TRACE(TOutput::getLogger(),
+                         "grammageStart={} End={} binStart={}, end={}",
+                         grammageStart / 1_g * square(1_cm),
+                         grammageEnd / 1_g * square(1_cm), binStart, binEnd);
+
     for (int bin = binStart; bin <= binEnd; ++bin) {
       if (pid == Code::Photon) {
         profile_.at(bin)[static_cast<int>(number_profile::ProfileIndex::Photon)] +=

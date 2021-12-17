@@ -291,7 +291,7 @@ int main(int argc, char** argv) {
   corsika::urqmd::UrQMD urqmd_model;
   InteractionCounter urqmdCounted{urqmd_model};
 
-  TrackCheck trackCheck;
+  TrackCheck trackCheck(obsPlane);
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {

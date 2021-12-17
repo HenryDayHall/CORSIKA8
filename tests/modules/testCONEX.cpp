@@ -139,4 +139,7 @@ TEST_CASE("CONEX") {
   conex.doCascadeEquations(stack);
 
   CHECK(w1.getEnergyLost() / 1_TeV == Approx(1.0).epsilon(0.1));
+
+  auto const cfg = conex.getConfig();
+  CHECK(cfg.size() == 0);
 }

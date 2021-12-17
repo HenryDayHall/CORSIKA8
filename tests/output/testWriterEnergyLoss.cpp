@@ -65,11 +65,11 @@ TEST_CASE("EnergyLossWriter") {
   auto const injectionHeight = 10_km;
   auto const t = -observationHeight + injectionHeight;
   Point const showerCore{cs, 0_m, 0_m, observationHeight};
-  Point const injectionPos = showerCore + Vector<dimensionless_d>{cs, {0, 0, 1}} * t;
+  Point const injectionPos = showerCore + DirectionVector{cs, {0, 0, 1}} * t;
 
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
-                              true, // -> throw exceptions
-                              20};  // -> number of bins
+                              false, // -> throw exceptions
+                              1000}; // -> number of bins
 
   // preparation
   if (boost::filesystem::exists("./output_dir_eloss")) {
@@ -89,16 +89,21 @@ TEST_CASE("EnergyLossWriter") {
 
   // generate straight simple track
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
-  Point r0(rootCS, {0_m, 0_m, 7_km});
+  Point r0(rootCS, {0_m, 0_m, 6.555_km});
   SpeedType const V0 = constants::c;
-  VelocityVector v0(rootCS, {V0, 0_m / second, 0_m / second});
+  VelocityVector v0(rootCS, {0_m / second, 0_m / second, -V0});
   Line const line(r0, v0);
   auto const time = 1000_ns;
   StraightTrajectory track(line, time);
+  StraightTrajectory trackShort(line, time / 5e3);     // short
+  StraightTrajectory trackPointLike(line, time / 1e7); // ultra short
   StraightTrajectory trackInverse({track.getPosition(1), -v0}, time);
   // test write
   test.write(track, Code::Proton, 100_GeV);
   test.write(trackInverse, Code::Proton, 100_GeV); // equivalent
+  test.write(trackShort, Code::Proton, 100_GeV);   // this is in a single bin
+  test.write(trackPointLike, Code::Proton,
+             100_GeV); // this is just a located point-like dE
 
   // incompatible binning
   CHECK_THROWS(test.write(100_g / square(1_cm), // extra line break by purpose
@@ -120,7 +125,7 @@ TEST_CASE("EnergyLossWriter") {
   CHECK(config["grammage_threshold"].as<double>() == Approx(0.0001));
 
   auto const summary = test.getSummary();
-  CHECK(summary["sum_dEdX"].as<double>() == 400);
+  CHECK(summary["sum_dEdX"].as<double>() == 600);
   // makes not yet sense:
   // CHECK(summary["Xmax"].as<double>() == 200);
   // CHECK(summary["dEdXmax"].as<double>() == 200);

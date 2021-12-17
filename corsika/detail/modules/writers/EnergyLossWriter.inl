@@ -82,6 +82,7 @@ namespace corsika {
         deltaX / 1_g * square(1_cm));
 
     if (deltaX < dX_threshold_) {
+      CORSIKA_LOGGER_TRACE(TOutput::getLogger(), "Point-like dE");
       this->write(track.getPosition(0), PID, dE);
       return;
     }

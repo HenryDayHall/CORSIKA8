@@ -67,11 +67,11 @@ TEST_CASE("LongitudinalWriter") {
   auto const injectionHeight = 10_km;
   auto const t = -observationHeight + injectionHeight;
   Point const showerCore{cs, 0_m, 0_m, observationHeight};
-  Point const injectionPos = showerCore + Vector<dimensionless_d>{cs, {0, 0, 1}} * t;
+  Point const injectionPos = showerCore + DirectionVector{cs, {0, 0, 1}} * t;
 
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
-                              true, // -> throw exceptions
-                              20};  // -> number of bins
+                              false, // -> throw exceptions
+                              1000}; // -> number of bins
 
   // preparation
   if (boost::filesystem::exists("./output_dir_long")) {
@@ -85,9 +85,9 @@ TEST_CASE("LongitudinalWriter") {
 
   // generate straight simple track
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
-  Point r0(rootCS, {0_km, 0_m, 7_m});
+  Point r0(rootCS, {0_km, 0_m, 8_km});
   SpeedType const V0 = constants::c;
-  VelocityVector v0(rootCS, {V0, 0_m / second, 0_m / second});
+  VelocityVector v0(rootCS, {0_m / second, 0_m / second, -V0});
   Line const line(r0, v0);
   auto const time = 1000_ns;
   StraightTrajectory track(line, time);
