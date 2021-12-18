@@ -34,6 +34,26 @@
 namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
+  inline Cascade<TTracking, TProcessList, TOutput, TStack>::Cascade(
+      Environment<medium_interface_type> const& env, TTracking& tr, TProcessList& pl,
+      TOutput& out, TStack& stack)
+      : environment_(env)
+      , tracking_(tr)
+      , sequence_(pl)
+      , output_(out)
+      , stack_(stack)
+      , forceInteraction_(false) {
+    CORSIKA_LOG_INFO(c8_ascii_);
+    CORSIKA_LOG_INFO("This is CORSIKA {}.{}.{}.{}", CORSIKA_RELEASE_NUMBER,
+                     CORSIKA_MAJOR_NUMBER, CORSIKA_MINOR_NUMBER, CORSIKA_PATCH_NUMBER);
+    CORSIKA_LOG_INFO("Tracking algorithm: {} (version {})", TTracking::getName(),
+                     TTracking::getVersion());
+    if constexpr (stack_view_type::has_event) {
+      CORSIKA_LOG_INFO("Stack - with full cascade HISTORY.");
+    }
+  }
+
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   inline void Cascade<TTracking, TProcessList, TOutput, TStack>::run() {
 
     // trigger the start of the outputs for this shower
@@ -71,35 +91,7 @@ namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   inline void Cascade<TTracking, TProcessList, TOutput, TStack>::forceInteraction() {
-    CORSIKA_LOG_TRACE("forced interaction!");
-    setNodes();
-    auto particle = stack_.getNextParticle();
-    stack_view_type secondaries(particle);
-
-    auto const* currentLogicalNode = particle.getNode();
-    // assert that particle stays outside void Universe if it has no
-    // model properties set
-    assert((currentLogicalNode != &*environment_.getUniverse() ||
-            environment_.getUniverse()->hasModelProperties()) &&
-           "FATAL: The environment model has no valid properties set!");
-    NuclearComposition const& composition =
-        currentLogicalNode->getModelProperties().getNuclearComposition();
-
-    // determine projectile
-    HEPEnergyType const Elab = particle.getEnergy();
-    FourMomentum const projectileP4{Elab, particle.getMomentum()};
-    // determine cross section in material
-    CrossSectionType const sigma =
-        composition.getWeightedSum([=](Code const targetId) -> CrossSectionType {
-          FourMomentum const targetP4(
-              get_mass(targetId),
-              MomentumVector(particle.getMomentum().getCoordinateSystem(),
-                             {0_GeV, 0_GeV, 0_GeV}));
-          return sequence_.getCrossSection(particle, targetId, targetP4);
-        });
-    interaction(secondaries, projectileP4, composition, sigma);
-    sequence_.doSecondaries(secondaries);
-    particle.erase(); // primary particle is done
+    forceInteraction_ = true;
   }
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
@@ -132,6 +124,16 @@ namespace corsika {
                              {0_GeV, 0_GeV, 0_GeV}));
           return sequence_.getCrossSection(particle, targetId, targetP4);
         });
+
+    if (forceInteraction_) {
+      CORSIKA_LOG_TRACE("forced interaction!");
+      forceInteraction_ = false; // just one (first) interaction
+      stack_view_type secondaries(particle);
+      interaction(secondaries, projectileP4, composition, total_cx);
+      sequence_.doSecondaries(secondaries);
+      particle.erase(); // primary particle is done
+      return;
+    }
 
     // calculate interaction length in medium
     GrammageType const total_lambda =
@@ -309,7 +311,7 @@ namespace corsika {
 
     sequence_.doSecondaries(secondaries);
     particle.erase();
-  } // namespace corsika
+  }
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   inline ProcessReturn Cascade<TTracking, TProcessList, TOutput, TStack>::decay(

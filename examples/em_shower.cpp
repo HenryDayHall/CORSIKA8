@@ -154,7 +154,7 @@ int main(int argc, char** argv) {
   ParticleCut<SubWriter<decltype(dEdX)>> cut(60_GeV, 60_GeV, 100_PeV, 100_PeV, true,
                                              dEdX);
   corsika::proposal::Interaction emCascade(env);
-  corsika::proposal::ContinuousProcess<decltype(dEdX)> emContinuous(env, dEdX);
+  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
   //  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
   //  NOT possible right now, due to interface differenc in PROPOSAL
@@ -177,15 +177,14 @@ int main(int argc, char** argv) {
       make_sequence(emCascade, emContinuous, longprof, cut, observationLevel, tracks);
   // define air shower object, run simulation
   setup::Tracking tracking;
+
+  output.startOfLibrary();
   Cascade EAS(env, tracking, sequence, output, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
-  //  EAS.setNodes();
   //  EAS.forceInteraction();
 
-  output.startOfLibrary();
   EAS.run();
-  output.endOfLibrary();
 
   HEPEnergyType const Efinal = dEdX.getEnergyLost() + observationLevel.getEnergyGround();
 
@@ -193,4 +192,6 @@ int main(int argc, char** argv) {
       "total energy budget (GeV): {}, "
       "relative difference (%): {}",
       Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
+
+  output.endOfLibrary();
 }

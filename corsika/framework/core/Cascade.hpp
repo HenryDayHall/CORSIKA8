@@ -73,21 +73,7 @@ namespace corsika {
     ~Cascade() = default;
     Cascade& operator=(Cascade const&) = default;
     Cascade(Environment<medium_interface_type> const& env, TTracking& tr,
-            TProcessList& pl, TOutput& out, TStack& stack)
-        : environment_(env)
-        , tracking_(tr)
-        , sequence_(pl)
-        , output_(out)
-        , stack_(stack) {
-      CORSIKA_LOG_INFO(c8_ascii_);
-      CORSIKA_LOG_INFO("This is CORSIKA {}.{}.{}.{}", CORSIKA_RELEASE_NUMBER,
-                       CORSIKA_MAJOR_NUMBER, CORSIKA_MINOR_NUMBER, CORSIKA_PATCH_NUMBER);
-      CORSIKA_LOG_INFO("Tracking algorithm: {} (version {})", TTracking::getName(),
-                       TTracking::getVersion());
-      if constexpr (stack_view_type::has_event) {
-        CORSIKA_LOG_INFO("Stack - with full cascade HISTORY.");
-      }
-    }
+            TProcessList& pl, TOutput& out, TStack& stack);
     //! @}
 
     /**
@@ -135,6 +121,7 @@ namespace corsika {
     TOutput& output_;
     TStack& stack_;
     default_prng_type& rng_ = RNGManager<>::getInstance().getRandomStream("cascade");
+    bool forceInteraction_;
     unsigned int count_ = 0;
 
     // but this here temporarily. Should go into dedicated file later:

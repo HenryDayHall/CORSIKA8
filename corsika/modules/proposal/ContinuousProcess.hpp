@@ -80,6 +80,11 @@ namespace corsika::proposal {
     //!
     template <typename TParticle, typename TTrack>
     LengthType getMaxStepLength(TParticle const&, TTrack const&);
+
+    /**
+     * Provide the config as YAML object to be stored on disk as output.
+     */
+    YAML::Node getConfig() const;
   };
 } // namespace corsika::proposal
 

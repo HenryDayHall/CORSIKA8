@@ -72,6 +72,7 @@ class DummyTracking {
 public:
   template <typename TParticle>
   auto getTrack(TParticle const& particle) {
+    calls_++;
     VelocityVector const initialVelocity =
         particle.getMomentum() / particle.getEnergy() * constants::c;
     Line const theLine = Line(particle.getPosition(), initialVelocity);
@@ -81,8 +82,10 @@ public:
         // trajectory: just go ahead forever
         particle.getNode()); // next volume node
   }
+  int getCalls() const { return calls_; }
   static std::string getName() { return "DummyTracking"; }
   static std::string getVersion() { return "1.0.0"; }
+  int calls_ = 0;
 };
 
 class ProcessSplit : public InteractionProcess<ProcessSplit> {
@@ -174,16 +177,22 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   SECTION("full cascade") {
     EAS.run();
+    CHECK(tracking.getCalls() == 2047);
     CHECK(cut.getCount() == 2048);
     CHECK(cut.getCalls() == 2047); // final particle is still on stack and not yet deleted
     CHECK(split.getCalls() == 2047);
   }
 
   SECTION("forced interaction") {
-    EAS.setNodes();
+    CHECK(tracking.getCalls() == 0);
     EAS.forceInteraction();
-    CHECK(stack.getEntries() == 2);
-    CHECK(stack.getSize() == 3);
-    CHECK(split.getCalls() == 1);
+    CHECK(tracking.getCalls() == 0);
+    CHECK(stack.getEntries() == 1);
+    CHECK(stack.getSize() == 1);
+    EAS.run();
+    CHECK(tracking.getCalls() == 2046); // one LESS than without forceInteraction
+    CHECK(stack.getEntries() == 0);
+    CHECK(stack.getSize() == 13);
+    CHECK(split.getCalls() == 2047);
   }
 }

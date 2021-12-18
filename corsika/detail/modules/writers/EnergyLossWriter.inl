@@ -101,7 +101,7 @@ namespace corsika {
 
     auto energyCount = HEPEnergyType::zero();
 
-    auto const factor = dE / deltaX;
+    auto const factor = dE / deltaX; // [ energy / grammage ]
     auto fill = [&](int const bin, GrammageType const weight) {
       auto const increment = factor * weight;
       CORSIKA_LOGGER_TRACE(TOutput::getLogger(),

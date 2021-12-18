@@ -73,16 +73,6 @@ namespace corsika {
      */
     void writeSummary() const;
 
-    /**
-     * Called at the start of each library.
-     *
-     * This iteratively calls startOfLibrary on each registered output relative to the
-     * library direcotry.
-     *
-     * @param dir location of library
-     */
-    void startOfLibrary(boost::filesystem::path const& dir);
-
   public:
     /**
      * Called at the start of each library.

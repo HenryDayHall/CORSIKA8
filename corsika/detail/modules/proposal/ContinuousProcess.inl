@@ -53,8 +53,8 @@ namespace corsika::proposal {
   template <typename TEnvironment, typename... TOutputArgs>
   inline ContinuousProcess<TOutput>::ContinuousProcess(TEnvironment const& _env,
                                                        TOutputArgs&&... args)
-      : ProposalProcessBase(_env)
-      , TOutput(args...) {}
+      : TOutput(args...)
+      , ProposalProcessBase(_env) {}
 
   template <typename TOutput>
   template <typename TParticle>
@@ -153,6 +153,11 @@ namespace corsika::proposal {
     CORSIKA_LOG_TRACE("PROPOSAL::getMaxStepLength X={} g/cm2, l={} m ",
                       grammage / 1_g * square(1_cm), dist / 1_m);
     return dist;
+  }
+
+  template <typename TOutput>
+  inline YAML::Node ContinuousProcess<TOutput>::getConfig() const {
+    return YAML::Node();
   }
 
 } // namespace corsika::proposal
