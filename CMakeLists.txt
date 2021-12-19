@@ -153,11 +153,14 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   endif ()
 
   set (GCOV gcov CACHE STRING "gcov executable" FORCE)
+
+  
   # collect coverage data
   add_custom_command (
     OUTPUT raw-coverage.info
     COMMAND ${CMAKE_COMMAND} -E echo "Note: you need to run ctest at least once to generate the coverage data"
-    COMMAND ${c8_lcov_bin} --gcov-tool=${GCOV} --directory . --capture --output-file raw-coverage.info
+    COMMAND ${c8_lcov_bin} --gcov-tool=${GCOV} --rc lcov_branch_coverage=1 
+                           --directory . --capture --output-file raw-coverage.info
     )
   # remove uninteresting entries
   add_custom_command (
@@ -174,7 +177,7 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   # generate html report
   add_custom_command (
     OUTPUT coverage-report
-    COMMAND ${c8_genhtml_bin} --demangle-cpp coverage.info -o coverage-report
+    COMMAND ${c8_genhtml_bin} --branch-coverage --show-details --title "CORSIKA 8 test coverage" --legend --demangle-cpp coverage.info -o coverage-report
     DEPENDS coverage.info
     )
   add_custom_target (coverage DEPENDS coverage-report)

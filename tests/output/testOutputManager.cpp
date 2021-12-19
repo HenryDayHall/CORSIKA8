@@ -112,6 +112,11 @@ TEST_CASE("OutputManager") {
     DummyOutput test;
     output->add("test", test);
     output->startOfLibrary();
+
+    // cannot add more after library started
+    DummyOutput test2;
+    CHECK_THROWS(output->add("test2", test2));
+
     output->startOfShower();
 
     // check support for closing automatically

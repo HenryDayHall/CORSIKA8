@@ -35,9 +35,7 @@ TEST_CASE("WriterOff") {
 
   test.startOfLibrary("./output_dir_eloss");
   test.startOfShower(0);
-
   test.endOfShower(0);
-
   test.endOfLibrary();
 
   auto const config = test.getConfig();
