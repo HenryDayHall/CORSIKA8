@@ -20,7 +20,7 @@ namespace corsika {
 
   template <class AConstIterator, class BConstIterator>
   inline typename WeightProviderIterator<AConstIterator, BConstIterator>::value_type
-  WeightProviderIterator<AConstIterator, BConstIterator>::operator*() const {
+      WeightProviderIterator<AConstIterator, BConstIterator>::operator*() const {
     return ((*aIter_) * (*bIter_)).magnitude();
   }
 
