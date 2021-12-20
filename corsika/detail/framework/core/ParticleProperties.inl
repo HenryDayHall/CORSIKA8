@@ -14,22 +14,32 @@
 
 namespace corsika {
 
-  inline HEPEnergyType constexpr get_kinetic_energy_threshold(Code const code) {
+  inline HEPEnergyType constexpr get_kinetic_energy_propagation_threshold(
+      Code const code) {
     if (is_nucleus(code)) return particle::detail::threshold_nuclei;
-    return particle::detail::thresholds[static_cast<CodeIntType>(code)];
+    return particle::detail::propagation_thresholds[static_cast<CodeIntType>(code)];
   }
 
-  inline void constexpr set_kinetic_energy_threshold(Code const code,
-                                                     HEPEnergyType const val) {
+  inline void constexpr set_kinetic_energy_propagation_threshold(
+      Code const code, HEPEnergyType const val) {
     if (is_nucleus(code))
       particle::detail::threshold_nuclei = val;
     else
-      particle::detail::thresholds[static_cast<CodeIntType>(code)] = val;
+      particle::detail::propagation_thresholds[static_cast<CodeIntType>(code)] = val;
   }
 
   inline HEPMassType constexpr get_mass(Code const code) {
     if (is_nucleus(code)) { return get_nucleus_mass(code); }
     return particle::detail::masses[static_cast<CodeIntType>(code)];
+  }
+
+  inline HEPEnergyType constexpr get_energy_production_threshold(Code const p) {
+    return particle::detail::production_thresholds[static_cast<CodeIntType>(p)];
+  }
+
+  inline void constexpr set_energy_production_threshold(Code const p,
+                                                        HEPEnergyType const val) {
+    particle::detail::production_thresholds[static_cast<CodeIntType>(p)] = val;
   }
 
   inline bool constexpr is_charged(Code const c) { return get_charge_number(c) != 0; }

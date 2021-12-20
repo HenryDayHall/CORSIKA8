@@ -27,15 +27,15 @@ namespace corsika {
       , doCutInv_(inv) {
     for (auto p : get_all_particles()) {
       if (is_hadron(p)) // nuclei are also hadrons
-        set_kinetic_energy_threshold(p, eHadCut);
+        set_kinetic_energy_propagation_threshold(p, eHadCut);
       else if (is_muon(p))
-        set_kinetic_energy_threshold(p, eMuCut);
+        set_kinetic_energy_propagation_threshold(p, eMuCut);
       else if (p == Code::Electron || p == Code::Positron)
-        set_kinetic_energy_threshold(p, eEleCut);
+        set_kinetic_energy_propagation_threshold(p, eEleCut);
       else if (p == Code::Photon)
-        set_kinetic_energy_threshold(p, ePhoCut);
+        set_kinetic_energy_propagation_threshold(p, ePhoCut);
     }
-    set_kinetic_energy_threshold(Code::Nucleus, eHadCut);
+    set_kinetic_energy_propagation_threshold(Code::Nucleus, eHadCut);
     CORSIKA_LOG_DEBUG(
         "setting kinetic energy thresholds: electrons = {} GeV, photons = {} GeV, "
         "hadrons = {} GeV, "
@@ -49,8 +49,10 @@ namespace corsika {
                                            TArgs&&... outputArgs)
       : TOutput(std::forward<TArgs>(outputArgs)...)
       , doCutInv_(inv) {
-    for (auto p : get_all_particles()) { set_kinetic_energy_threshold(p, eCut); }
-    set_kinetic_energy_threshold(Code::Nucleus, eCut);
+    for (auto p : get_all_particles()) {
+      set_kinetic_energy_propagation_threshold(p, eCut);
+    }
+    set_kinetic_energy_propagation_threshold(Code::Nucleus, eCut);
     CORSIKA_LOG_DEBUG("setting kinetic energy threshold {} GeV", eCut / 1_GeV);
   }
 
@@ -61,7 +63,9 @@ namespace corsika {
       TArgs&&... args)
       : TOutput(std::forward<TArgs>(args)...)
       , doCutInv_(inv) {
-    set_kinetic_energy_thresholds(eCuts);
+    for (auto const& cut : eCuts) {
+      set_kinetic_energy_propagation_threshold(cut.first, cut.second);
+    }
     CORSIKA_LOG_DEBUG("setting threshold particles individually");
   }
 
@@ -74,9 +78,9 @@ namespace corsika {
     if (is_nucleus(pid)) {
       // calculate energy per nucleon
       auto const ElabNuc = energyLab / get_nucleus_A(pid);
-      return (ElabNuc < get_kinetic_energy_threshold(pid));
+      return (ElabNuc < get_kinetic_energy_propagation_threshold(pid));
     } else {
-      return (energyLab < get_kinetic_energy_threshold(pid));
+      return (energyLab < get_kinetic_energy_propagation_threshold(pid));
     }
   }
 
