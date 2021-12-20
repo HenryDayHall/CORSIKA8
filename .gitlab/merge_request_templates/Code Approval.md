@@ -1,6 +1,6 @@
 Issues: Closes #.... 
 
-The code approval procedure is described in the wiki: [Code approval procedure wiki](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/wikis/Code-Approval-Procedure)
+The code approval procedure is described in the wiki: [Code approval procedure wiki](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/wikis/Code-Approval-Procedure)
 
 - [ ] The MR is without `WIP/Draft` status
 - [ ] Make sure the most recent CI jobs (config, quality, build_test_example) all run fine with no failures

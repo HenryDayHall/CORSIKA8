@@ -27,7 +27,7 @@ namespace corsika {
    * The default output format is parquet.
    *
    * **Note/Limitation:** as discussed in
-   * https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/issues/397
+   * https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/issues/397
    * you cannot put two ObservationPlanes exactly on top of each
    * other. Even if one of them is "permeable". You have to put a
    * small gap in between the two plane in such a scenario, or develop

@@ -14,7 +14,7 @@ decision of the user must be performed at compile time. At run time
 model parameters can still be changed.
 
 CORSIKA 8 is by default released under the GPLv3 license. See [license
-file](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/LICENSE)
+file](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/LICENSE)
 which is part of every release and the source code.
 
 If you use, or want to refer to, CORSIKA 8 please cite ["Towards a Next
@@ -27,7 +27,7 @@ whole community.
 
 When you plan to contribute to CORSIKA 8 check the guidelines outlined here:
 [coding
-guidelines](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/CONTRIBUTING.md). Code
+guidelines](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/CONTRIBUTING.md). Code
 that fails the review by the CORSIKA author group must be improved
 before it can be merged in the official code base. After your code has
 been accepted and merged, you become a contributor of the CORSIKA 8
@@ -35,14 +35,14 @@ project (code author).
 
 IMPORTANT: Before you contribute, you need to read and agree to the
 [collaboration
-agreement](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/COLLABORATION_AGREEMENT.md). The agreement can be discussed, and eventually improved.
+agreement](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/COLLABORATION_AGREEMENT.md). The agreement can be discussed, and eventually improved.
 
 We also want to point you to the [MCnet
-guidelines](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/MCNET_GUIDELINES), which are very useful also for us.
+guidelines](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/MCNET_GUIDELINES), which are very useful also for us.
 
 
 ## Get in contact
-  * Connect to https://gitlab.ikp.kit.edu register yourself and join the "Air Shower Physics" group. Write to me (ralf.ulrich@kit.edu) only in case there are problems with that. 
+  * Connect to https://gitlab.iap.kit.edu register yourself and join the "Air Shower Physics" group. Write to me (ralf.ulrich@kit.edu) only in case there are problems with that. 
   * Connect to corsika-devel@lists.kit.edu (self-register at
     https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in
     touch with the project.
@@ -88,7 +88,7 @@ pip install --user conan
 Once Conan is installed, follow these steps to download and install CORSIKA 8:
 
 ``` shell
-git clone --recursive git@gitlab.ikp.kit.edu:AirShowerPhysics/corsika.git
+git clone --recursive git@gitlab.iap.kit.edu:AirShowerPhysics/corsika.git
 mkdir corsika-build
 cd corsika-build
 cmake ../corsika -DCMAKE_INSTALL_PREFIX=../corsika-install
@@ -109,7 +109,7 @@ You only need docker, e.g. on Ubunut: `sudo apt-get install docker` and of cours
 
 Follow these steps to download and install CORSIKA 8, master development version
 ```shell
-git clone --recursive https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika.git
+git clone --recursive https://gitlab.iap.kit.edu/AirShowerPhysics/corsika.git
 sudo docker run -v $PWD:/corsika -it corsika/devel:clang-8 /bin/bash
 mkdir build
 cd build

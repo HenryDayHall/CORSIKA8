@@ -18,7 +18,7 @@ setup(
     description="A Python package for working with CORSIKA 8.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika",
+    url="https://gitlab.iap.kit.edu/AirShowerPhysics/corsika",
     author="CORSIKA 8 Collaboration",
     author_email="corsika-devel@lists.kit.edu",
     classifiers=[
@@ -46,6 +46,6 @@ setup(
         "pandas": ["pandas"],
     },
     scripts=[],
-    project_urls={"code": "https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika"},
+    project_urls={"code": "https://gitlab.iap.kit.edu/AirShowerPhysics/corsika"},
     include_package_data=False,
 )
