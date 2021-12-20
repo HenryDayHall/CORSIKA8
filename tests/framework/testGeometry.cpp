@@ -347,7 +347,9 @@ TEST_CASE("Geometry Trajectories") {
   // create an arbitrary location of the particle
   const Point pos(rootCS, 50_m, 10_m, 80_m);
   // add it finally to the stack
-  auto const particle1{stack.addParticle(std::make_tuple(particle, plab, pos, 0_ns))};
+  auto const particle1{stack.addParticle(
+      std::make_tuple(particle, calculate_kinetic_energy(plab.getNorm(), pmass),
+                      plab.normalized(), pos, 0_ns))};
 
   SECTION("Line") {
     SpeedType const V0 = 3_m / second;
