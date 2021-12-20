@@ -1,5 +1,22 @@
 #!/usr/bin/env python3
 
+#
+# (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+#
+# This software is distributed under the terms of the GNU General Public
+# Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+# the license.
+#
+
+"""
+Script to crawl all files (hpp,inl,cpp) in a directory structure and
+check if there is an initial comment block within each file that
+resembles the CORSIKA 8 copyright notice.
+
+Exceptions can be specified in `excludeDirs` and `excludedFiles`.
+"""
+
+
 import os
 import sys, getopt
 import re
