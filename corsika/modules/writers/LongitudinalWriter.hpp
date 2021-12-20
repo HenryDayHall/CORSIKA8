@@ -1,0 +1,145 @@
+/*
+ * (c) Copyright 2021 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
+#pragma once
+
+#include <corsika/output/BaseOutput.hpp>
+#include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/media/ShowerAxis.hpp>
+#include <corsika/modules/writers/WriterOff.hpp>
+#include <corsika/modules/writers/LongitudinalProfileWriterParquet.hpp>
+
+#include <vector>
+#include <array>
+
+/**
+ * @file LongitudinalWriter.hpp
+ */
+
+namespace corsika {
+
+  /**
+   * Local helper namespace to store number and names of particle number profile columns.
+   */
+  namespace number_profile {
+
+    /**
+     * Definition of longitudinal profile columns.
+     */
+    enum class ProfileIndex {
+      Charged,
+      Hadron,
+      Photon,
+      Electron,
+      Positron,
+      MuPlus,
+      MuMinus,
+      Entries
+    };
+
+    /**
+     * Number of columns (static).
+     */
+    size_t constexpr NColumns = static_cast<size_t>(ProfileIndex::Entries);
+
+    /**
+     * Names of columns in output.
+     */
+    static std::array<char const*, NColumns> constexpr ProfileIndexNames{
+        {"charged", "hadron", "photon", "electron", "positron", "muplus", "muminus"}};
+
+    /**
+     * Data type to store column data.
+     */
+    typedef std::array<double, NColumns> ProfileData;
+  } // namespace number_profile
+
+  // clang-format-off
+  /**
+   * The LongitudinalWriter can be used to pool the particle counts of several
+   * longitudinal profile processes into one output file/stream.
+   *
+   * Typically several processes/modules can lead to particle counts along the shower axis
+   * in the shower. The LongitudianalWriter can be used in combination with the SubWriter
+   * class to collect all of them into a single output stream:
+   *
+   * \code {.cpp}
+   * # showerAxis must be a ShowerAxis object
+   * # the X binning can be specified.
+   * LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
+   * # add to OutputManager:
+   * output.add("profile", profile);
+   * # add SubWriters, e.g. LongitudinalProfile, CONEX:
+   * LongitudinalProfile<SubWriter<decltype(profile)>> long{profile};
+   * CONEXhybrid<SubWriter<decltype(profile)>> conex{..., profile};
+   * ...
+   * \endcode
+   *
+   * The default output option is parquet format.
+   *
+   * @tparam TOutput
+   */
+  // clang-format-on
+
+  template <typename TOutput = LongitudinalProfileWriterParquet<number_profile::NColumns>>
+  class LongitudinalWriter : public TOutput {
+
+  public:
+    /**
+     * Construct a new writer.
+     */
+    LongitudinalWriter(ShowerAxis const& axis,
+                       GrammageType dX = 10_g / square(1_cm), // profile binning
+                       size_t const nBins = 200);             // number of bins
+
+    void startOfLibrary(boost::filesystem::path const& directory) final override;
+
+    void startOfShower(unsigned int const showerId) final override;
+
+    void endOfShower(unsigned int const showerId) final override;
+
+    void endOfLibrary() final override;
+
+    /**
+     * Add continuous profile.
+     */
+    template <typename TTrack>
+    void write(TTrack const& track, Code const pid, double const weight);
+
+    /**
+     * Add binned profile.
+     */
+    void write(GrammageType const Xstart, GrammageType const Xend, Code const pid,
+               double const weight);
+
+    /**
+     * Return a summary.
+     */
+    YAML::Node getSummary() const;
+
+    /**
+     * Return the configuration of this output.
+     */
+    YAML::Node getConfig() const;
+
+    number_profile::ProfileData const& getProfile(
+        number_profile::ProfileIndex index) const {
+      return profile_.at(static_cast<int>(index));
+    }
+
+  private:
+    ShowerAxis const& showerAxis_; ///< conversion between geometry and grammage
+    GrammageType dX_;              ///< binning of profile.
+    size_t nBins_;                 ///< number of profile bins.
+    std::vector<number_profile::ProfileData> profile_; // longitudinal profile
+  };
+
+} // namespace corsika
+
+#include <corsika/detail/modules/writers/LongitudinalWriter.inl>

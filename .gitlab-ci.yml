@@ -22,7 +22,7 @@ variables:
 #
 # multi-step pipeline for each commit
 #
-# Mote: "Draft/WIP:" merge request, non-Draft/non-WIP merge requests and "Ready for Code Review" MR are all
+# Note: "Draft/WIP:" merge request, non-Draft/non-WIP merge requests and "Ready for Code Review" MR are all
 #       handled explicitly
 #
 stages:

@@ -29,7 +29,9 @@
 #include <corsika/framework/random/RNGManager.hpp>
 
 #include <corsika/output/OutputManager.hpp>
-#include <corsika/output/NoOutput.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriter.hpp>
+#include <corsika/modules/writers/LongitudinalWriter.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -152,10 +154,7 @@ int main(int argc, char** argv) {
   auto const thetaRad = theta / 180. * constants::pi;
   auto const phiRad = phi / 180. * constants::pi;
 
-  auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-    return sqrt((Elab - m) * (Elab + m));
-  };
-  HEPMomentumType P0 = elab2plab(E0, mass);
+  HEPMomentumType P0 = calculate_momentum(E0, mass);
   auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
     return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
                            -ptot * cos(theta));
@@ -193,6 +192,31 @@ int main(int argc, char** argv) {
   // create the output manager that we then register outputs with
   OutputManager output("vertical_EAS_outputs");
 
+  // EnergyLossWriterParquet dEdX_output{showerAxis, 10_g / square(1_cm), 200};
+  // register energy losses as output
+  // output.add("dEdX", dEdX_output);
+  // register profile output
+
+  // construct the overall energy loss writer and register it
+  EnergyLossWriter dEdX{showerAxis};
+  output.add("energyloss", dEdX);
+
+  // construct the continuous energy loss model
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
+
+  // construct a particle cut
+  ParticleCut<SubWriter<decltype(dEdX)>> cut{E0, E0, 60_GeV, 60_GeV, true, dEdX};
+
+  // setup longitudinal profile
+  LongitudinalWriter longProf{showerAxis};
+  output.add("profile", longProf);
+
+  LongitudinalProfile<SubWriter<decltype(longProf)>> profile{longProf};
+
+  // create a track writer and register it with the output manager
+  TrackWriter<TrackWriterParquet> trackWriter;
+  output.add("tracks", trackWriter);
+
   // setup processes, decays and interactions
 
   corsika::sibyll::Interaction sibyll;
@@ -226,8 +250,6 @@ int main(int argc, char** argv) {
 
   decaySibyll.printDecayConfig();
 
-  ParticleCut cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true};
-
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
   StackInspector<setup::Stack> stackInspect(50000, false, E0);
@@ -246,7 +268,6 @@ int main(int argc, char** argv) {
   // directory for outputs
   string const labHist_file = "inthist_lab_verticalEAS.npz";
   string const cMSHist_file = "inthist_cms_verticalEAS.npz";
-  string const longprof_file = "longprof_verticalEAS.txt";
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -256,21 +277,16 @@ int main(int argc, char** argv) {
       beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
       plab.normalized(), injectionPos, 0_ns));
 
-  BetheBlochPDG emContinuous(showerAxis);
-
-  TrackWriter trackWriter;
-  output.add("tracks", trackWriter); // register TrackWriter
-
-  LongitudinalProfile longprof{showerAxis};
-
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane<setup::Tracking, NoOutput> observationLevel(
-      obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
-  // register the observation plane with the output
+  ObservationPlane<setup::Tracking, ParticleWriterParquet> observationLevel{
+      obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
   output.add("particles", observationLevel);
 
+  // auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence,
+  // emContinuous,
+  //                               cut, trackWriter, observationLevel, longprof);
   auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emContinuous,
-                                cut, trackWriter, observationLevel, longprof);
+                                cut, trackWriter, observationLevel, profile);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
@@ -279,24 +295,11 @@ int main(int argc, char** argv) {
   EAS.run();
   output.endOfShower();
 
-  cut.showResults();
-  // emContinuous.showResults();
-  observationLevel.showResults();
-  const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                               cut.getEmEnergy() + // emContinuous.getEnergyLost() +
-                               observationLevel.getEnergyGround();
-  cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  observationLevel.reset();
-  cut.reset();
-  // emContinuous.reset();
-
   auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                      urqmdCounted.getHistogram();
 
   save_hist(hists.labHist(), labHist_file, true);
   save_hist(hists.CMSHist(), cMSHist_file, true);
-  longprof.save(longprof_file);
 
   output.endOfLibrary();
 }

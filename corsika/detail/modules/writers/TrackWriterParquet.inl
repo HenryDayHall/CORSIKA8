@@ -11,7 +11,8 @@
 namespace corsika {
 
   inline TrackWriterParquet::TrackWriterParquet()
-      : output_() {}
+      : output_()
+      , showerId_(0) {}
 
   inline void TrackWriterParquet::startOfLibrary(
       boost::filesystem::path const& directory) {
@@ -23,6 +24,8 @@ namespace corsika {
     output_.addField("pdg", parquet::Repetition::REQUIRED, parquet::Type::INT32,
                      parquet::ConvertedType::INT_32);
     output_.addField("energy", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                     parquet::ConvertedType::NONE);
+    output_.addField("weight", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
     output_.addField("start_x", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
@@ -43,24 +46,31 @@ namespace corsika {
 
     // and build the streamer
     output_.buildStreamer();
+    showerId_ = 0;
   }
 
-  inline void TrackWriterParquet::endOfShower() { ++shower_; }
+  inline void TrackWriterParquet::startOfShower(unsigned int const showerId) {
+    showerId_ = showerId;
+  }
+
+  inline void TrackWriterParquet::endOfShower(unsigned int const) {}
 
   inline void TrackWriterParquet::endOfLibrary() { output_.closeStreamer(); }
 
-  inline void TrackWriterParquet::write(Code const& pid, HEPEnergyType const& energy,
+  inline void TrackWriterParquet::write(Code const pid, HEPEnergyType const energy,
+                                        double const weight,
                                         QuantityVector<length_d> const& start,
-                                        TimeType const& t_start,
+                                        TimeType const t_start,
                                         QuantityVector<length_d> const& end,
-                                        TimeType const& t_end) {
+                                        TimeType const t_end) {
 
     // write the next row - we must write `shower_` first.
     // clang-format off
     *(output_.getWriter())
-        << shower_
+        << showerId_
         << static_cast<int>(get_PDG(pid))
         << static_cast<float>(energy / 1_GeV)
+        << static_cast<float>(weight)
         << static_cast<float>(start[0] / 1_m)
         << static_cast<float>(start[1] / 1_m)
         << static_cast<float>(start[2] / 1_m)

@@ -9,15 +9,16 @@
 namespace corsika {
 
   template <typename TTracking, typename TOutput>
+  template <typename... TArgs>
   ObservationPlane<TTracking, TOutput>::ObservationPlane(Plane const& obsPlane,
                                                          DirectionVector const& x_axis,
-                                                         bool deleteOnHit)
-      : plane_(obsPlane)
-      , deleteOnHit_(deleteOnHit)
-      , energy_ground_(0_GeV)
-      , count_ground_(0)
+                                                         bool const deleteOnHit,
+                                                         TArgs&&... args)
+      : TOutput(std::forward<TArgs>(args)...)
+      , plane_(obsPlane)
       , xAxis_(x_axis.normalized())
-      , yAxis_(obsPlane.getNormal().cross(xAxis_)) {}
+      , yAxis_(obsPlane.getNormal().cross(xAxis_))
+      , deleteOnHit_(deleteOnHit) {}
 
   template <typename TTracking, typename TOutput>
   template <typename TParticle, typename TTrajectory>
@@ -50,19 +51,18 @@ namespace corsika {
     Vector const displacement = pointOfIntersection - plane_.getCenter();
 
     // add our particles to the output file stream
+    double const weight = 1.; // particle.getWeight()
     this->write(particle.getPID(), energy, displacement.dot(xAxis_),
-                displacement.dot(yAxis_), particle.getTime());
+                displacement.dot(yAxis_), 0_m, weight);
 
     CORSIKA_LOG_TRACE("Particle detected absorbed={}", deleteOnHit_);
 
     if (deleteOnHit_) {
-      count_ground_++;
-      energy_ground_ += energy;
       return ProcessReturn::ParticleAbsorbed;
     } else {
       return ProcessReturn::Ok;
     }
-  }
+  } // namespace corsika
 
   template <typename TTracking, typename TOutput>
   template <typename TParticle, typename TTrajectory>
@@ -91,17 +91,6 @@ namespace corsika {
   }
 
   template <typename TTracking, typename TOutput>
-  inline void ObservationPlane<TTracking, TOutput>::showResults() const {
-    CORSIKA_LOG_INFO(
-        " ******************************\n"
-        " ObservationPlane: \n"
-        " energy an ground (GeV)     :  {}\n"
-        " no. of particles at ground :  {}\n"
-        " ******************************",
-        energy_ground_ / 1_GeV, count_ground_);
-  }
-
-  template <typename TTracking, typename TOutput>
   inline YAML::Node ObservationPlane<TTracking, TOutput>::getConfig() const {
     using namespace units::si;
 
@@ -110,7 +99,7 @@ namespace corsika {
 
     // basic info
     node["type"] = "ObservationPlane";
-    node["units"] = "m"; // add default units for values
+    node["units"]["length"] = "m"; // add default units for values
 
     // the center of the plane
     auto const center{plane_.getCenter()};
@@ -142,12 +131,6 @@ namespace corsika {
     node["delete_on_hit"] = deleteOnHit_;
 
     return node;
-  }
-
-  template <typename TTracking, typename TOutput>
-  inline void ObservationPlane<TTracking, TOutput>::reset() {
-    energy_ground_ = 0_GeV;
-    count_ground_ = 0;
   }
 
 } // namespace corsika

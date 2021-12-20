@@ -22,6 +22,7 @@ set (test_framework_sources
   testInteractionCounter.cpp
   testInteractionLengthModifier.cpp
   testSolver.cpp
+  testEnergyMomentum.cpp
   )
 
 CORSIKA_ADD_TEST (testFramework SOURCES ${test_framework_sources})

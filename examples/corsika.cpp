@@ -27,7 +27,9 @@
 #include <corsika/framework/random/RNGManager.hpp>
 
 #include <corsika/output/OutputManager.hpp>
-#include <corsika/output/NoOutput.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriter.hpp>
+#include <corsika/modules/writers/LongitudinalWriter.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -62,7 +64,6 @@
 #include <CLI/Config.hpp>
 
 #include <iomanip>
-#include <iostream>
 #include <limits>
 #include <string>
 
@@ -155,10 +156,6 @@ int main(int argc, char** argv) {
   app.add_flag("--force-interaction", force_interaction,
                "Force the location of the first interaction.")
       ->group("Misc.");
-  app.add_option("-v,--verbosity", "Verbosity level")
-      ->default_str("info")
-      ->check(CLI::IsMember({"warn", "info", "debug", "trace"}))
-      ->group("Misc.");
   app.add_option("-v,--verbosity", "Verbosity level: warn, info, debug, trace.")
       ->default_val("info")
       ->check(CLI::IsMember({"warn", "info", "debug", "trace"}))
@@ -189,8 +186,7 @@ int main(int argc, char** argv) {
   // gets all messed up
   if (app.count("--pdg") == 0) {
     if ((app.count("-A") == 0) || (app.count("-Z") == 0)) {
-      std::cerr << "If --pdg is not provided, then both -A and -Z are required."
-                << std::endl;
+      CORSIKA_LOG_ERROR("If --pdg is not provided, then both -A and -Z are required.");
       return 1;
     }
   }
@@ -248,7 +244,7 @@ int main(int argc, char** argv) {
   auto const phiRad = app["--azimuth"]->as<double>() / 180. * M_PI;
 
   // convert Elab to Plab
-  HEPMomentumType P0 = sqrt((E0 - mass) * (E0 + mass));
+  HEPMomentumType P0 = calculate_momentum(E0, mass);
 
   // convert the momentum to the zenith and azimuth angle of the primary
   auto const [px, py, pz] =
@@ -278,10 +274,13 @@ int main(int argc, char** argv) {
   // create the output manager that we then register outputs with
   OutputManager output(app["--filename"]->as<std::string>());
 
-  /* === START: SETUP PROCESS LIST === */
-  // corsika::epos::Interaction heModel;
-  // corsika::qgsjetII::Interaction heModel;
-  // InteractionCounter heModelCounted(heModel);
+  // register energy losses as output
+  EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
+  output.add("energyloss", dEdX);
+
+  // create a track writer and register it with the output manager
+  TrackWriter tracks;
+  output.add("tracks", tracks);
 
   corsika::sibyll::Interaction sibyll;
   InteractionCounter sibyllCounted(sibyll);
@@ -314,23 +313,23 @@ int main(int argc, char** argv) {
 
   // decaySibyll.printDecayConfig();
 
-  HEPEnergyType const emcut = 1_GeV;
-  HEPEnergyType const hadcut = 1_GeV;
-  ParticleCut cut(emcut, emcut, hadcut, hadcut, true);
+  HEPEnergyType const emcut = 50_GeV;
+  HEPEnergyType const hadcut = 50_GeV;
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, dEdX);
 
   corsika::proposal::Interaction emCascade(env);
   // NOT available for PROPOSAL due to interface trouble:
-  //  InteractionCounter emCascadeCounted(emCascade);
-  // corsika::proposal::ContinuousProcess emContinuous(env);
-  BetheBlochPDG emContinuous(showerAxis);
+  // InteractionCounter emCascadeCounted(emCascade);
+  // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env);
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
-  // cut.printThresholds();
-
-  LongitudinalProfile longprof(showerAxis);
+  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
+  output.add("profile", profile);
+  LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted(urqmd);
-  StackInspector<setup::Stack> stackInspect(50000, false, E0);
+  StackInspector<setup::Stack> stackInspect(10000, false, E0);
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {
@@ -342,15 +341,13 @@ int main(int argc, char** argv) {
   auto hadronSequence = make_select(EnergySwitch(63.1_GeV), urqmdCounted, heModelCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
-  // track writer
-  TrackWriter trackWriter;
-  output.add("tracks", trackWriter); // register TrackWriter
+  TrackWriter trackWriter{tracks};
 
   // observation plane
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane<setup::Tracking> observationLevel(
-      obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
-  // register the observation plane with the output
+  ObservationPlane<setup::Tracking, ParticleWriterParquet> observationLevel{
+      obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
+  // register ground particle output
   output.add("particles", observationLevel);
 
   // assemble the final process sequence
@@ -383,14 +380,10 @@ int main(int argc, char** argv) {
 
     CORSIKA_LOG_INFO("Shower {} / {} ", i_shower, nevent);
 
-    // trigger the start of the outputs for this shower
-    output.startOfShower();
-
     // directory for outputs
     string const outdir(app["--filename"]->as<std::string>());
     string const labHist_file = outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
     string const cMSHist_file = outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
-    string const longprof_file = outdir + "/longprof_" + to_string(i_shower) + ".txt";
 
     // setup particle stack, and add primary particle
     stack.clear();
@@ -409,17 +402,14 @@ int main(int argc, char** argv) {
     // run the shower
     EAS.run();
 
-    cut.showResults();
-    // emContinuous.showResults();
-    observationLevel.showResults();
-    const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                                 cut.getEmEnergy() + // emContinuous.getEnergyLost() +
-                                 observationLevel.getEnergyGround();
-    cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-         << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-    observationLevel.reset();
-    cut.reset();
-    // emContinuous.reset();
+    HEPEnergyType const Efinal =
+        dEdX.getEnergyLost() + observationLevel.getEnergyGround();
+
+    CORSIKA_LOG_INFO(
+        "total energy budget (GeV): {} (dEdX={} ground={}), "
+        "relative difference (%): {}",
+        Efinal / 1_GeV, dEdX.getEnergyLost() / 1_GeV,
+        observationLevel.getEnergyGround() / 1_GeV, (Efinal / E0 - 1) * 100);
 
     // auto const hists = heModelCounted.getHistogram() + urqmdCounted.getHistogram();
     auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
@@ -427,10 +417,6 @@ int main(int argc, char** argv) {
 
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);
-    longprof.save(longprof_file);
-
-    // trigger the output manager to save this shower to disk
-    output.endOfShower();
   }
 
   // and finalize the output on disk

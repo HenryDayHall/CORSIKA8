@@ -23,7 +23,7 @@ namespace corsika {
 
     // add run and event tags to the file
     addField("shower", parquet::Repetition::REQUIRED, parquet::Type::INT32,
-             parquet::ConvertedType::INT_32);
+             parquet::ConvertedType::UINT_32);
   }
 
   template <typename... TArgs>
@@ -31,9 +31,9 @@ namespace corsika {
     fields_.push_back(parquet::schema::PrimitiveNode::Make(args...));
   }
 
-  inline void ParquetStreamer::enableCompression(int const /*level*/) {
-    // builder_.compression(parquet::Compression::ZSTD);
-    // builder_.compression_level(level);
+  inline void ParquetStreamer::enableCompression(int const level) {
+    builder_.compression(parquet::Compression::LZ4);
+    builder_.compression_level(level);
   }
 
   inline void ParquetStreamer::buildStreamer() {

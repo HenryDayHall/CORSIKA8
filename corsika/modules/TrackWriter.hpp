@@ -10,12 +10,25 @@
 
 #include <corsika/framework/process/ContinuousProcess.hpp>
 #include <corsika/modules/writers/TrackWriterParquet.hpp>
+#include <corsika/modules/writers/WriterOff.hpp>
 
 namespace corsika {
 
-  template <typename TOutputWriter = TrackWriterParquet>
-  class TrackWriter : public ContinuousProcess<TrackWriter<TOutputWriter>>,
-                      public TOutputWriter {
+  /**
+   * @ingroup Modules
+   * @{
+   *
+   * To write 3D track data to disk.
+   *
+   * Since the only sole purpose of this module is to generate track
+   * output on disk, the default output mode is not "WriterOff" but
+   * directly TrackWriterParquet. It can of course be changed.
+   *
+   * @tparam TOutput with default TrackWriterParquet
+   */
+
+  template <typename TOutput = TrackWriterParquet>
+  class TrackWriter : public ContinuousProcess<TrackWriter<TOutput>>, public TOutput {
 
   public:
     TrackWriter();
@@ -27,7 +40,11 @@ namespace corsika {
     LengthType getMaxStepLength(TParticle const&, TTrack const&);
 
     YAML::Node getConfig() const;
+
+  private:
   };
+
+  //! @}
 
 } // namespace corsika
 

@@ -29,9 +29,9 @@ namespace corsika::setup {
 #else // WITH_HISTORY
 
   /*
-   * the version without history
+   * the version without history (and geometry data and weights)
    */
-  using Stack = detail::StackWithGeometry;
+  using Stack = detail::StackWithWeight;
 
 #endif
 

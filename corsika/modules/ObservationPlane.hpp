@@ -11,32 +11,49 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
-#include <corsika/modules/writers/ObservationPlaneWriterParquet.hpp>
+#include <corsika/modules/writers/ParticleWriterParquet.hpp>
+#include <corsika/modules/writers/WriterOff.hpp>
 
 namespace corsika {
 
   /**
-     @ingroup Modules
-     @{
-
-     The ObservationPlane writes PDG codes, energies, and distances of particles to the
-     central point of the plane into its output file. The particles are considered
-     "absorbed" afterwards.
-
-     **Note/Limitation:** as discussed in
-     https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/issues/397
-     you cannot put two ObservationPlanes exactly on top of each
-     other. Even if one of them is "permeable". You have to put a
-     small gap in between the two plane in such a scenario, or develop
-     another more specialized output class.
+   * @ingroup Modules
+   * @{
+   *
+   * The ObservationPlane writes PDG codes, energies, and distances of particles to the
+   * central point of the plane into its output file. The particles are considered
+   * "absorbed" afterwards.
+   *
+   * The default output format is parquet.
+   *
+   * **Note/Limitation:** as discussed in
+   * https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/issues/397
+   * you cannot put two ObservationPlanes exactly on top of each
+   * other. Even if one of them is "permeable". You have to put a
+   * small gap in between the two plane in such a scenario, or develop
+   * another more specialized output class.
    */
-  template <typename TTracking, typename TOutputWriter = ObservationPlaneWriterParquet>
-  class ObservationPlane
-      : public ContinuousProcess<ObservationPlane<TTracking, TOutputWriter>>,
-        public TOutputWriter {
+  template <typename TTracking, typename TOutput = ParticleWriterParquet>
+  class ObservationPlane : public ContinuousProcess<ObservationPlane<TTracking, TOutput>>,
+                           public TOutput {
+
+    using TOutput::write;
 
   public:
-    ObservationPlane(Plane const&, DirectionVector const&, bool = true);
+    /**
+     * Construct a new Observation Plane object.
+     *
+     * @tparam TArgs
+     * @param plane The plane.
+     * @param x_dir The x-direction/axis.
+     * @param absorbing Flag to make the plane absorbing.
+     * @param outputArgs
+     */
+    template <typename... TArgs>
+    ObservationPlane(Plane const& plane, DirectionVector const& x_dir,
+                     bool const absorbing = true, TArgs&&... outputArgs);
+
+    ~ObservationPlane() {}
 
     template <typename TParticle, typename TTrajectory>
     ProcessReturn doContinuous(TParticle& vParticle, TTrajectory& vTrajectory,
@@ -45,18 +62,13 @@ namespace corsika {
     template <typename TParticle, typename TTrajectory>
     LengthType getMaxStepLength(TParticle const&, TTrajectory const& vTrajectory);
 
-    void showResults() const;
-    void reset();
-    HEPEnergyType getEnergyGround() const { return energy_ground_; }
     YAML::Node getConfig() const;
 
   private:
     Plane const plane_;
-    bool const deleteOnHit_;
-    HEPEnergyType energy_ground_;
-    unsigned int count_ground_;
     DirectionVector const xAxis_;
     DirectionVector const yAxis_;
+    bool const deleteOnHit_;
   };
   //! @}
 } // namespace corsika

@@ -36,17 +36,17 @@ TEST_CASE("ParquetStreamer") {
     test.addField("testfloat", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                   parquet::ConvertedType::NONE);
 
-    test.enableCompression(1);
+    //    test.enableCompression(1); needs to be enabled via conan
 
     test.buildStreamer();
     CHECK(test.isInit());
 
+    unsigned int testId = 2;
     int testint = 1;
     double testfloat = 2.0;
 
     std::shared_ptr<parquet::StreamWriter> writer = test.getWriter();
-    (*writer) << static_cast<int>(testint) << static_cast<int>(testint)
-              << static_cast<float>(testfloat) << parquet::EndRow;
+    (*writer) << testId << testint << static_cast<float>(testfloat) << parquet::EndRow;
 
     test.closeStreamer();
     CHECK_THROWS(test.getWriter());

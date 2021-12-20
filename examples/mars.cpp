@@ -29,7 +29,9 @@
 #include <corsika/framework/random/RNGManager.hpp>
 
 #include <corsika/output/OutputManager.hpp>
-#include <corsika/output/NoOutput.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriter.hpp>
+#include <corsika/modules/writers/LongitudinalWriter.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -45,7 +47,6 @@
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
-#include <corsika/modules/OnShellCheck.hpp>
 #include <corsika/modules/StackInspector.hpp>
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/ParticleCut.hpp>
@@ -208,8 +209,7 @@ int main(int argc, char** argv) {
   // gets all messed up
   if (app.count("--pdg") == 0) {
     if ((app.count("-A") == 0) || (app.count("-Z") == 0)) {
-      std::cerr << "If --pdg is not provided, then both -A and -Z are required."
-                << std::endl;
+      CORSIKA_LOG_ERROR("If --pdg is not provided, then both -A and -Z are required.");
       return 1;
     }
   }
@@ -305,11 +305,19 @@ int main(int argc, char** argv) {
 
   // we make the axis much longer than the inj-core distance since the
   // profile will go beyond the core, depending on zenith angle
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
   /* === END: CONSTRUCT GEOMETRY === */
 
   // create the output manager that we then register outputs with
   OutputManager output(app["--filename"]->as<std::string>());
+
+  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
+
+  EnergyLossWriter dEdX{showerAxis};
+  output.add("energyloss", dEdX);
+
+  HEPEnergyType const emcut = 1_GeV;
+  HEPEnergyType const hadcut = 1_GeV;
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, dEdX);
 
   /* === START: SETUP PROCESS LIST === */
   corsika::sibyll::Interaction sibyll;
@@ -343,16 +351,16 @@ int main(int argc, char** argv) {
 
   // decaySibyll.printDecayConfig();
 
-  HEPEnergyType const emcut = 1_GeV;
-  HEPEnergyType const hadcut = 1_GeV;
-  ParticleCut cut(emcut, emcut, hadcut, hadcut, true);
   corsika::proposal::Interaction emCascade(env);
   // NOT possible right now, due to interface difference for PROPOSAL:
   //  InteractionCounter emCascadeCounted(emCascade);
-  // corsika::proposal::ContinuousProcess emContinuous(env);
-  BetheBlochPDG emContinuous(showerAxis);
+  // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>>
+  // emContinuous(env,dEdX);
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
-  LongitudinalProfile longprof{showerAxis, 1_g / square(1_cm)};
+  LongitudinalWriter longprof{showerAxis};
+  output.add("profile", longprof);
+  LongitudinalProfile<SubWriter<decltype(longprof)>> profile{longprof};
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
@@ -382,7 +390,7 @@ int main(int argc, char** argv) {
   // assemble the final process sequence
   auto sequence =
       make_sequence(stackInspect, hadronSequence, decaySequence, emCascade, emContinuous,
-                    cut, trackWriter, observationLevel, longprof);
+                    cut, trackWriter, observationLevel, profile);
   /* === END: SETUP PROCESS LIST === */
 
   // create the cascade object using the default stack and tracking implementation
@@ -415,7 +423,6 @@ int main(int argc, char** argv) {
     string const outdir(app["--filename"]->as<std::string>());
     string const labHist_file = outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
     string const cMSHist_file = outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
-    string const longprof_file = outdir + "/longprof_" + to_string(i_shower) + ".txt";
 
     // setup particle stack, and add primary particle
     stack.clear();
@@ -428,24 +435,19 @@ int main(int argc, char** argv) {
     // run the shower
     EAS.run();
 
-    cut.showResults();
-    // emContinuous.showResults();
-    observationLevel.showResults();
-    const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                                 cut.getEmEnergy() + // emContinuous.getEnergyLost() +
-                                 observationLevel.getEnergyGround();
-    cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-         << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-    observationLevel.reset();
-    cut.reset();
-    // emContinuous.reset();
+    HEPEnergyType const Efinal =
+        dEdX.getEnergyLost() + observationLevel.getEnergyGround();
+
+    CORSIKA_LOG_INFO(
+        "total energy budget (GeV): {}, "
+        "relative difference (%): {}",
+        Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
 
     auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                        urqmdCounted.getHistogram();
 
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);
-    longprof.save(longprof_file);
 
     // trigger the output manager to save this shower to disk
     output.endOfShower();

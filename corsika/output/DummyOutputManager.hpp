@@ -12,7 +12,7 @@ namespace corsika {
   /*!
    * An output manager that does nothing.
    */
-  class DummyOutputManager final {
+  class DummyOutputManager {
 
   public:
     /**

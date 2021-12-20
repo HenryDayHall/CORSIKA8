@@ -22,6 +22,9 @@
 #include <corsika/framework/utility/SaveBoostHistogram.hpp>
 
 #include <corsika/output/OutputManager.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriter.hpp>
+#include <corsika/modules/writers/LongitudinalWriter.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
@@ -107,10 +110,7 @@ int main(int argc, char** argv) {
   double theta = 0.;
   auto const thetaRad = theta / 180. * M_PI;
 
-  auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-    return sqrt((Elab - m) * (Elab + m));
-  };
-  HEPMomentumType P0 = elab2plab(E0, mass);
+  HEPMomentumType P0 = calculate_momentum(E0, mass);
   auto momentumComponents = [](double thetaRad, HEPMomentumType ptot) {
     return std::make_tuple(ptot * sin(thetaRad), 0_eV, -ptot * cos(thetaRad));
   };
@@ -137,60 +137,61 @@ int main(int argc, char** argv) {
       beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
       plab.normalized(), injectionPos, 0_ns));
 
-  std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.02
-            << std::endl;
+  CORSIKA_LOG_INFO("shower axis length: {} ",
+                   (showerCore - injectionPos).getNorm() * 1.02);
 
-  OutputManager output("em_shower_outputs");
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
                               false, 1000};
 
+  OutputManager output("em_shower_outputs");
+
+  EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
+  // register energy losses as output
+  output.add("dEdX", dEdX);
+
   // setup processes, decays and interactions
 
-  ParticleCut cut(60_GeV, 60_GeV, 100_PeV, 100_PeV, true);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(60_GeV, 60_GeV, 100_PeV, 100_PeV, true,
+                                             dEdX);
   corsika::proposal::Interaction emCascade(env);
-  corsika::proposal::ContinuousProcess emContinuous(env);
+  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
+  //  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
   //  NOT possible right now, due to interface differenc in PROPOSAL
   //  InteractionCounter emCascadeCounted(emCascade);
 
-  TrackWriter trackWriter;
-  output.add("tracks", trackWriter); // register TrackWriter
+  TrackWriter tracks;
+  output.add("tracks", tracks);
 
-  // long. profile; columns for photon, e+, e- still need to be added
-  LongitudinalProfile longprof(showerAxis);
+  // long. profile
+  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
+  output.add("profile", profile);
+  LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane<setup::Tracking> observationLevel(
-      obsPlane, DirectionVector(rootCS, {1., 0., 0.}), "particles.dat");
-  output.add("obsplane", observationLevel);
+  ObservationPlane<setup::Tracking, ParticleWriterParquet> observationLevel{
+      obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
+  output.add("particles", observationLevel);
 
-  auto sequence = make_sequence(emCascade, emContinuous, longprof, cut, observationLevel,
-                                trackWriter);
+  auto sequence =
+      make_sequence(emCascade, emContinuous, longprof, cut, observationLevel, tracks);
   // define air shower object, run simulation
   setup::Tracking tracking;
+
+  output.startOfLibrary();
   Cascade EAS(env, tracking, sequence, output, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
-  //  EAS.setNodes();
   //  EAS.forceInteraction();
 
-  output.startOfShower();
   EAS.run();
-  output.endOfShower();
 
-  cut.showResults();
-  emContinuous.showResults();
-  observationLevel.showResults();
-  const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                               cut.getEmEnergy() + emContinuous.getEnergyLost() +
-                               observationLevel.getEnergyGround();
-  cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  observationLevel.reset();
-  cut.reset();
-  emContinuous.reset();
+  HEPEnergyType const Efinal = dEdX.getEnergyLost() + observationLevel.getEnergyGround();
 
-  longprof.save("longprof_emShower.txt");
+  CORSIKA_LOG_INFO(
+      "total energy budget (GeV): {}, "
+      "relative difference (%): {}",
+      Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
 
   output.endOfLibrary();
 }

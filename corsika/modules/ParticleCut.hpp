@@ -15,82 +15,99 @@
 #include <corsika/framework/process/SecondariesProcess.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
 
+#include <corsika/modules/writers/WriterOff.hpp>
+
 namespace corsika {
   /**
-     simple ParticleCut process. Goes through the secondaries of an interaction and
-   removes particles according to their kinetic energy. Particles with a time delay of
-  more than 10ms are removed as well. Invisible particles (neutrinos) can be removed if
-  selected. The threshold value is set to 0 by default but in principle can be configured
-  for each particle. Special constructors for cuts by the following groups are
-  implemented: (electrons,positrons), photons, hadrons and muons.
-   **/
-  class ParticleCut : public SecondariesProcess<ParticleCut>,
-                      public ContinuousProcess<ParticleCut> {
+   * ParticleCut process to kill particles.
+   *
+   * Goes through the secondaries of an interaction and
+   * removes particles according to their kinetic energy. Particles with a time delay of
+   * more than 10ms are removed as well. Invisible particles (neutrinos) can be removed if
+   * selected. The threshold value is set to 0 by default but in principle can be
+   * configured for each particle. Special constructors for cuts by the following groups
+   * are implemented: (electrons,positrons), photons, hadrons and muons.
+   */
+  template <typename TOutput = WriterOff>
+  class ParticleCut : public SecondariesProcess<ParticleCut<TOutput>>,
+                      public ContinuousProcess<ParticleCut<TOutput>>,
+                      public TOutput {
 
   public:
     /**
      * particle cut with kinetic energy thresholds for electrons, photons,
-     *    hadrons (including nuclei with energy per nucleon) and muons
-     *    invisible particles (neutrinos) can be cut or not
-     **/
+     * hadrons (including nuclei with energy per nucleon) and muons
+     * invisible particles (neutrinos) can be cut or not.
+     *
+     * @param outputArgs - optional arguments of TOutput writer
+     */
+    template <typename... TArgs>
     ParticleCut(HEPEnergyType const eEleCut, HEPEnergyType const ePhoCut,
-                HEPEnergyType const eHadCut, HEPEnergyType const eMuCut, bool const inv);
+                HEPEnergyType const eHadCut, HEPEnergyType const eMuCut, bool const inv,
+                TArgs&&... args);
 
-    //! simple cut. hadrons and muons are cut by threshold. EM particles are all
-    //! discarded.
-    ParticleCut(HEPEnergyType const eHadCut, HEPEnergyType const euCut, bool const inv);
+    /**
+     * particle cut with kinetic energy thresholds for all particles.
+     *
+     * @param outputArgs - optional arguments of TOutput writer
+     */
+    template <typename... TArgs>
+    ParticleCut(HEPEnergyType const eCut, bool const inv, TArgs&&... OutputArgs);
 
-    //! simplest cut. all particles have same threshold. EM particles can be set to be
-    //! discarded altogether.
-    ParticleCut(HEPEnergyType const eCut, bool const em, bool const inv);
-
-    //! threshold for specific particles redefined. EM and invisible particles can be set
-    //! to be discarded altogether.
+    /**
+     * Threshold for specific particles redefined. EM and invisible particles can be set
+     * to be discarded altogether.
+     *
+     * @param outputArgs - optional arguments of TOutput writer
+     */
+    template <typename... TArgs>
     ParticleCut(std::unordered_map<Code const, HEPEnergyType const> const& eCuts,
-                bool const em, bool const inv);
+                bool const inv, TArgs&&... outputArgs);
 
+    /**
+     * Cut particles which are secondaries from discrete processes.
+     *
+     * @tparam TStackView
+     */
     template <typename TStackView>
     void doSecondaries(TStackView&);
 
+    /**
+     * Cut particles during contunuous processes (energy losses etc).
+     *
+     * @tparam TParticle
+     * @tparam TTrajectory
+     * @param vParticle
+     * @param vTrajectory
+     * @param limitFlag
+     * @return ProcessReturn
+     */
     template <typename TParticle, typename TTrajectory>
     ProcessReturn doContinuous(
         TParticle& vParticle, TTrajectory const& vTrajectory,
         const bool limitFlag = false); // this is not used for ParticleCut
 
+    /**
+     * Limit on continuous step length imposed by ParticleCut: none.
+     *
+     * @tparam TParticle
+     * @tparam TTrajectory
+     * @return LengthType
+     */
     template <typename TParticle, typename TTrajectory>
     LengthType getMaxStepLength(TParticle const&, TTrajectory const&) {
       return meter * std::numeric_limits<double>::infinity();
     }
 
-    void printThresholds();
-    void showResults(); // LCOV_EXCL_LINE
-    void reset();
+    void printThresholds() const;
 
-    HEPEnergyType getElectronKineticECut() const {
-      return calculate_kinetic_energy_threshold(Code::Electron);
-    }
-    HEPEnergyType getPhotonKineticECut() const {
-      return calculate_kinetic_energy_threshold(Code::Photon);
-    }
-    HEPEnergyType getMuonKineticECut() const {
-      return calculate_kinetic_energy_threshold(Code::MuPlus);
-    }
-    HEPEnergyType getHadronKineticECut() const {
-      return calculate_kinetic_energy_threshold(Code::Proton);
-    }
-    //! returns total energy of particles that were removed by cut for invisible particles
-    HEPEnergyType getInvEnergy() const { return energy_invcut_; }
-    //! returns total energy of particles that were removed by cut in time
-    HEPEnergyType getTimeCutEnergy() const { return energy_timecut_; }
-    //! returns total energy of particles that were removed by cut in kinetic energy
-    HEPEnergyType getCutEnergy() const { return energy_cut_; }
-    //! returns total energy of particles that were removed by cut for electromagnetic
-    //! particles
-    HEPEnergyType getEmEnergy() const { return energy_emcut_; }
-    //! returns number of electromagnetic particles
-    unsigned int getNumberEmParticles() const { return em_count_; }
-    //! returns number of invisible particles
-    unsigned int getNumberInvParticles() const { return inv_count_; }
+    HEPEnergyType getElectronKineticECut() const { return cut_electrons_; }
+    HEPEnergyType getPhotonKineticECut() const { return cut_photons_; }
+    HEPEnergyType getMuonKineticECut() const { return cut_muons_; }
+    HEPEnergyType getHadronKineticECut() const { return cut_hadrons_; }
+
+    //! get configuration of this node, for output
+    YAML::Node getConfig() const override;
 
   private:
     template <typename TParticle>
@@ -99,22 +116,14 @@ namespace corsika {
     template <typename TParticle>
     bool isBelowEnergyCut(TParticle const&) const;
 
-    //! defines which particles are invisible, by default only neutrinos
-    bool isInvisible(Code const&) const;
-
   private:
-    bool doCutEm_;
+    HEPEnergyType cut_electrons_;
+    HEPEnergyType cut_photons_;
+    HEPEnergyType cut_muons_;
+    HEPEnergyType cut_hadrons_;
     bool doCutInv_;
-    HEPEnergyType energy_cut_ = 0 * electronvolt;
-    HEPEnergyType energy_timecut_ = 0 * electronvolt;
-    HEPEnergyType energy_emcut_ = 0 * electronvolt;
-    HEPEnergyType energy_invcut_ = 0 * electronvolt;
-    unsigned int em_count_ = 0;
-    unsigned int inv_count_ = 0;
-    unsigned int energy_count_ = 0;
-
-    HEPEnergyType energy_event_; // per event sum
-  };
+    std::unordered_map<Code const, HEPEnergyType const> cuts_;
+  }; // namespace corsika
 
 } // namespace corsika
 

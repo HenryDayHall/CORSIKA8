@@ -27,6 +27,9 @@
 #include <corsika/framework/random/RNGManager.hpp>
 
 #include <corsika/output/OutputManager.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriter.hpp>
+#include <corsika/modules/writers/LongitudinalWriter.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -40,7 +43,7 @@
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
-#include <corsika/modules/OnShellCheck.hpp>
+#include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Sibyll.hpp>
@@ -69,6 +72,11 @@
 using namespace corsika;
 using namespace std;
 
+/**
+ * Random number stream initialization
+ *
+ * @param seed
+ */
 void registerRandomStreams(uint64_t seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
@@ -81,17 +89,34 @@ void registerRandomStreams(uint64_t seed) {
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
-    cout << "new random seed (auto) " << seed << endl;
+    CORSIKA_LOG_INFO("new random seed (auto) {}", seed);
   }
   RNGManager<>::getInstance().setSeed(seed);
 }
 
+/**
+ * New (for demonstration) ContinuousProcess which will check if a particles has traversed
+ * below the observation level.
+ */
 class TrackCheck : public ContinuousProcess<TrackCheck> {
 
 public:
+  /**
+   * Construct a new Track Check object.
+   *
+   * @param plane -- the actual observation level
+   */
   TrackCheck(Plane const& plane)
       : plane_(plane) {}
 
+  /**
+   * The doContinous method to check a particular particle.
+   *
+   * @tparam TParticle
+   * @tparam TTrack
+   * @param particle
+   * @return ProcessReturn
+   */
   template <typename TParticle, typename TTrack>
   ProcessReturn doContinuous(TParticle const& particle, TTrack const&, bool const) {
     auto const delta = particle.getPosition() - plane_.getCenter();
@@ -105,6 +130,13 @@ public:
     return ProcessReturn::Ok;
   }
 
+  /**
+   * No limit on tracking step length imposed here, of course.
+   *
+   * @tparam TParticle
+   * @tparam TTrack
+   * @return LengthType
+   */
   template <typename TParticle, typename TTrack>
   LengthType getMaxStepLength(TParticle const&, TTrack const&) const {
     return std::numeric_limits<double>::infinity() * 1_m;
@@ -114,6 +146,9 @@ private:
   Plane plane_;
 };
 
+/**
+ * Selection of environment interface implementation:
+ */
 template <typename T>
 using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
@@ -124,8 +159,10 @@ int main(int argc, char** argv) {
   CORSIKA_LOG_INFO("hybrid_MC");
 
   if (argc < 4) {
-    std::cerr << "usage: hybrid_MC <A> <Z> <energy/GeV> [seed]" << std::endl;
-    std::cerr << "       if no seed is given, a random seed is chosen" << std::endl;
+    CORSIKA_LOG_ERROR(
+        "\n"
+        "usage: hybrid_MC <A> <Z> <energy/GeV> [seed] \n"
+        "       if no seed is given, a random seed is chosen");
     return 1;
   }
   feenableexcept(FE_INVALID);
@@ -157,20 +194,19 @@ int main(int argc, char** argv) {
   double theta = 0.;
   auto const thetaRad = theta / 180. * M_PI;
 
-  auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-    return sqrt((Elab - m) * (Elab + m));
-  };
-  HEPMomentumType P0 = elab2plab(E0, mass);
+  HEPMomentumType P0 = calculate_momentum(E0, mass);
   auto momentumComponents = [](double thetaRad, HEPMomentumType ptot) {
     return std::make_tuple(ptot * sin(thetaRad), 0_eV, -ptot * cos(thetaRad));
   };
 
   auto const [px, py, pz] = momentumComponents(thetaRad, P0);
   auto plab = MomentumVector(rootCS, {px, py, pz});
-  cout << "input particle: " << beamCode << endl;
-  cout << "input angles: theta=" << theta << endl;
-  cout << "input momentum: " << plab.getComponents() / 1_GeV
-       << ", norm = " << plab.getNorm() << endl;
+  CORSIKA_LOG_INFO(
+      "input particle: {}, "
+      "input angles: theta={}, "
+      "input momentum: {} GeV, "
+      ", norm={}",
+      beamCode, theta, plab.getComponents() / 1_GeV, plab.getNorm());
 
   auto const observationHeight = 0_km + constants::EarthRadius::Mean;
   auto const injectionHeight = 112.75_km + constants::EarthRadius::Mean;
@@ -182,18 +218,18 @@ int main(int argc, char** argv) {
       showerCore +
       Vector<dimensionless_d>{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
-  std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
+  CORSIKA_LOG_INFO("point of injection: {} ", injectionPos.getCoordinates());
 
   stack.addParticle(std::make_tuple(
       Code::Proton, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
       plab.normalized(), injectionPos, 0_ns));
 
-  std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.02
-            << std::endl;
+  CORSIKA_LOG_INFO("shower axis length: {} m",
+                   (showerCore - injectionPos).getNorm() * 1.02);
 
   OutputManager output("hybrid_MC_outputs");
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env, true,
-                              1000};
+  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
+                              false, 1000};
 
   // setup processes, decays and interactions
 
@@ -228,15 +264,24 @@ int main(int argc, char** argv) {
 
   decaySibyll.printDecayConfig();
 
-  ParticleCut cut(3_GeV, false, true);
-  BetheBlochPDG eLoss(showerAxis);
+  // register energy losses as output
+  EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
+  output.add("energyloss", dEdX);
 
-  CONEXhybrid conex_model(center, showerAxis, t, injectionHeight, E0,
-                          get_PDG(Code::Proton));
+  // create a track writer and register it with the output manager
+  TrackWriter<TrackWriterParquet> tracks;
+  output.add("tracks", tracks);
 
-  OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(3_GeV, false, dEdX);
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss(dEdX);
 
-  LongitudinalProfile longprof(showerAxis);
+  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
+  output.add("profile", profile);
+  LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
+
+  CONEXhybrid // SubWriter<decltype(dEdX>, SubWriter<decltype(profile)>>
+      conex_model(center, showerAxis, t, injectionHeight, E0, get_PDG(Code::Proton), dEdX,
+                  profile);
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane<setup::Tracking> observationLevel(
@@ -245,6 +290,8 @@ int main(int argc, char** argv) {
 
   corsika::urqmd::UrQMD urqmd_model;
   InteractionCounter urqmdCounted{urqmd_model};
+
+  TrackCheck trackCheck(obsPlane);
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {
@@ -258,8 +305,8 @@ int main(int argc, char** argv) {
   auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted,
                                     make_sequence(sibyllNucCounted, sibyllCounted));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
-  auto sequence = make_sequence(hadronSequence, reset_particle_mass, decaySequence, eLoss,
-                                cut, conex_model, longprof, observationLevel);
+  auto sequence = make_sequence(hadronSequence, decaySequence, eLoss, cut, conex_model,
+                                longprof, observationLevel, trackCheck);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
@@ -269,21 +316,15 @@ int main(int argc, char** argv) {
   //  EAS.SetNodes();
   //  EAS.forceInteraction();
 
-  output.startOfShower();
+  output.startOfLibrary();
   EAS.run();
-  output.endOfShower();
+  output.endOfLibrary();
 
-  cut.showResults();
-  eLoss.showResults();
-  observationLevel.showResults();
-  const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                               cut.getEmEnergy() + eLoss.getEnergyLost() +
-                               observationLevel.getEnergyGround();
-  cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  observationLevel.reset();
-  cut.reset();
-  eLoss.reset();
+  const HEPEnergyType Efinal = dEdX.getEnergyLost() + observationLevel.getEnergyGround();
+  CORSIKA_LOG_INFO(
+      "total cut energy (GeV): {}, "
+      "relative difference (%): {}",
+      Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
 
   auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                      urqmdCounted.getHistogram();
@@ -291,10 +332,5 @@ int main(int argc, char** argv) {
   save_hist(hists.labHist(), "inthist_lab_hybrid.npz", true);
   save_hist(hists.CMSHist(), "inthist_cms_hybrid.npz", true);
 
-  longprof.save("longprof.txt");
-
-  std::ofstream finish("finished");
-  finish << "run completed without error" << std::endl;
-
-  output.endOfLibrary();
+  CORSIKA_LOG_INFO("done");
 }

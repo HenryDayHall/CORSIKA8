@@ -145,6 +145,9 @@ class Output(ABC):
         """
         Load the top-level summary from a given library path.
 
+        If there is not a summary file for this output, then an
+        empty dictionary is returned.
+
         Parameters
         ----------
         path: str
@@ -154,12 +157,11 @@ class Output(ABC):
         -------
         dict:
             The summary as a python dictionary.
-
-        Raises
-        ------
-        FileNotFoundError
-            If the summary file cannot be found
-
         """
-        with open(op.join(path, "summary.yaml"), "r") as f:
-            return yaml.load(f, Loader=yaml.Loader)
+
+        # if the summary file doesn't exist, we just an empty dict
+        if not op.exists(op.join(path, "summary.yaml")):
+            return {}
+        else:
+            with open(op.join(path, "summary.yaml"), "r") as f:
+                return yaml.load(f, Loader=yaml.Loader)

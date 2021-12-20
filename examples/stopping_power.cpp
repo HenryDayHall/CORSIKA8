@@ -48,9 +48,7 @@ int main() {
       rootCS, 0_m, 0_m,
       112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
 
-  ShowerAxis showerAxis{injectionPos, Vector<length_d>{rootCS, 0_m, 0_m, 1_m}, env, false,
-                        100};
-  BetheBlochPDG eLoss{showerAxis};
+  BetheBlochPDG eLoss;
 
   setup::Stack stack;
 
@@ -64,10 +62,7 @@ int main() {
     double theta = 0.;
     double phi = 0.;
 
-    auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-      return sqrt((Elab - m) * (Elab + m));
-    };
-    HEPMomentumType P0 = elab2plab(E0, mass);
+    HEPMomentumType P0 = calculate_momentum(E0, mass);
     auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
       return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
                              -ptot * cos(theta));

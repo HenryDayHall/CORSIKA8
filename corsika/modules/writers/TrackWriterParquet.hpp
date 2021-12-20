@@ -32,9 +32,14 @@ namespace corsika {
     void startOfLibrary(boost::filesystem::path const& directory) final override;
 
     /**
+     * Called at the start of each shower.
+     */
+    void startOfShower(unsigned int const showerId) final override;
+
+    /**
      * Called at the end of each shower.
      */
-    void endOfShower() final override;
+    void endOfShower(unsigned int const showerId) final override;
 
     /**
      * Called at the end of each library.
@@ -44,16 +49,16 @@ namespace corsika {
      */
     void endOfLibrary() final override;
 
-  protected:
     /**
      * Write a track to the file.
      */
-    void write(Code const& pid, units::si::HEPEnergyType const& energy,
-               QuantityVector<length_d> const& start, TimeType const& t_start,
-               QuantityVector<length_d> const& end, TimeType const& t_end);
+    void write(Code const pid, HEPEnergyType const energy, double const weight,
+               QuantityVector<length_d> const& start, TimeType const t_start,
+               QuantityVector<length_d> const& end, TimeType const t_end);
 
   private:
     ParquetStreamer output_; ///< The primary output file.
+    unsigned int showerId_;  ///< event Id counter
 
   }; // class TrackWriterParquet
 

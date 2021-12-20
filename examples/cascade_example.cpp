@@ -17,6 +17,8 @@
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 
 #include <corsika/output/OutputManager.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriter.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -58,9 +60,9 @@ int main() {
 
   logging::set_level(logging::level::info);
 
-  std::cout << "cascade_example" << std::endl;
+  CORSIKA_LOG_INFO("cascade_example");
 
-  const LengthType height_atmosphere = 112.8_km;
+  LengthType const height_atmosphere = 112.8_km;
 
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
@@ -109,26 +111,24 @@ int main() {
 
   OutputManager output("cascade_outputs");
 
-  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
+  theta *= M_PI / 180.;
+  phi *= M_PI / 180.;
+  DirectionVector const direction(
+      rootCS, {sin(theta) * cos(phi), sin(theta) * sin(phi), -cos(theta)});
+
+  ShowerAxis const showerAxis{injectionPos, direction * 100_km, env};
+  EnergyLossWriter dEdX{showerAxis};
+  output.add("energyloss", dEdX);
 
   {
-    auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-      return sqrt((Elab - m) * (Elab + m));
-    };
-    HEPMomentumType P0 = elab2plab(E0, mass);
-    auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
-      return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
-                             -ptot * cos(theta));
-    };
-    auto const [px, py, pz] =
-        momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
-    auto plab = MomentumVector(rootCS, {px, py, pz});
-    cout << "input particle: " << beamCode << endl;
-    cout << "input angles: theta=" << theta << " phi=" << phi << endl;
-    cout << "input momentum: " << plab.getComponents() / 1_GeV << endl;
+    HEPMomentumType const P0 = calculate_momentum(E0, mass);
+    auto plab = direction * P0;
+    CORSIKA_LOG_INFO("input particle: {}", beamCode);
+    CORSIKA_LOG_INFO("input angles: theta={} phi={}", theta, phi);
+    CORSIKA_LOG_INFO("input momentum: {}", plab.getComponents() / 1_GeV);
     stack.addParticle(std::make_tuple(
-        beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
-        plab.normalized(), injectionPos, 0_ns));
+        beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)), direction,
+        injectionPos, 0_ns));
   }
 
   // setup processes, decays and interactions
@@ -140,13 +140,13 @@ int main() {
   corsika::sibyll::Interaction sibyll;
   corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   corsika::sibyll::Decay decay;
+
   // cascade with only HE model ==> HE cut
-  ParticleCut cut(80_GeV, true, true);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(80_GeV, true, dEdX);
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss{dEdX};
 
   TrackWriter trackWriter;
   output.add("tracks", trackWriter); // register TrackWriter
-
-  BetheBlochPDG eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
   auto sequence = make_sequence(stackInspect, make_sequence(sibyllNuc, sibyll), decay,
@@ -155,20 +155,17 @@ int main() {
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);
 
-  output.startOfShower();
+  output.startOfLibrary();
   EAS.run();
-  output.endOfShower();
-
-  eLoss.printProfile(); // print longitudinal profile
-
-  cut.showResults();
-  const HEPEnergyType Efinal =
-      cut.getCutEnergy() + cut.getInvEnergy() + cut.getEmEnergy();
-  cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  cout << "total dEdX energy (GeV): " << eLoss.getTotal() / 1_GeV << endl
-       << "relative difference (%): " << eLoss.getTotal() / E0 * 100 << endl;
-  cut.reset();
-
   output.endOfLibrary();
+
+  const HEPEnergyType Efinal = dEdX.getEnergyLost();
+  CORSIKA_LOG_INFO(
+      "\n"
+      "total cut energy (GeV) : {}\n"
+      "relative difference (%): {}\n"
+      "total dEdX energy (GeV): {}\n"
+      "relative difference (%): {}\n",
+      Efinal / 1_GeV, (Efinal / E0 - 1) * 100, dEdX.getEnergyLost() / 1_GeV,
+      dEdX.getEnergyLost() / E0 * 100);
 }

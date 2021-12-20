@@ -17,6 +17,8 @@
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 
 #include <corsika/output/OutputManager.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriter.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -124,7 +126,13 @@ int main() {
   RNGManager<>::getInstance().registerRandomStream("pythia");
   corsika::pythia8::Interaction pythia;
   corsika::pythia8::Decay decay;
-  ParticleCut cut(60_GeV, true, true);
+
+  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
+  EnergyLossWriter dEdX{showerAxis};
+  output.add("energyloss", dEdX);
+
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss{dEdX};
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(60_GeV, true, dEdX);
   cut.printThresholds();
 
   // RNGManager::getInstance().registerRandomStream("HadronicElasticModel");
@@ -134,24 +142,14 @@ int main() {
   TrackWriter trackWriter;
   output.add("tracks", trackWriter); // register TrackWriter
 
-  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
-  BetheBlochPDG eLoss{showerAxis};
-
   // assemble all processes into an ordered process list
   auto sequence = make_sequence(pythia, decay, eLoss, cut, trackWriter, stackInspect);
 
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);
-  output.startOfShower();
+  output.startOfLibrary();
   EAS.run();
-  output.endOfShower();
-
-  cout << "Result: E0=" << E0 / 1_GeV << endl;
-  cut.showResults();
-  const HEPEnergyType Efinal =
-      cut.getCutEnergy() + cut.getInvEnergy() + cut.getEmEnergy();
-  cout << "total energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1.) * 100 << endl;
-
   output.endOfLibrary();
+
+  CORSIKA_LOG_INFO("Done");
 }

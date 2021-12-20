@@ -22,7 +22,8 @@ namespace corsika {
   namespace setup::detail {
 
     // ------------------------------------------
-    // add geometry node tracking data to stack:
+    // add geometry node data to stack. This is fundamentally needed
+    // for robust tracking through multiple volumes.
 
     // the GeometryNode stack needs to know the type of geometry-nodes from the
     // environment:
@@ -42,16 +43,36 @@ namespace corsika {
                       DefaultSecondaryProducer>;
 
     // ------------------------------------------
-    // Add [optional] history data to stack, too:
+    // add weight data to stack. This is fundamentally needed
+    // for thinning.
 
-    // combine dummy stack with geometry information for tracking
+    // the "pure" weight stack (interface)
+    template <typename TStackIter>
+    using SetupWeightDataInterface =
+        typename weights::MakeWeightDataInterface<TStackIter>::type;
+
+    // combine geometry-node-vector data stack with weight information for tracking
+    template <typename TStackIter>
+    using StackWithWeightInterface =
+        CombinedParticleInterface<StackWithGeometry::pi_type, SetupWeightDataInterface,
+                                  TStackIter>;
+
+    // the combined stack data: particle + geometry + weight
+    using StackWithWeight =
+        CombinedStack<typename StackWithGeometry::stack_data_type, weights::WeightData,
+                      StackWithWeightInterface, DefaultSecondaryProducer>;
+
+    // ------------------------------------------
+    // Add [OPTIONAL] history data to stack, too.
+    // This keeps the entire lineage of particles in memory.
+
     template <typename TStackIter>
     using StackWithHistoryInterface =
-        CombinedParticleInterface<StackWithGeometry::pi_type,
+        CombinedParticleInterface<StackWithWeight::pi_type,
                                   history::HistoryEventDataInterface, TStackIter>;
 
     using StackWithHistory =
-        CombinedStack<typename StackWithGeometry::stack_data_type,
+        CombinedStack<typename StackWithWeight::stack_data_type,
                       history::HistoryEventData, StackWithHistoryInterface,
                       history::HistorySecondaryProducer>;
 

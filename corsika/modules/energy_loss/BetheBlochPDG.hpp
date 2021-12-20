@@ -12,7 +12,8 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
-#include <corsika/media/ShowerAxis.hpp>
+
+#include <corsika/modules/writers/WriterOff.hpp>
 
 #include <map>
 
@@ -33,20 +34,22 @@ namespace corsika {
    *
    */
 
-  class BetheBlochPDG : public ContinuousProcess<BetheBlochPDG> {
+  template <typename TOutput = WriterOff>
+  class BetheBlochPDG : public ContinuousProcess<BetheBlochPDG<TOutput>>, public TOutput {
 
     using MeVgcm2 = decltype(1e6 * electronvolt / gram * square(1e-2 * meter));
 
   public:
-    BetheBlochPDG(ShowerAxis const& showerAxis);
+    template <typename... TOutputArgs>
+    BetheBlochPDG(TOutputArgs&&... args);
 
-    /** clang-format-off
+    /**
      * Interface function of ContinuousProcess.
      *
-     * \param particle The particle to process in its current state
-     * \param track The trajectory in space of this particle, on which doContinuous should
-     *        act
-     * \param limitFlag flag to identify, if BetheBlochPDG::getMaxStepLength is the
+     * @param particle The particle to process in its current state
+     * @param track The trajectory in space of this particle, on which doContinuous
+     *should act
+     * @param limitFlag flag to identify, if BetheBlochPDG::getMaxStepLength is the
      *        globally limiting factor (or not)
      clang-format-on **/
     template <typename TParticle, typename TTrajectory>
@@ -54,10 +57,8 @@ namespace corsika {
                                bool const limitFlag);
 
     template <typename TParticle, typename TTrajectory>
-    LengthType getMaxStepLength(TParticle const&,
-                                TTrajectory const&)
-        const; //! limited by the energy threshold! By default the limit is the particle
-               //! rest mass, i.e. kinetic energy is zero
+    LengthType getMaxStepLength(TParticle const&, TTrajectory const&) const;
+
     template <typename TParticle>
     static HEPEnergyType getBetheBloch(TParticle const&, const GrammageType);
 
@@ -67,24 +68,7 @@ namespace corsika {
     template <typename TParticle>
     static HEPEnergyType getTotalEnergyLoss(TParticle const&, const GrammageType);
 
-    void showResults() const;
-    void reset();
-    HEPEnergyType getEnergyLost() const { return energy_lost_; }
-    void printProfile() const;
-    HEPEnergyType getTotal() const;
-
-  private:
-    template <typename TParticle>
-    void updateMomentum(TParticle&, HEPEnergyType Enew);
-
-    template <typename TTrajectory>
-    void fillProfile(TTrajectory const&, HEPEnergyType);
-
-    GrammageType const dX_ = 10_g / square(1_cm); // profile binning
-    GrammageType const dX_threshold_ = 0.0001_g / square(1_cm);
-    ShowerAxis const& shower_axis_;
-    HEPEnergyType energy_lost_ = HEPEnergyType::zero();
-    std::vector<HEPEnergyType> profile_; // longitudinal profile
+    YAML::Node getConfig() const override;
   };
 
 } // namespace corsika

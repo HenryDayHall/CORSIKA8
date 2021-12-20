@@ -30,12 +30,12 @@ namespace corsika {
     /**
      * Called at the start of each event/shower.
      */
-    void startOfShower() final override {}
+    void startOfShower(unsigned int const) final override {}
 
     /**
      * Called at the end of each event/shower.
      */
-    void endOfShower() final override {}
+    void endOfShower(unsigned int const) final override {}
 
     /**
      * Called at the end of each run.
@@ -50,7 +50,7 @@ namespace corsika {
     /**
      * Get any summary information for the entire library.
      */
-    YAML::Node getSummary() final override { return YAML::Node(); };
+    YAML::Node getSummary() const final override { return YAML::Node(); };
 
   protected:
     void write(Code const&, units::si::HEPEnergyType const&, units::si::LengthType const&,
@@ -58,5 +58,3 @@ namespace corsika {
   };
 
 } // namespace corsika
-
-#include <corsika/detail/output/BaseOutput.inl>

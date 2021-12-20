@@ -10,19 +10,23 @@
 
 #include <boost/filesystem.hpp>
 
-#include <corsika/modules/writers/ObservationPlaneWriterParquet.hpp>
+#include <corsika/modules/writers/ParticleWriterParquet.hpp>
 
 #include <corsika/framework/core/Logging.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
 
 using namespace corsika;
 
-struct TestWriterPlane : public ObservationPlaneWriterParquet {
+struct TestWriterPlane : public ParticleWriterParquet {
 
   YAML::Node getConfig() const { return YAML::Node(); }
 
   void checkWrite() {
-    ObservationPlaneWriterParquet::write(Code::Unknown, 1_eV, 2_m, 3_m, 4_ns);
+    ParticleWriterParquet::write(Code::Unknown, 1_GeV, 2_m, 3_m, 0_m, 1.0);
+    ParticleWriterParquet::write(Code::Proton, 1_GeV, 2_m, 3_m, 0_m, 1.0);
+    ParticleWriterParquet::write(Code::MuPlus, 1_GeV, 2_m, 3_m, 0_m, 1.0);
+    ParticleWriterParquet::write(Code::MuMinus, 1_GeV, 2_m, 3_m, 0_m, 1.0);
+    ParticleWriterParquet::write(Code::Photon, 1_GeV, 2_m, 3_m, 0_m, 1.0);
   }
 };
 
@@ -40,11 +44,22 @@ TEST_CASE("ObservationPlaneWriterParquet") {
 
     TestWriterPlane test;
     test.startOfLibrary("./output_dir");
-    test.startOfShower();
+    test.startOfShower(0);
+
+    // write a few particles
     test.checkWrite();
-    test.endOfShower();
+
+    test.endOfShower(0);
     test.endOfLibrary();
 
     CHECK(boost::filesystem::exists("./output_dir/particles.parquet"));
+
+    auto const summary = test.getSummary();
+
+    CHECK(summary["Eground"].as<double>() == Approx(5));
+    CHECK(summary["hadrons"].as<int>() == Approx(1));
+    CHECK(summary["muons"].as<int>() == Approx(2));
+    CHECK(summary["em"].as<int>() == Approx(1));
+    CHECK(summary["others"].as<int>() == Approx(1));
   }
 }
