@@ -144,7 +144,7 @@ namespace corsika {
                                                             bool const) {
 
     // if this step was limiting the CORSIKA stepping, the particle is lost
-    /* see Issue https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/issues/389
+    /* see Issue https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/issues/389
     if (limitStep) {
       fillProfile(t, p.getEnergy());
       p.setEnergy(p.getMass());

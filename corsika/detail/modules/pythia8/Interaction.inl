@@ -39,7 +39,7 @@ namespace corsika::pythia8 {
     Pythia8::Pythia::readString("Check:event = on");             // default: on
     Pythia8::Pythia::readString("Check:levelParticleData = 12"); // 1 is default
     /** \TODO: proper process initialization for MinBias needed, see
-        also Issue https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/issues/369 **/
+        also Issue https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/issues/369 **/
     Pythia8::Pythia::readString("HardQCD:all = on");
     Pythia8::Pythia::readString("ProcessLevel:resonanceDecays = off");
 

@@ -1,9 +1,22 @@
 #!/usr/bin/env python3
+
+#
+# (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+#
+# This software is distributed under the terms of the GNU General Public
+# Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+# the license.
+#
+
 """
 Run clang-format with the style file in the CORSIKA repository.
 
-By default it finds new files and files with modifications with respect to the current master and prints the filenames which need clang-formatting. Returns 1 if there are files which need modifications and 0 otherwise, so it can be used as a test.
+By default it finds new files and files with modifications with respect 
+to the current master and prints the filenames which need clang-formatting. 
+Returns 1 if there are files which need modifications and 0 otherwise, 
+so it can be used as a test.
 """
+
 import argparse
 import subprocess as subp
 import os

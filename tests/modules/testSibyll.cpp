@@ -224,7 +224,7 @@ TEST_CASE("SibyllInterface", "modules") {
       See also:
 
       Issue 272 / MR 204
-      https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/merge_requests/204
+      https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/merge_requests/204
 
     */
 
