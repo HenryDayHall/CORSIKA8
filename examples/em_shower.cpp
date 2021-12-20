@@ -101,6 +101,14 @@ int main(int argc, char** argv) {
       env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
       MagneticFieldVector{rootCS, 0_T, 50_uT, 0_T});
 
+  std::unordered_map<Code, HEPEnergyType> energy_resolution = {
+      {Code::Electron, 10_MeV},
+      {Code::Positron, 10_MeV},
+      {Code::Photon, 10_MeV},
+  };
+  for (auto [pcode, energy] : energy_resolution)
+    set_energy_production_threshold(pcode, energy);
+
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.clear();

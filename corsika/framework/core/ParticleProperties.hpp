@@ -31,7 +31,7 @@ namespace corsika {
    *
    * The properties of all particles are saved in static and flat
    * arrays. There is a enum corsika::Code to identify each
-   * particles, and each individual particles has its own static class,
+   * particle, and each individual particle has its own static class,
    * which can be used to retrieve its physical properties.
    *
    * The properties of all elementary particles are accessible here. The data
@@ -53,6 +53,25 @@ namespace corsika {
    *
    * The names, relations and properties of all particles known to CORSIKA 8 are listed
    * below.
+   *
+   * **Note** on energy threshold on particle production as well as particle propagation.
+   * The functions:
+   * @code {.cpp}
+   * HEPEnergyType constexpr get_energy_production_threshold(Code const);
+   * void constexpr set_energy_production_threshold(Code const, HEPEnergyType const);
+   * @endcode
+   * can be used to tune the transition where explicit production of new particles, e.g.
+   * in Bremsstrahlung, is simulated versus a continuous handling of low-energy particles
+   * as generic energy losses. The default value for all particle types is 1 MeV.
+   *
+   * Furthermore, the functions:
+   * @code {.cpp}
+   * HEPEnergyType constexpr get_kinetic_energy_propagation_threshold(Code const);
+   * void constexpr set_kinetic_energy_propagation_threshold(Code const, HEPEnergyType
+   *                                                         const);
+   * @endcode
+   * are used to discard low energy particle during tracking. The default value for all
+   * particle types is 1 GeV.
    *
    * @addtogroup Particles
    * @{
@@ -89,23 +108,39 @@ namespace corsika {
 namespace corsika {
 
   // forward declarations to be used in GeneratedParticleProperties
+
   int16_t constexpr get_charge_number(Code const);     //!< electric charge in units of e
   ElectricChargeType constexpr get_charge(Code const); //!< electric charge
   HEPMassType constexpr get_mass(Code const);          //!< mass
-  HEPEnergyType constexpr get_kinetic_energy_threshold(
-      Code const); //!< get kinetic energy threshold below which the particle is
-                   //!< discarded, by default set to zero
-  void constexpr set_kinetic_energy_threshold(
-      Code const, HEPEnergyType const); //!< set kinetic energy threshold below which the
-                                        //!< particle is discarded
 
-  inline void set_kinetic_energy_threshold(std::pair<Code const, HEPEnergyType const> p) {
-    set_kinetic_energy_threshold(p.first, p.second);
-  }
-  inline void set_kinetic_energy_thresholds(
-      std::unordered_map<Code const, HEPEnergyType const> const& eCuts) {
-    for (auto v : eCuts) set_kinetic_energy_threshold(v);
-  }
+  /**
+   * Get the kinetic energy propagation threshold.
+   *
+   * Particles are tracked only above the kinetic energy propagation threshold. Below
+   * this, they are discarded and removed. Sensible default values must be configured for
+   * a simulation.
+   */
+  HEPEnergyType constexpr get_kinetic_energy_propagation_threshold(Code const);
+
+  /**
+   * Set the kinetic energy propagation threshold object.
+   */
+  void constexpr set_kinetic_energy_propagation_threshold(Code const,
+                                                          HEPEnergyType const);
+
+  /**
+   * Get the particle production energy threshold.
+   *
+   * The (total) energy below which a particle is only  handled stoachastically (no
+   * production below this energy). This is for example important for stachastic discrete
+   * Bremsstrahlung versus low-enregy Bremsstrahlung as part of continuous energy losses.
+   */
+  HEPEnergyType constexpr get_energy_production_threshold(Code const); //!<
+
+  /**
+   * Set the particle production energy threshold.
+   */
+  void constexpr set_energy_production_threshold(Code const, HEPEnergyType const);
 
   //! Particle code according to PDG, "Monte Carlo Particle Numbering Scheme"
   PDGCode constexpr get_PDG(Code const);

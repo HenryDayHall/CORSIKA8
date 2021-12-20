@@ -29,9 +29,8 @@ namespace corsika::proposal {
     // interpolate the crosssection for given media and energy cut. These may
     // take some minutes if you have to build the tables and cannot read the
     // from disk
-    auto const emCut =
-        get_kinetic_energy_threshold(code) +
-        get_mass(code); //! energy thresholds globally defined for individual particles
+    auto const emCut = get_energy_production_threshold(
+        code); //! energy resolutions globally defined for individual particles
     auto c = p_cross->second(media.at(comp.getHash()), emCut);
 
     // Use higland multiple scattering and deactivate stochastic deflection by
@@ -134,7 +133,7 @@ namespace corsika::proposal {
     auto const energy = vP.getEnergy();
     auto const energy_lim =
         std::max(energy * 0.9, // either 10% relative loss max., or
-                 get_kinetic_energy_threshold(
+                 get_kinetic_energy_propagation_threshold(
                      code) // energy thresholds globally defined for individual particles
                      * 0.9999 // need to go slightly below global e-cut to assure removal
                               // in ParticleCut. This does not matter since at cut-time

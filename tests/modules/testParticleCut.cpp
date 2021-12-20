@@ -164,11 +164,12 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
 
   SECTION("cut low energy:  reset thresholds of arbitrary set of particles") {
     ParticleCut cut({{Code::Electron, 5_MeV}, {Code::Positron, 50_MeV}}, false);
-    CHECK(get_kinetic_energy_threshold(Code::Electron) !=
-          get_kinetic_energy_threshold(Code::Positron));
-    CHECK_FALSE(get_kinetic_energy_threshold(Code::Electron) == Electron::mass);
+    CHECK(get_kinetic_energy_propagation_threshold(Code::Electron) !=
+          get_kinetic_energy_propagation_threshold(Code::Positron));
+    CHECK_FALSE(get_kinetic_energy_propagation_threshold(Code::Electron) ==
+                Electron::mass);
     // test default values still correct
-    CHECK(get_kinetic_energy_threshold(Code::Proton) == 5_GeV);
+    CHECK(get_kinetic_energy_propagation_threshold(Code::Proton) == 5_GeV);
   }
 
   SECTION("cut on time") {

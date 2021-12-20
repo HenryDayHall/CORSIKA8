@@ -88,13 +88,18 @@ TEST_CASE("ParticleProperties", "[Particles]") {
           (Approx(2.1970332555864364e-06).epsilon(1e-5)));
   }
 
-  SECTION("Energy threshold") {
+  SECTION("Energy thresholds") {
     //! by default energy thresholds are set to zero
-    CHECK(get_kinetic_energy_threshold(Electron::code) == 0_GeV);
+    CHECK(get_kinetic_energy_propagation_threshold(Electron::code) == 1_GeV);
+    set_kinetic_energy_propagation_threshold(Electron::code, 10_GeV);
+    CHECK_FALSE(get_kinetic_energy_propagation_threshold(Code::Electron) == 1_GeV);
+    CHECK(get_kinetic_energy_propagation_threshold(Code::Electron) == 10_GeV);
 
-    set_kinetic_energy_threshold(Electron::code, 10_GeV);
-    CHECK_FALSE(get_kinetic_energy_threshold(Code::Electron) == 1_GeV);
-    CHECK(get_kinetic_energy_threshold(Code::Electron) == 10_GeV);
+    //! by default energy thresholds are set to zero
+    CHECK(get_energy_production_threshold(Neutron::code) == 1_MeV);
+    set_energy_production_threshold(Neutron::code, 1_GeV);
+    CHECK_FALSE(get_energy_production_threshold(Code::Neutron) == 1_MeV);
+    CHECK(get_energy_production_threshold(Code::Neutron) == 1_GeV);
   }
 
   SECTION("Particle groups: electromagnetic") {
