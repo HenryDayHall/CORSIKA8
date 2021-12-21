@@ -22,7 +22,8 @@ namespace corsika::setup {
      bdependent way.
    */
 
-  using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+  using EnvironmentInterface =
+      IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
   using Environment = Environment<EnvironmentInterface>;
 
 } // end namespace corsika::setup
