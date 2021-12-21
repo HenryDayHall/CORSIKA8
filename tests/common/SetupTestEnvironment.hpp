@@ -18,43 +18,52 @@
 
 #include <limits>
 
-namespace corsika::setup::testing {
+namespace corsika {
 
-  /**
+  using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+  using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+
+
+  namespace setup::testing {
+
+    /**
    * \function setup_environment
    *
    * standard environment for unit testing.
    *
-   */
+     */
 
-  inline std::tuple<std::unique_ptr<setup::Environment>, CoordinateSystemPtr const*,
-                    setup::Environment::BaseNodeType*>
-  setup_environment(Code const vTargetCode,
-                    MagneticFluxType const& BfieldZ = MagneticFluxType::zero()) {
+    inline std::tuple<std::unique_ptr<DummyEnvironment>, CoordinateSystemPtr const*,
+                      DummyEnvironment::BaseNodeType*>
+    setup_environment(Code const vTargetCode,
+                      MagneticFluxType const& BfieldZ = MagneticFluxType::zero()) {
 
-    auto env = std::make_unique<setup::Environment>();
-    auto& universe = *(env->getUniverse());
-    CoordinateSystemPtr const& cs = env->getCoordinateSystem();
+      auto env = std::make_unique<DummyEnvironment>();
+      auto& universe = *(env->getUniverse());
+      CoordinateSystemPtr const& cs = env->getCoordinateSystem();
 
-    /**
+      /**
      * our world is a sphere at 0,0,0 with R=infty
-     */
-    auto world = setup::Environment::createNode<Sphere>(Point{cs, 0_m, 0_m, 0_m}, 100_km);
+       */
+      auto world =
+          DummyEnvironment::createNode<Sphere>(Point{cs, 0_m, 0_m, 0_m}, 100_km);
 
-    /**
+      /**
      * construct suited environment medium model:
-     */
-    using MyHomogeneousModel = MediumPropertyModel<
-        UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
+       */
+      using MyHomogeneousModel = MediumPropertyModel<
+          UniformMagneticField<HomogeneousMedium<DummyEnvironmentInterface>>>;
 
-    world->setModelProperties<MyHomogeneousModel>(
-        Medium::AirDry1Atm, Vector(cs, 0_T, 0_T, BfieldZ), 1_kg / (1_m * 1_m * 1_m),
-        NuclearComposition(std::vector<Code>{vTargetCode}, std::vector<double>{1.}));
+      world->setModelProperties<MyHomogeneousModel>(
+          Medium::AirDry1Atm, Vector(cs, 0_T, 0_T, BfieldZ), 1_kg / (1_m * 1_m * 1_m),
+          NuclearComposition(std::vector<Code>{vTargetCode}, std::vector<double>{1.}));
 
-    setup::Environment::BaseNodeType* nodePtr = world.get();
-    universe.addChild(std::move(world));
+      DummyEnvironment::BaseNodeType* nodePtr = world.get();
+      universe.addChild(std::move(world));
 
-    return std::make_tuple(std::move(env), &cs, nodePtr);
-  }
+      return std::make_tuple(std::move(env), &cs, nodePtr);
+    }
 
-} // namespace corsika::setup::testing
+  } // namespace setup::testing
+
+} // namespace corsika

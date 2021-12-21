@@ -11,8 +11,13 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/geometry/CoordinateSystem.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
+#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/HomogeneousMedium.hpp>
+#include <tests/common/SetupStack.hpp>
+#include <SetupStack.hpp>
 
 /**
  * \file SetupTestStack
@@ -20,34 +25,41 @@
  * standard stack setup for unit tests.
  */
 
-namespace corsika::setup::testing {
+namespace corsika {
 
-  /**
+  using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+  using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+
+  namespace setup::testing {
+
+    /**
    * \function setup_stack
    *
    * standard stack setup for unit tests.
    *
    * \return a tuple with element 0 being a Stack object filled with
    * one particle, and element 1 the StackView on it.
-   */
+     */
 
-  inline std::tuple<std::unique_ptr<setup::Stack>, std::unique_ptr<setup::StackView>>
-  setup_stack(Code const vProjectileType, HEPEnergyType const vMomentum,
-              setup::Environment::BaseNodeType* const vNodePtr,
-              CoordinateSystemPtr const& cs) {
+    inline std::tuple<std::unique_ptr<test::Stack>, std::unique_ptr<test::StackView>>
+    setup_stack(Code const vProjectileType, HEPEnergyType const vMomentum,
+                DummyEnvironment::BaseNodeType* const vNodePtr,
+                CoordinateSystemPtr const& cs) {
 
-    auto stack = std::make_unique<setup::Stack>();
+      auto stack = std::make_unique<test::Stack>();
 
-    Point const origin(cs, {0_m, 0_m, 0_m});
-    MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
-    HEPMassType const mass = get_mass(vProjectileType);
-    HEPEnergyType const Ekin = sqrt(vMomentum * vMomentum + mass * mass) - mass;
+      Point const origin(cs, {0_m, 0_m, 0_m});
+      MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
+      HEPMassType const mass = get_mass(vProjectileType);
+      HEPEnergyType const Ekin = sqrt(vMomentum * vMomentum + mass * mass) - mass;
 
-    auto particle = stack->addParticle(
-        std::make_tuple(vProjectileType, Ekin, pLab.normalized(), origin, 0_ns));
-    particle.setNode(vNodePtr);
-    return std::make_tuple(std::move(stack),
-                           std::make_unique<setup::StackView>(particle));
-  }
+      auto particle = stack->addParticle(
+          std::make_tuple(vProjectileType, Ekin, pLab.normalized(), origin, 0_ns));
+      particle.setNode(vNodePtr);
+      return std::make_tuple(std::move(stack),
+                             std::make_unique<test::StackView>(particle));
+    }
 
-} // namespace corsika::setup::testing
+  } // namespace setup::testing
+
+} // namespace corsika
