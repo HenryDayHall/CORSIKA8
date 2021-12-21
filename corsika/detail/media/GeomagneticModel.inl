@@ -10,7 +10,7 @@
 namespace corsika {
 
   inline GeomagneticModel::GeomagneticModel(Point const& center,
-                                                std::string const& dataFile)
+                                            std::string const& dataFile)
       : center_(center) {
 
     // Read in coefficients
@@ -73,8 +73,7 @@ namespace corsika {
       int iEpoch = int(epoch);
 
       if (parameters_.count(iEpoch) != 0) {
-        throw std::runtime_error(
-            "GeomagneticModel input file has duplicate Epoch. Fix.");
+        throw std::runtime_error("GeomagneticModel input file has duplicate Epoch. Fix.");
       }
       parameters_[iEpoch] = std::vector<ParameterLine>(nPar);
 
@@ -89,9 +88,9 @@ namespace corsika {
   }
 
   inline MagneticFieldVector GeomagneticModel::getField(double const year,
-                                                          LengthType const altitude,
-                                                          double const latitude,
-                                                          double const longitude) {
+                                                        LengthType const altitude,
+                                                        double const latitude,
+                                                        double const longitude) {
 
     int iYear = int(year);
     int iEpoch = 0;
@@ -185,7 +184,8 @@ namespace corsika {
                            magneticfield[2] * cos(lat_sph - lat_geo);
 
     return MagneticFieldVector{center_.getCoordinateSystem(), magneticfield_geo[0] * 1_nT,
-                               magneticfield_geo[1] * -1_nT, magneticfield_geo[2] * -1_nT};
+                               magneticfield_geo[1] * -1_nT,
+                               magneticfield_geo[2] * -1_nT};
   }
 
 } // namespace corsika
