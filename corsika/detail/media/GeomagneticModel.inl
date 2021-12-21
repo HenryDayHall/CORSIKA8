@@ -7,9 +7,6 @@
  */
 
 #include <corsika/framework/core/Logging.hpp>
-#include <corsika/framework/utility/CorsikaData.hpp>
-
-#include <boost/filesystem.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -18,16 +15,15 @@
 namespace corsika {
 
   inline GeomagneticModel::GeomagneticModel(Point const& center,
-                                            std::string const& dataFile)
+                                            boost::filesystem::path const path)
       : center_(center) {
 
     // Read in coefficients
-    boost::filesystem::path const path = corsika::corsika_data(dataFile);
     boost::filesystem::ifstream file(path, std::ios::in);
 
     // Exit if file opening failed
     if (!file.is_open()) {
-      CORSIKA_LOG_ERROR("Failed opening data file {}", dataFile);
+      CORSIKA_LOG_ERROR("Failed opening data file {}", path);
       throw std::runtime_error("Cannot load GeomagneticModel data.");
     }
 
@@ -93,6 +89,11 @@ namespace corsika {
       }
     }
     file.close();
+
+    if (parameters_.size() == 0) {
+      CORSIKA_LOG_ERROR("No input data read!");
+      throw std::runtime_error("No input data read");
+    }
   }
 
   inline MagneticFieldVector GeomagneticModel::getField(double const year,
@@ -101,17 +102,14 @@ namespace corsika {
                                                         double const longitude) {
 
     int iYear = int(year);
-    int iEpoch = 0;
-    for (auto parIt = parameters_.rbegin(); parIt != parameters_.rend(); ++parIt) {
-      if (parIt->first <= iYear) {
-        iEpoch = parIt->first;
-        break;
-      }
+    auto iEpoch = parameters_.rbegin();
+    for (; iEpoch != parameters_.rend(); ++iEpoch) {
+      if (iEpoch->first <= iYear) { break; }
     }
-    double epoch = double(iEpoch);
-    CORSIKA_LOG_DEBUG("Found Epoch {} for year {}", iEpoch, year);
-    if (iEpoch == 0) {
+    CORSIKA_LOG_DEBUG("Found Epoch {} for year {}", iEpoch->first, year);
+    if (iEpoch == parameters_.rend()) {
       CORSIKA_LOG_WARN("Year {} is before first EPOCH. Results unclear.", year);
+      iEpoch--; // move one epoch back
     }
     if (altitude < -1_km || altitude > 600_km) {
       CORSIKA_LOG_WARN("Altitude should be between -1_km and 600_km.");
@@ -125,6 +123,7 @@ namespace corsika {
     if (longitude < -180 || longitude > 180) {
       CORSIKA_LOG_WARN("Longitude should be between -180 and 180 degree.");
     }
+    double epoch = double(iEpoch->first);
 
     const double lat_geo = latitude * constants::pi / 180;
     const double lon = longitude * constants::pi / 180;
@@ -142,17 +141,23 @@ namespace corsika {
     double legendre, next_legendre, derivate_legendre;
     double magneticfield[3] = {0, 0, 0};
 
-    for (size_t j = 0; j < parameters_[iEpoch].size(); j++) {
+    for (size_t j = 0; j < iEpoch->second.size(); j++) {
 
-      ParameterLine p = parameters_[iEpoch][j];
+      ParameterLine p = iEpoch->second[j];
 
       // Time interpolation
-      p.g = p.g + (year - epoch) * p.dg;
-      p.h = p.h + (year - epoch) * p.dh;
-      if (iEpoch < 2020) {
-        ParameterLine next_p = parameters_[iEpoch + 5][j];
-        p.g = p.g + (next_p.g - p.g) * (year - epoch) / 5;
-        p.h = p.h + (next_p.h - p.h) * (year - epoch) / 5;
+      if (iEpoch == parameters_.rbegin() || p.dg != 0 || p.dh != 0) {
+        // this is the latest epoch in time, or time-dependence (dg/dh) was specified
+        // we use the extrapolation factors dg/dh:
+        p.g = p.g + (year - epoch) * p.dg;
+        p.h = p.h + (year - epoch) * p.dh;
+      } else {
+        // we linearly interpolate between two epochs
+        auto const nextEpoch = --iEpoch; // next epoch
+        ParameterLine const next_p = nextEpoch->second[j];
+        const double length = nextEpoch->first - epoch;
+        p.g = p.g + (next_p.g - p.g) * (year - epoch) / length;
+        p.h = p.h + (next_p.h - p.h) * (year - epoch) / length;
       }
 
       legendre = pow(-1, p.m) * std::assoc_legendre(p.n, p.m, sin(lat_sph));

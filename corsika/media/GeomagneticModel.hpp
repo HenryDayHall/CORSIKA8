@@ -10,7 +10,9 @@
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
+#include <corsika/framework/utility/CorsikaData.hpp>
 
+#include <boost/filesystem.hpp>
 #include <fstream>
 #include <string>
 
@@ -44,7 +46,8 @@ namespace corsika {
      * @param center Center of Earth.
      * @param data Data table to read.
      */
-    GeomagneticModel(Point const& center, std::string const& data = "GeoMag/WMM.COF");
+    GeomagneticModel(Point const& center, boost::filesystem::path const path =
+                                              corsika::corsika_data("GeoMag/WMM.COF"));
 
     /**
      * Calculates the value of the magnetic field.

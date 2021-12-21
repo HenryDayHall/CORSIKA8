@@ -9,6 +9,7 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
+#include <corsika/framework/utility/CorsikaData.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/IMediumModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
@@ -19,9 +20,12 @@
 #include <SetupTestTrajectory.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
+#include <boost/filesystem.hpp>
 #include <catch2/catch.hpp>
 
 using namespace corsika;
+
+const std::string refDataDir = std::string(REFDATADIR); // from cmake
 
 TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
 
@@ -75,15 +79,19 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
 
   SECTION("GeomagneticModel") {
 
-    CHECK_THROWS(GeomagneticModel(gOrigin, "GeoMag/IDoNotExist.COF"));
+    // non existing data file
+    CHECK_THROWS(GeomagneticModel(gOrigin, corsika_data("GeoMag/IDoNotExist.COF")));
+    // and empty data file
+    CHECK_THROWS(GeomagneticModel(gOrigin, refDataDir + "/EmptyGeomagneticData.COF"));
 
     {
-      GeomagneticModel wmm(gOrigin, "GeoMag/WMM.COF");
+      GeomagneticModel wmm(gOrigin, corsika_data("GeoMag/WMM.COF"));
 
       // create earth magnetic field vector
       MagneticFieldVector Earth_B_1 = wmm.getField(2022.5, 100_km, -80, -120);
       MagneticFieldVector Earth_B_2 = wmm.getField(2022.5, 0_km, 0, 120);
       MagneticFieldVector Earth_B_3 = wmm.getField(2020, 100_km, 80, 0);
+      MagneticFieldVector Earth_B_4 = wmm.getField(2019.999, 100_km, 80, 0);
       CHECK(Earth_B_1.getX(gCS) / 1_nT == Approx(5815).margin(0.05));
       CHECK(Earth_B_1.getY(gCS) / 1_nT == Approx(-14803).margin(0.05));
       CHECK(Earth_B_1.getZ(gCS) / 1_nT == Approx(49755.3).margin(0.05));
@@ -93,9 +101,12 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
       CHECK(Earth_B_3.getX(gCS) / 1_nT == Approx(6261.8).margin(0.05));
       CHECK(Earth_B_3.getY(gCS) / 1_nT == Approx(185.5).margin(0.05));
       CHECK(Earth_B_3.getZ(gCS) / 1_nT == Approx(-52429.1).margin(0.05));
+      CHECK(Earth_B_4.getX(gCS) / 1_nT == Approx(6261.8).margin(0.05));
+      CHECK(Earth_B_4.getY(gCS) / 1_nT == Approx(185.5).margin(0.05));
+      CHECK(Earth_B_4.getZ(gCS) / 1_nT == Approx(-52429.1).margin(0.05));
     }
     {
-      GeomagneticModel igrf(gOrigin, "GeoMag/IGRF13.COF");
+      GeomagneticModel igrf(gOrigin, corsika_data("GeoMag/IGRF13.COF"));
 
       // create earth magnetic field vector
       MagneticFieldVector Earth_B_1 = igrf.getField(2022.5, 100_km, -80, -120);
