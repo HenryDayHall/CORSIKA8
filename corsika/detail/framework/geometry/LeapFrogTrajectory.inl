@@ -54,6 +54,12 @@ namespace corsika {
     return step / 2 * (correction + 1);
   }
 
+  template <typename Particle>
+  inline TimeType LeapFrogTrajectory::getTime(Particle const& particle,
+                                              double const u) const {
+    return particle.getTime() + getDuration(u);
+  }
+
   inline LengthType LeapFrogTrajectory::getLength(double const u) const {
     return getDuration(u) * initialVelocity_.getNorm();
   }

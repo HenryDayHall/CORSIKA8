@@ -23,6 +23,12 @@ namespace corsika {
     return u * timeStep_;
   }
 
+  template <typename Particle>
+  inline TimeType StraightTrajectory::getTime(Particle const& particle,
+                                              double const u) const {
+    return particle.getTime() + getDuration(u); // timeStep_ * u;
+  }
+
   inline LengthType StraightTrajectory::getLength(double const u) const {
     if (timeLength_ == 0_s) return 0_m;
     if (timeStep_ == std::numeric_limits<TimeType::value_type>::infinity() * 1_s)

@@ -21,6 +21,8 @@
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/geometry/StraightTrajectory.hpp>
 
+#include <corsika/setup/SetupStack.hpp>
+
 #include <PhysicalUnitsCatch2.hpp> // namespace corsike::testing
 
 using namespace corsika;
@@ -331,6 +333,23 @@ TEST_CASE("Geometry Box") {
 TEST_CASE("Geometry Trajectories") {
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
   Point r0(rootCS, {0_m, 0_m, 0_m});
+  // Create a particle and and a stack so we can test .getTime() method
+  const Code particle{Code::Electron};
+  setup::Stack stack;
+  // the mass of the particle
+  const auto pmass{get_mass(particle)};
+  // set an arbitrary energy value
+  const HEPEnergyType E0{1_TeV};
+  // compute the corresponding momentum
+  const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
+  // create the momentum vector
+  const auto plab{MomentumVector(rootCS, {0_GeV, 0_GeV, P0})};
+  // create an arbitrary location of the particle
+  const Point pos(rootCS, 50_m, 10_m, 80_m);
+  // add it finally to the stack
+  auto const particle1{stack.addParticle(
+      std::make_tuple(particle, calculate_kinetic_energy(plab.getNorm(), pmass),
+                      plab.normalized(), pos, 0_ns))};
 
   SECTION("Line") {
     SpeedType const V0 = 3_m / second;
@@ -357,6 +376,8 @@ TEST_CASE("Geometry Trajectories") {
     auto const t = 1_s;
     StraightTrajectory base(line, t);
     CHECK(line.getPosition(t).getCoordinates() == base.getPosition(1.).getCoordinates());
+    // test the getTime() method for straight trajectory
+    CHECK(base.getTime(particle1, 1) / 1_s == Approx(1));
 
     CHECK((base.getDirection(0).getComponents(rootCS) -
            QuantityVector<dimensionless_d>{1, 0, 0})
@@ -375,6 +396,8 @@ TEST_CASE("Geometry Trajectories") {
                              std::numeric_limits<TimeType::value_type>::infinity() * 1_s);
     base2.setDuration(10_s);
     CHECK(base2.getDuration() / 1_s == Approx(10));
+    // test the getTime() method for straight trajectory
+    CHECK(base2.getTime(particle1, 0) / 1_s == Approx(0));
 
     base2.setLength(1.3_m);
     CHECK(base2.getDuration() * V0 / meter == Approx(1.3));
@@ -405,6 +428,25 @@ TEST_CASE("Geometry Trajectories") {
            helix.getPositionFromArclength(helix.getArcLength(0_s, 7_s)))
               .getNorm()
               .magnitude() == Approx(0).margin(absMargin));
+  }
+
+  SECTION("LeapFrog Trajectory") {
+
+    // Create a velocity Vector
+    VelocityVector v0(rootCS, {5e+2_m / second, 5e+2_m / second, 5e+2_m / second});
+    // Create a magnetic filed Vector
+    Vector B0(rootCS, 5_T, 5_T, 5_T);
+    // provide a k constant and a random time for the LeapFrog Trajectory
+    auto const k{1_m * ((1_m) / ((1_s * 1_s) * 1_V))};
+    auto const t = 1e-12_s;
+
+    // construct a LeapFrog Trajectory
+    LeapFrogTrajectory base(pos, v0, B0, k, t);
+
+    // test the getTime() method for trajectories
+    CHECK((base.getTime(particle1, 1) - t) / 1_s == Approx(0));
+    CHECK(base.getTime(particle1, 0) / 1_s == Approx(0));
+    CHECK((base.getTime(particle1, 0) + t) / 1_s == Approx(1e-12));
   }
 }
 
