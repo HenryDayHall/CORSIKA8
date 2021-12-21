@@ -6,7 +6,8 @@
  * the license.
  */
 
-#include <corsika/setup/SetupEnvironment.hpp>
+//#include <corsika/setup/SetupEnvironment.hpp>
+#include <SetupTestEnvironment.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
@@ -42,6 +43,9 @@
 
 using namespace corsika;
 
+using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+
 const std::string refDataDir = std::string(REFDATADIR); // from cmake
 
 template <typename T>
@@ -60,12 +64,12 @@ TEST_CASE("CONEX") {
   feenableexcept(FE_INVALID);
 
   // setup environment, geometry
-  setup::Environment env;
+  DummyEnvironment env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
 
   auto builder = make_layered_spherical_atmosphere_builder<
-      setup::EnvironmentInterface, MExtraEnvirnoment>::create(center,
+      DummyEnvironmentInterface, MExtraEnvirnoment>::create(center,
                                                               corsika::conex::earthRadius,
                                                               Medium::AirDry1Atm,
                                                               Vector{rootCS, 0_T, 50_mT,

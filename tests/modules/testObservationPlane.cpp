@@ -40,7 +40,7 @@ TEST_CASE("ObservationPlane", "interface") {
     ObservationPlane has origin at 10,0,0 and a normal in x-direction
    */
   auto [stack, viewPtr] = setup::testing::setup_stack(Code::NuE, 1_GeV, nodePtr, cs);
-  [[maybe_unused]] setup::StackView& view = *viewPtr;
+  [[maybe_unused]] test::StackView& view = *viewPtr;
   auto particle = stack->getNextParticle();
 
   // dummy track. Not used for calculation!

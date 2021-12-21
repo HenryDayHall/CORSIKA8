@@ -13,6 +13,8 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 
+#include <SetupTestEnvironment.hpp>
+
 #include <catch2/catch.hpp>
 
 #include <string>
@@ -30,6 +32,9 @@
 #include <corsika/modules/qgsjetII/Random.hpp>
 
 using namespace corsika;
+
+using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using DummyEnvironment = Environment<DummyEnvironmentInterface>;
 
 template <typename TStackView>
 auto sumCharge(TStackView const& view) {
@@ -136,8 +141,8 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
   SECTION("InteractionInterface") {
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Proton, 110_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
-    setup::StackView& view = *(secViewPtr.get());
+        Code::Proton, 110_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
+    test::StackView& view = *(secViewPtr.get());
     auto projectile = secViewPtr->getProjectile();
     auto const projectileMomentum = projectile.getMomentum();
 
@@ -168,8 +173,8 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
     MomentumVector const plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
     Code const pid = get_nucleus_code(60, 30);
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        pid, P0, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
-    setup::StackView& view = *(secViewPtr.get());
+        pid, P0, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
+    test::StackView& view = *(secViewPtr.get());
 
     HEPEnergyType const Elab = sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid)));
     FourMomentum const projectileP4(Elab, plab);
@@ -189,8 +194,8 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         get_nucleus_code(1000, 1000), 1100_GeV,
-        (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
-    setup::StackView& view = *(secViewPtr.get());
+        (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
+    test::StackView& view = *(secViewPtr.get());
     auto projectile = secViewPtr->getProjectile();
     auto const projectileMomentum = projectile.getMomentum();
 
@@ -213,8 +218,8 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
 
     { // pi0 is internally converted into pi+/pi-
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::Pi0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
-      [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
+          Code::Pi0, 1000_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
+      [[maybe_unused]] test::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::InteractionModel model;
       model.doInteraction(view, Code::Pi0, Code::Oxygen,
@@ -225,8 +230,8 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
     }
     { // rho0 is internally converted into pi-/pi+
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::Rho0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
-      [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
+          Code::Rho0, 1000_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
+      [[maybe_unused]] test::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::InteractionModel model;
       model.doInteraction(view, Code::Rho0, Code::Oxygen,
@@ -237,9 +242,9 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
     }
     { // Lambda is internally converted into neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::Lambda0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+          Code::Lambda0, 100_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr,
           *csPtr);
-      [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
+      [[maybe_unused]] test::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::InteractionModel model;
       model.doInteraction(view, Code::Lambda0, Code::Oxygen,
@@ -250,9 +255,9 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
     }
     { // AntiLambda is internally converted into anti neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::Lambda0Bar, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+          Code::Lambda0Bar, 1000_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr,
           *csPtr);
-      [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
+      [[maybe_unused]] test::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::InteractionModel model;
       model.doInteraction(view, Code::Lambda0Bar, Code::Oxygen,
