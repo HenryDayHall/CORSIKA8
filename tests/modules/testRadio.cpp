@@ -107,9 +107,6 @@ logging::set_level(logging::level::debug);
     const auto point3{Point(envCoREAS.getCoordinateSystem(), 7_m, 8_m, 9_m)};
     const auto point4{Point(envCoREAS.getCoordinateSystem(), 5_m, 5_m, 10_m)};
 
-//    auto css = point1.getCoordinateSystem();
-//    std::cout << "CSS = " << css << "ENV = " << envCoREAS.getCoordinateSystem() << std::endl;
-
 
     // create times for the antenna
     const TimeType t1{0_s};
@@ -118,8 +115,8 @@ logging::set_level(logging::level::debug);
     const TimeType t4{11_s};
 
     // check that I can create an antenna at (1, 2, 3)
-    TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3);
-    TimeDomainAntenna ant2("antenna_name2", point2, t1, t2, t3);
+    TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3, t1);
+    TimeDomainAntenna ant2("antenna_name2", point2, t1, t2, t3, t1);
 
     // construct a radio detector instance to store our antennas
     AntennaCollection<TimeDomainAntenna> detector;
@@ -131,7 +128,7 @@ logging::set_level(logging::level::debug);
 
     // create a particle
     const Code particle{Code::Electron};
-//    const Code particle{Code::Proton};
+    // const Code particle{Code::Proton};
     const auto pmass{get_mass(particle)};
 
 
@@ -145,7 +142,7 @@ logging::set_level(logging::level::debug);
 
     auto const t = 1e-12_s;
     LeapFrogTrajectory base(point4, v0, B0, k, t);
-//    std::cout << "Leap Frog Trajectory is: " << base << std::endl;
+    // std::cout << "Leap Frog Trajectory is: " << base << std::endl;
 
     // create a new stack for each trial
     setup::Stack stack;
@@ -168,12 +165,13 @@ logging::set_level(logging::level::debug);
     auto const charge_ {get_charge(particle1.getPID())};
 
     // create a radio process instance using CoREAS
-    RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(envCoREAS))>, decltype(StraightPropagator(envCoREAS))>
+    RadioProcess<AntennaCollection<TimeDomainAntenna>, CoREAS<AntennaCollection<TimeDomainAntenna>,
+            decltype(StraightPropagator(envCoREAS))>, decltype(StraightPropagator(envCoREAS))>
         coreas( detector, envCoREAS);
 
     // check doContinuous and simulate methods
     coreas.doContinuous(particle1, base, true);
-    }
+    } // END: SECTION("CoREAS process")
 
 
   SECTION("ZHS process") {
@@ -220,8 +218,8 @@ logging::set_level(logging::level::debug);
     const TimeType t4{11_s};
 
     // check that I can create an antenna at (1, 2, 3)
-    TimeDomainAntenna ant1("antenna_zhs", point1, t1, t2, t3);
-    TimeDomainAntenna ant2("antenna_zhs2", point2, t1, t2, t3);
+    TimeDomainAntenna ant1("antenna_zhs", point1, t1, t2, t3, t1);
+    TimeDomainAntenna ant2("antenna_zhs2", point2, t1, t2, t3, t1);
 
     // construct a radio detector instance to store our antennas
     AntennaCollection<TimeDomainAntenna> detector;
@@ -244,7 +242,7 @@ logging::set_level(logging::level::debug);
 
     auto const t = 1e-12_s;
     LeapFrogTrajectory base(point4, v0, B0, k, t);
-//    std::cout << "Leap Frog Trajectory is: " << base << std::endl;
+    // std::cout << "Leap Frog Trajectory is: " << base << std::endl;
 
     // create a new stack for each trial
     setup::Stack stack;
@@ -267,13 +265,14 @@ logging::set_level(logging::level::debug);
     auto const charge_ {get_charge(particle1.getPID())};
 
     // create a radio process instance using ZHS
-    RadioProcess<decltype(detector), ZHS<decltype(detector), decltype(StraightPropagator(envZHS))>, decltype(StraightPropagator(envZHS))>
+    RadioProcess<AntennaCollection<TimeDomainAntenna>, ZHS<AntennaCollection<TimeDomainAntenna>,
+            decltype(StraightPropagator(envZHS))>, decltype(StraightPropagator(envZHS))>
         zhs( detector, envZHS);
 
     // check doContinuous and simulate methods
     zhs.doContinuous(particle1, base, true);
 
-  }
+  } // END: SECTION("ZHS process")
 
   SECTION("Synchrotron radiation") {
 
@@ -319,7 +318,7 @@ logging::set_level(logging::level::debug);
       std::cout << "number of points in time: " << duration*sampleRate_ << std::endl;
 
       // create 4 cool antennas
-      TimeDomainAntenna ant1("cool antenna", point1, start, duration, sampleRate_);
+      TimeDomainAntenna ant1("cool antenna", point1, start, duration, sampleRate_, start);
 
       // construct a radio detector instance to store our antennas
       AntennaCollection<TimeDomainAntenna> detector;
@@ -332,17 +331,18 @@ logging::set_level(logging::level::debug);
       stack.clear();
 
       const Code particle{Code::Electron};
-//      const Code particle{Code::Proton};
+      // const Code particle{Code::Proton};
       const HEPMassType pmass{get_mass(particle)};
 
       // construct an energy // move in the for loop
       const HEPEnergyType E0{11.4_MeV};
 
       // construct the output manager
-      OutputManager outputs("radio_synchrotron_example");
+      OutputManager outputs("radio_synchrotron_manual_tracking");
 
       // create a radio process instance using CoREAS (to use ZHS simply change CoREAS with ZHS)
-      RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
+      RadioProcess<AntennaCollection<TimeDomainAntenna>, CoREAS<AntennaCollection<TimeDomainAntenna>,
+      decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
       coreas(detector, env);
       outputs.add("CoREAS", coreas); // register CoREAS with the output manager
 
@@ -375,7 +375,7 @@ logging::set_level(logging::level::debug);
       // trigger the manager to write the data to disk
       outputs.endOfShower();
       outputs.endOfLibrary();
-}
+} // END: SECTION("Synchrotron radiation")
 
   SECTION("TimeDomainAntenna") {
 
@@ -411,8 +411,8 @@ logging::set_level(logging::level::debug);
     const TimeType t4{11_s};
 
     // check that I can create an antenna at (1, 2, 3)
-    TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3);
-    TimeDomainAntenna ant2("antenna_name2", point2, t4, t2, t3);
+    TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3, t1);
+    TimeDomainAntenna ant2("antenna_name2", point2, t4, t2, t3, t4);
 
     // assert that the antenna name is correct
     REQUIRE(ant1.getName() == "antenna_name");
@@ -460,7 +460,7 @@ logging::set_level(logging::level::debug);
         auto time__ {(point11 - point_).getNorm() / constants::c};
         const int rr_ = static_cast<int>(radius_ / 1_m);
         std::string var_ = "antenna_R=" + std::to_string(rr_) + "_m-Phi=" + std::to_string(phi_) + "degrees";
-        TimeDomainAntenna ant111(var_, point_, time__, t2222, t3333);
+        TimeDomainAntenna ant111(var_, point_, time__, t2222, t3333, time__);
         detector__.addAntenna(ant111);
       }
     }
@@ -470,7 +470,7 @@ logging::set_level(logging::level::debug);
       std::cout << antenna.getName() << " --++-- " << antenna.getLocation() << std::endl;
     }
 
-  }
+  } // END: SECTION("TimeDomainAntenna")
 
   SECTION("Simple Propagator w/ Uniform Refractive Index"){
 
@@ -530,7 +530,7 @@ logging::set_level(logging::level::debug);
             (Point a, Point b) { return (a - b).getNorm() / 1_m < 1e-5;}));
       }
 
-  }
+  } // END: SECTION("Simple Propagator w/ Uniform Refractive Index")
 
     // check that I can create working Straight Propagators in different environments
   SECTION("Straight Propagator w/ Uniform Refractive Index") {
@@ -626,7 +626,7 @@ logging::set_level(logging::level::debug);
     CHECK(paths_.size() == 1);
     CHECK(paths2_.size() == 1);
     CHECK(paths3_.size() == 1);
-  }
+  } // END: SECTION("Straight Propagator w/ Uniform Refractive Index")
 
     SECTION("Straight Propagator w/ Exponential Refractive Index") {
 
@@ -753,6 +753,6 @@ logging::set_level(logging::level::debug);
 
       CHECK( paths2_.size() == 1 );
 
-    }
+    } // END: SECTION("Straight Propagator w/ Exponential Refractive Index")
 
   } // END: TEST_CASE("Radio", "[processes]")
