@@ -105,7 +105,6 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
       CHECK(WMM_B_4.getY(gCS) / 1_nT == Approx(186).margin(0.5));
       CHECK(WMM_B_4.getZ(gCS) / 1_nT == Approx(-52429).margin(0.5));
     }
-
     {
       GeomagneticModel igrf(gOrigin, corsika_data("GeoMag/IGRF13.COF"));
 

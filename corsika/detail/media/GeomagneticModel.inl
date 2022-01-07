@@ -123,21 +123,14 @@ namespace corsika {
     if (longitude < -180 || longitude > 180) {
       CORSIKA_LOG_WARN("Longitude should be between -180 and 180 degree.");
     }
-    double const epoch = double(iEpoch->first);
-    auto iNextEpoch = iEpoch; // next epoch for interpolation
-    --iNextEpoch;
-    bool const lastEpoch = (iEpoch == parameters_.rbegin());
-    auto const delta_t = year - epoch;
-    CORSIKA_LOG_DEBUG(
-        "identified: t_epoch={}, delta_t={}, lastEpoch={} (false->interpolate)", epoch,
-        delta_t, lastEpoch);
+    double epoch = double(iEpoch->first);
 
-    double const lat_geo = latitude * constants::pi / 180;
-    double const lon = longitude * constants::pi / 180;
+    const double lat_geo = latitude * constants::pi / 180;
+    const double lon = longitude * constants::pi / 180;
 
     // Transform into spherical coordinates
-    double constexpr f = 1 / 298.257223563;
-    double constexpr e_squared = f * (2 - f);
+    const double f = 1 / 298.257223563;
+    const double e_squared = f * (2 - f);
     LengthType R_c =
         constants::EarthRadius::Equatorial / sqrt(1 - e_squared * pow(sin(lat_geo), 2));
     LengthType p = (R_c + altitude) * cos(lat_geo);
@@ -148,30 +141,26 @@ namespace corsika {
     double legendre, next_legendre, derivate_legendre;
     double magneticfield[3] = {0, 0, 0};
 
-    // loop the different l-functions
     for (size_t j = 0; j < iEpoch->second.size(); j++) {
 
       ParameterLine p = iEpoch->second[j];
 
       // Time interpolation
-      if (iEpoch == parameters_.rbegin()) {
+      if (iEpoch == parameters_.rbegin() || p.dg != 0 || p.dh != 0) {
         // this is the latest epoch in time, or time-dependence (dg/dh) was specified
         // we use the extrapolation factors dg/dh:
-        p.g = p.g + delta_t * p.dg;
-        p.h = p.h + delta_t * p.dh;
+        p.g = p.g + (year - epoch) * p.dg;
+        p.h = p.h + (year - epoch) * p.dh;
       } else {
         // we linearly interpolate between two epochs
-        ParameterLine const next_p = iNextEpoch->second[j];
-        double const length = iNextEpoch->first - epoch;
-        double p_g = p.g + (next_p.g - p.g) * delta_t / length;
-        double p_h = p.h + (next_p.h - p.h) * delta_t / length;
-        CORSIKA_LOG_TRACE(
-            "interpolation: delta-g={}, delta-h={}, delta-t={}, length={} g1={} g2={} "
-            "g={} h={} ",
-            next_p.g - p.g, next_p.h - p.h, year - epoch, length, next_p.g, p.g, p_g,
-            p_h);
-        p.g = p_g;
-        p.h = p_h;
+        auto const nextEpoch = --iEpoch; // next epoch
+        ParameterLine const next_p = nextEpoch->second[j];
+        const double length = nextEpoch->first - epoch;
+        CORSIKA_LOG_WARN("Length {}.", length);
+        CORSIKA_LOG_WARN("year {}. Epoch {}", year, epoch);
+        CORSIKA_LOG_WARN("g {}. h {}", next_p.g, next_p.h);
+        p.g = p.g + (next_p.g - p.g) * (year - epoch) / length;
+        p.h = p.h + (next_p.h - p.h) * (year - epoch) / length;
       }
 
       legendre = pow(-1, p.m) * std::assoc_legendre(p.n, p.m, sin(lat_sph));
