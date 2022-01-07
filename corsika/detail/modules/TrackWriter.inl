@@ -28,7 +28,7 @@ namespace corsika {
 
     // write the track to the file
     TOutput::write(vP.getPID(), vP.getEnergy(), vP.getWeight(), start,
-                   vP.getTime() - vT.getDuration(), end, vP.getTime());
+                   vP.getTime(), end, vP.getTime() + vT.getDuration());
 
     return ProcessReturn::Ok;
   }

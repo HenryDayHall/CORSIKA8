@@ -156,6 +156,9 @@ namespace corsika {
         auto const nextEpoch = --iEpoch; // next epoch
         ParameterLine const next_p = nextEpoch->second[j];
         const double length = nextEpoch->first - epoch;
+        CORSIKA_LOG_WARN("Length {}.", length);
+        CORSIKA_LOG_WARN("year {}. Epoch {}", year, epoch);
+        CORSIKA_LOG_WARN("g {}. h {}", next_p.g, next_p.h);
         p.g = p.g + (next_p.g - p.g) * (year - epoch) / length;
         p.h = p.h + (next_p.h - p.h) * (year - epoch) / length;
       }
