@@ -26,7 +26,7 @@ namespace corsika {
       fname = boost::filesystem::path(p) / key;
     }
     // LCOV_EXCL_STOP
-    CORSIKA_LOG_INFO("opening data file={}", fname);
+    CORSIKA_LOG_INFO("opening data file={} dir={}", fname, corsika::CORSIKA_DATA_DIR);
     return fname;
   }
 } // namespace corsika
