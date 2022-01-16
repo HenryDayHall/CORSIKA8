@@ -27,8 +27,8 @@ namespace corsika {
     auto const end = vT.getPosition(1).getCoordinates();
 
     // write the track to the file
-    TOutput::write(vP.getPID(), vP.getEnergy(), vP.getWeight(), start,
-                   vP.getTime() - vT.getDuration(), end, vP.getTime());
+    TOutput::write(vP.getPID(), vP.getEnergy(), vP.getWeight(), start, vP.getTime(), end,
+                   vP.getTime() + vT.getDuration());
 
     return ProcessReturn::Ok;
   }
@@ -48,8 +48,7 @@ namespace corsika {
 
     // add default units for values
     node["type"] = "TrackWriter";
-    node["units"]["energy"] = "GeV";
-    node["units"]["length"] = "m";
+    node["units"] = "GeV | m | ns";
 
     return node;
   }

@@ -53,6 +53,8 @@ TEST_CASE("HistoryStackExtensionView", "[stack]") {
 
   logging::set_level(logging::level::info);
 
+  CoordinateSystemPtr const& dummyCS = get_root_CoordinateSystem();
+
   // in this test we only use one singel stack !
   const dummy_stack::NoData noData;
   TestStack stack;

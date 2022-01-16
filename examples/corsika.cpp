@@ -33,6 +33,7 @@
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
+#include <corsika/media/GeomagneticModel.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/IMagneticFieldModel.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
@@ -199,11 +200,12 @@ int main(int argc, char** argv) {
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
+  GeomagneticModel wmm(center, corsika_data("GeoMag/WMM.COF"));
 
   // build a Linsley US Standard atmosphere into `env`
   create_5layer_atmosphere<setup::EnvironmentInterface, MyExtraEnv>(
       env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
-      MagneticFieldVector{rootCS, 0_T, 50_uT, 0_T});
+      wmm.getField(2022.5, 10_km, 49, 8.4));
 
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
