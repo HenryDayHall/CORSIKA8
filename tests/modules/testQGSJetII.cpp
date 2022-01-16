@@ -242,8 +242,7 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
     }
     { // Lambda is internally converted into neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::Lambda0, 100_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr,
-          *csPtr);
+          Code::Lambda0, 100_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
       [[maybe_unused]] test::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::InteractionModel model;

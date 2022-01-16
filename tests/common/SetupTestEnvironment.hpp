@@ -20,17 +20,17 @@
 
 namespace corsika {
 
-  using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+  using DummyEnvironmentInterface =
+      IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
   using DummyEnvironment = Environment<DummyEnvironmentInterface>;
-
 
   namespace setup::testing {
 
     /**
-   * \function setup_environment
-   *
-   * standard environment for unit testing.
-   *
+     * \function setup_environment
+     *
+     * standard environment for unit testing.
+     *
      */
 
     inline std::tuple<std::unique_ptr<DummyEnvironment>, CoordinateSystemPtr const*,
@@ -43,13 +43,12 @@ namespace corsika {
       CoordinateSystemPtr const& cs = env->getCoordinateSystem();
 
       /**
-     * our world is a sphere at 0,0,0 with R=infty
+       * our world is a sphere at 0,0,0 with R=infty
        */
-      auto world =
-          DummyEnvironment::createNode<Sphere>(Point{cs, 0_m, 0_m, 0_m}, 100_km);
+      auto world = DummyEnvironment::createNode<Sphere>(Point{cs, 0_m, 0_m, 0_m}, 100_km);
 
       /**
-     * construct suited environment medium model:
+       * construct suited environment medium model:
        */
       using MyHomogeneousModel = MediumPropertyModel<
           UniformMagneticField<HomogeneousMedium<DummyEnvironmentInterface>>>;

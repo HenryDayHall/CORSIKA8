@@ -70,10 +70,10 @@ TEST_CASE("CONEX") {
 
   auto builder = make_layered_spherical_atmosphere_builder<
       DummyEnvironmentInterface, MExtraEnvirnoment>::create(center,
-                                                              corsika::conex::earthRadius,
-                                                              Medium::AirDry1Atm,
-                                                              Vector{rootCS, 0_T, 50_mT,
-                                                                     0_T});
+                                                            corsika::conex::earthRadius,
+                                                            Medium::AirDry1Atm,
+                                                            Vector{rootCS, 0_T, 50_mT,
+                                                                   0_T});
 
   builder.setNuclearComposition(
       {{Code::Nitrogen, Code::Oxygen},

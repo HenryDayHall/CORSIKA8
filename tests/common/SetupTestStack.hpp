@@ -27,18 +27,19 @@
 
 namespace corsika {
 
-  using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+  using DummyEnvironmentInterface =
+      IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
   using DummyEnvironment = Environment<DummyEnvironmentInterface>;
 
   namespace setup::testing {
 
     /**
-   * \function setup_stack
-   *
-   * standard stack setup for unit tests.
-   *
-   * \return a tuple with element 0 being a Stack object filled with
-   * one particle, and element 1 the StackView on it.
+     * \function setup_stack
+     *
+     * standard stack setup for unit tests.
+     *
+     * \return a tuple with element 0 being a Stack object filled with
+     * one particle, and element 1 the StackView on it.
      */
 
     inline std::tuple<std::unique_ptr<test::Stack>, std::unique_ptr<test::StackView>>
