@@ -15,6 +15,7 @@
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 
+#include <SetupTestEnvironment.hpp>
 #include <catch2/catch.hpp>
 #include <tuple>
 
@@ -30,6 +31,9 @@
 
 using namespace corsika;
 using namespace corsika::sibyll;
+
+using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using DummyEnvironment = Environment<DummyEnvironmentInterface>;
 
 TEST_CASE("Sibyll", "modules") {
 
@@ -110,8 +114,8 @@ TEST_CASE("SibyllInterface", "modules") {
   { [[maybe_unused]] auto const& env_dummy = env; }
 
   auto [stack, viewPtr] = setup::testing::setup_stack(
-      Code::Proton, 10_GeV, (setup::Environment::BaseNodeType* const)nodePtr, cs);
-  setup::StackView& view = *viewPtr;
+      Code::Proton, 10_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
+  test::StackView& view = *viewPtr;
 
   RNGManager<>::getInstance().registerRandomStream("sibyll");
 
@@ -304,8 +308,8 @@ TEST_CASE("SibyllDecayInterface", "modules") {
   SECTION("DecayInterface") {
 
     auto [stackPtr, viewPtr] = setup::testing::setup_stack(
-        Code::Lambda0, 10_GeV, (setup::Environment::BaseNodeType* const)nodePtr, cs);
-    setup::StackView& view = *viewPtr;
+        Code::Lambda0, 10_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
+    test::StackView& view = *viewPtr;
     auto& stack = *stackPtr;
     auto particle = stack.first();
 
@@ -323,8 +327,8 @@ TEST_CASE("SibyllDecayInterface", "modules") {
   SECTION("DecayInterface - decay not handled") {
     // sibyll does not know the higgs for example
     auto [stackPtr, viewPtr] = setup::testing::setup_stack(
-        Code::H0, 10_GeV, (setup::Environment::BaseNodeType* const)nodePtr, cs);
-    setup::StackView& view = *viewPtr;
+        Code::H0, 10_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
+    test::StackView& view = *viewPtr;
     auto& stack = *stackPtr;
     auto particle = stack.first();
 

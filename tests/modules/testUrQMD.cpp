@@ -42,6 +42,9 @@
 using namespace corsika;
 using namespace corsika::urqmd;
 
+using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+
 template <typename TStackView>
 auto sumCharge(TStackView const& view) {
   int totalCharge = 0;
@@ -120,7 +123,7 @@ TEST_CASE("UrQMD") {
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::PiPlus, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+        Code::PiPlus, 40_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
 
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->getProjectile();
@@ -147,7 +150,7 @@ TEST_CASE("UrQMD") {
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::K0Long, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+        Code::K0Long, 40_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
     CHECK(stackPtr->getEntries() == 1);
     CHECK(secViewPtr->getEntries() == 0);
 

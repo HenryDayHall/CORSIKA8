@@ -13,6 +13,8 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 
+#include <SetupTestEnvironment.hpp>
+
 #include <catch2/catch.hpp>
 #include <tuple>
 
@@ -28,6 +30,9 @@
 
 using namespace corsika;
 using namespace corsika::epos;
+
+using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using DummyEnvironment = Environment<DummyEnvironmentInterface>;
 
 TEST_CASE("EposBasics", "module,process") {
 
@@ -284,10 +289,10 @@ TEST_CASE("Epos", "modules") {
     HEPEnergyType const P0 = 10_TeV;
     Code const pid = Code::Proton;
     auto [stack, viewPtr] = setup::testing::setup_stack(
-        pid, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+        pid, P0, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
     MomentumVector plab =
         MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about
-    setup::StackView& view = *viewPtr;
+    test::StackView& view = *viewPtr;
 
     // @todo This is very obscure since it fails for -O2, but for both clang and gcc ???
     model.doInteraction(view, pid, Code::Oxygen,

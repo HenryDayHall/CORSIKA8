@@ -18,24 +18,28 @@
 
 #include <SetupTestStack.hpp>
 #include <SetupTestTrajectory.hpp>
+#include <SetupTestEnvironment.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
 #include <catch2/catch.hpp>
 
 using namespace corsika;
 
+using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+
 TEST_CASE("ParticleCut", "process,continuous,secondary") {
 
   logging::set_level(logging::level::info);
 
   feenableexcept(FE_INVALID);
-  using EnvType = setup::Environment;
+  using EnvType = DummyEnvironment;
 
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 
   // setup empty particle stack
-  setup::Stack stack;
+  test::Stack stack;
   stack.clear();
   // two energies
   HEPEnergyType const Eabove = 1_TeV;
@@ -60,7 +64,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
         std::make_tuple(Code::Proton, Eabove, DirectionVector(rootCS, {1, 0, 0}),
                         Point(rootCS, 0_m, 0_m, 0_m), 0_ns));
     // view on secondary particles
-    setup::StackView view(particle);
+    test::StackView view(particle);
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.getProjectile();
@@ -85,7 +89,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     auto particle = stack.addParticle(std::make_tuple(
         Code::Proton, Eabove, DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
     // view on secondary particles
-    setup::StackView view(particle);
+    test::StackView view(particle);
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.getProjectile();
@@ -107,7 +111,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     auto particle = stack.addParticle(std::make_tuple(
         Code::Proton, Eabove, DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
     // view on secondary particles
-    setup::StackView view(particle);
+    test::StackView view(particle);
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.getProjectile();
@@ -137,7 +141,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
                                                       DirectionVector(rootCS, {1, 0, 0}),
                                                       point0, 0_ns));
     // view on secondary particles
-    setup::StackView view(particle);
+    test::StackView view(particle);
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.getProjectile();
@@ -180,7 +184,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     auto particle = stack.addParticle(std::make_tuple(
         Code::Proton, Eabove, DirectionVector(rootCS, {1, 0, 0}), point0, too_late));
     // view on secondary particles
-    setup::StackView view(particle);
+    test::StackView view(particle);
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.getProjectile();

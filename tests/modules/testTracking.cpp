@@ -24,6 +24,9 @@
 
 using namespace corsika;
 
+using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+
 struct NonExistingDummyObject : public IVolume {
   NonExistingDummyObject const& getVolume() const { return *this; }
   bool contains(Point const&) const { return false; }
@@ -114,28 +117,28 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
 
     TestType tracking;
     Point const center(cs, {0_m, 0_m, 0_m});
-    auto target = setup::Environment::createNode<Sphere>(center, radius);
+    auto target = DummyEnvironment::createNode<Sphere>(center, radius);
 
     // every particle should hit target_2
     // it is very close to injection and not so small
-    auto target_2 = setup::Environment::createNode<Sphere>(
+    auto target_2 = DummyEnvironment::createNode<Sphere>(
         Point(cs, {-radius * 3 / 4, 0_m, 0_m}), radius * 0.2);
 
     // only neutral particles hit_target_neutral
     // this is far from injection and really small
-    auto target_neutral = setup::Environment::createNode<Sphere>(
+    auto target_neutral = DummyEnvironment::createNode<Sphere>(
         Point(cs, {radius / 2, 0_m, 0_m}), radius * 0.1);
 
     // target to be overlapped entirely by target_2
-    auto target_2_behind = setup::Environment::createNode<Sphere>(
+    auto target_2_behind = DummyEnvironment::createNode<Sphere>(
         Point(cs, {-radius * 3 / 4, 0_m, 0_m}), radius * 0.1);
 
     // target to be overlapped partly by target_2
-    auto target_2_partly_behind = setup::Environment::createNode<Sphere>(
+    auto target_2_partly_behind = DummyEnvironment::createNode<Sphere>(
         Point(cs, {-radius * 3 / 4 + radius * 0.1, 0_m, 0_m}), radius * 0.2);
 
     using MyHomogeneousModel = MediumPropertyModel<
-        UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
+        UniformMagneticField<HomogeneousMedium<DummyEnvironmentInterface>>>;
 
     MagneticFieldVector magneticfield(cs, 0_T, 0_T, Bfield);
     target->setModelProperties<MyHomogeneousModel>(
@@ -244,7 +247,7 @@ TEST_CASE("TrackingLeapFrogCurved") {
   corsika::Code PID = Code::MuPlus;
 
   using MyHomogeneousModel = MediumPropertyModel<
-      UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
+      UniformMagneticField<HomogeneousMedium<DummyEnvironmentInterface>>>;
 
   SECTION("infinite sphere / universe") {
 
@@ -281,7 +284,7 @@ TEST_CASE("TrackingLeapFrogCurved") {
 
     tracking_leapfrog_curved::Tracking tracking;
     Point const center(cs, {0_m, 0_m, 0_m});
-    auto target = setup::Environment::createNode<Sphere>(center, 10_km);
+    auto target = DummyEnvironment::createNode<Sphere>(center, 10_km);
 
     MagneticFieldVector magneticfield(cs, 100_T, 0_T, 0_uT);
     target->setModelProperties<MyHomogeneousModel>(

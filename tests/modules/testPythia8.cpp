@@ -20,6 +20,9 @@
 
 using namespace corsika;
 
+using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+
 TEST_CASE("Pythia8", "modules") {
 
   logging::set_level(logging::level::info);
@@ -106,7 +109,7 @@ TEST_CASE("Pythia8Interface", "modules") {
   SECTION("pythia decay") {
     HEPEnergyType const P0 = 10_GeV;
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::PiPlus, P0, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+        Code::PiPlus, P0, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
     auto& stack = *stackPtr;
     auto& view = *secViewPtr;
 
@@ -166,7 +169,7 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     // this will be a p-p collision at sqrts=3.5TeV -> no problem for pythia
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Proton, 7_TeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+        Code::Proton, 7_TeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
     auto& view = *secViewPtr;
 
     corsika::pythia8::Interaction collision;
@@ -200,7 +203,7 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     // this is a projectile neutron with very little energy
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Neutron, 1_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+        Code::Neutron, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
     auto& view = *secViewPtr;
 
     corsika::pythia8::Interaction collision;
@@ -224,7 +227,7 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     // resonable projectile, but tool low energy
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Proton, 1_GeV, (setup::Environment::BaseNodeType* const)nodePtr_Fe,
+        Code::Proton, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr_Fe,
         *csPtr_Fe);
     auto& view = *secViewPtr;
     { [[maybe_unused]] auto const& dummy_StackPtr = stackPtr; }
@@ -250,7 +253,7 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     // resonable projectile, but tool low energy
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Iron, 1_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+        Code::Iron, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
     { [[maybe_unused]] auto const& dummy_StackPtr = stackPtr; }
 
     corsika::pythia8::Interaction collision;
