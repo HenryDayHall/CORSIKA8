@@ -24,8 +24,8 @@ namespace corsika {
 
     double n0_;                ///< n0 constant.
     InverseLengthType lambda_; ///< lambda parameter.
-    LengthType radius_;        ///< the planet radius.
     Point center_;             ///< center of the planet.
+    LengthType radius_;        ///< the planet radius.
 
   public:
     /**
