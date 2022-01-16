@@ -6,7 +6,6 @@
  * the license.
  */
 
-//#include <corsika/setup/SetupEnvironment.hpp>
 #include <SetupTestEnvironment.hpp>
 
 #include <corsika/media/Environment.hpp>
