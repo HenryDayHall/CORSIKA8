@@ -10,13 +10,17 @@
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
-#include <corsika/media/FlatExponential.hpp>
+
+#include <corsika/media/Environment.hpp>
+#include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
+#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/InhomogeneousMedium.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
 #include <corsika/media/ExponentialRefractiveIndex.hpp>
+#include <corsika/media/CORSIKA7Atmospheres.hpp>
 
 #include <SetupTestTrajectory.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -24,11 +28,13 @@
 #include <catch2/catch.hpp>
 
 using namespace corsika;
+template <typename TInterface>
+using MyExtraEnv =
+    ExponentialRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
 
 TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
 
@@ -97,14 +103,13 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
 TEST_CASE("ExponentialRefractiveIndex w/ Homogeneous medium") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   // get a CS and a point
   CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
 
   Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 
-  // setup our interface types
+  // setup interface types
   using IModelInterface = IRefractiveIndexModel<IMediumModel>;
   using AtmModel = ExponentialRefractiveIndex<HomogeneousMedium<IModelInterface>>;
 
@@ -115,30 +120,33 @@ TEST_CASE("ExponentialRefractiveIndex w/ Homogeneous medium") {
   NuclearComposition const protonComposition({Code::Proton}, {1.});
 
   // a new refractive index
-  const double n0{2};
-  const InverseLengthType lambda{56 / 1_m};
+  const double n0{1};
+  const InverseLengthType lambda{6 / 1_m};
+
+  // the center of the earth
+  Point const center_{gCS, 0_m, 0_m, 0_m};
+  // earth's radius
+  LengthType const radius_{constants::EarthRadius::Mean};
 
   // create the atmospheric model and check refractive index
-  AtmModel medium(n0, lambda, density, protonComposition);
-  CHECK(n0 == medium.getRefractiveIndex(Point(gCS, 10_m, 14_m, 0_m)));
+  AtmModel medium(n0, lambda, center_, constants::EarthRadius::Mean, density,
+                  protonComposition);
+  CHECK(n0 - medium.getRefractiveIndex(
+                 Point(gCS, 0_m, 0_m, constants::EarthRadius::Mean)) ==
+        Approx(0));
 
   // another refractive index
   const double n0_{1};
   const InverseLengthType lambda_{1 / 1_km};
 
-  // create the atmospheric model and check refractive index
-  AtmModel medium_(n0_, lambda_, density, protonComposition);
-  CHECK(medium_.getRefractiveIndex(Point(gCS, 12_m, 56_m, 1_km)) == Approx(0.3678794));
-
-  // another refractive index
-  const double n0__{4};
-  const InverseLengthType lambda__{2 / 1_m};
+  // distance from the center
+  LengthType const dist_{4_km};
 
   // create the atmospheric model and check refractive index
-  AtmModel medium__(n0__, lambda__, density, protonComposition);
-  CHECK(medium__.getRefractiveIndex(Point(gCS, 0_m, 0_m, 35_km)) == Approx(0));
+  AtmModel medium_(n0_, lambda_, center_, dist_, density, protonComposition);
+  CHECK(medium_.getRefractiveIndex(Point(gCS, 4_km, 3_km, 0_km)) == Approx(0.3678794412));
 
-  // define our axis vector
+  // define axis vector
   Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
 
   // check the density and nuclear composition
@@ -146,8 +154,6 @@ TEST_CASE("ExponentialRefractiveIndex w/ Homogeneous medium") {
   medium.getNuclearComposition();
   REQUIRE(density == medium_.getMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
   medium_.getNuclearComposition();
-  REQUIRE(density == medium__.getMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
-  medium__.getNuclearComposition();
 
   SpeedType const velocity = 1_m / second;
 
@@ -169,6 +175,41 @@ TEST_CASE("ExponentialRefractiveIndex w/ Homogeneous medium") {
   REQUIRE((medium.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
   REQUIRE((medium_.getIntegratedGrammage(track) / (density * length)) == Approx(1));
   REQUIRE((medium_.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
-  REQUIRE((medium__.getIntegratedGrammage(track) / (density * length)) == Approx(1));
-  REQUIRE((medium__.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
+}
+
+TEST_CASE("ExponentialRefractiveIndex w/ 5-layered atmosphere") {
+
+  logging::set_level(logging::level::info);
+
+  // get a CS
+  CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
+
+  // the center of the earth
+  Point const center_{gCS, 0_m, 0_m, 0_m};
+
+  // another refractive index
+  const double n0{2};
+  const InverseLengthType lambda{1 / 1_km};
+
+  // a reference point to calculate the refractive index there
+  Point const ref_{gCS, 0_m, 0_m, constants::EarthRadius::Mean};
+
+  // setup a 5-layered environment
+  using EnvironmentInterface =
+      IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+  using EnvType = Environment<EnvironmentInterface>;
+  EnvType env;
+
+  create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
+      env, AtmosphereId::LinsleyUSStd, center_, n0, lambda, center_,
+      constants::EarthRadius::Mean, Medium::AirDry1Atm,
+      MagneticFieldVector{gCS, 0_T, 50_uT, 0_T});
+
+  // get the universe for this environment
+  auto const* const universe{env.getUniverse().get()};
+  auto const* node{universe->getContainingNode(ref_)};
+  // get the refractive index
+  auto const rIndex{node->getModelProperties().getRefractiveIndex(ref_)};
+
+  CHECK(rIndex - n0 == Approx(0));
 }

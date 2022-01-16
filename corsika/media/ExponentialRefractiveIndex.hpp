@@ -22,8 +22,10 @@ namespace corsika {
   template <typename T>
   class ExponentialRefractiveIndex : public T {
 
-    double n_0;                ///< n0 constant.
+    double n0_;                ///< n0 constant.
     InverseLengthType lambda_; ///< lambda parameter.
+    LengthType radius_;        ///< the planet radius.
+    Point center_;             ///< center of the planet.
 
   public:
     /**
@@ -37,6 +39,7 @@ namespace corsika {
      */
     template <typename... Args>
     ExponentialRefractiveIndex(double const n0, InverseLengthType const lambda,
+                               Point const center, LengthType const radius,
                                Args&&... args);
 
     /**
