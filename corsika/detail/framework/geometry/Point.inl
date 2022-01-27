@@ -24,46 +24,22 @@ namespace corsika {
   }
 
   inline LengthType Point::getX(CoordinateSystemPtr const& pCS) const {
-    CoordinateSystemPtr const& cs = BaseVector<length_d>::getCoordinateSystem();
-    if (*pCS == *cs) {
-      return BaseVector<length_d>::getQuantityVector().getX();
-    } else {
-      return QuantityVector<length_d>(
-                 get_transformation(*cs.get(), *pCS.get()) *
-                 BaseVector<length_d>::getQuantityVector().eigenVector_)
-          .getX();
-    }
+    return getCoordinates(pCS).getX();
   }
 
   inline LengthType Point::getY(CoordinateSystemPtr const& pCS) const {
-    CoordinateSystemPtr const& cs = BaseVector<length_d>::getCoordinateSystem();
-    if (*pCS == *cs) {
-      return BaseVector<length_d>::getQuantityVector().getY();
-    } else {
-      return QuantityVector<length_d>(
-                 get_transformation(*cs.get(), *pCS.get()) *
-                 BaseVector<length_d>::getQuantityVector().eigenVector_)
-          .getY();
-    }
+    return getCoordinates(pCS).getY();
   }
 
   inline LengthType Point::getZ(CoordinateSystemPtr const& pCS) const {
-    CoordinateSystemPtr const& cs = BaseVector<length_d>::getCoordinateSystem();
-    if (*pCS == *cs) {
-      return BaseVector<length_d>::getQuantityVector().getZ();
-    } else {
-      return QuantityVector<length_d>(
-                 get_transformation(*cs.get(), *pCS.get()) *
-                 BaseVector<length_d>::getQuantityVector().eigenVector_)
-          .getZ();
-    }
+    return getCoordinates(pCS).getZ();
   }
 
   /// this always returns a QuantityVector as triple
   inline QuantityVector<length_d> Point::getCoordinates(
       CoordinateSystemPtr const& pCS) const {
     CoordinateSystemPtr const& cs = BaseVector<length_d>::getCoordinateSystem();
-    if (*pCS == *cs) {
+    if (pCS == cs) {
       return BaseVector<length_d>::getQuantityVector();
     } else {
       return QuantityVector<length_d>(
@@ -74,7 +50,7 @@ namespace corsika {
 
   /// this always returns a QuantityVector as triple
   inline QuantityVector<length_d>& Point::getCoordinates(CoordinateSystemPtr const& pCS) {
-    if (*pCS != *BaseVector<length_d>::getCoordinateSystem()) { rebase(pCS); }
+    if (pCS != BaseVector<length_d>::getCoordinateSystem()) { rebase(pCS); }
     return BaseVector<length_d>::getQuantityVector();
   }
 
