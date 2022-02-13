@@ -98,10 +98,12 @@ int main() {
     auto const Bmag {0.0003809_T};
     MagneticFieldVector B{rootCS, 0_T, 0_T, Bmag};
 
+    // the composition we use for the homogeneous medium
+    NuclearComposition const nitrogenComposition({Code::Nitrogen}, {1.});
+
     world->setModelProperties<MyHomogeneousModel>(1, Medium::AirDry1Atm, B,
                                                   1_kg / (1_m * 1_m * 1_m),
-                                                  NuclearComposition(std::vector<Code>{Code::Nitrogen},
-                                                                     std::vector<float>{(float)1.}));
+                                                  nitrogenComposition);
 
     universe.addChild(std::move(world));
 
@@ -114,8 +116,8 @@ int main() {
     const InverseTimeType t3{5e+11_Hz};
 
     // the antennas
-    TimeDomainAntenna ant1("antenna CoREAS", point1, t1, t2, t3);
-    TimeDomainAntenna ant2("antenna ZHS", point1, t1, t2, t3);
+    TimeDomainAntenna ant1("antenna CoREAS", point1, t1, t2, t3, t1);
+    TimeDomainAntenna ant2("antenna ZHS", point1, t1, t2, t3, t1);
 
     // the detectors
     AntennaCollection<TimeDomainAntenna> detectorCoREAS;
@@ -139,7 +141,7 @@ int main() {
     TimeType const period = 2 * M_PI * omega_inv * gamma;
 
     Point injectionPos(rootCS, 0_m, 100_m, 0_m);
-    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
+    stack.addParticle(std::make_tuple(beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)), plab.normalized(), injectionPos, 0_ns));
 
     // setup relevant processes
     setup::Tracking tracking;
@@ -147,12 +149,12 @@ int main() {
     // put radio processes here
     RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS),
             decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
-                                              coreas(detectorCoREAS, env);
+            coreas(detectorCoREAS, env);
     output.add("CoREAS", coreas);
 
     RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS),
             decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
-                                              zhs(detectorZHS, env);
+            zhs(detectorZHS, env);
     output.add("ZHS", zhs);
 
     TimeCut cut(period);
