@@ -53,7 +53,7 @@ namespace corsika {
          *
          */
         template <typename Particle, typename Track>
-        ProcessReturn simulate(Particle& particle, Track const& track) const {
+        ProcessReturn simulate(Particle const& particle, Track const& track) const {
 
             auto const startTime{particle.getTime()};
             auto const endTime{particle.getTime() + track.getDuration()};

@@ -56,7 +56,7 @@ namespace corsika {
      *
      */
     template <typename Particle, typename Track>
-    ProcessReturn simulate(Particle& particle, Track const& track) {
+    ProcessReturn simulate(Particle const& particle, Track const& track) {
 
 //      CORSIKA_LOG_DEBUG("CoREAS initiated");
 
