@@ -25,12 +25,14 @@ namespace corsika {
   public:
     TimeCut(TimeType const time);
 
+    template <typename Particle, typename Track>
     ProcessReturn doContinuous(
-        corsika::setup::Stack::particle_type& vParticle,
-        corsika::setup::Trajectory const& vTrajectory,
+            Particle& vParticle,
+            Track const& vTrajectory,
         const bool limitFlag = false); // this is not used for TimeCut
-    LengthType getMaxStepLength(corsika::setup::Stack::particle_type const&,
-                                corsika::setup::Trajectory const&) {
+      template <typename Particle, typename Track>
+    LengthType getMaxStepLength(Particle const&,
+                                Track const&) {
       return meter * std::numeric_limits<double>::infinity();
     }
 
