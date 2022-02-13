@@ -10,12 +10,8 @@
 #pragma once
 
 #include <cnpy.hpp>
-#include <xtensor/xtensor.hpp>
-#include <xtensor/xview.hpp>
 #include <boost/filesystem.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-
-using namespace xt::placeholders;
 
 namespace corsika {
 
@@ -88,15 +84,31 @@ namespace corsika {
      * This should be an xtensor-convertible type with
      * a ->data() method that converts to a raw pointer.
      */
-    xt::xtensor<double, 1> getAxis() const;
+      std::vector<long double>  getAxis() const;
 
-    /**
-     * Return a reference to the underlying data.
-     *
-     * This is used when writing the antenna information to disk
-     * and will be converted to a 32-bit float before writing.
-     */
-    xt::xtensor<double, 2>& getData() const;
+      /**
+       * Return a reference to the underlying data for X polarization.
+       *
+       * This is used when writing the antenna information to disk
+       * and will be converted to a 32-bit float before writing.
+       */
+      std::vector<double>& getDataX() const;
+
+      /**
+       * Return a reference to the underlying data for Y polarization.
+       *
+       * This is used when writing the antenna information to disk
+       * and will be converted to a 32-bit float before writing.
+       */
+      std::vector<double>& getDataY() const;
+
+      /**
+       * Return a reference to the underlying data for Z polarization.
+       *
+       * This is used when writing the antenna information to disk
+       * and will be converted to a 32-bit float before writing.
+       */
+      std::vector<double>& getDataZ() const;
 
     /**
      * Prepare for the start of the library.
@@ -107,7 +119,7 @@ namespace corsika {
       filename_ = (directory / this->getName()).string() + ".npz";
 
       // get the axis labels for this antenna and write the first row.
-      xt::xtensor<double, 1> axis = xt::cast<double>(this->implementation().getAxis());
+        std::vector<long double> axis = this->implementation().getAxis();
 
       // check for the axis name
       std::string label = "Unknown";
@@ -117,23 +129,25 @@ namespace corsika {
         label = "Frequency";
       }
 
-      if (radioImplementation == "ZHS" && TAntennaImpl::is_time_domain) {
-        for (size_t i=0; i<axis.size()-1;i++)
-        {
-            axis.at(i) = (axis.at(i+1)+axis.at(i))/2.;
+        if (radioImplementation == "ZHS" && TAntennaImpl::is_time_domain) {
+            std::cout << "ZHS" << std::endl;
+            for (size_t i=0; i<axis.size()-1;i++)
+            {
+                axis.at(i) = (axis.at(i+1)+axis.at(i))/2.;
+            }
+            // explicitly convert the arrays to the needed type for cnpy
+            axis.pop_back();
+            long double const* raw_data = axis.data();
+            std::vector<size_t> N = {axis.size()}; // cnpy needs a vector here -- this should be axis.size() - 1 --
+            // write the labels to the first row of the NumPy file
+            cnpy::npz_save(filename_, label, raw_data, N, "w");
+        } else {
+            // explicitly convert the arrays to the needed type for cnpy
+            long double const* raw_data = axis.data();
+            std::vector<size_t> N = {axis.size()}; // cnpy needs a vector here
+            // write the labels to the first row of the NumPy file
+            cnpy::npz_save(filename_, label, raw_data, N, "w");
         }
-        // explicitly convert the arrays to the needed type for cnpy
-        double const* raw_data = xt::view(axis,xt::range(_, -1)).data();
-        std::vector<size_t> N = {axis.size()-1}; // cnpy needs a vector here
-        // write the labels to the first row of the NumPy file
-        cnpy::npz_save(filename_, label, raw_data, N, "w");
-      } else {
-        // explicitly convert the arrays to the needed type for cnpy
-        double const* raw_data = axis.data();
-        std::vector<size_t> N = {axis.size()}; // cnpy needs a vector here
-        // write the labels to the first row of the NumPy file
-        cnpy::npz_save(filename_, label, raw_data, N, "w");
-      }
     }
 
     /**
@@ -144,26 +158,37 @@ namespace corsika {
       // get the copy of the waveform data for this event
       // we transpose it so that we can match dimensions with the
       // time array that is already in the output file
-      xt::xtensor<double, 2> data = xt::transpose(xt::cast<double>(this->implementation().getData()));
+        std::vector<double> dataX = this->implementation().getDataX();
+        std::vector<double> dataY = this->implementation().getDataY();
+        std::vector<double> dataZ = this->implementation().getDataZ();
 
-      //std::cout << data << std::endl;
-      if (radioImplementation == "ZHS") {
-          xt::xtensor<double,2> electricField {xt::zeros<double>({data.shape()[0], data.shape()[1]-1})};
-          for (size_t i = 0; i < electricField.shape()[1]; i++)
-          {
-              electricField.at(0, i) = -(data.at(0,i+1)-data.at(0,i))*sampleRate;
-              electricField.at(1, i) = -(data.at(1,i+1)-data.at(1,i))*sampleRate;
-              electricField.at(2, i) = -(data.at(2,i+1)-data.at(2,i))*sampleRate;
-          }
-          // cnpy needs a vector for the shape
-          std::vector<size_t> shape = {electricField.shape()[0], electricField.shape()[1]};
-          cnpy::npz_save(filename_, std::to_string(event), electricField.data(), shape, "a");
-      } else {
-          // cnpy needs a vector for the shape
-          std::vector<size_t> shape = {data.shape()[0], data.shape()[1]};
-          // and write this event to the .npz archive
-          cnpy::npz_save(filename_, std::to_string(event), data.data(), shape, "a");
-      }
+        if (radioImplementation == "ZHS") {
+            std::vector<double> electricFieldX (dataX.size() - 1, 0); //num_bins_, std::vector<double>(3, 0)
+            std::vector<double> electricFieldY (dataY.size() - 1, 0);
+            std::vector<double> electricFieldZ (dataZ.size() - 1, 0);
+            for (size_t i = 0; i < electricFieldX.size(); i++)
+            {
+                electricFieldX.at(i) = -(dataX.at(i+1)-dataX.at(i))*sampleRate;
+                electricFieldY.at(i) = -(dataY.at(i+1)-dataY.at(i))*sampleRate;
+                electricFieldZ.at(i) = -(dataZ.at(i+1)-dataZ.at(i))*sampleRate;
+            }
+            // cnpy needs a vector for the shape
+            std::vector<size_t> shapeX = {electricFieldX.size()};
+            std::vector<size_t> shapeY = {electricFieldY.size()};
+            std::vector<size_t> shapeZ = {electricFieldZ.size()};
+            cnpy::npz_save(filename_, std::to_string(event) + "X", electricFieldX.data(), shapeX, "a");
+            cnpy::npz_save(filename_, std::to_string(event) + "Y", electricFieldY.data(), shapeY, "a");
+            cnpy::npz_save(filename_, std::to_string(event) + "Z", electricFieldZ.data(), shapeZ, "a");
+        } else {
+            // cnpy needs a vector for the shape
+            std::vector<size_t> shapeX = {dataX.size()};
+            std::vector<size_t> shapeY = {dataY.size()};
+            std::vector<size_t> shapeZ = {dataZ.size()};
+            // and write this event to the .npz archive
+            cnpy::npz_save(filename_, std::to_string(event) + "X", dataX.data(), shapeX, "a");
+            cnpy::npz_save(filename_, std::to_string(event) + "Y", dataY.data(), shapeY, "a");
+            cnpy::npz_save(filename_, std::to_string(event) + "Z", dataZ.data(), shapeZ, "a");
+        }
     }
 
 
