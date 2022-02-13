@@ -17,10 +17,6 @@
 #include <corsika/modules/radio/propagators/RadioPropagator.hpp>
 
 #include <vector>
-#include <xtensor/xtensor.hpp>
-#include <xtensor/xbuilder.hpp>
-#include <xtensor/xio.hpp>
-#include <xtensor/xcsv.hpp>
 #include <istream>
 #include <fstream>
 #include <iostream>
@@ -34,16 +30,13 @@
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/SlidingPlanarExponential.hpp>
-
-
-#include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/IMediumModel.hpp>
 #include <corsika/media/IRefractiveIndexModel.hpp>
-#include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
 #include <corsika/media/ExponentialRefractiveIndex.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
+#include <corsika/media/CORSIKA7Atmospheres.hpp>
+
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
@@ -54,7 +47,6 @@
 #include <corsika/setup/SetupTrajectory.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/PhysicalConstants.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
 
 #include <corsika/output/OutputManager.hpp>
 
@@ -76,31 +68,23 @@ logging::set_level(logging::level::debug);
     // This serves as a compiler test for any changes in the CoREAS algorithm
     // Environment
     using EnvironmentInterface =
-    IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+       IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+
+//    using EnvType = setup::Environment;
     using EnvType = Environment<EnvironmentInterface>;
     EnvType envCoREAS;
     CoordinateSystemPtr const& rootCSCoREAS = envCoREAS.getCoordinateSystem();
     Point const center{rootCSCoREAS, 0_m, 0_m, 0_m};
-    auto builder = make_layered_spherical_atmosphere_builder<
-        EnvironmentInterface, MyExtraEnv>::create(center,
-                                                  constants::EarthRadius::Mean, 1.000327,
-                                                  Medium::AirDry1Atm,
+
+//        1.000327,
+        create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(envCoREAS, AtmosphereId::LinsleyUSStd, center,
+                                                                   1.000327, Medium::AirDry1Atm,
                                                   MagneticFieldVector{rootCSCoREAS, 0_T,
                                                                       50_uT, 0_T});
 
-    builder.setNuclearComposition(
-        {{Code::Nitrogen, Code::Oxygen},
-         {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
-
-    builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
-    builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
-    builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
-    builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
-    builder.addLinearLayer(1e9_cm, 112.8_km);
-    builder.assemble(envCoREAS);
 
 
-    // now create antennas and detectors
+        // now create antennas and detectors
     // the antennas location
     const auto point1{Point(envCoREAS.getCoordinateSystem(), 100_m, 2_m, 3_m)};
     const auto point2{Point(envCoREAS.getCoordinateSystem(), 4_m, 80_m, 6_m)};
@@ -160,12 +144,15 @@ logging::set_level(logging::level::debug);
     const Point pos(rootCSCoREAS, 50_m, 10_m, 80_m);
 
     // add the particle to the stack
-    auto const particle1{stack.addParticle(std::make_tuple(particle, plab, pos, 0_ns))};
+    auto const particle1{stack.addParticle(std::make_tuple(particle,
+                                                           calculate_kinetic_energy(plab.getNorm(), get_mass(particle)),
+                                                           plab.normalized(), pos, 0_ns))};
+
 
     auto const charge_ {get_charge(particle1.getPID())};
 
     // create a radio process instance using CoREAS
-    RadioProcess<AntennaCollection<TimeDomainAntenna>, CoREAS<AntennaCollection<TimeDomainAntenna>,
+    RadioProcess<decltype(detector), CoREAS<decltype(detector),
             decltype(StraightPropagator(envCoREAS))>, decltype(StraightPropagator(envCoREAS))>
         coreas( detector, envCoREAS);
 
@@ -193,8 +180,7 @@ logging::set_level(logging::level::debug);
     const auto density{19.2_g / cube(1_cm)};
 
     // the composition we use for the homogeneous medium
-    NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
-                                               std::vector<float>{1.f});
+    NuclearComposition const protonComposition({Code::Proton}, {1.});
 
     // create magnetic field vector
     Vector B1(rootCSZHS, 0_T, 0_T, 1_T);
@@ -260,7 +246,8 @@ logging::set_level(logging::level::debug);
     const Point pos(rootCSZHS, 50_m, 10_m, 80_m);
 
     // add the particle to the stack
-    auto const particle1{stack.addParticle(std::make_tuple(particle, plab, pos, 0_ns))};
+    auto const particle1{stack.addParticle(std::make_tuple(particle, calculate_kinetic_energy(plab.getNorm(), get_mass(particle)),
+                                                           plab.normalized(), pos, 0_ns))};
 
     auto const charge_ {get_charge(particle1.getPID())};
 
@@ -290,8 +277,7 @@ logging::set_level(logging::level::debug);
       // the constant density
       const auto density{19.2_g / cube(1_cm)};
       // the composition we use for the homogeneous medium
-      NuclearComposition const Composition(std::vector<Code>{Code::Nitrogen},
-                                           std::vector<float>{1.f});
+      NuclearComposition const Composition({Code::Nitrogen}, {1.});
       // create magnetic field vector
       Vector B1(rootCS, 0_T, 0_T, 0.3809_T);
       // create a Sphere for the medium
@@ -367,7 +353,9 @@ logging::set_level(logging::level::debug);
         auto plab {beta * pmass * gamma};
         Line l {point_1,v};
         StraightTrajectory track {l,t};
-        auto particle1{stack.addParticle(std::make_tuple(particle, plab, point_1, timeCounter))};
+        auto particle1{stack.addParticle(std::make_tuple(particle,
+                                                         calculate_kinetic_energy(plab.getNorm(), get_mass(particle)),
+                                                         plab.normalized(), point_1, timeCounter))};
         coreas.doContinuous(particle1,track,true);
         stack.clear();
       }
@@ -398,9 +386,7 @@ logging::set_level(logging::level::debug);
 
     auto const props6 = Medium6->setModelProperties<UniRIndex>(
         1, 1_kg / (1_m * 1_m * 1_m),
-        NuclearComposition(
-            std::vector<Code>{Code::Nitrogen},
-            std::vector<float>{1.f}));
+        NuclearComposition({Code::Nitrogen}, {1.}));
 
     env6.getUniverse()->addChild(std::move(Medium6));
 
@@ -441,11 +427,22 @@ logging::set_level(logging::level::debug);
     ant1.receive(15_s, v1, v11);
     ant2.receive(16_s, v2, v22);
 
-    // use getWaveform() method
-    auto [t111, E1] = ant1.getWaveform();
-    CHECK(E1(5,0) - 10 == 0);
-    auto [t222, E2] = ant2.getWaveform();
-    CHECK(E2(5,0) -20 == 0);
+    // use getWaveform() methods
+    auto [tx, Ex] = ant1.getWaveformX();
+    CHECK(Ex[5] - 10 == 0);
+    CHECK(tx[5] - 5 * 1_s / 1_ns == Approx(0.0));
+    auto [ty, Ey] = ant1.getWaveformY();
+    CHECK(Ey[5] - 10 == 0);
+    auto [tz, Ez] = ant1.getWaveformZ();
+    CHECK(Ez[5] - 10 == 0);
+    CHECK(tx[5] - ty[5] == 0);
+    CHECK(ty[5] - tz[5] == 0);
+    auto [tx2, Ex2] = ant2.getWaveformX();
+    CHECK(Ex2[5] - 20 == 0);
+    auto [ty2, Ey2] = ant2.getWaveformY();
+    CHECK(Ey2[5] - 20 == 0);
+    auto [tz2, Ez2] = ant2.getWaveformZ();
+    CHECK(Ez2[5] - 20 == 0);
 
     // the following creates a star-shaped pattern of antennas in the ground
     AntennaCollection<TimeDomainAntenna> detector__;
@@ -488,8 +485,7 @@ logging::set_level(logging::level::debug);
       // the constant density
       const auto density{19.2_g / cube(1_cm)};
       // the composition we use for the homogeneous medium
-      NuclearComposition const Composition(std::vector<Code>{Code::Nitrogen},
-                                           std::vector<float>{1.f});
+      NuclearComposition const Composition({Code::Nitrogen}, {1.});
       // create magnetic field vector
       Vector B1(rootCS, 0_T, 0_T, 0.3809_T);
       // create a Sphere for the medium
@@ -549,8 +545,7 @@ logging::set_level(logging::level::debug);
     // the constant density
     const auto density{19.2_g / cube(1_cm)};
     // the composition we use for the homogeneous medium
-    NuclearComposition const Composition(std::vector<Code>{Code::Nitrogen},
-                                         std::vector<float>{1.f});
+    NuclearComposition const Composition({Code::Nitrogen}, {1.});
     // create magnetic field vector
     Vector B1(rootCS, 0_T, 0_T, 0.3809_T);
     // create a Sphere for the medium
@@ -650,9 +645,7 @@ logging::set_level(logging::level::debug);
           Medium1
               ->setModelProperties<ExpoRIndex>( 1, 0 / 1_m,
                                                 1_kg / (1_m * 1_m * 1_m),
-                                                NuclearComposition(
-                                                    std::vector<Code>{Code::Nitrogen},
-                                                    std::vector<float>{1.f}));
+                                                NuclearComposition({Code::Nitrogen}, {1.}));
 
       env1.getUniverse()->addChild(std::move(Medium1));
 
@@ -718,9 +711,7 @@ logging::set_level(logging::level::debug);
           Medium2
               ->setModelProperties<ExpoRIndex>( 2, 2 / 1_m,
                                                 1_kg / (1_m * 1_m * 1_m),
-                                                NuclearComposition(
-                                                    std::vector<Code>{Code::Nitrogen},
-                                                    std::vector<float>{1.f}));
+                                                NuclearComposition({Code::Nitrogen}, {1.}));
 
       env2.getUniverse()->addChild(std::move(Medium2));
 
