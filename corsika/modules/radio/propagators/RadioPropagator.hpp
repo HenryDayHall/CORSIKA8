@@ -38,9 +38,10 @@ namespace corsika {
     /**
      * Construct a new RadioPropagator instance.
      */
-    RadioPropagator(TEnvironment const& env)
-        : env_(env) {}
+    RadioPropagator(TEnvironment const& env);
 
   }; // class RadioPropagator
 
 } // namespace corsika
+
+#include <corsika/detail/modules/radio/propagators/RadioPropagator.inl>

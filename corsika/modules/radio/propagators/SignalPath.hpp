@@ -35,16 +35,10 @@ namespace corsika {
      */
     SignalPath(TimeType const propagation_time, double const average_refractive_index, double const refractive_index_source, double const refractive_index_destination,
                Vector<dimensionless_d> const emit, Vector<dimensionless_d> const receive,
-               LengthType const R_distance, std::deque<Point> const& points)
-        : Path(points)
-        , propagation_time_(propagation_time)
-        , average_refractive_index_(average_refractive_index)
-        , refractive_index_source_(refractive_index_source)
-        , refractive_index_destination_(refractive_index_destination)
-        , emit_(emit)
-        , receive_(receive)
-        , R_distance_(R_distance) {}
+               LengthType const R_distance, std::deque<Point> const& points);
 
-  }; // class SignalPath
+  }; // END: class SignalPath final
 
 } // namespace corsika
+
+#include <corsika/detail/modules/radio/propagators/SignalPath.inl>

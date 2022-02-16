@@ -41,14 +41,12 @@ namespace corsika {
         /**
          * Get a reference to the underlying radio implementation.
          */
-        TRadioImpl& implementation() { return static_cast<TRadioImpl&>(*this); }
+        TRadioImpl& implementation();
 
         /*
          *  Get a const reference to the underlying implementation.
          */
-        TRadioImpl const& implementation() const {
-            return static_cast<TRadioImpl const&>(*this);
-        }
+        TRadioImpl const& implementation() const;
 
     protected:
         TAntennaCollection& antennas_; ///< The radio antennas we store into.
@@ -60,9 +58,7 @@ namespace corsika {
          * Construct a new RadioProcess.
          */
         template <typename... TArgs>
-        RadioProcess(TAntennaCollection& antennas, TArgs&&... args)
-                : antennas_(antennas)
-                , propagator_(args...) {}
+        RadioProcess(TAntennaCollection& antennas, TArgs&&... args);
 
         /**
          * Perform the continuous process (radio emission).
@@ -74,25 +70,7 @@ namespace corsika {
          * @param track       The current track.
          */
         template <typename Particle, typename Track>
-        ProcessReturn doContinuous(Particle const& particle, Track const& track, bool const) {
-            // we want the following particles:
-            // Code::Electron & Code::Positron & Code::Gamma
-
-            // we wrap Simulate() in doContinuous as the plan is to add particle level
-            // filtering or thinning for calculation of the radio emission. This is
-            // important for controlling the runtime of radio (by ignoring particles
-            // that aren't going to contribute i.e. heavy hadrons)
-            // if (valid(particle, track)) {
-            auto const particleID_ {particle.getPID()};
-            if ((particleID_ == Code::Electron) || (particleID_ == Code::Positron)) {
-                CORSIKA_LOG_DEBUG("Particle for radio calculation: {} ", particleID_);
-                return this->implementation().simulate(particle, track);
-            } else {
-                CORSIKA_LOG_DEBUG("Particle {} is irrelevant for radio", particleID_);
-                return ProcessReturn::Ok;
-            }
-            //}
-        }
+        ProcessReturn doContinuous(Particle const& particle, Track const& track, bool const);
 
         /**
          * Return the maximum step length for this particle and track.
@@ -106,36 +84,17 @@ namespace corsika {
          */
         template <typename Particle, typename Track>
         LengthType getMaxStepLength(Particle const& vParticle,
-                                    Track const& vTrack) const {
-            return meter * std::numeric_limits<double>::infinity();
-        }
+                                    Track const& vTrack) const;
 
         /**
          * Called at the start of each library.
          */
-        void startOfLibrary(boost::filesystem::path const& directory) final override {
-
-            // loop over every antenna and set the initial path
-            // this also writes the time-bins to disk.
-            for (auto& antenna : antennas_.getAntennas()) { antenna.startOfLibrary(directory,this->implementation().algorithm);}
-        }
+        void startOfLibrary(boost::filesystem::path const& directory) final override;
 
         /**
          * Called at the end of each shower.
          */
-        virtual void endOfShower(unsigned int const) final override {
-
-            // loop over every antenna and instruct them to
-            // flush data to disk, and then reset the antenna
-            // before the next event
-            for (auto& antenna : antennas_.getAntennas()) {
-                antenna.endOfShower(event_, this->implementation().algorithm, antenna.sample_rate_*1_s);
-                antenna.reset();
-            }
-
-            // increment our event counter
-            event_++;
-        }
+        virtual void endOfShower(unsigned int const) final override;
 
         /**
          * Called at the end of each library.
@@ -146,36 +105,10 @@ namespace corsika {
         /**
          * Get the configuration of this output.
          */
-        YAML::Node getConfig() const final {
-
-            // top-level YAML node
-            YAML::Node config;
-
-            // fill in some basics
-            config["type"] = "RadioProcess";
-            config["algorithm"] = this->implementation().algorithm;
-            config["units"]["time"] = "ns";
-            config["units"]["frequency"] = "GHz";
-            config["units"]["electric field"] = "V/m";
-            config["units"]["distance"] = "m";
-
-            for (auto& antenna : antennas_.getAntennas()) {
-                // get the name/location of this antenna
-                auto name = antenna.getName();
-                auto location = antenna.getLocation().getCoordinates();
-
-                // get the antennas config
-                config["antennas"][name] = antenna.getConfig();
-
-                // write the location of this antenna
-                config["antennas"][name]["location"].push_back(location.getX() / 1_m);
-                config["antennas"][name]["location"].push_back(location.getY() / 1_m);
-                config["antennas"][name]["location"].push_back(location.getZ() / 1_m);
-            }
-
-            return config;
-        }
+        YAML::Node getConfig() const final;
 
     }; // END: class RadioProcess
 
 } // namespace corsika
+
+#include <corsika/detail/modules/radio/RadioProcess.inl>

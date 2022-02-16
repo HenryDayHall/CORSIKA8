@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
  *
@@ -54,16 +54,7 @@ namespace corsika {
      */
     TimeDomainAntenna(std::string const& name, Point const& location,
                       TimeType const& start_time, TimeType const& duration,
-                      InverseTimeType const& sample_rate, TimeType const& ground_hit_time)
-        : Antenna(name, location)
-        , start_time_(start_time)
-        , duration_(duration)
-        , sample_rate_(sample_rate)
-        , ground_hit_time_(ground_hit_time)
-        , num_bins_(static_cast<std::size_t>(duration * sample_rate + 1.5l))
-        , waveformEX_(num_bins_, 0)
-        , waveformEY_(num_bins_, 0)
-        , waveformEZ_(num_bins_, 0) {};
+                      InverseTimeType const& sample_rate, TimeType const& ground_hit_time);
 
     /**
      * Receive an electric field at this antenna.
@@ -79,123 +70,58 @@ namespace corsika {
     // TODO: rethink this method a bit. If the endpoint is at the end of the antenna
     // resolution then you get the startpoint signal but you lose the endpoint signal!
     void receive(TimeType const time, Vector<dimensionless_d> const& receive_vector,
-                 ElectricFieldVector const& efield) {
-
-      if (time < start_time_ || time > (start_time_ + duration_)) {
-        return;
-      } else {
-        // figure out the correct timebin to store the E-field value.
-        // NOTE: static cast is implicitly flooring
-        auto timebin_{static_cast<std::size_t>(std::floor((time - start_time_) * sample_rate_ + 0.5l))};
-//        CORSIKA_LOG_INFO("Timebin: {}", timebin_);
-
-        // ToDO: ask explicitly for a CS and use that specific on for writing the output
-
-        // store the x,y,z electric field components.
-        waveformEX_.at(timebin_) += (efield.getComponents().getX() / (1_V / 1_m));
-        waveformEY_.at(timebin_) += (efield.getComponents().getY() / (1_V / 1_m));
-        waveformEZ_.at(timebin_) += (efield.getComponents().getZ() / (1_V / 1_m));
-        // TODO: Check how they are stored in memory, row-wise or column-wise?
-      }
-    }
+                 ElectricFieldVector const& efield);
 
       void receive(TimeType const time, Vector<dimensionless_d> const& receive_vector,
-                   VectorPotential const& vectorP) {
-
-          if (time < start_time_ || time > (start_time_ + duration_)) {
-              return;
-          } else {
-              // figure out the correct timebin to store the E-field value.
-              // NOTE: static cast is implicitly flooring
-              auto timebin_{static_cast<std::size_t>(std::floor((time - start_time_) * sample_rate_ + 0.5l))};
-//              CORSIKA_LOG_INFO("Timebin: {}", timebin_);
-
-              // ToDO: ask explicitly for a CS and use that specific on for writing the output
-
-              // store the x,y,z electric field components.
-              waveformEX_.at(timebin_) += (vectorP.getComponents().getX() / (1_V * 1_s / 1_m));
-              waveformEY_.at(timebin_) += (vectorP.getComponents().getY() / (1_V * 1_s / 1_m));
-              waveformEZ_.at(timebin_) += (vectorP.getComponents().getZ() / (1_V * 1_s / 1_m));
-              // TODO: Check how they are stored in memory, row-wise or column-wise?
-          }
-      }
+                   VectorPotential const& vectorP);
 
     /**
      * Return the time-units of each waveform for X polarization
      *
      * This returns them in nanoseconds for ease of use.
      */
-    auto& getDataX() const { return waveformEX_; }
+    auto& getDataX() const;
 
     /**
      * Return the time-units of each waveform for Y polarization
      *
      * This returns them in nanoseconds for ease of use.
      */
-    auto& getDataY() const { return waveformEY_; }
+    auto& getDataY() const;
 
     /**
      * Return the time-units of each waveform for Z polarization
      *
      * This returns them in nanoseconds for ease of use.
      */
-    auto& getDataZ() const { return waveformEZ_; }
+    auto& getDataZ() const;
 
     /**
      * Return the time-units of each waveform.
      *
      * This returns them in nanoseconds for ease of use.
      */
-    auto getAxis() const {
-
-      // create a 1-D xtensor to store time values so we can print them later.
-      std::vector<long double> times(num_bins_, 0);
-
-      // calculate the sample_period
-      auto sample_period{1 / sample_rate_};
-
-      // fill in every time-value
-      // TODO: Vectorize this using xtensor
-      for (std::size_t i = 0; i < num_bins_; i++) {
-        // create the current time in nanoseconds
-        times.at(i) = static_cast<long double>(((start_time_ - ground_hit_time_) + i*sample_period) / 1_ns);
-      }
-
-      return times;
-    }
+    auto getAxis() const;
 
     // TODO: These should get deleted or renamed to something more sensible
-    auto getWaveformX() const { return std::make_pair(getAxis(), waveformEX_); }
+    auto getWaveformX() const;
 
-    auto getWaveformY() const { return std::make_pair(getAxis(), waveformEY_); }
+    auto getWaveformY() const;
 
-    auto getWaveformZ() const { return std::make_pair(getAxis(), waveformEZ_); }
+    auto getWaveformZ() const;
 
     /**
      * Reset the antenna before starting a new simulation.
      */
-      void reset() {
-          std::fill(waveformEX_.begin(), waveformEX_.end(), 0);
-          std::fill(waveformEY_.begin(), waveformEY_.end(), 0);
-          std::fill(waveformEZ_.begin(), waveformEZ_.end(), 0);
-      };
+      void reset();
 
     /**
      * Return a YAML configuration for this antenna.
      */
-    YAML::Node getConfig() const {
+    YAML::Node getConfig() const;
 
-      // top-level config
-      YAML::Node config;
-
-      config["type"] = "TimeDomainAntenna";
-      config["start_time"] = start_time_ / 1_ns;
-      config["duration"] = duration_ / 1_ns;
-      config["sample_rate"] = sample_rate_ / 1_GHz;
-
-      return config;
-    }
-
-  }; // END: class Antenna final
+  }; // END: class TimeDomainAntenna
 
 } // namespace corsika
+
+#include <corsika/detail/modules/radio/antennas/TimeDomainAntenna.inl>
