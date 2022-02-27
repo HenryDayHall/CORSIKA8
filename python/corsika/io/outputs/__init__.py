@@ -12,6 +12,7 @@ from .track_writer import TrackWriter
 from .longitudinal_profile import LongitudinalProfile
 from .bethe_bloch import BetheBlochPDG
 from .particle_cut import ParticleCut
+from .energy_loss import EnergyLoss
 from .output import Output
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     "LongitudinalProfile",
     "BetheBlochPDG",
     "ParticleCut",
+    "EnergyLoss"
 ]
