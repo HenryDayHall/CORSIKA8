@@ -27,8 +27,8 @@ namespace corsika {
    * RootCoordinateSystem
    */
 
-  static inline CoordinateSystemPtr& get_root_CoordinateSystem() {
-    static CoordinateSystemPtr rootCS(new CoordinateSystem); // THIS IS IT
+  inline CoordinateSystemPtr const& get_root_CoordinateSystem() {
+    static CoordinateSystemPtr const rootCS(new CoordinateSystem); // THIS IS IT
     return rootCS;
   }
 

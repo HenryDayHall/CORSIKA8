@@ -35,7 +35,7 @@ namespace corsika {
   using CoordinateSystemPtr = std::shared_ptr<CoordinateSystem const>;
 
   /// this is the only way to create ONE unique root CS
-  static CoordinateSystemPtr& get_root_CoordinateSystem();
+  CoordinateSystemPtr const& get_root_CoordinateSystem();
 
   /**
    * Creates new CoordinateSystemPtr by translation along \a vector
@@ -134,7 +134,7 @@ namespace corsika {
      * \{
      **/
 
-    friend CoordinateSystemPtr& get_root_CoordinateSystem();
+    friend CoordinateSystemPtr const& get_root_CoordinateSystem();
 
     friend CoordinateSystemPtr make_translation(CoordinateSystemPtr const& cs,
                                                 QuantityVector<length_d> const& vector);
