@@ -109,8 +109,8 @@ namespace corsika {
 
   public:
     // default resource allocation
-    CoordinateSystem(CoordinateSystem const&) = default;
-    CoordinateSystem(CoordinateSystem&&) = default;
+    CoordinateSystem(CoordinateSystem const&) = delete;
+    CoordinateSystem(CoordinateSystem&&) = delete;
     CoordinateSystem& operator=(CoordinateSystem const& pCS) =
         delete; // avoid making copies
     ~CoordinateSystem() = default;
@@ -128,8 +128,6 @@ namespace corsika {
     bool operator!=(CoordinateSystem const&) const;
 
   protected:
-    static CoordinateSystem createCS() { return CoordinateSystem(); }
-
     /**
      * \name Friends
      * Manipulation and creation functions.
