@@ -521,9 +521,6 @@ logging::set_level(logging::level::debug);
 
     SECTION("Straight Propagator w/ Exponential Refractive Index") {
 
-      //    logging::set_level(logging::level::info);
-      //    corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
-
       // create an environment with exponential refractive index (n_0 = 1 & lambda = 0)
       using ExpoRIndex = ExponentialRefractiveIndex<HomogeneousMedium
           <IRefractiveIndexModel<IMediumModel>>>;
@@ -534,12 +531,14 @@ logging::set_level(logging::level::debug);
       //get another coordinate system
       const CoordinateSystemPtr rootCS1 = env1.getCoordinateSystem();
 
+      // the center of the earth
+      Point const center1_{rootCS1, 0_m, 0_m, 0_m};
+      LengthType const radius_{0_m};
+
       auto Medium1 = EnvType::createNode<Sphere>(
           Point{rootCS1, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-      auto const props1 =
-          Medium1
-              ->setModelProperties<ExpoRIndex>( 1, 0 / 1_m,
+      auto const props1 = Medium1->setModelProperties<ExpoRIndex>( 1, 0 / 1_m, center1_, radius_,
                                                 1_kg / (1_m * 1_m * 1_m),
                                                 NuclearComposition({Code::Nitrogen}, {1.}));
 
@@ -600,12 +599,15 @@ logging::set_level(logging::level::debug);
       //get another coordinate system
       const CoordinateSystemPtr rootCS2 = env2.getCoordinateSystem();
 
+      // the center of the earth
+      Point const center2_{rootCS2, 0_m, 0_m, 0_m};
+
       auto Medium2 = EnvType::createNode<Sphere>(
           Point{rootCS2, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
       auto const props2 =
           Medium2
-              ->setModelProperties<ExpoRIndex>( 2, 2 / 1_m,
+              ->setModelProperties<ExpoRIndex>( 2, 2 / 1_m, center2_, radius_,
                                                 1_kg / (1_m * 1_m * 1_m),
                                                 NuclearComposition({Code::Nitrogen}, {1.}));
 
