@@ -49,7 +49,7 @@ namespace corsika {
      *
      * @returns    An iterable mutable reference to the antennas.
      */
-    std::vector<TAntennaImpl>& getAntennas() { return antennas_; } // maybe the const& here is an issue
+    std::vector<TAntennaImpl>& getAntennas() { return antennas_; } // maybe this should be const?
 
     /**
      * Reset all the antenna waveforms.

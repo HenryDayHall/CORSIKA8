@@ -35,7 +35,7 @@ namespace corsika {
             // figure out the correct timebin to store the E-field value.
             // NOTE: static cast is implicitly flooring
             auto timebin_{static_cast<std::size_t>(std::floor((time - start_time_) * sample_rate_ + 0.5l))};
-//        CORSIKA_LOG_INFO("Timebin: {}", timebin_);
+//            CORSIKA_LOG_DEBUG("Timebin: {}", timebin_);
 
             // ToDO: ask explicitly for a CS and use that specific on for writing the output
 
@@ -56,7 +56,7 @@ namespace corsika {
             // figure out the correct timebin to store the E-field value.
             // NOTE: static cast is implicitly flooring
             auto timebin_{static_cast<std::size_t>(std::floor((time - start_time_) * sample_rate_ + 0.5l))};
-//              CORSIKA_LOG_INFO("Timebin: {}", timebin_);
+//            CORSIKA_LOG_DEBUG("Timebin: {}", timebin_);
 
             // ToDO: ask explicitly for a CS and use that specific on for writing the output
 
@@ -83,7 +83,7 @@ namespace corsika {
         auto sample_period{1 / sample_rate_};
 
         // fill in every time-value
-        // TODO: Vectorize this using xtensor
+        // TODO: Vectorize this
         for (std::size_t i = 0; i < num_bins_; i++) {
             // create the current time in nanoseconds
             times.at(i) = static_cast<long double>(((start_time_ - ground_hit_time_) + i*sample_period) / 1_ns);

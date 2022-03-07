@@ -43,7 +43,6 @@ namespace corsika {
         }
 
         if (radioImplementation == "ZHS" && TAntennaImpl::is_time_domain) {
-            std::cout << "ZHS" << std::endl;
             for (size_t i=0; i<axis.size()-1;i++)
             {
                 axis.at(i) = (axis.at(i+1)+axis.at(i))/2.;

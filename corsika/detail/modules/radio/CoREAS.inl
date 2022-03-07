@@ -55,7 +55,7 @@ namespace corsika {
         // loop over each antenna in the antenna collection (detector)
         for (auto& antenna : antennas_.getAntennas()) {
 
-            //        CORSIKA_LOG_INFO("Antenna: {} ", antenna.getName());
+            //        CORSIKA_LOG_DEBUG("Antenna: {} ", antenna.getName());
 
             // get the SignalPathCollection (path1) from the start "endpoint" to the antenna.
             auto paths1{this->propagator_.propagate(startPoint_, antenna.getLocation(), 1_m)}; // TODO: Add the stepsize to .propagate() at some point
