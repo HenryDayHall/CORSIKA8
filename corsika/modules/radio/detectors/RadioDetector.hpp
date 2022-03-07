@@ -37,7 +37,7 @@ namespace corsika {
      *
      * @param index in the collection
      */
-    TAntennaImpl at(std::size_t const i) {antennas_.at(i);}
+    TAntennaImpl at(std::size_t const i) { antennas_.at(i); }
 
     /**
      * Get the number of antennas in the collection
@@ -49,13 +49,16 @@ namespace corsika {
      *
      * @returns    An iterable mutable reference to the antennas.
      */
-    std::vector<TAntennaImpl>& getAntennas() { return antennas_; } // maybe this should be const?
+    std::vector<TAntennaImpl>& getAntennas() {
+      return antennas_;
+    } // maybe this should be const?
 
     /**
      * Reset all the antenna waveforms.
      */
     void reset() {
-      std::for_each(antennas_.begin(), antennas_.end(), std::mem_fn(&TAntennaImpl::reset));
+      std::for_each(antennas_.begin(), antennas_.end(),
+                    std::mem_fn(&TAntennaImpl::reset));
     };
 
   }; // END: class RadioDetector

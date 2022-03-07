@@ -16,49 +16,50 @@
 
 namespace corsika {
 
-    template <typename TRadioDetector, typename TPropagator>
-    class CoREAS final : public RadioProcess<TRadioDetector, CoREAS<TRadioDetector, TPropagator>, TPropagator> {
+  template <typename TRadioDetector, typename TPropagator>
+  class CoREAS final
+      : public RadioProcess<TRadioDetector, CoREAS<TRadioDetector, TPropagator>,
+                            TPropagator> {
 
-    public:
-        using ElectricFieldVector = Vector<ElectricFieldType::dimension_type>;
+  public:
+    using ElectricFieldVector = Vector<ElectricFieldType::dimension_type>;
 
-        // an identifier for which algorithm was used
-        static constexpr auto algorithm = "CoREAS";
+    // an identifier for which algorithm was used
+    static constexpr auto algorithm = "CoREAS";
 
+    /**
+     * Construct a new CoREAS instance.
+     *
+     * This forwards the detector and other arguments to
+     * the RadioProcess parent.
+     *
+     */
+    template <typename... TArgs>
+    CoREAS(TRadioDetector& detector, TArgs&&... args)
+        : RadioProcess<TRadioDetector, CoREAS, TPropagator>(detector, args...){};
 
-        /**
-         * Construct a new CoREAS instance.
-         *
-         * This forwards the detector and other arguments to
-         * the RadioProcess parent.
-         *
-         */
-        template <typename... TArgs>
-        CoREAS(TRadioDetector& detector, TArgs&&... args)
-                : RadioProcess<TRadioDetector, CoREAS, TPropagator>(detector, args...) {};
+    /**
+     * Simulate the radio emission from a particle across a track.
+     *
+     * This must be provided by the TRadioImpl.
+     *
+     * @param particle    The current particle.
+     * @param track       The current track.
+     *
+     */
+    template <typename Particle, typename Track>
+    ProcessReturn simulate(Particle const& particle, Track const& track);
 
+  private:
+    int tinycounter_{0};
+    int trackcounter_{0};
+    int zhscounter_{0};
 
-        /**
-        * Simulate the radio emission from a particle across a track.
-        *
-        * This must be provided by the TRadioImpl.
-        *
-        * @param particle    The current particle.
-        * @param track       The current track.
-        *
-        */
-        template <typename Particle, typename Track>
-        ProcessReturn simulate(Particle const& particle, Track const& track);
+    using Base =
+        RadioProcess<TRadioDetector, CoREAS<TRadioDetector, TPropagator>, TPropagator>;
+    using Base::antennas_;
 
-    private:
-        int tinycounter_ {0};
-        int trackcounter_ {0};
-        int zhscounter_ {0};
-
-        using Base = RadioProcess<TRadioDetector, CoREAS<TRadioDetector, TPropagator>, TPropagator>;
-        using Base::antennas_;
-
-    }; // end of class CoREAS
+  }; // end of class CoREAS
 
 } // namespace corsika
 

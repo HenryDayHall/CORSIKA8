@@ -11,8 +11,8 @@
 
 namespace corsika {
 
-    template <typename TImpl, typename TEnvironment>
-    inline RadioPropagator<TImpl, TEnvironment>::RadioPropagator(const TEnvironment &env)
-            : env_(env) {}
+  template <typename TImpl, typename TEnvironment>
+  inline RadioPropagator<TImpl, TEnvironment>::RadioPropagator(const TEnvironment& env)
+      : env_(env) {}
 
 } // namespace corsika

@@ -16,47 +16,47 @@
 
 namespace corsika {
 
+  /**
+   * A concrete implementation of the ZHS algorithm.
+   */
+  template <typename TRadioDetector, typename TPropagator>
+  class ZHS final : public RadioProcess<TRadioDetector, ZHS<TRadioDetector, TPropagator>,
+                                        TPropagator> {
+
+  public:
+    using VectorPotential = Vector<VectorPotentialType::dimension_type>;
+    // an identifier for which algorithm was used
+    static constexpr auto algorithm = "ZHS";
+
     /**
-     * A concrete implementation of the ZHS algorithm.
+     * Construct a new ZHS instance.
+     *
+     * This forwards the detector and other arguments to
+     * the RadioProcess parent.
+     *
      */
-    template <typename TRadioDetector, typename TPropagator>
-    class ZHS final : public RadioProcess<TRadioDetector, ZHS<TRadioDetector, TPropagator>,
-            TPropagator> {
+    template <typename... TArgs>
+    ZHS(TRadioDetector& detector, TArgs&&... args)
+        : RadioProcess<TRadioDetector, ZHS, TPropagator>(detector, args...){};
 
-    public:
-        using VectorPotential = Vector<VectorPotentialType::dimension_type>;
-        // an identifier for which algorithm was used
-        static constexpr auto algorithm = "ZHS";
+    /**
+     * Simulate the radio emission from a particle across a track.
+     *
+     * This must be provided by the TRadioImpl.
+     *
+     * @param particle    The current particle.
+     * @param track       The current track.
+     *
+     */
+    template <typename Particle, typename Track>
+    ProcessReturn simulate(Particle const& particle, Track const& track) const;
 
-                /**
-         * Construct a new ZHS instance.
-         *
-         * This forwards the detector and other arguments to
-         * the RadioProcess parent.
-         *
-         */
-        template <typename... TArgs>
-        ZHS(TRadioDetector& detector, TArgs&&... args)
-                : RadioProcess<TRadioDetector, ZHS, TPropagator>(detector, args...) {};
-
-                /**
-         * Simulate the radio emission from a particle across a track.
-         *
-         * This must be provided by the TRadioImpl.
-         *
-         * @param particle    The current particle.
-         * @param track       The current track.
-         *
-         */
-        template <typename Particle, typename Track>
-        ProcessReturn simulate(Particle const& particle, Track const& track) const;
-
-    private:
-        using Base =
+  private:
+    using Base =
         RadioProcess<TRadioDetector, ZHS<TRadioDetector, TPropagator>, TPropagator>;
-        using Base::antennas_;
+    using Base::antennas_;
 
-    }; // END: class ZHS
+  }; // END: class ZHS
 
 } // namespace corsika
 

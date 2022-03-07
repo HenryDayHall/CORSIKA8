@@ -20,20 +20,26 @@ namespace corsika {
    */
   struct SignalPath final : private Path {
 
-    //TODO: discuss if we need average refractivity or average refractive index
-    TimeType const propagation_time_;    ///< The total propagation time.
+    // TODO: discuss if we need average refractivity or average refractive index
+    TimeType const propagation_time_;       ///< The total propagation time.
     double const average_refractive_index_; ///< The average refractive index.
-    double const refractive_index_source_; ///< The refractive index at the source.
-    double const refractive_index_destination_; ///< The refractive index at the destination point.
+    double const refractive_index_source_;  ///< The refractive index at the source.
+    double const
+        refractive_index_destination_; ///< The refractive index at the destination point.
     Vector<dimensionless_d> const emit_;    ///< The (unit-length) emission vector.
     Vector<dimensionless_d> const receive_; ///< The (unit-length) receive vector.
-    std::deque<Point> const points_;  ///< A collection of points that make up the geometrical path.
-    LengthType const R_distance_; ///< The distance from the point of emission to an observer. TODO: optical path, not geometrical! (probably)
+    std::deque<Point> const
+        points_; ///< A collection of points that make up the geometrical path.
+    LengthType const
+        R_distance_; ///< The distance from the point of emission to an observer. TODO:
+                     ///< optical path, not geometrical! (probably)
 
     /**
      * Create a new SignalPath instance.
      */
-    SignalPath(TimeType const propagation_time, double const average_refractive_index, double const refractive_index_source, double const refractive_index_destination,
+    SignalPath(TimeType const propagation_time, double const average_refractive_index,
+               double const refractive_index_source,
+               double const refractive_index_destination,
                Vector<dimensionless_d> const emit, Vector<dimensionless_d> const receive,
                LengthType const R_distance, std::deque<Point> const& points);
 

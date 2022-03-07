@@ -18,96 +18,95 @@
 
 namespace corsika {
 
+  /**
+   * The base interface for radio emission processes.
+   *
+   * TRadioImpl is the concrete implementation of the radio algorithm.
+   * TAntennaCollection is the detector instance that stores antennas
+   * and is responsible for managing the output writing.
+   */
+  template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
+  class RadioProcess : public ContinuousProcess<
+                           RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>>,
+                       public BaseOutput {
+
+    //    using ParticleType = corsika::setup::Stack::particle_type;
+    //    using TrackType = corsika::LeapFrogTrajectory;
+
     /**
-     * The base interface for radio emission processes.
-     *
-     * TRadioImpl is the concrete implementation of the radio algorithm.
-     * TAntennaCollection is the detector instance that stores antennas
-     * and is responsible for managing the output writing.
+     * A collection of filter objects for deciding on valid particles and tracks.
      */
-    template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
-    class RadioProcess : public ContinuousProcess<
-            RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>>,
-                         public BaseOutput {
+    // std::vector<std::function<bool(ParticleType&, TrackType const&)>> filters_;
 
-        //    using ParticleType = corsika::setup::Stack::particle_type;
-        //    using TrackType = corsika::LeapFrogTrajectory;
+    /**
+     * Get a reference to the underlying radio implementation.
+     */
+    TRadioImpl& implementation();
 
-        /**
-         * A collection of filter objects for deciding on valid particles and tracks.
-         */
-        // std::vector<std::function<bool(ParticleType&, TrackType const&)>> filters_;
+    /*
+     *  Get a const reference to the underlying implementation.
+     */
+    TRadioImpl const& implementation() const;
 
-        /**
-         * Get a reference to the underlying radio implementation.
-         */
-        TRadioImpl& implementation();
+  protected:
+    TAntennaCollection& antennas_; ///< The radio antennas we store into.
+    TPropagator propagator_;       ///< The propagator implementation.
+    int event_{0};                 ///< The current event ID.
 
-        /*
-         *  Get a const reference to the underlying implementation.
-         */
-        TRadioImpl const& implementation() const;
+  public:
+    /**
+     * Construct a new RadioProcess.
+     */
+    template <typename... TArgs>
+    RadioProcess(TAntennaCollection& antennas, TArgs&&... args);
 
-    protected:
-        TAntennaCollection& antennas_; ///< The radio antennas we store into.
-        TPropagator propagator_;       ///< The propagator implementation.
-        int event_{0};                 ///< The current event ID.
+    /**
+     * Perform the continuous process (radio emission).
+     *
+     * This handles filtering individual particle tracks
+     * before passing them to `Simulate`.`
+     *
+     * @param particle    The current particle.
+     * @param track       The current track.
+     */
+    template <typename Particle, typename Track>
+    ProcessReturn doContinuous(Particle const& particle, Track const& track, bool const);
 
-    public:
-        /**
-         * Construct a new RadioProcess.
-         */
-        template <typename... TArgs>
-        RadioProcess(TAntennaCollection& antennas, TArgs&&... args);
+    /**
+     * Return the maximum step length for this particle and track.
+     *
+     * This must be provided by the TRadioImpl.
+     *
+     * @param particle    The current particle.
+     * @param track       The current track.
+     *
+     * @returns The maximum length of this track.
+     */
+    template <typename Particle, typename Track>
+    LengthType getMaxStepLength(Particle const& vParticle, Track const& vTrack) const;
 
-        /**
-         * Perform the continuous process (radio emission).
-         *
-         * This handles filtering individual particle tracks
-         * before passing them to `Simulate`.`
-         *
-         * @param particle    The current particle.
-         * @param track       The current track.
-         */
-        template <typename Particle, typename Track>
-        ProcessReturn doContinuous(Particle const& particle, Track const& track, bool const);
+    /**
+     * Called at the start of each library.
+     */
+    void startOfLibrary(boost::filesystem::path const& directory) final override;
 
-        /**
-         * Return the maximum step length for this particle and track.
-         *
-         * This must be provided by the TRadioImpl.
-         *
-         * @param particle    The current particle.
-         * @param track       The current track.
-         *
-         * @returns The maximum length of this track.
-         */
-        template <typename Particle, typename Track>
-        LengthType getMaxStepLength(Particle const& vParticle,
-                                    Track const& vTrack) const;
+    /**
+     * Called at the end of each shower.
+     */
+    virtual void endOfShower(unsigned int const) final override;
 
-        /**
-         * Called at the start of each library.
-         */
-        void startOfLibrary(boost::filesystem::path const& directory) final override;
+    /**
+     * Called at the end of each library.
+     *
+     */
+    void endOfLibrary() final override {}
 
-        /**
-         * Called at the end of each shower.
-         */
-        virtual void endOfShower(unsigned int const) final override;
+    /**
+     * Get the configuration of this output.
+     */
+    YAML::Node getConfig() const final;
 
-        /**
-         * Called at the end of each library.
-         *
-         */
-        void endOfLibrary() final override {}
-
-        /**
-         * Get the configuration of this output.
-         */
-        YAML::Node getConfig() const final;
-
-    }; // END: class RadioProcess
+  }; // END: class RadioProcess
 
 } // namespace corsika
 

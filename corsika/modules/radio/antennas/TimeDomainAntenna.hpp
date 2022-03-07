@@ -34,11 +34,10 @@ namespace corsika {
     std::vector<double> waveformEX_;    ///< EX polarization
     std::vector<double> waveformEY_;    ///< EY polarization
     std::vector<double> waveformEZ_;    ///< EZ polarization
-    TimeType const ground_hit_time_;      ///< The time the primary particle hits the ground.
+    TimeType const ground_hit_time_; ///< The time the primary particle hits the ground.
 
     using Antenna<TimeDomainAntenna>::getName;
     using Antenna<TimeDomainAntenna>::getLocation;
-
 
     /**
      * Construct a new TimeDomainAntenna.
@@ -54,7 +53,8 @@ namespace corsika {
      */
     TimeDomainAntenna(std::string const& name, Point const& location,
                       TimeType const& start_time, TimeType const& duration,
-                      InverseTimeType const& sample_rate, TimeType const& ground_hit_time);
+                      InverseTimeType const& sample_rate,
+                      TimeType const& ground_hit_time);
 
     /**
      * Receive an electric field at this antenna.
@@ -72,8 +72,8 @@ namespace corsika {
     void receive(TimeType const time, Vector<dimensionless_d> const& receive_vector,
                  ElectricFieldVector const& efield);
 
-      void receive(TimeType const time, Vector<dimensionless_d> const& receive_vector,
-                   VectorPotential const& vectorP);
+    void receive(TimeType const time, Vector<dimensionless_d> const& receive_vector,
+                 VectorPotential const& vectorP);
 
     /**
      * Return the time-units of each waveform for X polarization
@@ -113,7 +113,7 @@ namespace corsika {
     /**
      * Reset the antenna before starting a new simulation.
      */
-      void reset();
+    void reset();
 
     /**
      * Return a YAML configuration for this antenna.

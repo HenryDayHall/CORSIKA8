@@ -30,7 +30,6 @@ namespace corsika {
     using SignalPathCollection = typename Base::SignalPathCollection;
 
   public:
-
     /**
      * Construct a new SimplePropagator with a given environment.
      *
@@ -43,8 +42,7 @@ namespace corsika {
      * emission point to the antenna location.
      *
      */
-    SignalPathCollection propagate(Point const& source,
-                                   Point const& destination,
+    SignalPathCollection propagate(Point const& source, Point const& destination,
                                    LengthType const stepsize) const;
   }; // End: SimplePropagator
 

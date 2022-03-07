@@ -99,10 +99,9 @@ namespace corsika::units::si {
   using ElectricFieldType =
       phys::units::quantity<phys::units::dimensions<1, 1, -3, -1>, double>;
   using VectorPotentialType =
-          phys::units::quantity<phys::units::dimensions<1, 1, -2, -1>, double>;
+      phys::units::quantity<phys::units::dimensions<1, 1, -2, -1>, double>;
   using MagneticFieldType =
       phys::units::quantity<phys::units::dimensions<-1, 0, 0, 1>, double>;
-
 
   template <typename DimFrom, typename DimTo>
   auto constexpr conversion_factor_HEP_to_SI() {

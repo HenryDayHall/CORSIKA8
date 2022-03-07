@@ -76,47 +76,49 @@ namespace corsika {
      * This should be an xtensor-convertible type with
      * a ->data() method that converts to a raw pointer.
      */
-      std::vector<long double>  getAxis() const;
+    std::vector<long double> getAxis() const;
 
-      /**
-       * Return a reference to the underlying data for X polarization.
-       *
-       * This is used when writing the antenna information to disk
-       * and will be converted to a 32-bit float before writing.
-       */
-      std::vector<double>& getDataX() const;
+    /**
+     * Return a reference to the underlying data for X polarization.
+     *
+     * This is used when writing the antenna information to disk
+     * and will be converted to a 32-bit float before writing.
+     */
+    std::vector<double>& getDataX() const;
 
-      /**
-       * Return a reference to the underlying data for Y polarization.
-       *
-       * This is used when writing the antenna information to disk
-       * and will be converted to a 32-bit float before writing.
-       */
-      std::vector<double>& getDataY() const;
+    /**
+     * Return a reference to the underlying data for Y polarization.
+     *
+     * This is used when writing the antenna information to disk
+     * and will be converted to a 32-bit float before writing.
+     */
+    std::vector<double>& getDataY() const;
 
-      /**
-       * Return a reference to the underlying data for Z polarization.
-       *
-       * This is used when writing the antenna information to disk
-       * and will be converted to a 32-bit float before writing.
-       */
-      std::vector<double>& getDataZ() const;
+    /**
+     * Return a reference to the underlying data for Z polarization.
+     *
+     * This is used when writing the antenna information to disk
+     * and will be converted to a 32-bit float before writing.
+     */
+    std::vector<double>& getDataZ() const;
 
     /**
      * Prepare for the start of the library.
      */
-    void startOfLibrary(boost::filesystem::path const& directory, std::string const radioImplementation);
+    void startOfLibrary(boost::filesystem::path const& directory,
+                        std::string const radioImplementation);
 
     /**
      * Flush the data from this shower to disk.
      */
-    void endOfShower(int const event, std::string const radioImplementation, double const sampleRate);
+    void endOfShower(int const event, std::string const radioImplementation,
+                     double const sampleRate);
 
   protected:
-      /**
-       * Get a reference to the underlying radio implementation.
-       */
-      TAntennaImpl& implementation();
+    /**
+     * Get a reference to the underlying radio implementation.
+     */
+    TAntennaImpl& implementation();
 
   }; // END: class Antenna final
 
