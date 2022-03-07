@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -24,7 +24,6 @@
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
-#include <corsika/media/ShowerAxis.hpp>
 
 #include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupStack.hpp>
@@ -33,18 +32,11 @@
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/ZHS.hpp>
-#include <corsika/modules/radio/antennas/Antenna.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
 #include <corsika/modules/radio/detectors/RadioDetector.hpp>
-#include <corsika/modules/radio/propagators/StraightPropagator.hpp>
 #include <corsika/modules/radio/propagators/SimplePropagator.hpp>
-#include <corsika/modules/radio/propagators/SignalPath.hpp>
-#include <corsika/modules/radio/propagators/RadioPropagator.hpp>
 
-#include <corsika/modules/StackInspector.hpp>
-#include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/TimeCut.hpp>
-//#include <corsika/modules/TrackWriter.hpp>
 
 /*
   NOTE, WARNING, ATTENTION
@@ -52,7 +44,7 @@
   The .../Random.hpppp implement the hooks of external modules to the C8 random
   number generator. It has to occur excatly ONCE per linked
   executable. If you include the header below multiple times and
-  link this togehter, it will fail.
+  link this together, it will fail.
  */
 #include <corsika/modules/sibyll/Random.hpp>
 #include <corsika/modules/urqmd/Random.hpp>
@@ -67,7 +59,7 @@ using namespace corsika;
 using namespace std;
 
 //
-// A simple shower to get the electric field trace of an electron
+// A simple shower to get the electric field trace of an electron using C8 tracking
 //
 int main() {
 
@@ -82,7 +74,7 @@ int main() {
     auto seed = rd();
     RNGManager<>::getInstance().setSeed(seed);
 
-    OutputManager output("synchrotron_radiation_output");
+    OutputManager output("synchrotron_radiation_C8tracking-output");
 
     // set up the environment
     using EnvType = setup::Environment;
