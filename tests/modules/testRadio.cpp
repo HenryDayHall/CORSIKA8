@@ -360,7 +360,8 @@ TEST_CASE("Radio", "[processes]") {
 
     // this prints out the antenna names and locations
     for (auto const antenna : detector__.getAntennas()) {
-      std::cout << antenna.getName() << " --++-- " << antenna.getLocation() << std::endl;
+      CORSIKA_LOG_DEBUG("Antenna name: {} ", antenna.getName());
+      CORSIKA_LOG_DEBUG("Antenna location: {} ", antenna.getLocation());
     }
 
   } // END: SECTION("TimeDomainAntenna")
