@@ -74,10 +74,7 @@ namespace corsika::pythia8 {
      */
     CrossSectionType getCrossSection(Code const projectile, Code const target,
                                      FourMomentum const& projectileP4,
-                                     FourMomentum const& targetP4) const {
-      return std::get<0>(
-          getCrossSectionInelEla(projectile, target, projectileP4, targetP4));
-    }
+                                     FourMomentum const& targetP4) const;
 
     /**
      * In this function PYTHIA is called to produce one event. The
@@ -89,7 +86,6 @@ namespace corsika::pythia8 {
 
   private:
     default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("pythia");
-    Pythia8::SigmaTotal sigma_;
     bool const internalDecays_ = true;
     int count_ = 0;
     bool print_listing_ = false;
