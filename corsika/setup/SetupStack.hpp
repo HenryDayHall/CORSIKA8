@@ -24,18 +24,21 @@ namespace corsika::setup {
   /*
    * the version with history
    */
-  using Stack = detail::StackWithHistory;
+  template <typename TEnvironment>
+  using Stack = typename detail::StackGenerator<TEnvironment>::StackWithWeight;
 
 #else // WITH_HISTORY
 
   /*
    * the version without history (and geometry data and weights)
    */
-  using Stack = detail::StackWithWeight;
+  template <typename TEnvironment>
+  using Stack = typename detail::StackGenerator<TEnvironment>::StackWithWeight;
 
 #endif
 
   // the correct secondary stack view
-  using StackView = typename Stack::stack_view_type;
+  template <typename TEnvironment>
+  using StackView = typename Stack<TEnvironment>::stack_view_type;
 
 } // namespace corsika::setup

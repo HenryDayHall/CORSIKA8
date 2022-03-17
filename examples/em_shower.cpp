@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
     set_energy_production_threshold(pcode, energy);
 
   // setup particle stack, and add primary particle
-  setup::Stack stack;
+  setup::Stack<EnvType> stack;
   stack.clear();
   const Code beamCode = Code::Electron;
   auto const mass = get_mass(beamCode);
