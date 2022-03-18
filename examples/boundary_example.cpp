@@ -89,7 +89,8 @@ int main() {
   RNGManager<>::getInstance().registerRandomStream("cascade");
 
   // setup environment, geometry
-  using EnvType = setup::Environment;
+  using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+  using EnvType = Environment<EnvironmentInterface>;
   EnvType env;
   auto& universe = *(env.getUniverse());
 
@@ -98,8 +99,8 @@ int main() {
   // create "world" as infinite sphere filled with protons
   auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 100_km);
 
-  using MyHomogeneousModel = MediumPropertyModel<
-      UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
+  using MyHomogeneousModel =
+      MediumPropertyModel<UniformMagneticField<HomogeneousMedium<EnvironmentInterface>>>;
 
   auto const props = world->setModelProperties<MyHomogeneousModel>(
       Medium::AirDry1Atm, Vector(rootCS, 0_T, 0_T, 0_T), 1_kg / (1_m * 1_m * 1_m),
@@ -128,7 +129,7 @@ int main() {
   auto sequence = make_sequence(cut, boundaryCrossing, trackWriter);
 
   // setup particle stack, and add primary particles
-  setup::Stack stack;
+  setup::Stack<EnvType> stack;
   stack.clear();
   const Code beamCode = Code::MuPlus;
   const HEPMassType mass = get_mass(beamCode);

@@ -50,7 +50,7 @@ int main() {
 
   BetheBlochPDG eLoss;
 
-  setup::Stack stack;
+  setup::Stack<EnvType> stack;
 
   std::ofstream file("dEdX.dat");
   file << "# beta*gamma, dE/dX / MeV/(g/cm²)" << std::endl;
