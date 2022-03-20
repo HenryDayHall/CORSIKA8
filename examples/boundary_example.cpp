@@ -17,7 +17,6 @@
 
 #include <corsika/output/OutputManager.hpp>
 
-#include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 

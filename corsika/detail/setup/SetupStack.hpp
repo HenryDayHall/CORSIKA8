@@ -14,13 +14,15 @@
 #include <corsika/stack/WeightStackExtension.hpp>
 #include <corsika/stack/history/HistorySecondaryProducer.hpp>
 #include <corsika/stack/history/HistoryStackExtension.hpp>
-
-#include <corsika/setup/SetupEnvironment.hpp>
+#include <corsika/media/Environment.hpp>
+#include <corsika/media/IMagneticFieldModel.hpp>
+#include <corsika/media/IMediumModel.hpp>
+#include <corsika/media/IMediumPropertyModel.hpp>
 
 namespace corsika {
 
   namespace setup::detail {
-    template <typename TEnvironment = setup::Environment>
+    template <typename TEnvironment>
     class StackGenerator {
     private:
       using env_type = TEnvironment;
