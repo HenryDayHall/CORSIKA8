@@ -107,7 +107,7 @@ int main() {
   detectorZHS.addAntenna(ant2);
 
   // create a new stack for each trial
-  setup::Stack stack;
+  setup::Stack<EnvType> stack;
   stack.clear();
 
   const Code particle{Code::Electron};

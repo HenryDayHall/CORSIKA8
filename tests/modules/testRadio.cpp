@@ -43,7 +43,6 @@
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/PhysicalConstants.hpp>
@@ -122,7 +121,7 @@ TEST_CASE("Radio", "[processes]") {
     // std::cout << "Leap Frog Trajectory is: " << base << std::endl;
 
     // create a new stack for each trial
-    setup::Stack stack;
+    setup::Stack<EnvType> stack;
 
     // construct an energy
     const HEPEnergyType E0{1_TeV};
@@ -225,7 +224,7 @@ TEST_CASE("Radio", "[processes]") {
     // std::cout << "Leap Frog Trajectory is: " << base << std::endl;
 
     // create a new stack for each trial
-    setup::Stack stack;
+    setup::Stack<EnvType> stack;
 
     // construct an energy
     const HEPEnergyType E0{1_TeV};

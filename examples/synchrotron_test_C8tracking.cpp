@@ -25,7 +25,6 @@
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
 
-#include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
@@ -77,7 +76,8 @@ int main() {
   OutputManager output("synchrotron_radiation_C8tracking-output");
 
   // set up the environment
-  using EnvType = setup::Environment;
+  using EnvironmentInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+  using EnvType = Environment<EnvironmentInterface>;
   EnvType env;
   auto& universe = *(env.getUniverse());
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
@@ -85,7 +85,7 @@ int main() {
   auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
 
   using MyHomogeneousModel = UniformRefractiveIndex<MediumPropertyModel<
-      UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>>;
+      UniformMagneticField<HomogeneousMedium<EnvironmentInterface>>>>;
 
   auto const Bmag{0.0003809_T};
   MagneticFieldVector B{rootCS, 0_T, 0_T, Bmag};
@@ -117,7 +117,7 @@ int main() {
   detectorZHS.addAntenna(ant2);
 
   // setup particle stack, and add primary particle
-  setup::Stack stack;
+  setup::Stack<EnvType> stack;
   stack.clear();
   const Code beamCode = Code::Electron;
   auto const charge = get_charge(beamCode);
