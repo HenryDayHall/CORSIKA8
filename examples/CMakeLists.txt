@@ -80,4 +80,4 @@ CORSIKA_REGISTER_EXAMPLE (synchrotron_test_C8tracking RUN_OPTIONS 4 2 10000.)
 
 add_executable (radio_em_shower radio_em_shower.cpp)
 target_link_libraries (radio_em_shower CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (radio_em_shower RUN_OPTIONS 4 2 10000.)
+CORSIKA_REGISTER_EXAMPLE (radio_em_shower RUN_OPTIONS 10 0)

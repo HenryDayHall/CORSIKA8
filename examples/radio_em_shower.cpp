@@ -79,9 +79,9 @@ void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("proposal");
   if (seed == 0) {
-    std::random_device rd;
-    seed = rd();
-    cout << "new random seed (auto) " << seed << endl;
+      std::random_device rd;
+      seed = rd();
+      cout << "new random seed (auto) " << seed << endl;
   }
   RNGManager<>::getInstance().setSeed(seed);
 }
@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  int seed{std::stof(std::string(argv[2]))};
+  int seed{static_cast<int>(std::stof(std::string(argv[2])))};
   std::cout << "Seed: " << seed << std::endl;
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
