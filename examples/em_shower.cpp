@@ -91,13 +91,14 @@ int main(int argc, char** argv) {
   registerRandomStreams(seed);
 
   // setup environment, geometry
-  using EnvType = setup::Environment;
+  using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+  using EnvType = Environment<EnvironmentInterface>;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
 
   // build a Linsley US Standard atmosphere into `env`
-  create_5layer_atmosphere<setup::EnvironmentInterface, MyExtraEnv>(
+  create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
       env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
       MagneticFieldVector{rootCS, 0_T, 50_uT, 0_T});
 
@@ -110,7 +111,7 @@ int main(int argc, char** argv) {
     set_energy_production_threshold(pcode, energy);
 
   // setup particle stack, and add primary particle
-  setup::Stack stack;
+  setup::Stack<EnvType> stack;
   stack.clear();
   const Code beamCode = Code::Electron;
   auto const mass = get_mass(beamCode);

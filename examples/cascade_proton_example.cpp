@@ -27,7 +27,6 @@
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 
-#include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
@@ -72,15 +71,16 @@ int main() {
   OutputManager output("cascade_proton_outputs");
 
   // setup environment, geometry
-  using EnvType = setup::Environment;
+  using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+  using EnvType = Environment<EnvironmentInterface>;
   EnvType env;
   auto& universe = *(env.getUniverse());
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 
   auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
 
-  using MyHomogeneousModel = MediumPropertyModel<
-      UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
+  using MyHomogeneousModel =
+      MediumPropertyModel<UniformMagneticField<HomogeneousMedium<EnvironmentInterface>>>;
 
   world->setModelProperties<MyHomogeneousModel>(
       Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 1_mT),
@@ -89,7 +89,7 @@ int main() {
   universe.addChild(std::move(world));
 
   // setup particle stack, and add primary particle
-  setup::Stack stack;
+  setup::Stack<EnvType> stack;
   stack.clear();
   const Code beamCode = Code::Proton;
   const HEPMassType mass = Proton::mass;
@@ -120,7 +120,7 @@ int main() {
 
   // setup processes, decays and interactions
   setup::Tracking tracking;
-  StackInspector<setup::Stack> stackInspect(1000, true, E0);
+  StackInspector<setup::Stack<EnvType>> stackInspect(1000, true, E0);
 
   RNGManager<>::getInstance().registerRandomStream("sibyll");
   RNGManager<>::getInstance().registerRandomStream("pythia");

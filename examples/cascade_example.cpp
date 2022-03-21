@@ -27,7 +27,6 @@
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 
-#include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
@@ -69,16 +68,17 @@ int main() {
   RNGManager<>::getInstance().registerRandomStream("cascade");
 
   // setup environment, geometry
-  setup::Environment env;
+  using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+  using EnvType = Environment<EnvironmentInterface>;
+  EnvType env;
   auto& universe = *(env.getUniverse());
 
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 
-  auto world =
-      setup::Environment::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
+  auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
 
-  using MyHomogeneousModel = MediumPropertyModel<
-      UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
+  using MyHomogeneousModel =
+      MediumPropertyModel<UniformMagneticField<HomogeneousMedium<EnvironmentInterface>>>;
 
   // fraction of oxygen
   double const fox = 0.20946;
@@ -87,15 +87,14 @@ int main() {
       1_kg / (1_m * 1_m * 1_m),
       NuclearComposition({Code::Nitrogen, Code::Oxygen}, {1. - fox, fox}));
 
-  auto innerMedium =
-      setup::Environment::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
+  auto innerMedium = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
 
   innerMedium->setModelProperties(props);
   world->addChild(std::move(innerMedium));
   universe.addChild(std::move(world));
 
   // setup particle stack, and add primary particle
-  setup::Stack stack;
+  setup::Stack<EnvType> stack;
   stack.clear();
   const int nuclA = 4;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
@@ -133,7 +132,7 @@ int main() {
 
   // setup processes, decays and interactions
   setup::Tracking tracking;
-  StackInspector<setup::Stack> stackInspect(100, true, E0);
+  StackInspector<setup::Stack<EnvType>> stackInspect(100, true, E0);
 
   RNGManager<>::getInstance().registerRandomStream("sibyll");
   RNGManager<>::getInstance().registerRandomStream("pythia");

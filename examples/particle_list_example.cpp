@@ -9,7 +9,6 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/modules/QGSJetII.hpp>
 #include <corsika/modules/Sibyll.hpp>
-#include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
 /*
