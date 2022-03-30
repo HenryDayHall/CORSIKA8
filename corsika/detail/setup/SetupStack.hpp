@@ -14,67 +14,84 @@
 #include <corsika/stack/WeightStackExtension.hpp>
 #include <corsika/stack/history/HistorySecondaryProducer.hpp>
 #include <corsika/stack/history/HistoryStackExtension.hpp>
-
-#include <corsika/setup/SetupEnvironment.hpp>
+#include <corsika/media/Environment.hpp>
+#include <corsika/media/IMagneticFieldModel.hpp>
+#include <corsika/media/IMediumModel.hpp>
+#include <corsika/media/IMediumPropertyModel.hpp>
 
 namespace corsika {
 
   namespace setup::detail {
+    template <typename TEnvironment>
+    class StackGenerator {
+    private:
+      using env_type = TEnvironment;
 
-    // ------------------------------------------
-    // add geometry node data to stack. This is fundamentally needed
-    // for robust tracking through multiple volumes.
+      // ------------------------------------------
+      // add geometry node data to stack. This is fundamentally needed
+      // for robust tracking through multiple volumes.
 
-    // the GeometryNode stack needs to know the type of geometry-nodes from the
-    // environment:
-    template <typename TStackIter>
-    using SetupGeometryDataInterface =
-        typename node::MakeGeometryDataInterface<TStackIter, setup::Environment>::type;
+      // the GeometryNode stack needs to know the type of geometry-nodes from the
+      // environment:
 
-    // combine particle data stack with geometry information for tracking
-    template <typename TStackIter>
-    using StackWithGeometryInterface =
-        CombinedParticleInterface<VectorStack::pi_type, SetupGeometryDataInterface,
-                                  TStackIter>;
+      template <typename TStackIter>
+      using SetupGeometryDataInterface =
+          typename node::MakeGeometryDataInterface<TStackIter, env_type>::type;
 
-    using StackWithGeometry =
-        CombinedStack<typename VectorStack::stack_data_type,
-                      node::GeometryData<setup::Environment>, StackWithGeometryInterface,
-                      DefaultSecondaryProducer>;
+      // combine particle data stack with geometry information for tracking
+      template <typename TStackIter>
+      using StackWithGeometryInterface =
+          CombinedParticleInterface<VectorStack::pi_type, SetupGeometryDataInterface,
+                                    TStackIter>;
 
-    // ------------------------------------------
-    // add weight data to stack. This is fundamentally needed
-    // for thinning.
+      using StackWithGeometry =
+          CombinedStack<typename VectorStack::stack_data_type,
+                        node::GeometryData<env_type>, StackWithGeometryInterface,
+                        DefaultSecondaryProducer>;
 
-    // the "pure" weight stack (interface)
-    template <typename TStackIter>
-    using SetupWeightDataInterface =
-        typename weights::MakeWeightDataInterface<TStackIter>::type;
+      template <class T>
+      using StackWithGeometry_PI_type = typename StackWithGeometry::template pi_type<T>;
 
-    // combine geometry-node-vector data stack with weight information for tracking
-    template <typename TStackIter>
-    using StackWithWeightInterface =
-        CombinedParticleInterface<StackWithGeometry::pi_type, SetupWeightDataInterface,
-                                  TStackIter>;
+      // ------------------------------------------
+      // add weight data to stack. This is fundamentally needed
+      // for thinning.
 
-    // the combined stack data: particle + geometry + weight
-    using StackWithWeight =
-        CombinedStack<typename StackWithGeometry::stack_data_type, weights::WeightData,
-                      StackWithWeightInterface, DefaultSecondaryProducer>;
+      // the "pure" weight stack (interface)
+      template <typename TStackIter>
+      using SetupWeightDataInterface =
+          typename weights::MakeWeightDataInterface<TStackIter>::type;
 
-    // ------------------------------------------
-    // Add [OPTIONAL] history data to stack, too.
-    // This keeps the entire lineage of particles in memory.
+      // combine geometry-node-vector data stack with weight information for tracking
+      template <typename TStackIter>
+      using StackWithWeightInterface =
+          CombinedParticleInterface<StackWithGeometry_PI_type, SetupWeightDataInterface,
+                                    TStackIter>;
 
-    template <typename TStackIter>
-    using StackWithHistoryInterface =
-        CombinedParticleInterface<StackWithWeight::pi_type,
-                                  history::HistoryEventDataInterface, TStackIter>;
+    public:
+      // the combined stack data: particle + geometry + weight
+      using StackWithWeight =
+          CombinedStack<typename StackWithGeometry::stack_data_type, weights::WeightData,
+                        StackWithWeightInterface, DefaultSecondaryProducer>;
 
-    using StackWithHistory =
-        CombinedStack<typename StackWithWeight::stack_data_type,
-                      history::HistoryEventData, StackWithHistoryInterface,
-                      history::HistorySecondaryProducer>;
+    private:
+      template <typename T>
+      using StackWithWeight_PI_type = typename StackWithWeight::template pi_type<T>;
+
+      // ------------------------------------------
+      // Add [OPTIONAL] history data to stack, too.
+      // This keeps the entire lineage of particles in memory.
+
+      template <typename TStackIter>
+      using StackWithHistoryInterface =
+          CombinedParticleInterface<StackWithWeight_PI_type,
+                                    history::HistoryEventDataInterface, TStackIter>;
+
+    public:
+      using StackWithHistory =
+          CombinedStack<typename StackWithWeight::stack_data_type,
+                        history::HistoryEventData, StackWithHistoryInterface,
+                        history::HistorySecondaryProducer>;
+    };
 
   } // namespace setup::detail
 

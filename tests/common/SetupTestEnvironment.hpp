@@ -11,7 +11,10 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
 
-#include <corsika/setup/SetupEnvironment.hpp>
+#include <corsika/media/Environment.hpp>
+#include <corsika/media/IMagneticFieldModel.hpp>
+#include <corsika/media/IMediumModel.hpp>
+#include <corsika/media/IMediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>

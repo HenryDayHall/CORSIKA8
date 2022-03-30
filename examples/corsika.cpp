@@ -81,7 +81,10 @@
 using namespace corsika;
 using namespace std;
 
-using Particle = setup::Stack::particle_type;
+using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using EnvType = Environment<EnvironmentInterface>;
+
+using Particle = setup::Stack<EnvType>::particle_type;
 
 void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
@@ -196,14 +199,13 @@ int main(int argc, char** argv) {
   registerRandomStreams(app["--seed"]->as<int>());
 
   /* === START: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
-  using EnvType = setup::Environment;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
   GeomagneticModel wmm(center, corsika_data("GeoMag/WMM.COF"));
 
   // build a Linsley US Standard atmosphere into `env`
-  create_5layer_atmosphere<setup::EnvironmentInterface, MyExtraEnv>(
+  create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
       env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
       wmm.getField(2022.5, 10_km, 49, 8.4));
 
@@ -331,7 +333,7 @@ int main(int argc, char** argv) {
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted(urqmd);
-  StackInspector<setup::Stack> stackInspect(10000, false, E0);
+  StackInspector<setup::Stack<EnvType>> stackInspect(10000, false, E0);
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {
@@ -360,7 +362,7 @@ int main(int argc, char** argv) {
 
   // create the cascade object using the default stack and tracking implementation
   setup::Tracking tracking;
-  setup::Stack stack;
+  setup::Stack<EnvType> stack;
   Cascade EAS(env, tracking, sequence, output, stack);
 
   // print our primary parameters all in one place

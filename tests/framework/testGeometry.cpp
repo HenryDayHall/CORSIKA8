@@ -21,7 +21,7 @@
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/geometry/StraightTrajectory.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
+#include <tests/common/SetupStack.hpp>
 
 #include <PhysicalUnitsCatch2.hpp> // namespace corsike::testing
 
@@ -335,7 +335,7 @@ TEST_CASE("Geometry Trajectories") {
   Point r0(rootCS, {0_m, 0_m, 0_m});
   // Create a particle and and a stack so we can test .getTime() method
   const Code particle{Code::Electron};
-  setup::Stack stack;
+  test::Stack stack;
   // the mass of the particle
   const auto pmass{get_mass(particle)};
   // set an arbitrary energy value
