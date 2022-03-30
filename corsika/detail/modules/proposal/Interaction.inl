@@ -68,9 +68,13 @@ namespace corsika::proposal {
       auto [type, target_hash, v] = std::get<eINTERACTION>(c->second)->SampleLoss(
           projectile.getEnergy() / 1_MeV, rates, distr(RNG_));
 
-      // TODO: Is this case necessary?
-      // In this case, the original particle should not be altered and put back on the stack
+      // TODO: This should become obsolete as soon #482 is fixed
       if (type == PROPOSAL::InteractionType::Undefined) {
+        CORSIKA_LOG_WARN(
+            "PROPOSAL: No particle interaction possible. "
+            "Put initial particle back on stack.");
+        view.addSecondary(std::make_tuple(projectileId, projectile.getEnergy(),
+                                          projectile.getDirection()));
         return ProcessReturn::Ok;
       }
 
