@@ -24,7 +24,7 @@ file (MAKE_DIRECTORY ${CORSIKA_Pythia8_MODULE_DIR})
 add_library (C8::ext::pythia8 STATIC IMPORTED GLOBAL)
 if ("x_${USE_Pythia8_C8}" STREQUAL "x_SYSTEM")
   
-  find_package (Pythia8 8245 EXACT REQUIRED) 
+  find_package (Pythia8 8307 EXACT REQUIRED) 
   message (STATUS "Using system-level Pythia8 version ${Pythia8_VERSION} at ${Pythia8_PREFIX}")
   set (Pythia8_INCLUDE_DIRS ${Pythia8_INCLUDE_DIR})
   set_target_properties (
@@ -50,14 +50,14 @@ if ("x_${USE_Pythia8_C8}" STREQUAL "x_SYSTEM")
 
 else ()
 
-  set (_C8_Pythia8_VERSION "8245")
+  set (_C8_Pythia8_VERSION "8307")
   message (STATUS "Building modules/pythia8 using pythia${_C8_Pythia8_VERSION}-stripped.tar.bz2")
   message (STATUS "This will take a bit.....")
   # this is not a full Pythia8 install, it is a bit simplified, e.g. no pythia8-config, no examples
   # and also, it is fitted into the normal CORSIKA8 install "include/corsika_modules/Pythia8, lib/corsika"
   ExternalProject_Add (pythia8
-    URL ${CMAKE_CURRENT_SOURCE_DIR}/pythia${_C8_Pythia8_VERSION}-stripped.tar.bz2
-    URL_MD5 d3e951a2f101e8cfec26405cb61db83b
+    URL ${CMAKE_CURRENT_SOURCE_DIR}/pythia${_C8_Pythia8_VERSION}.tgz
+    URL_MD5 4ee7aea85cc66db13e92722f150c51c5
     SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/source"
     INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/install"
     CONFIGURE_COMMAND ./configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/pythia8/install
