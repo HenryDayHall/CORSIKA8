@@ -10,6 +10,7 @@
 
 #include <tuple>
 
+#include <boost/filesystem/path.hpp>
 #include <fmt/core.h>
 
 #include <corsika/modules/pythia8/Interaction.hpp>
@@ -25,100 +26,109 @@ namespace corsika::pythia8 {
     CORSIKA_LOG_INFO("Pythia::Interaction n= {}", count_);
   }
 
-  inline Interaction::Interaction(bool const print_listing)
-      : Pythia8::Pythia(CORSIKA_Pythia8_XML_DIR)
-      , print_listing_(print_listing) {
+  inline Interaction::Interaction(boost::filesystem::path const& mpiInitFile, bool const print_listing)
+    : print_listing_(print_listing) {
+      // Main Pythia object for managing the cascade evolution.
+      // Can also do decays, but no hard processes.
+      
+      
+      pythiaMain_.readString("ProcessLevel:all = off");
+      pythiaMain_.readString("211:mayDecay = on"); // TODO: probably not necessary, but ask Torjbörn maybe
+      pythiaMain_.readString("13:mayDecay  = on");
+      pythiaMain_.readString("321:mayDecay = on");
+      pythiaMain_.readString("130:mayDecay = on");
 
-    CORSIKA_LOG_INFO("Configuring Pythia8 from: {}", CORSIKA_Pythia8_XML_DIR);
+      // Redure statistics printout to relevant ones.
+      pythiaMain_.readString("Stat:showProcessLevel = off");  
+      pythiaMain_.readString("Stat:showPartonLevel = off");  
+      
+      // Add Argon, since not in Particle data. id:all = name antiName
+      // spinType chargeType colType m0 mWidth mMin mMax tau0. 
+      pythiaMain_.readString("1000180400:all = 40Ar 40Arbar 1 54 0 "
+        "37.22474 0. 0. 0. 0.");
+        
+      if (!pythiaMain_.init())
+          throw std::runtime_error("Pythia::Interaction: Initialization failed!");
+      
 
-    // initialize Pythia
+    // TODO: do we need this?
+    //~ CORSIKA_LOG_INFO("Configuring Pythia8 from: {}", CORSIKA_Pythia8_XML_DIR);
+    
+     // Secondary Pythia object for performing individual collisions.
+    // Variable incoming beam type and energy.
+      pythiaColl_.readString("Beams:allowVariableEnergy = on");
+      pythiaColl_.readString("Beams:allowIDAswitch = on");
+      
+      // Set up for fixed-target collisions.
+      pythiaColl_.readString("Beams:frameType = 3"); // arbitrary frame, need to define full 4-momenta
+      pythiaColl_.settings.parm("Beams:pzA", eMaxLab_ / 1_GeV);
+      pythiaColl_.readString("Beams:pzB = 0.");
+      
+      // Must use the soft and low-energy QCD processes.
+      pythiaColl_.readString("SoftQCD:all = on");
+      pythiaColl_.readString("LowEnergyQCD:all = on");
+      
+      // Decays to be done by pythiaMain_.
+      pythiaColl_.readString("HadronLevel:Decay = off");
+      
+      // Reduce printout and relax energy-momentum conservation.
+      pythiaColl_.readString("Print:quiet = on");
+      pythiaColl_.readString("Check:epTolErr = 0.1");
 
-    // reduce output from pythia if set to "on"
-    Pythia8::Pythia::readString("Print:quiet = on");
-    // check if data in particle data file is minimally consistent. Very verbose! set to
-    // "off"! we do not change the basic file provided by pythia.
-    Pythia8::Pythia::readString("Check:particleData = off");
-    Pythia8::Pythia::readString("Check:event = on");             // default: on
-    Pythia8::Pythia::readString("Check:levelParticleData = 12"); // 1 is default
-    readString("SoftQCD:all = on");
-    readString("LowEnergyQCD:all = on");
-    readString("MultipartonInteraction:reuseInit = 3");
-    readString(fmt::format("MultipartonInteraction:initFile = {}", corsika_data("pythia8/MPI_init_file")));
-    readString("Beam:allowVariableEnergy = on");
-    readString("Beam:allowIDASwitch = on");
-    readString("Beam:frameType = 3"); // no special frame, need to specify full 3-mom
-    readString("Check:epTolErr = 0.1"); // relax energy-monetum conservation, copied from Pythia 8 main183.cc
+      // Redure statistics printout to relevant ones.
+      pythiaColl_.readString("Stat:showProcessLevel = off");  
+      pythiaColl_.readString("Stat:showPartonLevel = off");  
+      
+      
+      bool const reuse = true; // TODO: make this more flexible
+      // Reuse MPI initialization file if it exists; else create a new one.
+      if (reuse) pythiaColl_.readString("MultipartonInteractions:reuseInit = 3");
+      else       pythiaColl_.readString("MultipartonInteractions:reuseInit = 1");
+      pythiaColl_.settings.word("MultipartonInteractions:initFile", mpiInitFile.native());
+      
+      // initialize
+      // we can't test this block, LCOV_EXCL_START
+      if (!pythiaColl_.init())
+          throw std::runtime_error("Pythia::Interaction: Initialization failed!");
+      // LCOV_EXCL_STOP
 
-    // we can't test this block, LCOV_EXCL_START
-    if (!Pythia8::Pythia::init()) {
-      throw std::runtime_error("Pythia::Interaction: Initialization failed!");
-    }
-    // LCOV_EXCL_STOP
 
-    // any decays in pythia? if yes need to define which particles
-    if (internalDecays_) {
-      // define which particles are passed to corsika, i.e. which particles make it into
-      // history even very shortlived particles like charm or pi0 are of interest here
-      std::vector<Code> const HadronsWeWantTrackedByCorsika = {
-          Code::PiPlus, Code::PiMinus, Code::Pi0,        Code::KMinus,     Code::KPlus,
-          Code::K0Long, Code::K0Short, Code::SigmaPlus,  Code::SigmaMinus, Code::Lambda0,
-          Code::Xi0,    Code::XiMinus, Code::OmegaMinus, Code::DPlus,      Code::DMinus,
-          Code::D0,     Code::D0Bar};
+    //~ // any decays in pythia? if yes need to define which particles
+    //~ if (internalDecays_) {
+      //~ // define which particles are passed to corsika, i.e. which particles make it into
+      //~ // history even very shortlived particles like charm or pi0 are of interest here
+      //~ std::vector<Code> const HadronsWeWantTrackedByCorsika = {
+          //~ Code::PiPlus, Code::PiMinus, Code::Pi0,        Code::KMinus,     Code::KPlus,
+          //~ Code::K0Long, Code::K0Short, Code::SigmaPlus,  Code::SigmaMinus, Code::Lambda0,
+          //~ Code::Xi0,    Code::XiMinus, Code::OmegaMinus, Code::DPlus,      Code::DMinus,
+          //~ Code::D0,     Code::D0Bar};
 
-      Interaction::setStable(HadronsWeWantTrackedByCorsika);
-    }
+      //~ Interaction::setStable(HadronsWeWantTrackedByCorsika);
+    //~ }
   }
 
-  inline void Interaction::setStable(std::vector<Code> const& particleList) {
-    for (auto p : particleList) Interaction::setStable(p);
-  }
+  //~ inline void Interaction::setStable(std::vector<Code> const& particleList) {
+    //~ for (auto p : particleList) Interaction::setStable(p);
+  //~ }
 
-  inline void Interaction::setUnstable(Code const pCode) {
-    CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} unstable..", pCode);
-    Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
-  }
+  //~ inline void Interaction::setUnstable(Code const pCode) {
+    //~ CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} unstable..", pCode);
+    //~ Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
+  //~ }
 
-  inline void Interaction::setStable(Code const pCode) {
-    CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} stable..", pCode);
-    Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
-  }
+  //~ inline void Interaction::setStable(Code const pCode) {
+    //~ CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} stable..", pCode);
+    //~ Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
+  //~ }
 
   inline bool Interaction::isValid(Code const projectileId, Code const targetId,
                                    HEPEnergyType const sqrtS) const {
-    // TODO: rethink this function. Pythia can do much more now.
-    return true;
-  }
-
-  inline void Interaction::configureLabFrameCollision(Code const projectileId,
-                                                      Code const targetId,
-                                                      MomentumVector const& projectileMom,
-                                                      MomentumVector const& targetMom) {
-    // Pythia configuration of the current event
-    // very clumsy. I am sure this can be done better..
-
-    // set beam
-    // beam id for pythia
-    auto const pdgBeam = static_cast<int>(get_PDG(projectileId));
+    if (is_nucleus(projectileId)) // not yet possible with Pythia
+        return false;
+        
+    // TODO: check sqrtS for validity
     
-    // set target
-    auto pdgTarget = static_cast<int>(get_PDG(targetId));
-    // replace hydrogen with proton, otherwise pythia goes into heavy ion mode!
-    if (targetId == Code::Hydrogen)
-        pdgTarget = static_cast<int>(get_PDG(Code::Proton));
-    
-    setBeamIDs(pdgBeam, pdgTarget);
-    
-    auto const projMomGeV = projectileMom.getComponents() * (1/1_GeV);
-    auto const tarMomGeV = targetMom.getComponents() * (1/1_GeV);
-    
-    setKinematics(projMomGeV[0], projMomGeV[1], projMomGeV[2],
-                  tarMomGeV[0], tarMomGeV[1], tarMomGeV[2]);
-    
-    // initialize this config
-    // we can't test this block, LCOV_EXCL_START
-    if (!Pythia8::Pythia::init())
-      throw std::runtime_error("Pythia::Interaction: Initialization failed!");
-    // LCOV_EXCL_STOP
+    return std::find(validTargets_.begin(), validTargets_.end(), targetId) != validTargets_.end();
   }
 
   inline bool Interaction::canInteract(Code const pCode) const {
@@ -128,12 +138,14 @@ namespace corsika::pythia8 {
   CrossSectionType
   Interaction::getCrossSection(Code const projectileId, Code const targetId,
                                       FourMomentum const& projectileP4,
-                                      FourMomentum const& targetP4) const {
+                                      FourMomentum const& targetP4) const
+                                      {
 
-    HEPEnergyType const CoMenergy = (projectileP4 + targetP4).getNorm();
+    HEPEnergyType const CoMenergy = is_nucleus(targetId) ?
+        (projectileP4 + targetP4 / get_nucleus_A(targetId)).getNorm() : (projectileP4 + targetP4).getNorm();
 
     if (!isValid(projectileId, targetId, CoMenergy)) {
-      return {CrossSectionType::zero(), CrossSectionType::zero()};
+      return CrossSectionType::zero();
     }
 
     // input particle PDG
@@ -141,21 +153,36 @@ namespace corsika::pythia8 {
     auto const pdgCodeTarget = static_cast<int>(get_PDG(targetId));
     double const ecm_GeV = CoMenergy * (1 / 1_GeV);
     
-    auto const sigTot = pythia.getSigmaTotal(pdgCodeBeam, 2212, ecm_GeV) * 1_mb;
-    auto const sigEla = pythia.getSigmaPartial(pdgCodeBeam, 2212, evm_GeV, 2) * 1_mb;
-    auto const sigProd = sigTot - sigEla;
+    auto const sigTot = pythiaColl_.getSigmaTotal(pdgCodeBeam, 2212, ecm_GeV) * 1_mb;
+    auto const sigEla = pythiaColl_.getSigmaPartial(pdgCodeBeam, 2212, ecm_GeV, 2) * 1_mb;
+    //~ auto const sigProd = sigTot - sigEla;
     
-    if (is_nucleus(targetId)) {
-    // avg. no. of sub-collisions, from 2108.03481, for Nitrogen target...
-    // TODO: generalize
-      double const nCollAvg = (sigTot < 31._mb) ? 1. + (0.017 / 1_mb) * sigTot
-                      : 1.2 + (0.0105 / 1_mb) * sigTot;
-                      
-      // TODO: is this valid also for production XS? Paper says total XS...
-      return get_nucleus_A(targetId) * sigProd / nCollAvg;
+    // TODO: handle hydrogen as proton
+    if (!is_nucleus(targetId)) {
+      return sigTot;
     } else {
-      return sigProd;
+      return sigTot * get_nucleus_A(targetId) / getAverageSubcollisions(targetId, sigTot);
     }
+  }
+  
+  double Interaction::getAverageSubcollisions(Code targetId, CrossSectionType sigTot) const {
+    auto const Z = get_nucleus_Z(targetId);
+    auto const A = get_nucleus_A(targetId);
+    
+    double nCollAvg;
+    
+    if (Z == 7 && A == 14) nCollAvg = (sigTot < 31._mb) // this is from the paper
+       ? 1. + 0.017/1_mb * sigTot : 1.2 + 0.0105/1_mb * sigTot;
+    else if (Z == 8 && A == 16) nCollAvg = (sigTot < 16._mb) // provided by Torbjörn Sjöstrand
+       ? 1. + 0.0245/1_mb * sigTot : 1.2 + 0.012/1_mb * sigTot; 
+    else if (Z == 18 && A == 40) nCollAvg = (sigTot < 10._mb)
+       ? 1. + 0.050/1_mb * sigTot : 1.28 + 0.022/1_mb * sigTot;
+    else {
+        CORSIKA_LOG_ERROR(fmt::format("Pythia8 cross-sections not defined for ({},{}) nucleus", A, Z));
+        nCollAvg = 0;
+    }
+    
+    return nCollAvg;
   }
 
   template <class TView>
@@ -187,7 +214,6 @@ namespace corsika::pythia8 {
     TimeType const tOrig = projectile.getTime();
 
     CORSIKA_LOG_DEBUG("Interaction: ebeam lab: {} GeV", eProjectileLab / 1_GeV);
-
     CORSIKA_LOG_DEBUG("Interaction: position of interaction: ", pOrig.getCoordinates());
     CORSIKA_LOG_DEBUG("Interaction: time: {}", tOrig);
 
@@ -198,36 +224,144 @@ namespace corsika::pythia8 {
         eProjectileLab / 1_GeV, sqrtS / 1_GeV);
 
     count_++;
-    configureLabFrameCollision(projectileId, targetId, projectileP4.getSpacelikeComponents(), targetP4.getSpacelikeComponents());
+    
+    int const idNow = static_cast<int>(get_PDG(projectileId));
+    
+    // References to the two event records. Clear main event record.
+    Pythia8::Event& eventMain = pythiaMain_.event;
+    Pythia8::Event& eventColl = pythiaColl_.event;
+    eventMain.clear();
+    
+    COMBoost const labFrameBoost{targetP4.getSpaceLikeComponents(), get_mass(targetId)};
+    auto const proj4MomLab = labFrameBoost.toCoM(projectileP4);
+    auto const& rotCS = labFrameBoost.getRotatedCS();
+    auto const pProjLab = proj4MomLab.getSpaceLikeComponents().getComponents(rotCS);
+    
+    auto constexpr invGeV = 1 / 1_GeV;
+    
+    Pythia8::Vec4 const pNow{pProjLab.getX() * invGeV, pProjLab.getY() * invGeV, pProjLab.getZ() * invGeV, proj4MomLab.getTimeLikeComponent() * invGeV};
+    
+    // Insert incoming particle in cleared main event record.
+    eventMain.append(90, -11, 0, 0, 1, 1, 0, 0, pNow, pNow.mCalc());
+    int const iHad = eventMain.append(idNow, 12, 0, 0, 0, 0, 0, 0, pNow, projectile.getMass() * (1/1_GeV));
+    
+    Pythia8::Vec4 const vNow{}; // production vertex; useless but necessary (?) TODO: ask TS
+    
+    eventMain[iHad].vProd(vNow);
+    
+    auto const [Anow, Znow] = std::invoke([targetId]() {
+       if (targetId == Code::Proton) {
+           return std::make_pair(1, 1);
+       } else if (targetId == Code::Neutron) {
+           return std::make_pair(1, 0);
+       } else if (is_nucleus(targetId)) {
+        return std::make_pair<int, int>(get_nucleus_A(targetId), get_nucleus_Z(targetId));
+       } else {
+           return std::make_pair(0, 0); //TODO: what to do in this case?
+       }
+    });
+    
+    // Set up for collisions on a nucleus.
+    int np      = Znow;
+    int nn      = Anow - Znow;
+    int sizeOld = 0;
+    int sizeNew = 0;
+    Pythia8::Vec4 const dirNow = pNow / pNow.pAbs();
+    Pythia8::Rndm& rndm  = pythiaMain_.rndm;
+    
+    double constexpr mp = get_mass(Code::Proton) / 1_GeV;
+    double const sqrtSNN_GeV = (pNow + Pythia8::Vec4{0, 0, 0, mp}).mCalc();
+    
+    auto const nCollAvg = getAverageSubcollisions(targetId, pythiaColl_.getSigmaTotal(idNow, 2212, sqrtSNN_GeV) * 1_mb);
+    double const probMore = 1. - 1. / nCollAvg;
+    
+      // Loop over varying number of hit nucleons in target nucleus.
+      for (int iColl = 1; iColl <= Anow; ++iColl) {
+        if (iColl > 1 && rndm.flat() > probMore) break;
 
-    CrossSectionType const sigmaHp = pythiaColl.getSigmaTotal(idNow, 2212, eCMNow);
+        // Pick incoming projectile: trivial for first subcollision, else ...
+        int iProj    = iHad;
+        int procType = 0;
 
-    // create event in pytia. LCOV_EXCL_START: we don't validate pythia8 internals
-    if (!Pythia8::Pythia::next())
-      throw std::runtime_error("Pythia::DoInteraction: failed!");
-    // LCOV_EXCL_STOP
+        // ... find highest-pLongitudinal particle from latest subcollision.
+        if (iColl > 1) {
+          iProj = 0;
+          double pMax = 0.;
+          for (int i = sizeOld; i < sizeNew; ++i)
+          if ( eventMain[i].isFinal() && eventMain[i].isHadron()) {
+            double const pp = Pythia8::dot3(dirNow, eventMain[i].p());
+            if (pp > pMax) {
+              iProj = i;
+              pMax  = pp;
+            }
+          }
 
-    // LCOV_EXCL_START, we don't validate pythia8 internals
-    if (print_listing_) {
-      // print final state
-      event.list();
-    }
-    // LCOV_EXCL_STOP
+          // No further subcollision if no particle with enough energy.
+          if ( iProj == 0 || eventMain[iProj].e() - eventMain[iProj].m()
+            < eKinMinLab_/1_GeV) break;
 
-    MomentumVector Plab_final(labCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
-    HEPEnergyType Elab_final = 0_GeV;
-    for (int i = 0; i < event.size(); ++i) {
-      Pythia8::Particle const& p8p = event[i];
+          // Choose process; only SD or ND at perturbative energies.
+          double const eCMSub = (eventMain[iProj].p() + Pythia8::Vec4{0, 0, 0, mp}).mCalc();
+          if (eCMSub > 10.) procType = (rndm.flat() < probSD_) ? 4 : 1;
+        }
+
+        // Pick one p or n from target.
+        int const idProj = eventMain[iProj].id();
+        bool const doProton = rndm.flat() < (np / double(np + nn));
+        if (doProton) np--;
+        else          nn--;
+        int const idNuc = doProton ? 2212 : 2112;
+
+        // Perform the projectile-nucleon subcollision.
+        pythiaColl_.setBeamIDs(idProj, idNuc);
+        pythiaColl_.setKinematics(eventMain[iProj].p(), Pythia8::Vec4());
+        pythiaColl_.next(procType);
+
+        // Insert target nucleon. Mothers are (0,iProj) to mark who it
+        // interacted with. Always use proton mass for simplicity.
+        int const statusNuc = (iColl == 1) ? -181 : -182;
+        int const iNuc = eventMain.append( idNuc, statusNuc, 0, iProj, 0, 0, 0, 0,
+          0., 0., 0., mp, mp);
+        eventMain[iNuc].vProdAdd(vNow);
+
+        // Insert secondary produced particles (but skip intermediate partons)
+        // into main event record and shift to correct production vertex.
+        sizeOld = eventMain.size();
+        for (int iSub = 3; iSub < eventColl.size(); ++iSub) {
+          if (!eventColl[iSub].isFinal()) continue;
+          int iNew = eventMain.append(eventColl[iSub]);
+          eventMain[iNew].mothers(iNuc, iProj);
+          eventMain[iNew].vProdAdd(vNow);
+        }
+        sizeNew = eventMain.size();
+
+        // Update daughters of colliding hadrons and other history.
+        eventMain[iProj].daughters(sizeOld, sizeNew - 1);
+        eventMain[iNuc].daughters(sizeOld, sizeNew - 1);
+        eventMain[iProj].statusNeg();
+        double dTau = (iColl == 1) ? (vNow.e() - eventMain[iHad].tProd())
+          * eventMain[iHad].m() / eventMain[iHad].e() : 0.;
+        eventMain[iProj].tau(dTau);
+
+      // End of loop over interactions in a nucleus.
+      }
+
+
+    MomentumVector Plab_final{labFrameBoost.getOriginalCS()};
+    auto Elab_final = HEPEnergyType::zero();        
+        
+    for (Pythia8::Particle const& p8p: eventColl) {
       // skip particles that have decayed in pythia
       if (!p8p.isFinal()) continue;
 
       auto const pyId = convert_from_PDG(static_cast<PDGCode>(p8p.id()));
 
-      MomentumVector const pyPlab(labCS,
+      MomentumVector const pyPlab(rotCS,
                                   {p8p.px() * 1_GeV, p8p.py() * 1_GeV, p8p.pz() * 1_GeV});
+      auto const pyP = labFrameBoost.fromCoM(FourVector{p8p.e() * 1_GeV, pyPlab});
 
       HEPEnergyType const mass = get_mass(pyId);
-      HEPEnergyType const Ekin = sqrt(pyPlab.getSquaredNorm() + mass * mass) - mass;
+      HEPEnergyType const Ekin = sqrt(pyP.getSpaceLikeComponents().getSquaredNorm() + mass * mass) - mass;
 
       // add to corsika stack
       auto pnew =
@@ -236,6 +370,8 @@ namespace corsika::pythia8 {
       Plab_final += pnew.getMomentum();
       Elab_final += pnew.getEnergy();
     }
+    
+    eventMain.clear();
 
     CORSIKA_LOG_DEBUG(
         "conservation (all GeV): "
