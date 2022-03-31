@@ -36,8 +36,9 @@ namespace corsika {
     Vector(CoordinateSystemPtr const& pCS, QuantityVector<TDimension> const& pQVector)
         : BaseVector<TDimension>(pCS, pQVector) {}
 
-    Vector(CoordinateSystemPtr const& cs, quantity_type const x, quantity_type const y,
-           quantity_type const z)
+    Vector(CoordinateSystemPtr const& cs, quantity_type const x = quantity_type::zero(),
+           quantity_type const y = quantity_type::zero(),
+           quantity_type const z = quantity_type::zero())
         : BaseVector<TDimension>(cs, QuantityVector<TDimension>(x, y, z)) {}
 
     /*!
