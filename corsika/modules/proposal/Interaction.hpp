@@ -16,7 +16,7 @@
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
-
+#include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/proposal/ProposalProcessBase.hpp>
 
 namespace corsika::proposal {
@@ -25,7 +25,9 @@ namespace corsika::proposal {
   //! Electro-magnetic and photon stochastic losses produced by proposal. It makes
   //! use of interpolation tables which are runtime intensive calculation, but can be
   //! reused by setting the \param PROPOSAL::InterpolationDef::path_to_tables variable.
+  //! @tparam THadronModel
   //!
+
   class Interaction : public InteractionProcess<Interaction>, ProposalProcessBase {
 
     enum { eSECONDARIES, eINTERACTION };
@@ -46,7 +48,7 @@ namespace corsika::proposal {
     //! compositions and stochastic description limited by the particle cut.
     //!
     template <typename TEnvironment>
-    Interaction(TEnvironment const& env);
+    Interaction(TEnvironment const& env, corsika::sibyll::Interaction&);
 
     //!
     //! Calculate the rates for the different targets and interactions. Sample a
@@ -63,6 +65,11 @@ namespace corsika::proposal {
     template <typename TParticle>
     CrossSectionType getCrossSection(TParticle const& p, Code const projectileId,
                                      FourMomentum const& projectileP4);
+
+  private:
+    corsika::sibyll::Interaction& hadronicInteraction_;
+    static HEPEnergyType constexpr heHadronicModelThresholdLab_ =
+        80. * 1e9 * electronvolt;
   };
 } // namespace corsika::proposal
 

@@ -130,6 +130,7 @@ TEST_CASE("SibyllInterface", "modules") {
     CHECK_FALSE(model.isValid(Code::Proton, Code::Helium3, 100_GeV));
     CHECK_FALSE(model.isValid(Code::Proton, Code::Iron, 100_GeV));
     CHECK(model.isValid(Code::Proton, Code::Oxygen, 100_GeV));
+    CHECK(model.isValid(Code::Rho0, Code::Oxygen, 100_GeV));
     // beam particles
     CHECK_FALSE(model.isValid(Code::Electron, Code::Oxygen, 100_GeV));
     CHECK_FALSE(model.isValid(Code::Iron, Code::Oxygen, 100_GeV));

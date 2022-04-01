@@ -8,7 +8,6 @@
 
 #include <corsika/media/IMediumModel.hpp>
 #include <corsika/media/NuclearComposition.hpp>
-#include <corsika/modules/proposal/Interaction.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
@@ -20,8 +19,10 @@
 namespace corsika::proposal {
 
   template <typename TEnvironment>
-  inline Interaction::Interaction(TEnvironment const& _env)
-      : ProposalProcessBase(_env) {}
+  inline Interaction::Interaction(TEnvironment const& _env,
+                                  corsika::sibyll::Interaction& hadint)
+      : ProposalProcessBase(_env)
+      , hadronicInteraction_(hadint) {}
 
   inline void Interaction::buildCalculator(Code code, NuclearComposition const& comp) {
     // search crosssection builder for given particle
@@ -99,15 +100,66 @@ namespace corsika::proposal {
       PROPOSAL::Component target;
       if (type != PROPOSAL::InteractionType::Ioniz)
         target = PROPOSAL::Component::GetComponentForHash(target_hash);
-      auto sec =
-          std::get<eSECONDARIES>(c->second)->CalculateSecondaries(loss, target, rnd);
-      for (auto& s : sec) {
-        auto E = s.energy * 1_MeV;
-        auto vecProposal = s.direction;
-        auto dir = DirectionVector(
-            labCS, {vecProposal.GetX(), vecProposal.GetY(), vecProposal.GetZ()});
-        auto sec_code = convert_from_PDG(static_cast<PDGCode>(s.type));
-        view.addSecondary(std::make_tuple(sec_code, E - get_mass(sec_code), dir));
+      if (type == PROPOSAL::InteractionType::Photonuclear)
+        CORSIKA_LOG_INFO(
+            "HE photo-hadronic interaction! calling hadronic interaction model. Energy = "
+            "{} GeV, v = {}, v * E = {}",
+            projectile.getEnergy() / 1_GeV, v, v * projectile.getEnergy());
+      if (type == PROPOSAL::InteractionType::Photonuclear &&
+          projectile.getEnergy() > heHadronicModelThresholdLab_) {
+        CORSIKA_LOG_INFO(
+            "HE photo-hadronic interaction! calling hadronic interaction model..");
+
+        //  copy from NuclearInteractionModel
+        //  temporarily add to stack, will be removed after interaction in DoInteraction
+        typename TStackView::inner_stack_value_type photonStack;
+        Point const pDummy(labCS, {0_m, 0_m, 0_m});
+        TimeType const tDummy = 0_ns;
+        Code const hadPhotonCode = Code::Rho0; // stand in for hadronic-photon
+        auto const A = target.GetAtomicNum();
+        auto const Z = target.GetNucCharge();
+        Code const targetId = get_nucleus_code(A, Z);
+        // target at rest
+        FourMomentum const targetP4(get_mass(targetId),
+                                    MomentumVector(labCS, {0_GeV, 0_GeV, 0_GeV}));
+        auto const p3PhotonLab = projectileP4.getSpaceLikeComponents();
+        HEPEnergyType const Ekin = projectileP4.getTimeLikeComponent();
+        auto hadronicPhoton = photonStack.addParticle(std::make_tuple(
+            hadPhotonCode, Ekin, p3PhotonLab.normalized(), pDummy, tDummy));
+        hadronicPhoton.setNode(view.getProjectile().getNode());
+        CORSIKA_LOG_INFO("gam - had interaction: kin. energy of gamma: {} GeV",
+                         Ekin / 1_GeV);
+
+        // create inelastic interaction of the hadronic photon
+        // create new StackView for the photon
+        TStackView photon_secondaries(hadronicPhoton);
+
+        // call inner hadronic event generator
+        CORSIKA_LOG_TRACE("calling HadronicInteraction...");
+        CORSIKA_LOG_INFO("{} + {} interactions. Ekinlab = {}", hadPhotonCode, targetId,
+                         Ekin / 1_GeV);
+        hadronicInteraction_.doInteraction(photon_secondaries, hadPhotonCode, targetId,
+                                           projectileP4, targetP4);
+        for (const auto& pSec : photon_secondaries) {
+
+          auto const p3lab = pSec.getMomentum();
+          Code const pid = pSec.getPID();
+          HEPEnergyType const mass = get_mass(pid);
+          HEPEnergyType const Ekin = sqrt(p3lab.getSquaredNorm() + mass * mass) - mass;
+          view.addSecondary(std::make_tuple(pid, Ekin, p3lab.normalized()));
+        }
+        // throw std::runtime_error("photo-hadronic interaction!");
+      } else {
+        auto sec =
+            std::get<eSECONDARIES>(c->second)->CalculateSecondaries(loss, target, rnd);
+        for (auto& s : sec) {
+          auto E = s.energy * 1_MeV;
+          auto vecProposal = s.direction;
+          auto dir = DirectionVector(
+              labCS, {vecProposal.GetX(), vecProposal.GetY(), vecProposal.GetZ()});
+          auto sec_code = convert_from_PDG(static_cast<PDGCode>(s.type));
+          view.addSecondary(std::make_tuple(sec_code, E - get_mass(sec_code), dir));
+        }
       }
     }
     return ProcessReturn::Ok;
