@@ -1,5 +1,5 @@
 [requires]
-spdlog/1.8.5
+spdlog/1.9.2
 catch2/2.13.8
 eigen/3.3.8
 boost/1.76.0
