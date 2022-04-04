@@ -68,6 +68,16 @@ namespace corsika::proposal {
       auto [type, target_hash, v] = std::get<eINTERACTION>(c->second)->SampleLoss(
           projectile.getEnergy() / 1_MeV, rates, distr(RNG_));
 
+      // TODO: This should become obsolete as soon #482 is fixed
+      if (type == PROPOSAL::InteractionType::Undefined) {
+        CORSIKA_LOG_WARN(
+            "PROPOSAL: No particle interaction possible. "
+            "Put initial particle back on stack.");
+        view.addSecondary(std::make_tuple(projectileId, projectile.getEnergy(),
+                                          projectile.getDirection()));
+        return ProcessReturn::Ok;
+      }
+
       // Read how much random numbers are required to calculate the secondaries.
       // Calculate the secondaries and deploy them on the corsika stack.
       auto rnd = std::vector<double>(
@@ -86,7 +96,9 @@ namespace corsika::proposal {
       auto loss = PROPOSAL::StochasticLoss(
           static_cast<int>(type), v * projectile.getEnergy() / 1_MeV, point, direction,
           projectile.getTime() / 1_s, 0., projectile.getEnergy() / 1_MeV);
-      auto target = PROPOSAL::Component::component_map->operator[](target_hash);
+      PROPOSAL::Component target;
+      if (type != PROPOSAL::InteractionType::Ioniz)
+        target = PROPOSAL::Component::GetComponentForHash(target_hash);
       auto sec =
           std::get<eSECONDARIES>(c->second)->CalculateSecondaries(loss, target, rnd);
       for (auto& s : sec) {

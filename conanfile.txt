@@ -1,10 +1,10 @@
 [requires]
-spdlog/1.8.5
+spdlog/1.9.2
 catch2/2.13.8
 eigen/3.3.8
 boost/1.76.0
 zlib/1.2.11
-proposal/7.0.5
+proposal/7.3.0
 yaml-cpp/0.6.3
 arrow/2.0.0
 cli11/1.9.1
