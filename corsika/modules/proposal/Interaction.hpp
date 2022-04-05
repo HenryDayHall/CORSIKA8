@@ -60,6 +60,15 @@ namespace corsika::proposal {
                                 FourMomentum const& projectileP4);
 
     //!
+    //! Calculate produce the hadronic secondaries in a hadronic photon interaction and
+    //! store them on the particle stack.
+    //!
+    template <typename TSecondaryView>
+    ProcessReturn doHadronicInteraction(TSecondaryView&, CoordinateSystemPtr const&,
+                                        FourMomentum const& projectileP4,
+                                        Code const targetId);
+
+    //!
     //! Calculates and returns the cross section.
     //!
     template <typename TParticle>
