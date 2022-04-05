@@ -49,9 +49,10 @@ namespace corsika {
     /**
      * Write a PDG/corsika::Code particle to the file.
      */
-    void write(Code const& pid, units::si::HEPEnergyType const& energy,
-               units::si::LengthType const& x, units::si::LengthType const& y,
-               units::si::LengthType const& z, const double weight);
+    void write(Code const pid, units::si::HEPEnergyType const energy,
+               units::si::LengthType const x, units::si::LengthType const y,
+               units::si::LengthType const z, units::si::TimeType const time,
+               const double weight);
 
     /**
      * Return collected library-level summary for output.

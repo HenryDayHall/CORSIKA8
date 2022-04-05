@@ -22,11 +22,11 @@ struct TestWriterPlane : public ParticleWriterParquet {
   YAML::Node getConfig() const { return YAML::Node(); }
 
   void checkWrite() {
-    ParticleWriterParquet::write(Code::Unknown, 1_GeV, 2_m, 3_m, 0_m, 1.0);
-    ParticleWriterParquet::write(Code::Proton, 1_GeV, 2_m, 3_m, 0_m, 1.0);
-    ParticleWriterParquet::write(Code::MuPlus, 1_GeV, 2_m, 3_m, 0_m, 1.0);
-    ParticleWriterParquet::write(Code::MuMinus, 1_GeV, 2_m, 3_m, 0_m, 1.0);
-    ParticleWriterParquet::write(Code::Photon, 1_GeV, 2_m, 3_m, 0_m, 1.0);
+    ParticleWriterParquet::write(Code::Unknown, 1_GeV, 2_m, 3_m, 0_m, 1_us, 1.0);
+    ParticleWriterParquet::write(Code::Proton, 1_GeV, 2_m, 3_m, 0_m, 1_us, 1.0);
+    ParticleWriterParquet::write(Code::MuPlus, 1_GeV, 2_m, 3_m, 0_m, 1_us, 1.0);
+    ParticleWriterParquet::write(Code::MuMinus, 1_GeV, 2_m, 3_m, 0_m, 1_us, 1.0);
+    ParticleWriterParquet::write(Code::Photon, 1_GeV, 2_m, 3_m, 0_m, 1_us, 1.0);
   }
 };
 
