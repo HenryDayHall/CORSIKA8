@@ -53,9 +53,11 @@ TEST_CASE("ProposalInterface", "modules") {
   }
 
   SECTION("InteractionInterface - hadronic photon interaction") {
-    // auto& stack = *stackPtr;
+    auto& stack = *stackPtr;
     // auto particle = stack.first();
     FourMomentum P4(100_TeV, {cs, {100_TeV, 0_eV, 0_eV}});
+    // finish successfully
     CHECK(emModel.doHadronicInteraction(view, cs, P4, Code::Oxygen) == ProcessReturn::Ok);
+    CHECK(stack.getEntries() > 1);
   }
 }
