@@ -16,7 +16,6 @@
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
-#include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/proposal/ProposalProcessBase.hpp>
 
 namespace corsika::proposal {
@@ -25,10 +24,16 @@ namespace corsika::proposal {
   //! Electro-magnetic and photon stochastic losses produced by proposal. It makes
   //! use of interpolation tables which are runtime intensive calculation, but can be
   //! reused by setting the \param PROPOSAL::InterpolationDef::path_to_tables variable.
-  //! @tparam THadronModel
+  //! Hadroninc interactions of photons with nuclei are included. The cross section is
+  //! calculated by PROPOSAL. For the production of hadronic secondaries an external model
+  //! is needed that implements the doInteraction(TSecondaries& view, Code const
+  //! projectile, Code const target,FourMomentum const& projectileP4, FourMomentum const&
+  //! targetP4) routine.
+  //! @tparam THadronicModel
   //!
 
-  class Interaction : public InteractionProcess<Interaction>, ProposalProcessBase {
+  template <class THadronicModel>
+  class InteractionModel : public ProposalProcessBase {
 
     enum { eSECONDARIES, eINTERACTION };
     using calculator_t = std::tuple<std::unique_ptr<PROPOSAL::SecondariesCalculator>,
@@ -48,7 +53,7 @@ namespace corsika::proposal {
     //! compositions and stochastic description limited by the particle cut.
     //!
     template <typename TEnvironment>
-    Interaction(TEnvironment const& env, corsika::sibyll::Interaction&);
+    InteractionModel(TEnvironment const& env, THadronicModel&);
 
     //!
     //! Calculate the rates for the different targets and interactions. Sample a
@@ -66,7 +71,7 @@ namespace corsika::proposal {
     template <typename TSecondaryView>
     ProcessReturn doHadronicInteraction(TSecondaryView&, CoordinateSystemPtr const&,
                                         FourMomentum const& projectileP4,
-                                        Code const targetId);
+                                        Code const& targetId);
 
     //!
     //! Calculates and returns the cross section.
@@ -76,10 +81,11 @@ namespace corsika::proposal {
                                      FourMomentum const& projectileP4);
 
   private:
-    corsika::sibyll::Interaction& hadronicInteraction_;
+    THadronicModel& hadronicInteraction_;    
     static HEPEnergyType constexpr heHadronicModelThresholdLab_ =
         80. * 1e9 * electronvolt;
   };
+
 } // namespace corsika::proposal
 
-#include <corsika/detail/modules/proposal/Interaction.inl>
+#include <corsika/detail/modules/proposal/InteractionModel.inl>

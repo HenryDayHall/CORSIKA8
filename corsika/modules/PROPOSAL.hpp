@@ -8,5 +8,17 @@
 
 #pragma once
 
-#include <corsika/modules/proposal/Interaction.hpp>
+#include <corsika/modules/proposal/InteractionModel.hpp>
 #include <corsika/modules/proposal/ContinuousProcess.hpp>
+
+namespace corsika::proposal {
+
+  template <typename THadronicModel>
+  class Interaction : public InteractionModel<THadronicModel>,
+                      public InteractionProcess<Interaction<THadronicModel>> {
+  public:
+    template <typename TEnvironment>
+    Interaction(TEnvironment const& env, THadronicModel& model)
+        : InteractionModel<THadronicModel>(env, model) {}
+  };
+} // namespace corsika::proposal

@@ -18,13 +18,16 @@
 
 namespace corsika::proposal {
 
+  template <typename THadronicModel>
   template <typename TEnvironment>
-  inline Interaction::Interaction(TEnvironment const& _env,
-                                  corsika::sibyll::Interaction& hadint)
+  inline InteractionModel<THadronicModel>::InteractionModel(TEnvironment const& _env,
+                                                            THadronicModel& hadint)
       : ProposalProcessBase(_env)
       , hadronicInteraction_(hadint) {}
 
-  inline void Interaction::buildCalculator(Code code, NuclearComposition const& comp) {
+  template <typename THadronicModel>
+  inline void InteractionModel<THadronicModel>::buildCalculator(
+      Code code, NuclearComposition const& comp) {
     // search crosssection builder for given particle
     auto p_cross = cross.find(code);
     if (p_cross == cross.end())
@@ -48,10 +51,10 @@ namespace corsika::proposal {
         PROPOSAL::make_interaction(c, true));
   }
 
+  template <typename THadronicModel>
   template <typename TStackView>
-  inline ProcessReturn Interaction::doInteraction(TStackView& view,
-                                                  Code const projectileId,
-                                                  FourMomentum const& projectileP4) {
+  inline ProcessReturn InteractionModel<THadronicModel>::doInteraction(
+      TStackView& view, Code const projectileId, FourMomentum const& projectileP4) {
 
     auto const projectile = view.getProjectile();
 
@@ -126,10 +129,11 @@ namespace corsika::proposal {
     return ProcessReturn::Ok;
   }
 
+  template <typename THadronicModel>
   template <typename TStackView>
-  inline ProcessReturn Interaction::doHadronicInteraction(
+  inline ProcessReturn InteractionModel<THadronicModel>::doHadronicInteraction(
       TStackView& view, CoordinateSystemPtr const& labCS,
-      FourMomentum const& projectileP4, Code const targetId) {
+      FourMomentum const& projectileP4, Code const& targetId) {
     CORSIKA_LOG_INFO(
         "HE photo-hadronic interaction! calling hadronic interaction model..");
 
@@ -170,14 +174,15 @@ namespace corsika::proposal {
       HEPEnergyType const Ekin = sqrt(p3lab.getSquaredNorm() + mass * mass) - mass;
       view.addSecondary(std::make_tuple(pid, Ekin, p3lab.normalized()));
     }
-    // throw std::runtime_error("photo-hadronic interaction!");
+    CORSIKA_LOG_INFO("number of particles produced: {}", view.getEntries());
     return ProcessReturn::Ok;
   }
 
+  template <typename THadronicModel>
   template <typename TParticle>
-  inline CrossSectionType Interaction::getCrossSection(TParticle const& projectile,
-                                                       Code const projectileId,
-                                                       FourMomentum const& projectileP4) {
+  inline CrossSectionType InteractionModel<THadronicModel>::getCrossSection(
+      TParticle const& projectile, Code const projectileId,
+      FourMomentum const& projectileP4) {
 
     // ==============================================
     // this block better diappears. RU 26.10.2021

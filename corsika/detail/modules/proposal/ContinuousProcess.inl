@@ -11,7 +11,7 @@
 
 #include <corsika/media/IMediumModel.hpp>
 #include <corsika/modules/proposal/ContinuousProcess.hpp>
-#include <corsika/modules/proposal/Interaction.hpp>
+#include <corsika/modules/proposal/InteractionModel.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/core/Logging.hpp>
