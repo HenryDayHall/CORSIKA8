@@ -81,7 +81,7 @@ namespace corsika::proposal {
                                      FourMomentum const& projectileP4);
 
   private:
-    THadronicModel& hadronicInteraction_;    
+    THadronicModel& hadronicInteraction_;
     static HEPEnergyType constexpr heHadronicModelThresholdLab_ =
         80. * 1e9 * electronvolt;
   };
