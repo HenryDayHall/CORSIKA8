@@ -6,7 +6,6 @@
  * the license.
  */
 #include <corsika/modules/PROPOSAL.hpp>
-#include <corsika/modules/Sibyll.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 
 #include <SetupTestEnvironment.hpp>
@@ -25,6 +24,24 @@ using DummyEnvironment = Environment<DummyEnvironmentInterface>;
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 
+class DummyHadronicModel {
+public:
+  DummyHadronicModel(){};
+
+  template <typename TSecondaryView>
+  void doInteraction(TSecondaryView& view, Code const, Code const,
+                     FourMomentum const& projectileP4, FourMomentum const& targetP4) {
+    auto const E = projectileP4.getTimeLikeComponent();
+    // add 5 pions
+    auto const& csPrime = view.getProjectile().getMomentum().getCoordinateSystem();
+    for (int i = 0; i < 5; ++i) {
+      view.addSecondary(
+          std::make_tuple(Code::PiPlus, E / 5,
+                          MomentumVector(csPrime, {0_GeV, 0_GeV, 0_GeV}).normalized()));
+    }
+  }
+};
+
 TEST_CASE("ProposalInterface", "modules") {
 
   logging::set_level(logging::level::info);
@@ -37,11 +54,11 @@ TEST_CASE("ProposalInterface", "modules") {
       Code::Electron, 10_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
   test::StackView& view = *viewPtr;
 
-  RNGManager<>::getInstance().registerRandomStream("sibyll");
   RNGManager<>::getInstance().registerRandomStream("proposal");
 
-  corsika::sibyll::Interaction hadModel;
-  corsika::proposal::Interaction emModel(*env, hadModel);
+  DummyHadronicModel hadModel;
+
+  corsika::proposal::InteractionModel emModel(*env, hadModel);
 
   SECTION("InteractionInterface - cross section") {
     auto& stack = *stackPtr;
@@ -59,5 +76,7 @@ TEST_CASE("ProposalInterface", "modules") {
     // finish successfully
     CHECK(emModel.doHadronicInteraction(view, cs, P4, Code::Oxygen) == ProcessReturn::Ok);
     CHECK(stack.getEntries() > 1);
+    CORSIKA_LOG_INFO("Number of particles produced in hadronic photon interaction: {}",
+                     stack.getEntries());
   }
 }
