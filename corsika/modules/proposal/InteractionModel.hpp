@@ -33,7 +33,26 @@ namespace corsika::proposal {
   //!
 
   template <class THadronicModel>
-  class InteractionModel : public ProposalProcessBase {
+  class HadronicPhotonModel {
+  public:
+    HadronicPhotonModel(THadronicModel&);
+    //!
+    //! Calculate produce the hadronic secondaries in a hadronic photon interaction and
+    //! store them on the particle stack.
+    //!
+    template <typename TSecondaryView>
+    ProcessReturn doHadronicPhotonInteraction(TSecondaryView&, CoordinateSystemPtr const&,
+                                              FourMomentum const&, Code const&);
+
+  private:
+    THadronicModel& heHadronicInteraction_;
+    static HEPEnergyType constexpr heHadronicModelThresholdLab_ =
+        80. * 1e9 * electronvolt;
+  };
+
+  template <class THadronicModel>
+  class InteractionModel : public ProposalProcessBase,
+                           public HadronicPhotonModel<THadronicModel> {
 
     enum { eSECONDARIES, eINTERACTION };
     using calculator_t = std::tuple<std::unique_ptr<PROPOSAL::SecondariesCalculator>,
@@ -65,24 +84,11 @@ namespace corsika::proposal {
                                 FourMomentum const& projectileP4);
 
     //!
-    //! Calculate produce the hadronic secondaries in a hadronic photon interaction and
-    //! store them on the particle stack.
-    //!
-    template <typename TSecondaryView>
-    ProcessReturn doHadronicPhotonInteraction(TSecondaryView&, CoordinateSystemPtr const&,
-                                              FourMomentum const&, Code const&);
-
-    //!
     //! Calculates and returns the cross section.
     //!
     template <typename TParticle>
     CrossSectionType getCrossSection(TParticle const& p, Code const projectileId,
                                      FourMomentum const& projectileP4);
-
-  private:
-    THadronicModel& hadronicInteraction_;
-    static HEPEnergyType constexpr heHadronicModelThresholdLab_ =
-        80. * 1e9 * electronvolt;
   };
 
 } // namespace corsika::proposal

@@ -70,7 +70,20 @@ TEST_CASE("ProposalInterface", "modules") {
     CHECK(emModel.getCrossSection(particle, Code::Proton, P4) == 0_mb);
   }
 
-  SECTION("InteractionInterface - hadronic photon interaction") {
+  SECTION("InteractionInterface - LE hadronic photon interaction") {
+    auto& stack = *stackPtr;
+    // auto particle = stack.first();
+    FourMomentum P4(10_GeV, {cs, {10_GeV, 0_eV, 0_eV}});
+    // finish successfully
+    CHECK(emModel.doHadronicPhotonInteraction(view, cs, P4, Code::Oxygen) ==
+          ProcessReturn::Ok);
+    // no LE interactions
+    CHECK(stack.getEntries() == 1);
+    CORSIKA_LOG_INFO("Number of particles produced in hadronic photon interaction: {}",
+                     stack.getEntries()-1);
+  }
+
+  SECTION("InteractionInterface - HE hadronic photon interaction") {
     auto& stack = *stackPtr;
     // auto particle = stack.first();
     FourMomentum P4(100_TeV, {cs, {100_TeV, 0_eV, 0_eV}});
@@ -79,6 +92,6 @@ TEST_CASE("ProposalInterface", "modules") {
           ProcessReturn::Ok);
     CHECK(stack.getEntries() > 1);
     CORSIKA_LOG_INFO("Number of particles produced in hadronic photon interaction: {}",
-                     stack.getEntries());
+                     stack.getEntries()-1);
   }
 }
