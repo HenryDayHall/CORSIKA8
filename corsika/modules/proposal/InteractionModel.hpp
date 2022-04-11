@@ -69,9 +69,8 @@ namespace corsika::proposal {
     //! store them on the particle stack.
     //!
     template <typename TSecondaryView>
-    ProcessReturn doHadronicInteraction(TSecondaryView&, CoordinateSystemPtr const&,
-                                        FourMomentum const& projectileP4,
-                                        Code const& targetId);
+    ProcessReturn doHadronicPhotonInteraction(TSecondaryView&, CoordinateSystemPtr const&,
+                                              FourMomentum const&, Code const&);
 
     //!
     //! Calculates and returns the cross section.

@@ -34,6 +34,7 @@ public:
     auto const E = projectileP4.getTimeLikeComponent();
     // add 5 pions
     auto const& csPrime = view.getProjectile().getMomentum().getCoordinateSystem();
+    [[maybe_unused]] auto const sqs = (projectileP4 + targetP4).getNorm();
     for (int i = 0; i < 5; ++i) {
       view.addSecondary(
           std::make_tuple(Code::PiPlus, E / 5,
@@ -74,7 +75,8 @@ TEST_CASE("ProposalInterface", "modules") {
     // auto particle = stack.first();
     FourMomentum P4(100_TeV, {cs, {100_TeV, 0_eV, 0_eV}});
     // finish successfully
-    CHECK(emModel.doHadronicInteraction(view, cs, P4, Code::Oxygen) == ProcessReturn::Ok);
+    CHECK(emModel.doHadronicPhotonInteraction(view, cs, P4, Code::Oxygen) ==
+          ProcessReturn::Ok);
     CHECK(stack.getEntries() > 1);
     CORSIKA_LOG_INFO("Number of particles produced in hadronic photon interaction: {}",
                      stack.getEntries());

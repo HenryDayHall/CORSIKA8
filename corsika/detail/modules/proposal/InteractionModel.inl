@@ -10,6 +10,7 @@
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/EnergyMomentumOperations.hpp>
 
 #include <limits>
 #include <memory>
@@ -103,16 +104,29 @@ namespace corsika::proposal {
       PROPOSAL::Component target;
       if (type != PROPOSAL::InteractionType::Ioniz)
         target = PROPOSAL::Component::GetComponentForHash(target_hash);
+
+      auto const photonEnergy = projectile.getEnergy() * v;
+
       if (type == PROPOSAL::InteractionType::Photonuclear)
         CORSIKA_LOG_INFO(
-            "HE photo-hadronic interaction! calling hadronic interaction model. Energy = "
+            "HE photo-hadronic interaction! Energy = "
             "{} GeV, v = {}, v * E = {}",
-            projectile.getEnergy() / 1_GeV, v, v * projectile.getEnergy());
+            projectile.getEnergy() / 1_GeV, v, photonEnergy);
+
       if (type == PROPOSAL::InteractionType::Photonuclear &&
-          projectile.getEnergy() > heHadronicModelThresholdLab_) {
+          photonEnergy > heHadronicModelThresholdLab_) {
+        auto const photonDirection =
+            projectileP4.getSpaceLikeComponents()
+                .normalized(); // photon collinear with projectile
+        FourMomentum const photonP4(photonEnergy, photonEnergy * photonDirection);
         Code const targetId =
             get_nucleus_code(target.GetAtomicNum(), target.GetNucCharge());
-        doHadronicInteraction(view, labCS, projectileP4, targetId);
+        doHadronicPhotonInteraction(view, labCS, photonP4, targetId);
+        if (projectileId != Code::Photon)
+          // add lepton, apply energy loss to kinetic energy
+          view.addSecondary(std::make_tuple(
+              projectileId, (1 - v) * (projectile.getEnergy() - get_mass(projectileId)),
+              photonDirection));
       } else {
         auto sec =
             std::get<eSECONDARIES>(c->second)->CalculateSecondaries(loss, target, rnd);
@@ -131,9 +145,9 @@ namespace corsika::proposal {
 
   template <typename THadronicModel>
   template <typename TStackView>
-  inline ProcessReturn InteractionModel<THadronicModel>::doHadronicInteraction(
-      TStackView& view, CoordinateSystemPtr const& labCS,
-      FourMomentum const& projectileP4, Code const& targetId) {
+  inline ProcessReturn InteractionModel<THadronicModel>::doHadronicPhotonInteraction(
+      TStackView& view, CoordinateSystemPtr const& labCS, FourMomentum const& photonP4,
+      Code const& targetId) {
     CORSIKA_LOG_INFO(
         "HE photo-hadronic interaction! calling hadronic interaction model..");
 
@@ -143,19 +157,13 @@ namespace corsika::proposal {
     Point const pDummy(labCS, {0_m, 0_m, 0_m});
     TimeType const tDummy = 0_ns;
     Code const hadPhotonCode = Code::Rho0; // stand in for hadronic-photon
-    // auto const A = target.GetAtomicNum();
-    // auto const Z = target.GetNucCharge();
-    // Code const targetId = get_nucleus_code(A, Z);
     // target at rest
     FourMomentum const targetP4(get_mass(targetId),
                                 MomentumVector(labCS, {0_GeV, 0_GeV, 0_GeV}));
-    auto const p3PhotonLab = projectileP4.getSpaceLikeComponents();
-    HEPEnergyType const Ekin = projectileP4.getTimeLikeComponent();
     auto hadronicPhoton = photonStack.addParticle(
-        std::make_tuple(hadPhotonCode, Ekin, p3PhotonLab.normalized(), pDummy, tDummy));
+        std::make_tuple(hadPhotonCode, photonP4.getTimeLikeComponent(),
+                        photonP4.getSpaceLikeComponents().normalized(), pDummy, tDummy));
     hadronicPhoton.setNode(view.getProjectile().getNode());
-    CORSIKA_LOG_INFO("gam - had interaction: kin. energy of gamma: {} GeV", Ekin / 1_GeV);
-
     // create inelastic interaction of the hadronic photon
     // create new StackView for the photon
     TStackView photon_secondaries(hadronicPhoton);
@@ -163,16 +171,15 @@ namespace corsika::proposal {
     // call inner hadronic event generator
     CORSIKA_LOG_TRACE("calling HadronicInteraction...");
     CORSIKA_LOG_INFO("{} + {} interactions. Ekinlab = {}", hadPhotonCode, targetId,
-                     Ekin / 1_GeV);
+                     photonP4.getTimeLikeComponent() / 1_GeV);
     hadronicInteraction_.doInteraction(photon_secondaries, hadPhotonCode, targetId,
-                                       projectileP4, targetP4);
+                                       photonP4, targetP4);
     for (const auto& pSec : photon_secondaries) {
-
       auto const p3lab = pSec.getMomentum();
       Code const pid = pSec.getPID();
-      HEPEnergyType const mass = get_mass(pid);
-      HEPEnergyType const Ekin = sqrt(p3lab.getSquaredNorm() + mass * mass) - mass;
-      view.addSecondary(std::make_tuple(pid, Ekin, p3lab.normalized()));
+      HEPEnergyType const secEkin =
+          calculate_kinetic_energy(p3lab.getNorm(), get_mass(pid));
+      view.addSecondary(std::make_tuple(pid, secEkin, p3lab.normalized()));
     }
     CORSIKA_LOG_INFO("number of particles produced: {}", view.getEntries());
     return ProcessReturn::Ok;
