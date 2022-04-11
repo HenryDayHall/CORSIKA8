@@ -31,7 +31,6 @@ namespace corsika::pythia8 {
       // Main Pythia object for managing the cascade evolution.
       // Can also do decays, but no hard processes.
       
-      
       pythiaMain_.readString("ProcessLevel:all = off");
       pythiaMain_.readString("211:mayDecay = on"); // TODO: probably not necessary, but ask Torjbörn maybe
       pythiaMain_.readString("13:mayDecay  = on");
@@ -74,6 +73,8 @@ namespace corsika::pythia8 {
       // Reduce printout and relax energy-momentum conservation.
       pythiaColl_.readString("Print:quiet = on");
       pythiaColl_.readString("Check:epTolErr = 0.1");
+      pythiaColl_.readString("Check:epTolWarn = 0.0001");
+      pythiaColl_.readString("Check:mTolErr = 0.01");
 
       // Redure statistics printout to relevant ones.
       pythiaColl_.readString("Stat:showProcessLevel = off");  
@@ -289,8 +290,7 @@ namespace corsika::pythia8 {
           double pMax = 0.;
           for (int i = sizeOld; i < sizeNew; ++i)
           if ( eventMain[i].isFinal() && eventMain[i].isHadron()) {
-            double const pp = Pythia8::dot3(dirNow, eventMain[i].p());
-            if (pp > pMax) {
+            if (double const pp = Pythia8::dot3(dirNow, eventMain[i].p()); pp > pMax) {
               iProj = i;
               pMax  = pp;
             }
@@ -315,7 +315,10 @@ namespace corsika::pythia8 {
         // Perform the projectile-nucleon subcollision.
         pythiaColl_.setBeamIDs(idProj, idNuc);
         pythiaColl_.setKinematics(eventMain[iProj].p(), Pythia8::Vec4());
-        pythiaColl_.next(procType);
+        
+        if (!pythiaColl_.next(procType)) {
+          throw std::runtime_error("Pythia collision next() failed!");
+        }
 
         // Insert target nucleon. Mothers are (0,iProj) to mark who it
         // interacted with. Always use proton mass for simplicity.
@@ -323,6 +326,10 @@ namespace corsika::pythia8 {
         int const iNuc = eventMain.append( idNuc, statusNuc, 0, iProj, 0, 0, 0, 0,
           0., 0., 0., mp, mp);
         eventMain[iNuc].vProdAdd(vNow);
+        
+        // Update full energy of the event with the proton mass.
+        eventMain[0].e( eventMain[0].e() + mp);
+        eventMain[0].m( eventMain[0].p().mCalc() );
 
         // Insert secondary produced particles (but skip intermediate partons)
         // into main event record and shift to correct production vertex.
@@ -351,7 +358,7 @@ namespace corsika::pythia8 {
     auto Elab_final = HEPEnergyType::zero();        
         
     for (Pythia8::Particle const& p8p: eventColl) {
-      // skip particles that have decayed in pythia
+      // skip particles that have decayed / are initial particles in pythia's event record
       if (!p8p.isFinal()) continue;
 
       auto const pyId = convert_from_PDG(static_cast<PDGCode>(p8p.id()));
