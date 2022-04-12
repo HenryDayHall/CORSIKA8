@@ -58,6 +58,7 @@ TEST_CASE("EposBasics", "module,process") {
 
   SECTION("canInteractInEpos") {
     CHECK(corsika::epos::canInteract(Code::Proton));
+    CHECK(corsika::epos::canInteract(Code::Rho0));
     CHECK_FALSE(corsika::epos::canInteract(Code::Electron));
     CHECK(corsika::epos::canInteract(Code::Nucleus));
     CHECK(corsika::epos::canInteract(Code::Helium));
