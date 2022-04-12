@@ -14,6 +14,13 @@
 
 namespace corsika::proposal {
 
+  //! Implements the production of secondary hadrons for the hadronic interaction of real
+  //! and virtual photons. At high energies an external model
+  //! is needed that implements the doInteraction(TSecondaries& view, Code const
+  //! projectile, Code const target,FourMomentum const& projectileP4, FourMomentum const&
+  //! targetP4) routine. Low energy interactions are currently not implemented.
+  //! @tparam THadronicModel
+
   template <class THadronicModel>
   class HadronicPhotonModel {
   public:
@@ -29,7 +36,7 @@ namespace corsika::proposal {
   private:
     THadronicModel& heHadronicInteraction_;
     static HEPEnergyType constexpr heHadronicModelThresholdLab_ =
-        80. * 1e9 * electronvolt;
+        80. * 1e9 * electronvolt; //!< energy threshold between LE and HE model
   };
 } // namespace corsika::proposal
 
