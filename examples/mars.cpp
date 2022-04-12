@@ -353,7 +353,7 @@ int main(int argc, char** argv) {
 
   // decaySibyll.printDecayConfig();
 
-  corsika::proposal::Interaction emCascade(env);
+  corsika::proposal::Interaction emCascade(env, sibyll);
   // NOT possible right now, due to interface difference for PROPOSAL:
   //  InteractionCounter emCascadeCounted(emCascade);
   // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>>

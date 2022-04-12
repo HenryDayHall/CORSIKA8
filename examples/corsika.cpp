@@ -321,7 +321,7 @@ int main(int argc, char** argv) {
   HEPEnergyType const hadcut = 50_GeV;
   ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, dEdX);
 
-  corsika::proposal::Interaction emCascade(env);
+  corsika::proposal::Interaction emCascade(env, sibyll);
   // NOT available for PROPOSAL due to interface trouble:
   // InteractionCounter emCascadeCounted(emCascade);
   // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env);
