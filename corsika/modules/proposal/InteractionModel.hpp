@@ -17,6 +17,7 @@
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
 #include <corsika/modules/proposal/ProposalProcessBase.hpp>
+#include <corsika/modules/proposal/HadronicPhotonModel.hpp>
 
 namespace corsika::proposal {
 
@@ -31,24 +32,6 @@ namespace corsika::proposal {
   //! targetP4) routine.
   //! @tparam THadronicModel
   //!
-
-  template <class THadronicModel>
-  class HadronicPhotonModel {
-  public:
-    HadronicPhotonModel(THadronicModel&);
-    //!
-    //! Calculate produce the hadronic secondaries in a hadronic photon interaction and
-    //! store them on the particle stack.
-    //!
-    template <typename TSecondaryView>
-    ProcessReturn doHadronicPhotonInteraction(TSecondaryView&, CoordinateSystemPtr const&,
-                                              FourMomentum const&, Code const&);
-
-  private:
-    THadronicModel& heHadronicInteraction_;
-    static HEPEnergyType constexpr heHadronicModelThresholdLab_ =
-        80. * 1e9 * electronvolt;
-  };
 
   template <class THadronicModel>
   class InteractionModel : public ProposalProcessBase,

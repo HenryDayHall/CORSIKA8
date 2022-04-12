@@ -80,7 +80,7 @@ TEST_CASE("ProposalInterface", "modules") {
     // no LE interactions
     CHECK(stack.getEntries() == 1);
     CORSIKA_LOG_INFO("Number of particles produced in hadronic photon interaction: {}",
-                     stack.getEntries()-1);
+                     stack.getEntries() - 1);
   }
 
   SECTION("InteractionInterface - HE hadronic photon interaction") {
@@ -92,6 +92,6 @@ TEST_CASE("ProposalInterface", "modules") {
           ProcessReturn::Ok);
     CHECK(stack.getEntries() > 1);
     CORSIKA_LOG_INFO("Number of particles produced in hadronic photon interaction: {}",
-                     stack.getEntries()-1);
+                     stack.getEntries() - 1);
   }
 }
