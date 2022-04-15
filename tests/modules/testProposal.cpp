@@ -65,9 +65,14 @@ TEST_CASE("ProposalInterface", "modules") {
     auto& stack = *stackPtr;
     auto particle = stack.first();
     FourMomentum P4(
-        100_GeV,
+        100_MeV,
         {cs, {sqrt(static_pow<2>(100_MeV) - static_pow<2>(Proton::mass)), 0_eV, 0_eV}});
     CHECK(emModel.getCrossSection(particle, Code::Proton, P4) == 0_mb);
+
+    FourMomentum eleP4(
+        100_MeV,
+        {cs, {sqrt(static_pow<2>(100_MeV) - static_pow<2>(Electron::mass)), 0_eV, 0_eV}});
+    CHECK(emModel.getCrossSection(particle, Code::Electron, eleP4) > 0_mb);
   }
 
   SECTION("InteractionInterface - LE hadronic photon interaction") {

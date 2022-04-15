@@ -47,7 +47,7 @@ namespace corsika::proposal {
 
       // call inner hadronic event generator
       CORSIKA_LOG_TRACE("calling HadronicInteraction...");
-      CORSIKA_LOG_INFO("{} + {} interactions. Ekinlab = {}", hadPhotonCode, targetId,
+      CORSIKA_LOG_INFO("{} + {} interactions. Ekinlab = {} GeV", hadPhotonCode, targetId,
                        photonP4.getTimeLikeComponent() / 1_GeV);
       heHadronicInteraction_.doInteraction(photon_secondaries, hadPhotonCode, targetId,
                                            photonP4, targetP4);

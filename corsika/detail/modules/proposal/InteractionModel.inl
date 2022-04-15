@@ -77,7 +77,8 @@ namespace corsika::proposal {
         CORSIKA_LOG_WARN(
             "PROPOSAL: No particle interaction possible. "
             "Put initial particle back on stack.");
-        view.addSecondary(std::make_tuple(projectileId, projectile.getEnergy(),
+        view.addSecondary(std::make_tuple(projectileId,
+                                          projectile.getEnergy() - get_mass(projectileId),
                                           projectile.getDirection()));
         return ProcessReturn::Ok;
       }
@@ -104,34 +105,31 @@ namespace corsika::proposal {
       if (type != PROPOSAL::InteractionType::Ioniz)
         target = PROPOSAL::Component::GetComponentForHash(target_hash);
 
-      auto const photonEnergy = projectile.getEnergy() * v;
+      auto sec =
+          std::get<eSECONDARIES>(c->second)->CalculateSecondaries(loss, target, rnd);
+      for (auto& s : sec) {
+        auto E = s.energy * 1_MeV;
+        auto vecProposal = s.direction;
+        auto dir = DirectionVector(
+            labCS, {vecProposal.GetX(), vecProposal.GetY(), vecProposal.GetZ()});
 
-      if (type == PROPOSAL::InteractionType::Photonuclear) {
-        auto const photonDirection =
-            projectileP4.getSpaceLikeComponents()
-                .normalized(); // photon collinear with projectile
-        FourMomentum const photonP4(photonEnergy, photonEnergy * photonDirection);
-        Code const targetId =
-            get_nucleus_code(target.GetAtomicNum(), target.GetNucCharge());
-        CORSIKA_LOG_INFO(
-            "photo-hadronic interaction ({} + {})! Energy = "
-            "{} GeV, v = {}, Photon energy (v*E) = {} GeV",
-            projectileId, targetId, projectile.getEnergy() / 1_GeV, v,
-            photonEnergy / 1_GeV);
-        this->doHadronicPhotonInteraction(view, labCS, photonP4, targetId);
-        if (projectileId != Code::Photon)
-          // add lepton, apply energy loss to kinetic energy
-          view.addSecondary(std::make_tuple(
-              projectileId, (1 - v) * (projectile.getEnergy() - get_mass(projectileId)),
-              photonDirection));
-      } else {
-        auto sec =
-            std::get<eSECONDARIES>(c->second)->CalculateSecondaries(loss, target, rnd);
-        for (auto& s : sec) {
-          auto E = s.energy * 1_MeV;
-          auto vecProposal = s.direction;
-          auto dir = DirectionVector(
-              labCS, {vecProposal.GetX(), vecProposal.GetY(), vecProposal.GetZ()});
+        if (static_cast<PROPOSAL::ParticleType>(s.type) ==
+            PROPOSAL::ParticleType::Hadron) {
+          FourMomentum const photonP4(E, E * dir);
+          // for PROPOSAL media target.GetAtomicNum() returns the atomic number in units
+          // of atomic mass, so Nitrogen is 14.0067. When using media in CORSIKA the same
+          // field is filled with the number of nucleons (ie. 14 for Nitrogen) To be sure
+          // we explicitly cast to int
+          auto const A = int(target.GetAtomicNum());
+          auto const Z = int(target.GetNucCharge());
+          Code const targetId = get_nucleus_code(A, Z);
+          CORSIKA_LOG_INFO(
+              "photo-hadronic interaction! projectile={} target={} energy={} GeV",
+              projectileId,
+              (is_nucleus(targetId) ? get_nucleus_name(targetId) : get_name(targetId)),
+              E / 1_GeV);
+          this->doHadronicPhotonInteraction(view, labCS, photonP4, targetId);
+        } else {
           auto sec_code = convert_from_PDG(static_cast<PDGCode>(s.type));
           view.addSecondary(std::make_tuple(sec_code, E - get_mass(sec_code), dir));
         }
