@@ -24,7 +24,7 @@ namespace corsika::proposal {
   template <class THadronicModel>
   class HadronicPhotonModel {
   public:
-    HadronicPhotonModel(THadronicModel&);
+    HadronicPhotonModel(THadronicModel&, HEPEnergyType const&);
     //!
     //! Calculate produce the hadronic secondaries in a hadronic photon interaction and
     //! store them on the particle stack.
@@ -35,8 +35,8 @@ namespace corsika::proposal {
 
   private:
     THadronicModel& heHadronicInteraction_;
-    static HEPEnergyType constexpr heHadronicModelThresholdLab_ =
-        80. * 1e9 * electronvolt; //!< energy threshold between LE and HE model
+    //! threshold for high energy hadronic interaction model. Lab. energy per nucleon
+    HEPEnergyType heHadronicModelThresholdLabNN_;
   };
 } // namespace corsika::proposal
 

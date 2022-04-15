@@ -16,15 +16,32 @@
 namespace corsika::proposal {
 
   template <typename THadronicModel>
-  inline HadronicPhotonModel<THadronicModel>::HadronicPhotonModel(THadronicModel& _hadint)
-      : heHadronicInteraction_(_hadint){};
+  inline HadronicPhotonModel<THadronicModel>::HadronicPhotonModel(
+      THadronicModel& _hadint, HEPEnergyType const& _heenthresholdNN)
+      : heHadronicInteraction_(_hadint)
+      , heHadronicModelThresholdLabNN_(_heenthresholdNN) {
+    // check validity of threshold assuming photon-nucleon
+    // sqrtS per target nucleon
+    HEPEnergyType const sqrtS =
+        calculate_com_energy(_heenthresholdNN, Rho0::mass, Proton::mass);
+    if (!heHadronicInteraction_.isValid(Code::Rho0, Code::Proton, sqrtS)) {
+      CORSIKA_LOG_ERROR(
+          "Invalid energy threshold for hadron interaction model. theshold_lab= {} GeV, "
+          "theshold_com={} GeV",
+          _heenthresholdNN / 1_GeV, sqrtS / 1_GeV);
+      throw std::runtime_error("Configuration error!");
+    }
+    CORSIKA_LOG_INFO(
+        "Threshold for HE hadronic interactions in proposal set to Elab={} GeV",
+        _heenthresholdNN / 1_GeV);
+  };
 
   template <typename THadronicModel>
   template <typename TStackView>
   inline ProcessReturn HadronicPhotonModel<THadronicModel>::doHadronicPhotonInteraction(
       TStackView& view, CoordinateSystemPtr const& labCS, FourMomentum const& photonP4,
       Code const& targetId) {
-    if (photonP4.getTimeLikeComponent() > heHadronicModelThresholdLab_) {
+    if (photonP4.getTimeLikeComponent() > heHadronicModelThresholdLabNN_) {
       CORSIKA_LOG_INFO(
           "HE photo-hadronic interaction! calling hadronic interaction model..");
 
@@ -46,8 +63,7 @@ namespace corsika::proposal {
       TStackView photon_secondaries(hadronicPhoton);
 
       // call inner hadronic event generator
-      CORSIKA_LOG_TRACE("calling HadronicInteraction...");
-      CORSIKA_LOG_INFO("{} + {} interactions. Ekinlab = {} GeV", hadPhotonCode, targetId,
+      CORSIKA_LOG_INFO("{} + {} interaction. Ekinlab = {} GeV", hadPhotonCode, targetId,
                        photonP4.getTimeLikeComponent() / 1_GeV);
       heHadronicInteraction_.doInteraction(photon_secondaries, hadPhotonCode, targetId,
                                            photonP4, targetP4);

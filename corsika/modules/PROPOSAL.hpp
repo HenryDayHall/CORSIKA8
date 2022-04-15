@@ -18,7 +18,7 @@ namespace corsika::proposal {
                       public InteractionProcess<Interaction<THadronicModel>> {
   public:
     template <typename TEnvironment>
-    Interaction(TEnvironment const& env, THadronicModel& model)
-        : InteractionModel<THadronicModel>(env, model) {}
+    Interaction(TEnvironment const& env, THadronicModel& model, HEPEnergyType const& thr)
+        : InteractionModel<THadronicModel>(env, model, thr) {}
   };
 } // namespace corsika::proposal

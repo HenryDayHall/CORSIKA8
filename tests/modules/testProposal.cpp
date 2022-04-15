@@ -41,6 +41,9 @@ public:
                           MomentumVector(csPrime, {0_GeV, 0_GeV, 0_GeV}).normalized()));
     }
   }
+  bool constexpr isValid(Code const, Code const, HEPEnergyType const) const {
+    return true;
+  };
 };
 
 TEST_CASE("ProposalInterface", "modules") {
@@ -58,8 +61,8 @@ TEST_CASE("ProposalInterface", "modules") {
   RNGManager<>::getInstance().registerRandomStream("proposal");
 
   DummyHadronicModel hadModel;
-
-  corsika::proposal::InteractionModel emModel(*env, hadModel);
+  HEPEnergyType heThresholdLab = 80_GeV;
+  corsika::proposal::InteractionModel emModel(*env, hadModel, heThresholdLab);
 
   SECTION("InteractionInterface - cross section") {
     auto& stack = *stackPtr;

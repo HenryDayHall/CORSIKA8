@@ -20,10 +20,11 @@ namespace corsika::proposal {
 
   template <typename THadronicModel>
   template <typename TEnvironment>
-  inline InteractionModel<THadronicModel>::InteractionModel(TEnvironment const& _env,
-                                                            THadronicModel& _hadint)
+  inline InteractionModel<THadronicModel>::InteractionModel(
+      TEnvironment const& _env, THadronicModel& _hadint,
+      HEPEnergyType const& _enthreshold)
       : ProposalProcessBase(_env)
-      , HadronicPhotonModel<THadronicModel>(_hadint) {}
+      , HadronicPhotonModel<THadronicModel>(_hadint, _enthreshold) {}
 
   template <typename THadronicModel>
   inline void InteractionModel<THadronicModel>::buildCalculator(
@@ -124,10 +125,8 @@ namespace corsika::proposal {
           auto const Z = int(target.GetNucCharge());
           Code const targetId = get_nucleus_code(A, Z);
           CORSIKA_LOG_INFO(
-              "photo-hadronic interaction! projectile={} target={} energy={} GeV",
-              projectileId,
-              (is_nucleus(targetId) ? get_nucleus_name(targetId) : get_name(targetId)),
-              E / 1_GeV);
+              "photo-hadronic interaction of projectile={} with target={}! Energy={} GeV",
+              projectileId, targetId, E / 1_GeV);
           this->doHadronicPhotonInteraction(view, labCS, photonP4, targetId);
         } else {
           auto sec_code = convert_from_PDG(static_cast<PDGCode>(s.type));
