@@ -41,8 +41,11 @@ public:
                           MomentumVector(csPrime, {0_GeV, 0_GeV, 0_GeV}).normalized()));
     }
   }
-  bool constexpr isValid(Code const, Code const, HEPEnergyType const) const {
-    return true;
+  bool constexpr isValid(Code const, Code const, HEPEnergyType const sqrsNN) const {
+    if (sqrsNN < 10_GeV)
+      return false;
+    else
+      return true;
   };
 };
 
@@ -59,6 +62,12 @@ TEST_CASE("ProposalInterface", "modules") {
   test::StackView& view = *viewPtr;
 
   RNGManager<>::getInstance().registerRandomStream("proposal");
+
+  SECTION("InteractionInterface - hadronic photon model threshold") {
+    DummyHadronicModel hadModel;
+    HEPEnergyType heThresholdLab1 = 10_GeV;
+    CHECK_THROWS(corsika::proposal::InteractionModel(*env, hadModel, heThresholdLab1));
+  }
 
   DummyHadronicModel hadModel;
   HEPEnergyType heThresholdLab = 80_GeV;
