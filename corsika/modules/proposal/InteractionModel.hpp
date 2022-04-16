@@ -27,9 +27,9 @@ namespace corsika::proposal {
   //! reused by setting the \param PROPOSAL::InterpolationDef::path_to_tables variable.
   //! Hadroninc interactions of photons with nuclei are included. The cross section is
   //! calculated by PROPOSAL. For the production of hadronic secondaries an external model
-  //! is needed that implements the doInteraction(TSecondaries& view, Code const
-  //! projectile, Code const target,FourMomentum const& projectileP4, FourMomentum const&
-  //! targetP4) routine.
+  //! is needed that implements the
+  //! doInteraction(TSecondaries& view, Code const projectile, Code const
+  //! target,FourMomentum const& projectileP4, FourMomentum const& targetP4) routine.
   //! @tparam THadronicModel
   //!
 
@@ -61,7 +61,24 @@ namespace corsika::proposal {
     //! Calculate the rates for the different targets and interactions. Sample a
     //! pair of interaction-type, component and rate, followed by sampling a loss and
     //! produce the corresponding secondaries and store them on the particle stack.
+    //! interactions in PROPOSAL are:
     //!
+    //! InteractionType::Particle
+    //! InteractionType::Brems
+    //! InteractionType::Ioniz
+    //! InteractionType::Epair
+    //! InteractionType::Photonuclear
+    //! InteractionType::MuPair
+    //! InteractionType::Hadrons
+    //! InteractionType::ContinuousEnergyLoss
+    //! InteractionType::WeakInt
+    //! InteractionType::Compton
+    //! InteractionType::Decay
+    //! InteractionType::Annihilation
+    //! InteractionType::Photopair
+    //!
+    //! more information can be found at:
+    //! https://github.com/tudo-astroparticlephysics/PROPOSAL
     template <typename TSecondaryView>
     ProcessReturn doInteraction(TSecondaryView&, Code const projectileId,
                                 FourMomentum const& projectileP4);

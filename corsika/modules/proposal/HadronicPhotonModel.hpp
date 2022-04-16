@@ -18,7 +18,8 @@ namespace corsika::proposal {
   //! and virtual photons. At high energies an external model
   //! is needed that implements the doInteraction(TSecondaries& view, Code const
   //! projectile, Code const target,FourMomentum const& projectileP4, FourMomentum const&
-  //! targetP4) routine. Low energy interactions are currently not implemented.
+  //! targetP4) routine. Low energy interactions are currently not implemented. The
+  //! threshold between LE and HE interactions is defined in lab energy.
   //! @tparam THadronicModel
 
   template <class THadronicModel>
