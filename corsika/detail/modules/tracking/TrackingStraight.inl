@@ -25,15 +25,6 @@
 namespace corsika::tracking_line {
 
   template <typename TParticle>
-  inline auto Tracking::makeStep(TParticle const& particle, LengthType steplength) {
-    if (particle.getMomentum().getNorm() == 0_GeV) {
-      return std::make_tuple(particle.getPosition(), particle.getMomentum() / 1_GeV);
-    } // charge of the particle
-    DirectionVector const dir = particle.getDirection();
-    return std::make_tuple(particle.getPosition() + dir * steplength, dir.normalized());
-  }
-
-  template <typename TParticle>
   inline auto Tracking::getTrack(TParticle const& particle) {
     VelocityVector const initialVelocity =
         particle.getMomentum() / particle.getEnergy() * constants::c;
