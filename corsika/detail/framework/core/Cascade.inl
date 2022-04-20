@@ -115,13 +115,11 @@ namespace corsika {
     FourMomentum const projectileP4{Elab, particle.getMomentum()};
 
     // determine combined full inelastic cross section of the particles in the material
-
+    auto const targetMomentum = MomentumVector{
+        particle.getMomentum().getCoordinateSystem(), {0_GeV, 0_GeV, 0_GeV}};
     CrossSectionType const total_cx =
-        composition.getWeightedSum([=](Code const targetId) -> CrossSectionType {
-          FourMomentum const targetP4(
-              get_mass(targetId),
-              MomentumVector(particle.getMomentum().getCoordinateSystem(),
-                             {0_GeV, 0_GeV, 0_GeV}));
+        composition.getWeightedSum([&](Code const targetId) -> CrossSectionType {
+          FourMomentum const targetP4{get_mass(targetId), targetMomentum};
           return sequence_.getCrossSection(particle, targetId, targetP4);
         });
 
