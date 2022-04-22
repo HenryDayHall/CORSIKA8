@@ -25,14 +25,15 @@ namespace corsika::proposal {
     HEPEnergyType const sqrtS =
         calculate_com_energy(_heenthresholdNN, Rho0::mass, Proton::mass);
     if (!heHadronicInteraction_.isValid(Code::Rho0, Code::Proton, sqrtS)) {
-      CORSIKA_LOG_ERROR(
+      CORSIKA_LOGGER_CRITICAL(
+          logger_,
           "Invalid energy threshold for hadron interaction model. theshold_lab= {} GeV, "
           "theshold_com={} GeV",
           _heenthresholdNN / 1_GeV, sqrtS / 1_GeV);
       throw std::runtime_error("Configuration error!");
     }
-    CORSIKA_LOG_INFO(
-        "Threshold for HE hadronic interactions in proposal set to Elab={} GeV",
+    CORSIKA_LOGGER_DEBUG(
+        logger_, "Threshold for HE hadronic interactions in proposal set to Elab={} GeV",
         _heenthresholdNN / 1_GeV);
   };
 
@@ -42,8 +43,8 @@ namespace corsika::proposal {
       TStackView& view, CoordinateSystemPtr const& labCS, FourMomentum const& photonP4,
       Code const& targetId) {
     if (photonP4.getTimeLikeComponent() > heHadronicModelThresholdLabNN_) {
-      CORSIKA_LOG_INFO(
-          "HE photo-hadronic interaction! calling hadronic interaction model..");
+      CORSIKA_LOGGER_TRACE(
+          logger_, "HE photo-hadronic interaction! calling hadronic interaction model..");
 
       //  copy from sibyll::NuclearInteractionModel
       //  temporarily add to stack, will be removed after interaction in DoInteraction
@@ -63,8 +64,9 @@ namespace corsika::proposal {
       TStackView photon_secondaries(hadronicPhoton);
 
       // call inner hadronic event generator
-      CORSIKA_LOG_INFO("{} + {} interaction. Ekinlab = {} GeV", hadPhotonCode, targetId,
-                       photonP4.getTimeLikeComponent() / 1_GeV);
+      CORSIKA_LOGGER_TRACE(logger_, "{} + {} interaction. Ekinlab = {} GeV",
+                           hadPhotonCode, targetId,
+                           photonP4.getTimeLikeComponent() / 1_GeV);
       heHadronicInteraction_.doInteraction(photon_secondaries, hadPhotonCode, targetId,
                                            photonP4, targetP4);
       for (const auto& pSec : photon_secondaries) {
@@ -74,10 +76,10 @@ namespace corsika::proposal {
             calculate_kinetic_energy(p3lab.getNorm(), get_mass(pid));
         view.addSecondary(std::make_tuple(pid, secEkin, p3lab.normalized()));
       }
-      CORSIKA_LOG_INFO("number of particles produced: {}", view.getEntries());
     } else {
-      CORSIKA_LOG_INFO(
-          "LE photo-hadronic interaction! production of secondaries not implemented..");
+      CORSIKA_LOGGER_TRACE(
+          logger_,
+          "LE photo-hadronic interaction! Production of secondaries not implemented..");
     }
     return ProcessReturn::Ok;
   }

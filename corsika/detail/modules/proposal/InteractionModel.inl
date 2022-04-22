@@ -124,7 +124,8 @@ namespace corsika::proposal {
           auto const A = int(target.GetAtomicNum());
           auto const Z = int(target.GetNucCharge());
           Code const targetId = get_nucleus_code(A, Z);
-          CORSIKA_LOG_INFO(
+          CORSIKA_LOGGER_DEBUG(
+              logger_,
               "photo-hadronic interaction of projectile={} with target={}! Energy={} GeV",
               projectileId, targetId, E / 1_GeV);
           this->doHadronicPhotonInteraction(view, labCS, photonP4, targetId);

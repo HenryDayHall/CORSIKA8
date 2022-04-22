@@ -49,6 +49,8 @@ namespace corsika::proposal {
     //!
     void buildCalculator(Code, NuclearComposition const&) final;
 
+    inline static auto logger_{get_logger("corsika_proposal_InteractionModel")};
+
   public:
     //!
     //! Produces the stoachastic loss calculator for leptons based on nuclear
