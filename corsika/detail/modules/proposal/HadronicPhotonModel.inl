@@ -67,6 +67,22 @@ namespace corsika::proposal {
       CORSIKA_LOGGER_TRACE(logger_, "{} + {} interaction. Ekinlab = {} GeV",
                            hadPhotonCode, targetId,
                            photonP4.getTimeLikeComponent() / 1_GeV);
+      // check if had. model can handle configuration
+      auto const sqrtSNN = (photonP4 + targetP4 / get_nucleus_A(targetId)).getNorm();
+      // when Sibyll is used for hadronic interactions Argon cannot be used as target
+      // nucleus. Since PROPOSAL has a non-zero cross section for Argon
+      // targets we have to check here if the model can handle Argon (see Issue #498)
+      if (!heHadronicInteraction_.isValid(hadPhotonCode, targetId, sqrtSNN)) {
+        CORSIKA_LOGGER_WARN(
+            logger_,
+            "HE interaction model cannot handle configuration in photo-hadronic "
+            "interaction! projectile={}, target={} (A={}, Z={}), sqrt(S) per "
+            "nuc.={:8.2f} "
+            "GeV. Skipping secondary production!",
+            hadPhotonCode, targetId, get_nucleus_A(targetId), get_nucleus_Z(targetId),
+            sqrtSNN / 1_GeV);
+        return ProcessReturn::Ok;
+      }
       heHadronicInteraction_.doInteraction(photon_secondaries, hadPhotonCode, targetId,
                                            photonP4, targetP4);
       for (const auto& pSec : photon_secondaries) {
