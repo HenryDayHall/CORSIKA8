@@ -160,17 +160,17 @@ namespace corsika {
                                       particle.getEnergy() * constants::c;
 
     // determine geometric tracking
-    auto [step, nextVol] = tracking_.getTrack(particle);
-    auto geomMaxLength = step.getLength(1);
+    auto [track, nextVol] = tracking_.getTrack(particle);
+    auto geomMaxLength = track.getLength(1);
 
     // convert next_step from grammage to length
     LengthType const distance_interact =
-        currentLogicalNode->getModelProperties().getArclengthFromGrammage(step,
+        currentLogicalNode->getModelProperties().getArclengthFromGrammage(track,
                                                                           next_interact);
 
     // determine the maximum geometric step length
     ContinuousProcessStepLength const continuousMaxStep =
-        sequence_.getMaxStepLength(particle, step);
+        sequence_.getMaxStepLength(particle, track);
     LengthType const continuous_max_dist = continuousMaxStep;
 
     // take minimum of geometry, interaction, decay for next step
@@ -200,10 +200,12 @@ namespace corsika {
 
     // move particle along the trajectory to new position
     // also update momentum/direction/time
-    step.setLength(min_distance);
+    track.setLength(min_distance);
+    
+    Step step{particle, track};
 
     // apply all continuous processes on particle + track
-    if (sequence_.doContinuous(particle, step, limitingId) ==
+    if (sequence_.doContinuous(step, limitingId) ==
         ProcessReturn::ParticleAbsorbed) {
       CORSIKA_LOG_DEBUG("Cascade: delete absorbed particle PID={} E={} GeV",
                         particle.getPID(), particle.getEnergy() / 1_GeV);
@@ -216,9 +218,9 @@ namespace corsika {
       }
       return; // particle is gone -> return
     }
-    particle.setTime(particle.getTime() + step.getDuration());
-    particle.setPosition(step.getPosition(1));
-    particle.setDirection(step.getDirection(1));
+    particle.setTime(particle.getTime() + track.getDuration());
+    particle.setPosition(track.getPosition(1));
+    particle.setDirection(track.getDirection(1));
 
     if (isContinuous) {
       return; // there is nothing further, step is finished
