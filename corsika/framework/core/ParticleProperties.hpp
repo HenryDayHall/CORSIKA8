@@ -132,14 +132,14 @@ namespace corsika {
   /**
    * Get the particle production energy threshold.
    *
-   * The (total) energy below which a particle is only  handled stoachastically (no
-   * production below this energy). This is for example important for stachastic discrete
-   * Bremsstrahlung versus low-enregy Bremsstrahlung as part of continuous energy losses.
+   * The (total) energy below which a particle is only handled stoachastically (no
+   * production below this energy). This is for example important for stochastic discrete
+   * Bremsstrahlung versus low-energy Bremsstrahlung as part of continuous energy losses.
    */
   HEPEnergyType constexpr get_energy_production_threshold(Code const); //!<
 
   /**
-   * Set the particle production energy threshold.
+   * Set the particle production energy threshold in total energies.
    */
   void constexpr set_energy_production_threshold(Code const, HEPEnergyType const);
 
