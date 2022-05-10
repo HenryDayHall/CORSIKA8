@@ -29,7 +29,7 @@ namespace corsika {
       TParticle const& particle, TTrack const& track, bool const) {
 
     auto const pid = particle.getPID();
-    this->write(track, pid, 1.0); // weight hardcoded so far
+    this->write(track, pid, particle.getWeight());
     return ProcessReturn::Ok;
   }
 
