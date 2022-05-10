@@ -95,8 +95,7 @@ namespace corsika {
      * Construct a new writer.
      */
     LongitudinalWriter(ShowerAxis const& axis,
-                       GrammageType dX = 10_g / square(1_cm), // profile binning
-                       size_t const nBins = 200);             // number of bins
+                       GrammageType dX = 10_g / square(1_cm)); // profile binning
 
     void startOfLibrary(boost::filesystem::path const& directory) final override;
 
