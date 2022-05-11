@@ -37,6 +37,8 @@ namespace corsika {
                      parquet::ConvertedType::NONE);
     output_.addField("z", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
+    output_.addField("time", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
+                     parquet::ConvertedType::NONE);
     output_.addField("weight", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
 
@@ -59,16 +61,17 @@ namespace corsika {
 
   inline void ParticleWriterParquet::endOfLibrary() { output_.closeStreamer(); }
 
-  inline void ParticleWriterParquet::write(Code const& pid, HEPEnergyType const& energy,
-                                           LengthType const& x, LengthType const& y,
-                                           LengthType const& z, double const weight) {
+  inline void ParticleWriterParquet::write(Code const pid, HEPEnergyType const energy,
+                                           LengthType const x, LengthType const y,
+                                           LengthType const z, TimeType const t,
+                                           double const weight) {
 
     // write the next row - we must write `shower_` first.
     *(output_.getWriter()) << showerId_ << static_cast<int>(get_PDG(pid))
                            << static_cast<float>(energy / 1_GeV)
                            << static_cast<float>(x / 1_m) << static_cast<float>(y / 1_m)
-                           << static_cast<float>(z / 1_m) << static_cast<float>(weight)
-                           << parquet::EndRow;
+                           << static_cast<float>(z / 1_m) << static_cast<double>(t / 1_s)
+                           << static_cast<float>(weight) << parquet::EndRow;
 
     totalEnergy_ += energy;
 
