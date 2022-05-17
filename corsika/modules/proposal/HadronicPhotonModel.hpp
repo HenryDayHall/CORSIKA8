@@ -38,7 +38,7 @@ namespace corsika::proposal {
     inline static auto logger_{get_logger("corsika_proposal_HadronicPhotonModel")};
     THadronicModel& heHadronicInteraction_;
     //! threshold for high energy hadronic interaction model. Lab. energy per nucleon
-    HEPEnergyType heHadronicModelThresholdLabNN_;
+    HEPEnergyType const heHadronicModelThresholdLabNN_;
   };
 } // namespace corsika::proposal
 

@@ -42,10 +42,7 @@ public:
     }
   }
   bool constexpr isValid(Code const, Code const, HEPEnergyType const sqrsNN) const {
-    if (sqrsNN < 10_GeV)
-      return false;
-    else
-      return true;
+    return (sqrsNN >= 10_GeV);
   };
 };
 
