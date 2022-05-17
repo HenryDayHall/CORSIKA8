@@ -79,6 +79,7 @@ TEST_CASE("QgsjetII", "[processes]") {
     CHECK(corsika::qgsjetII::canInteract(Code::Proton));
     CHECK(corsika::qgsjetII::canInteract(Code::KPlus));
     CHECK(corsika::qgsjetII::canInteract(Code::Nucleus));
+    CHECK(corsika::qgsjetII::canInteract(Code::Rho0));
     // CHECK(corsika::qgsjetII::canInteract(Helium::getCode()));
 
     CHECK_FALSE(corsika::qgsjetII::canInteract(Code::EtaC));

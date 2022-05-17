@@ -117,4 +117,17 @@ namespace corsika {
     return (sqrtS_sqr - static_pow<2>(m_proj) - static_pow<2>(m_targ)) / (2 * m_targ);
   }
 
+  /**
+   * \f[E_{com}=sqrt{2 * m_{proj} * m_{targ} * E_{lab} + m_{proj}^2 + m_{targ}^2} \f]
+   *
+   * @param E lab. energy.
+   * @param m particle mass.
+   * @return HEPEnergyType
+   */
+  HEPEnergyType constexpr calculate_com_energy(HEPEnergyType Elab,
+                                               HEPMassType const m_proj,
+                                               HEPMassType const m_targ) {
+    return sqrt(2 * Elab * m_targ + static_pow<2>(m_proj) + static_pow<2>(m_targ));
+  }
+
 } // namespace corsika

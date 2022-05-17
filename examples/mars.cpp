@@ -353,7 +353,11 @@ int main(int argc, char** argv) {
 
   // decaySibyll.printDecayConfig();
 
-  corsika::proposal::Interaction emCascade(env);
+  // energy threshold for high energy hadronic model. Affects LE/HE switch for hadron
+  // interactions and the hadronic photon model in proposal
+  HEPEnergyType heHadronModelThreshold = 63.1_GeV;
+
+  corsika::proposal::Interaction emCascade(env, sibyll, heHadronModelThreshold);
   // NOT possible right now, due to interface difference for PROPOSAL:
   //  InteractionCounter emCascadeCounted(emCascade);
   // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>>
@@ -375,7 +379,8 @@ int main(int argc, char** argv) {
         : cutE_(cutE) {}
     bool operator()(Particle const& p) const { return (p.getKineticEnergy() < cutE_); }
   };
-  auto hadronSequence = make_select(EnergySwitch(63.1_GeV), urqmdCounted, heModelCounted);
+  auto hadronSequence =
+      make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, heModelCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   // track writer

@@ -38,6 +38,7 @@
 #include <corsika/modules/ObservationPlane.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/TrackWriter.hpp>
+#include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/PROPOSAL.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
@@ -57,8 +58,7 @@
   executable. If you include the header below multiple times and
   link this togehter, it will fail.
  */
-#include <corsika/modules/sibyll/Random.hpp>
-#include <corsika/modules/urqmd/Random.hpp>
+#include <corsika/modules/Random.hpp>
 
 using namespace corsika;
 using namespace std;
@@ -66,6 +66,7 @@ using namespace std;
 void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("proposal");
+  RNGManager<>::getInstance().registerRandomStream("sibyll");
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
@@ -162,7 +163,9 @@ int main(int argc, char** argv) {
 
   ParticleCut<SubWriter<decltype(dEdX)>> cut(60_GeV, 60_GeV, 100_PeV, 100_PeV, true,
                                              dEdX);
-  corsika::proposal::Interaction emCascade(env);
+  corsika::sibyll::Interaction sibyll;
+  HEPEnergyType heThresholdNN = 80_GeV;
+  corsika::proposal::Interaction emCascade(env, sibyll, heThresholdNN);
   corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
   //  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 

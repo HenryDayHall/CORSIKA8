@@ -171,7 +171,7 @@ namespace corsika::sibyll {
       Ecm_final += psib.getEnergy();
     }
     { // just output
-      HEPEnergyType const Elab_initial =
+      [[maybe_unused]] HEPEnergyType const Elab_initial =
           static_pow<2>(sqrtSnn) / (2 * constants::nucleonMass);
       CORSIKA_LOG_DEBUG(
           "conservation (all GeV): "

@@ -22,7 +22,7 @@ NuTauBar                 93      0       CannotInteract
 Photon                   1       0       CannotInteract
 Pi0                      6       1       Pion
 #                        rho0    could interact but sibyll has no cross section/interaction length. was used for gamma had int
-Rho0                     27      0       CannotInteract
+Rho0                     27      1       Pion
 K0Long                   11      1       Kaon
 K0                       21      0       Kaon
 K0Bar                    22      0       Kaon

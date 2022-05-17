@@ -16,8 +16,8 @@
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
-
 #include <corsika/modules/proposal/ProposalProcessBase.hpp>
+#include <corsika/modules/proposal/HadronicPhotonModel.hpp>
 
 namespace corsika::proposal {
 
@@ -25,8 +25,17 @@ namespace corsika::proposal {
   //! Electro-magnetic and photon stochastic losses produced by proposal. It makes
   //! use of interpolation tables which are runtime intensive calculation, but can be
   //! reused by setting the \param PROPOSAL::InterpolationDef::path_to_tables variable.
+  //! Hadroninc interactions of photons with nuclei are included. The cross section is
+  //! calculated by PROPOSAL. For the production of hadronic secondaries an external model
+  //! is needed that implements the
+  //! doInteraction(TSecondaries& view, Code const projectile, Code const
+  //! target,FourMomentum const& projectileP4, FourMomentum const& targetP4) routine.
+  //! @tparam THadronicModel
   //!
-  class Interaction : public InteractionProcess<Interaction>, ProposalProcessBase {
+
+  template <class THadronicModel>
+  class InteractionModel : public ProposalProcessBase,
+                           public HadronicPhotonModel<THadronicModel> {
 
     enum { eSECONDARIES, eINTERACTION };
     using calculator_t = std::tuple<std::unique_ptr<PROPOSAL::SecondariesCalculator>,
@@ -40,19 +49,38 @@ namespace corsika::proposal {
     //!
     void buildCalculator(Code, NuclearComposition const&) final;
 
+    inline static auto logger_{get_logger("corsika_proposal_InteractionModel")};
+
   public:
     //!
     //! Produces the stoachastic loss calculator for leptons based on nuclear
     //! compositions and stochastic description limited by the particle cut.
     //!
     template <typename TEnvironment>
-    Interaction(TEnvironment const& env);
+    InteractionModel(TEnvironment const& env, THadronicModel&, HEPEnergyType const&);
 
     //!
     //! Calculate the rates for the different targets and interactions. Sample a
     //! pair of interaction-type, component and rate, followed by sampling a loss and
     //! produce the corresponding secondaries and store them on the particle stack.
+    //! interactions in PROPOSAL are:
     //!
+    //! InteractionType::Particle
+    //! InteractionType::Brems
+    //! InteractionType::Ioniz
+    //! InteractionType::Epair
+    //! InteractionType::Photonuclear
+    //! InteractionType::MuPair
+    //! InteractionType::Hadrons
+    //! InteractionType::ContinuousEnergyLoss
+    //! InteractionType::WeakInt
+    //! InteractionType::Compton
+    //! InteractionType::Decay
+    //! InteractionType::Annihilation
+    //! InteractionType::Photopair
+    //!
+    //! more information can be found at:
+    //! https://github.com/tudo-astroparticlephysics/PROPOSAL
     template <typename TSecondaryView>
     ProcessReturn doInteraction(TSecondaryView&, Code const projectileId,
                                 FourMomentum const& projectileP4);
@@ -64,6 +92,7 @@ namespace corsika::proposal {
     CrossSectionType getCrossSection(TParticle const& p, Code const projectileId,
                                      FourMomentum const& projectileP4);
   };
+
 } // namespace corsika::proposal
 
-#include <corsika/detail/modules/proposal/Interaction.inl>
+#include <corsika/detail/modules/proposal/InteractionModel.inl>

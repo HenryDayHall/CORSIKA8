@@ -17,6 +17,7 @@
 #include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
+#include <corsika/modules/writers/WriterOff.hpp>
 
 #include <corsika/modules/proposal/ProposalProcessBase.hpp>
 

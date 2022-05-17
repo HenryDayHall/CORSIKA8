@@ -8,7 +8,6 @@
 
 #include <corsika/media/IMediumModel.hpp>
 #include <corsika/media/NuclearComposition.hpp>
-#include <corsika/modules/proposal/Interaction.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
@@ -19,11 +18,17 @@
 
 namespace corsika::proposal {
 
+  template <typename THadronicModel>
   template <typename TEnvironment>
-  inline Interaction::Interaction(TEnvironment const& _env)
-      : ProposalProcessBase(_env) {}
+  inline InteractionModel<THadronicModel>::InteractionModel(
+      TEnvironment const& _env, THadronicModel& _hadint,
+      HEPEnergyType const& _enthreshold)
+      : ProposalProcessBase(_env)
+      , HadronicPhotonModel<THadronicModel>(_hadint, _enthreshold) {}
 
-  inline void Interaction::buildCalculator(Code code, NuclearComposition const& comp) {
+  template <typename THadronicModel>
+  inline void InteractionModel<THadronicModel>::buildCalculator(
+      Code code, NuclearComposition const& comp) {
     // search crosssection builder for given particle
     auto p_cross = cross.find(code);
     if (p_cross == cross.end())
@@ -47,10 +52,10 @@ namespace corsika::proposal {
         PROPOSAL::make_interaction(c, true));
   }
 
+  template <typename THadronicModel>
   template <typename TStackView>
-  inline ProcessReturn Interaction::doInteraction(TStackView& view,
-                                                  Code const projectileId,
-                                                  FourMomentum const& projectileP4) {
+  inline ProcessReturn InteractionModel<THadronicModel>::doInteraction(
+      TStackView& view, Code const projectileId, FourMomentum const& projectileP4) {
 
     auto const projectile = view.getProjectile();
 
@@ -73,7 +78,8 @@ namespace corsika::proposal {
         CORSIKA_LOG_WARN(
             "PROPOSAL: No particle interaction possible. "
             "Put initial particle back on stack.");
-        view.addSecondary(std::make_tuple(projectileId, projectile.getEnergy(),
+        view.addSecondary(std::make_tuple(projectileId,
+                                          projectile.getEnergy() - get_mass(projectileId),
                                           projectile.getDirection()));
         return ProcessReturn::Ok;
       }
@@ -99,6 +105,7 @@ namespace corsika::proposal {
       PROPOSAL::Component target;
       if (type != PROPOSAL::InteractionType::Ioniz)
         target = PROPOSAL::Component::GetComponentForHash(target_hash);
+
       auto sec =
           std::get<eSECONDARIES>(c->second)->CalculateSecondaries(loss, target, rnd);
       for (auto& s : sec) {
@@ -106,17 +113,36 @@ namespace corsika::proposal {
         auto vecProposal = s.direction;
         auto dir = DirectionVector(
             labCS, {vecProposal.GetX(), vecProposal.GetY(), vecProposal.GetZ()});
-        auto sec_code = convert_from_PDG(static_cast<PDGCode>(s.type));
-        view.addSecondary(std::make_tuple(sec_code, E - get_mass(sec_code), dir));
+
+        if (static_cast<PROPOSAL::ParticleType>(s.type) ==
+            PROPOSAL::ParticleType::Hadron) {
+          FourMomentum const photonP4(E, E * dir);
+          // for PROPOSAL media target.GetAtomicNum() returns the atomic number in units
+          // of atomic mass, so Nitrogen is 14.0067. When using media in CORSIKA the same
+          // field is filled with the number of nucleons (ie. 14 for Nitrogen) To be sure
+          // we explicitly cast to int
+          auto const A = int(target.GetAtomicNum());
+          auto const Z = int(target.GetNucCharge());
+          Code const targetId = get_nucleus_code(A, Z);
+          CORSIKA_LOGGER_DEBUG(
+              logger_,
+              "photo-hadronic interaction of projectile={} with target={}! Energy={} GeV",
+              projectileId, targetId, E / 1_GeV);
+          this->doHadronicPhotonInteraction(view, labCS, photonP4, targetId);
+        } else {
+          auto sec_code = convert_from_PDG(static_cast<PDGCode>(s.type));
+          view.addSecondary(std::make_tuple(sec_code, E - get_mass(sec_code), dir));
+        }
       }
     }
     return ProcessReturn::Ok;
   }
 
+  template <typename THadronicModel>
   template <typename TParticle>
-  inline CrossSectionType Interaction::getCrossSection(TParticle const& projectile,
-                                                       Code const projectileId,
-                                                       FourMomentum const& projectileP4) {
+  inline CrossSectionType InteractionModel<THadronicModel>::getCrossSection(
+      TParticle const& projectile, Code const projectileId,
+      FourMomentum const& projectileP4) {
 
     // ==============================================
     // this block better diappears. RU 26.10.2021

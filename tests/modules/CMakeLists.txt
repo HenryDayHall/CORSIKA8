@@ -5,6 +5,7 @@ set (test_modules_sources
   ## testExecTime.cpp --> needs to be fixed, see #326
   testObservationPlane.cpp
   testQGSJetII.cpp
+  testProposal.cpp
   testPythia8.cpp
   testUrQMD.cpp
   testCONEX.cpp
