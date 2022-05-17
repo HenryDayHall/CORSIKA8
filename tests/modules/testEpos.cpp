@@ -36,7 +36,7 @@ using DummyEnvironment = Environment<DummyEnvironmentInterface>;
 
 TEST_CASE("EposBasics", "module,process") {
 
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   SECTION("epos -> corsika") {
     CHECK(Code::Electron ==
@@ -128,7 +128,7 @@ auto sqs2elab(HEPEnergyType const sqs, HEPEnergyType const ma, HEPEnergyType con
 
 TEST_CASE("Epos", "modules") {
 
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   RNGManager<>::getInstance().registerRandomStream("epos");
   InteractionModel model;
