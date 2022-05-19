@@ -23,18 +23,24 @@ namespace corsika {
   /**
    * A 3D vector defined in a specific coordinate system with units HEPMomentumType
    **/
-  typedef Vector<hepmomentum_d> MomentumVector;
+  using MomentumVector = Vector<hepmomentum_d>;
 
   /**
    * A 3D vector defined in a specific coordinate system with no units. But, note, this is
    * not automatically normaliyed! It is not a "NormalVector".
    **/
-  typedef Vector<dimensionless_d> DirectionVector;
+  using DirectionVector = Vector<dimensionless_d>;
 
   /**
    * A 3D vector defined in a specific coordinate system with units "velocity_t".
    *
    **/
-  typedef Vector<SpeedType::dimension_type> VelocityVector;
+  using VelocityVector = Vector<SpeedType::dimension_type>;
+
+  /**
+   * A 3D vector defined in a specific coordinate system with units "length_t".
+   *
+   **/
+  using LengthVector = Vector<length_d>;
 
 } // namespace corsika

@@ -111,8 +111,7 @@ namespace corsika {
     /**
      * Add continuous profile.
      */
-    template <typename TTrack>
-    void write(TTrack const& track, Code const pid, double const weight);
+    void write(Point const& p0, Point const& p1, Code const pid, double const weight);
 
     /**
      * Add binned profile.

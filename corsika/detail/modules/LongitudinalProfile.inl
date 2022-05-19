@@ -8,7 +8,7 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/Logging.hpp>
-
+#include <corsika/framework/core/Step.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 
 #include <cmath>
@@ -24,12 +24,12 @@ namespace corsika {
       : TOutput(std::forward<TArgs>(args)...) {}
 
   template <typename TOutput>
-  template <typename TParticle, typename TTrack>
+  template <typename TParticle>
   inline ProcessReturn LongitudinalProfile<TOutput>::doContinuous(
-      TParticle const& particle, TTrack const& track, bool const) {
+      Step<TParticle> const& step, bool const) {
 
-    auto const pid = particle.getPID();
-    this->write(track, pid, particle.getWeight());
+    auto const pid = step.getParticlePre().getPID();
+    this->write(step.getPositionPre(), step.getPositionPost(), pid, step.getParticlePre().getWeight()); // weight hardcoded so far
     return ProcessReturn::Ok;
   }
 

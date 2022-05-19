@@ -201,12 +201,11 @@ namespace corsika {
     // move particle along the trajectory to new position
     // also update momentum/direction/time
     track.setLength(min_distance);
-    
+
     Step step{particle, track};
 
     // apply all continuous processes on particle + track
-    if (sequence_.doContinuous(step, limitingId) ==
-        ProcessReturn::ParticleAbsorbed) {
+    if (sequence_.doContinuous(step, limitingId) == ProcessReturn::ParticleAbsorbed) {
       CORSIKA_LOG_DEBUG("Cascade: delete absorbed particle PID={} E={} GeV",
                         particle.getPID(), particle.getEnergy() / 1_GeV);
       if (particle.isErased()) {
@@ -218,9 +217,9 @@ namespace corsika {
       }
       return; // particle is gone -> return
     }
-    particle.setTime(particle.getTime() + track.getDuration());
-    particle.setPosition(track.getPosition(1));
-    particle.setDirection(track.getDirection(1));
+    particle.setTime(step.getTimePost());
+    particle.setPosition(step.getPositionPost());
+    particle.setDirection(step.getDirectionPost());
 
     if (isContinuous) {
       return; // there is nothing further, step is finished
