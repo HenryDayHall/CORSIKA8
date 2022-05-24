@@ -54,6 +54,7 @@
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/UrQMD.hpp>
 #include <corsika/modules/Epos.hpp>
+#include <corsika/modules/PROPOSAL.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -135,6 +136,14 @@ int main(int argc, char** argv) {
       env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
       wmm.getField(2022.5, 10_km, 49, 8.4));
 
+    std::unordered_map<Code, HEPEnergyType> energy_resolution = {
+            {Code::Electron, 10_MeV},
+            {Code::Positron, 10_MeV},
+            {Code::Photon, 10_MeV},
+    };
+    for (auto [pcode, energy] : energy_resolution)
+        set_energy_production_threshold(pcode, energy);
+
   // pre-setup particle stack
   unsigned short const A = std::stoi(std::string(argv[1]));
   Code beamCode;
@@ -206,7 +215,7 @@ int main(int argc, char** argv) {
   output.add("energyloss", dEdX);
 
   // construct the continuous energy loss model
-  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
+  //  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
   // construct a particle cut
   ParticleCut<SubWriter<decltype(dEdX)>> cut{E0, E0, 60_GeV, 60_GeV, true, dEdX};
@@ -223,8 +232,15 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
 
-  corsika::sibyll::Interaction sibyll{env};
-  InteractionCounter sibyllCounted{sibyll};
+  corsika::sibyll::Interaction sibyll;
+  InteractionCounter sibyllCounted(sibyll);
+
+  HEPEnergyType heThresholdNN = 80_GeV;
+  corsika::proposal::Interaction emCascade(env, sibyll, heThresholdNN);
+  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
+
+  corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
+  InteractionCounter sibyllNucCounted(sibyllNuc);
 
   corsika::pythia8::Decay decayPythia;
 
@@ -262,7 +278,8 @@ int main(int argc, char** argv) {
         : cutE_(cutE) {}
     bool operator()(const Particle& p) const { return (p.getEnergy() < cutE_); }
   };
-  auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted, sibyllCounted);
+  auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted,
+                                    make_sequence(sibyllNucCounted, sibyllCounted));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   // directory for outputs
@@ -285,17 +302,17 @@ int main(int argc, char** argv) {
   // auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence,
   // emContinuous,
   //                               cut, trackWriter, observationLevel, longprof);
-  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emContinuous,
+  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emCascade, emContinuous,
                                 cut, trackWriter, observationLevel, profile);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
-  Cascade EAS(env, tracking, sequence, output, stack);
   output.startOfShower();
+  Cascade EAS(env, tracking, sequence, output, stack);
   EAS.run();
-  output.endOfShower();
 
-  auto const hists = sibyllCounted.getHistogram() + urqmdCounted.getHistogram();
+  auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
+                     urqmdCounted.getHistogram();
 
   save_hist(hists.labHist(), labHist_file, true);
   save_hist(hists.CMSHist(), cMSHist_file, true);
