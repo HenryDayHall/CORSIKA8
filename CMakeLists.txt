@@ -115,9 +115,13 @@ include (conan) # self-provided in 'cmake' directory
 #
 # download and build all dependencies
 message (STATUS "Installing dependencies from Conan (this may take some time)...")
-if(NOT APPLE)
-  set(SETTINGS compiler.libcxx=libstdc++11) # not available on MacOS
-endif()
+if (APPLE)
+  # compiler.libcxx is not available on MacOS
+  set(SETTINGS compiler.cppstd=17)
+else (APPLE)
+  set(SETTINGS compiler.libcxx=libstdc++11 compiler.cppstd=17)
+endif (APPLE)
+#
 conan_cmake_run (CONANFILE conanfile.txt
                  BASIC_SETUP CMAKE_TARGETS
                  BUILD missing
