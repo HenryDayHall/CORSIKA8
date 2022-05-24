@@ -121,13 +121,12 @@ namespace corsika {
    * this, they are discarded and removed. Sensible default values must be configured for
    * a simulation.
    */
-  HEPEnergyType constexpr get_kinetic_energy_propagation_threshold(Code const);
+  HEPEnergyType get_kinetic_energy_propagation_threshold(Code const);
 
   /**
    * Set the kinetic energy propagation threshold object.
    */
-  void constexpr set_kinetic_energy_propagation_threshold(Code const,
-                                                          HEPEnergyType const);
+  void set_kinetic_energy_propagation_threshold(Code const, HEPEnergyType const);
 
   /**
    * Get the particle production energy threshold.
@@ -136,12 +135,12 @@ namespace corsika {
    * production below this energy). This is for example important for stochastic discrete
    * Bremsstrahlung versus low-energy Bremsstrahlung as part of continuous energy losses.
    */
-  HEPEnergyType constexpr get_energy_production_threshold(Code const); //!<
+  HEPEnergyType get_energy_production_threshold(Code const); //!<
 
   /**
    * Set the particle production energy threshold in total energies.
    */
-  void constexpr set_energy_production_threshold(Code const, HEPEnergyType const);
+  void set_energy_production_threshold(Code const, HEPEnergyType const);
 
   //! Particle code according to PDG, "Monte Carlo Particle Numbering Scheme"
   PDGCode constexpr get_PDG(Code const);
