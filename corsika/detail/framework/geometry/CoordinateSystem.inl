@@ -75,7 +75,7 @@ namespace corsika {
   inline CoordinateSystemPtr make_translation(CoordinateSystemPtr const& cs,
                                               QuantityVector<length_d> const& vector) {
     EigenTransform const translation{EigenTranslation(vector.getEigenVector())};
-    return std::make_shared<CoordinateSystem const>(CoordinateSystem(cs, translation));
+    return CoordinateSystemPtr{new CoordinateSystem(cs, translation)};
   }
 
   template <typename TDim>
@@ -105,8 +105,7 @@ namespace corsika {
           0, 0, (a1 * a1 + a2 * a2) * c;  // .
     }
 
-    return std::make_shared<CoordinateSystem const>(
-        CoordinateSystem(cs, EigenTransform(A + B)));
+    return CoordinateSystemPtr{new CoordinateSystem{cs, EigenTransform{A + B}}};
   }
 
   template <typename TDim>
@@ -120,7 +119,7 @@ namespace corsika {
     EigenTransform const rotation{
         Eigen::AngleAxisd(angle, axis.getEigenVector().normalized())};
 
-    return std::make_shared<CoordinateSystem const>(CoordinateSystem(cs, rotation));
+    return CoordinateSystemPtr{new CoordinateSystem{cs, rotation}};
   }
 
   template <typename TDim>
@@ -135,7 +134,7 @@ namespace corsika {
         Eigen::AngleAxisd(angle, axis.getEigenVector().normalized()) *
         EigenTranslation(translation.getEigenVector())};
 
-    return std::make_shared<CoordinateSystem const>(CoordinateSystem(cs, transf));
+    return CoordinateSystemPtr{new CoordinateSystem{cs, transf}};
   }
 
 } // namespace corsika

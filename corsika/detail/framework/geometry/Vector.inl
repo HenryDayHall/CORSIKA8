@@ -27,7 +27,7 @@ namespace corsika {
   template <typename TDimension>
   inline QuantityVector<TDimension> Vector<TDimension>::getComponents(
       CoordinateSystemPtr const& pCS) const {
-    if (*pCS == *BaseVector<TDimension>::getCoordinateSystem()) {
+    if (pCS == BaseVector<TDimension>::getCoordinateSystem()) {
       return BaseVector<TDimension>::getQuantityVector();
     } else {
       return QuantityVector<TDimension>(
