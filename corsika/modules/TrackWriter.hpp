@@ -11,6 +11,7 @@
 #include <corsika/framework/process/ContinuousProcess.hpp>
 #include <corsika/modules/writers/TrackWriterParquet.hpp>
 #include <corsika/modules/writers/WriterOff.hpp>
+#include <corsika/framework/core/Step.hpp>
 
 namespace corsika {
 
@@ -33,8 +34,8 @@ namespace corsika {
   public:
     TrackWriter();
 
-    template <typename TParticle, typename TTrack>
-    ProcessReturn doContinuous(TParticle const&, TTrack const&, bool const limitFlag);
+    template <typename TParticle>
+    ProcessReturn doContinuous(Step<TParticle> const&, bool const limitFlag);
 
     template <typename TParticle, typename TTrack>
     LengthType getMaxStepLength(TParticle const&, TTrack const&);
