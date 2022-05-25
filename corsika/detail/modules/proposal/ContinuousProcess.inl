@@ -92,30 +92,29 @@ namespace corsika::proposal {
   }
 
   template <typename TOutput>
-  template <typename TParticle, typename TTrajectory>
-  inline ProcessReturn ContinuousProcess<TOutput>::doContinuous(TParticle& vP,
-                                                                TTrajectory const& track,
+  template <typename TParticle>
+  inline ProcessReturn ContinuousProcess<TOutput>::doContinuous(Step<TParticle>& step,
                                                                 bool const) {
-    if (!canInteract(vP.getPID())) return ProcessReturn::Ok;
-    if (track.getLength() == 0_m) return ProcessReturn::Ok;
+    if (!canInteract(step.getParticlePre().getPID())) return ProcessReturn::Ok;
+    if (step.getTrack().getLength() == 0_m) return ProcessReturn::Ok;
 
     // calculate passed grammage
-    auto dX = vP.getNode()->getModelProperties().getIntegratedGrammage(track);
+    auto dX = step.getParticlePre().getNode()->getModelProperties().getIntegratedGrammage(step.getTrack());
 
     // get or build corresponding track integral calculator and solve the
     // integral
-    auto c = getCalculator(vP, calc);
+    auto c = getCalculator(step.getParticlePre(), calc);
     auto final_energy = (c->second).disp->UpperLimitTrackIntegral(
-                            vP.getEnergy() / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
+                            step.getEkinPre() / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
                         1_MeV;
-    auto dE = vP.getEnergy() - final_energy;
+    auto dE = step.getEkinPre() - final_energy;
 
     // if the particle has a charge take multiple scattering into account
-    if (vP.getChargeNumber() != 0) scatter(vP, dE, dX);
-    vP.setEnergy(final_energy); // on the stack, this is just kinetic energy, E-m
+    if (step.getParticlePre().getChargeNumber() != 0) scatter(step.getParticlePre(), dE, dX);
+    step.getParticlePre().setEnergy(final_energy); // on the stack, this is just kinetic energy, E-m
 
     // also send to output
-    TOutput::write(track, vP.getPID(), dE);
+    TOutput::write(step.getTrack(), step.getParticlePre().getPID(), dE);
 
     return ProcessReturn::Ok;
   }

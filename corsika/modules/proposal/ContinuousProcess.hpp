@@ -18,6 +18,7 @@
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
 #include <corsika/modules/writers/WriterOff.hpp>
+#include <corsika/framework/core/Step.hpp>
 
 #include <corsika/modules/proposal/ProposalProcessBase.hpp>
 
@@ -73,8 +74,8 @@ namespace corsika::proposal {
     //! \param limitFlag is true, if the track was actually limited by
     //! proposal::ContinuousProcess::getMaxStepLength
     //!
-    template <typename TParticle, typename TTrack>
-    ProcessReturn doContinuous(TParticle&, TTrack const& track, bool const limitFlag);
+    template <typename TParticle>
+    ProcessReturn doContinuous(Step<TParticle>&, bool const limitFlag);
 
     //!
     //! Calculates maximal step length of process.
