@@ -21,9 +21,9 @@ namespace corsika {
       , deleteOnHit_(deleteOnHit) {}
 
   template <typename TTracking, typename TOutput>
-  template <typename TParticle, typename TTrajectory>
+  template <typename TParticle>
   inline ProcessReturn ObservationPlane<TTracking, TOutput>::doContinuous(
-      TParticle& particle, TTrajectory& step, bool const stepLimit) {
+          Step<TParticle>& step, bool const stepLimit) {
     /*
        The current step did not yet reach the ObservationPlane, do nothing now and wait:
      */
@@ -34,7 +34,7 @@ namespace corsika {
       if (deleteOnHit_) {
         // since this is basically a bug, it cannot be tested LCOV_EXCL_START
         LengthType const check =
-            (particle.getPosition() - plane_.getCenter()).dot(plane_.getNormal());
+            (step.getPositionPre() - plane_.getCenter()).dot(plane_.getNormal());
         if (check < 0_m) {
           CORSIKA_LOG_WARN("PARTICLE AVOIDED OBSERVATIONPLANE {}", check);
           CORSIKA_LOG_WARN("Temporary fix: write and remove particle.");
@@ -46,14 +46,14 @@ namespace corsika {
         return ProcessReturn::Ok;
     }
 
-    HEPEnergyType const energy = particle.getEnergy();
-    Point const pointOfIntersection = step.getPosition(1);
+    HEPEnergyType const energy = step.getEkinPre();
+    Point const pointOfIntersection = step.getPositionPost();
     Vector const displacement = pointOfIntersection - plane_.getCenter();
 
     // add our particles to the output file stream
     double const weight = 1.; // particle.getWeight()
-    this->write(particle.getPID(), energy, displacement.dot(xAxis_),
-                displacement.dot(yAxis_), 0_m, particle.getTime(), weight);
+    this->write(step.getParticlePre().getPID(), energy, displacement.dot(xAxis_),
+                displacement.dot(yAxis_), 0_m, step.getTimePre(), weight);
 
     CORSIKA_LOG_TRACE("Particle detected absorbed={}", deleteOnHit_);
 
