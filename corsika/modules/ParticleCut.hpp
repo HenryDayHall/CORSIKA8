@@ -14,6 +14,7 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/process/SecondariesProcess.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
+#include <corsika/framework/core/Step.hpp>
 
 #include <corsika/modules/writers/WriterOff.hpp>
 
@@ -73,18 +74,15 @@ namespace corsika {
     void doSecondaries(TStackView&);
 
     /**
-     * Cut particles during contunuous processes (energy losses etc).
+     * Cut particles during continuous processes (energy losses etc).
      *
      * @tparam TParticle
-     * @tparam TTrajectory
-     * @param vParticle
-     * @param vTrajectory
+     * @param step
      * @param limitFlag
      * @return ProcessReturn
      */
-    template <typename TParticle, typename TTrajectory>
-    ProcessReturn doContinuous(
-        TParticle& vParticle, TTrajectory const& vTrajectory,
+    template <typename TParticle>
+    ProcessReturn doContinuous(Step<TParticle>&,
         const bool limitFlag = false); // this is not used for ParticleCut
 
     /**

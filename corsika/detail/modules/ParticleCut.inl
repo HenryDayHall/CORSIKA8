@@ -131,12 +131,11 @@ namespace corsika {
   }
 
   template <typename TOutput>
-  template <typename TParticle, typename TTrajectory>
-  inline ProcessReturn ParticleCut<TOutput>::doContinuous(TParticle& particle,
-                                                          TTrajectory const&,
+  template <typename TParticle>
+  inline ProcessReturn ParticleCut<TOutput>::doContinuous(Step<TParticle>& step,
                                                           bool const) {
-    if (checkCutParticle(particle)) {
-      this->write(particle.getPosition(), particle.getPID(), particle.getKineticEnergy());
+    if (checkCutParticle(step.getParticlePre())) {
+      this->write(step.getPositionPre(), step.getParticlePre().getPID(), step.getEkinPre()); // ToDO: should the cut happen at the start of the track? For now, I set it to happen at the start
       CORSIKA_LOG_TRACE("removing during continuous");
       // signal to upstream code that this particle was deleted
       return ProcessReturn::ParticleAbsorbed;
