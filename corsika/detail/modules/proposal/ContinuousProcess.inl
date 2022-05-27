@@ -96,7 +96,7 @@ namespace corsika::proposal {
   inline ProcessReturn ContinuousProcess<TOutput>::doContinuous(Step<TParticle>& step,
                                                                 bool const) {
     if (!canInteract(step.getParticlePre().getPID())) return ProcessReturn::Ok;
-    if (step.getTrack().getLength() == 0_m) return ProcessReturn::Ok;
+    if (step.getDisplacement().getSquaredNorm() == static_pow<2>(0_m)) return ProcessReturn::Ok;
 
     // calculate passed grammage
     auto dX = step.getParticlePre().getNode()->getModelProperties().getIntegratedGrammage(step.getTrack());
@@ -114,7 +114,7 @@ namespace corsika::proposal {
     step.getParticlePre().setEnergy(final_energy); // on the stack, this is just kinetic energy, E-m
 
     // also send to output
-    TOutput::write(step.getTrack(), step.getParticlePre().getPID(), dE);
+    TOutput::write(step.getPositionPre(), step.getPositionPost(), step.getParticlePre().getPID(), dE);
 
     return ProcessReturn::Ok;
   }

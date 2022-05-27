@@ -128,8 +128,7 @@ namespace corsika {
     /**
      * Add continuous energy loss.
      */
-    template <typename TTrack>
-    void write(TTrack const& track, Code const PID, HEPEnergyType const dE);
+    void write(Point const& p0, Point const& p1, Code const PID, HEPEnergyType const dE);
 
     /**
      * Add localized energy loss.
