@@ -154,7 +154,7 @@ namespace corsika {
     if (step.getParticlePre().getChargeNumber() == 0) return ProcessReturn::Ok;
 
     GrammageType const dX =
-            step.getParticlePre().getNode()->getModelProperties().getIntegratedGrammage(step.getTrack());
+                step.getParticlePre().getNode()->getModelProperties().getIntegratedGrammage(step.getStraightTrack());
     CORSIKA_LOG_TRACE("EnergyLoss pid={}, z={}, dX={} g/cm2", step.getParticlePre().getPID(),
                       step.getParticlePre().getChargeNumber(), dX / 1_g * square(1_cm));
     HEPEnergyType const dE = getTotalEnergyLoss(step.getParticlePre(), dX);
@@ -162,10 +162,10 @@ namespace corsika {
     auto EkinNew = Ekin + dE;
     CORSIKA_LOG_TRACE("EnergyLoss  dE={} MeV, Ekin={} GeV, EkinNew={} GeV", dE / 1_MeV,
                       Ekin / 1_GeV, EkinNew / 1_GeV);
-      step.getParticlePre().setKineticEnergy(EkinNew);
+      step.add_dEkin(dE);
 
     // also send to output
-    TOutput::write(step.getTrack(), step.getParticlePre().getPID(), -dE);
+    TOutput::write(step.getPositionPre(), step.getPositionPost(), step.getParticlePre().getPID(), -dE);
     return ProcessReturn::Ok;
   }
 
