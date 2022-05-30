@@ -64,7 +64,7 @@ namespace corsika::proposal {
     //! because of the constant referernce. The final direction will be updated anyway.
     //!
     template <typename TParticle>
-    void scatter(TParticle&, HEPEnergyType const&, GrammageType const&);
+    void scatter(Step<TParticle>&, HEPEnergyType const&, GrammageType const&);
 
     //!
     //! Produces the loss and deflection after given distance for the particle.

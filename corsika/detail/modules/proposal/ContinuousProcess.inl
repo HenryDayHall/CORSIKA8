@@ -57,20 +57,20 @@ namespace corsika::proposal {
 
   template <typename TOutput>
   template <typename TParticle>
-  inline void ContinuousProcess<TOutput>::scatter(TParticle& particle,
+  inline void ContinuousProcess<TOutput>::scatter(Step<TParticle>& step,
                                                   HEPEnergyType const& loss,
                                                   GrammageType const& grammage) {
 
     // get or build corresponding calculators
-    auto c = getCalculator(particle, calc);
+    auto c = getCalculator(step.getParticlePre(), calc);
 
     // Cast corsika vector to proposal vector
-    auto particle_dir = particle.getDirection();
+    auto particle_dir = step.getDirectionPre();
     auto d = particle_dir.getComponents();
     auto direction = PROPOSAL::Cartesian3D(d.getX().magnitude(), d.getY().magnitude(),
                                            d.getZ().magnitude());
 
-    auto E_f = particle.getEnergy() - loss;
+    auto E_f = step.getEkinPre() - loss;
 
     // draw random numbers required for scattering process
     std::uniform_real_distribution<double> distr(0., 1.);
@@ -79,16 +79,16 @@ namespace corsika::proposal {
 
     // calculate deflection based on particle energy, loss
     auto deflection = (c->second).scatter->CalculateMultipleScattering(
-        grammage / 1_g * square(1_cm), particle.getEnergy() / 1_MeV, E_f / 1_MeV, rnd);
+        grammage / 1_g * square(1_cm), step.getEkinPre() / 1_MeV, E_f / 1_MeV, rnd);
 
     [[maybe_unused]] auto [unused1, final_direction] =
         PROPOSAL::multiple_scattering::ScatterInitialDirection(direction, deflection);
 
     // update particle direction after continuous loss caused by multiple
     // scattering
-    particle.setDirection(
-        {particle_dir.getCoordinateSystem(),
-         {final_direction.GetX(), final_direction.GetY(), final_direction.GetZ()}});
+    DirectionVector dU_{particle_dir.getCoordinateSystem(),
+                        {final_direction.GetX(), final_direction.GetY(), final_direction.GetZ()}};
+    step.add_dU(dU_);
   }
 
   template <typename TOutput>
@@ -110,7 +110,7 @@ namespace corsika::proposal {
     auto dE = step.getEkinPre() - final_energy;
 
     // if the particle has a charge take multiple scattering into account
-    if (step.getParticlePre().getChargeNumber() != 0) scatter(step.getParticlePre(), dE, dX);
+    if (step.getParticlePre().getChargeNumber() != 0) scatter(step, dE, dX);
     step.add_dEkin(dE); // on the stack, this is just kinetic energy, E-m
 
     // also send to output
