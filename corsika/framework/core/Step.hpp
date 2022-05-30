@@ -4,6 +4,7 @@
 #include <corsika/framework/core/PhysicalGeometry.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/geometry/StraightTrajectory.hpp>
 
 namespace corsika {
 
@@ -80,6 +81,16 @@ namespace corsika {
 
     DirectionVector const& getDirectionPre() const {
       return getParticlePre().getDirection();
+    }
+
+    VelocityVector getVelocityVector() {
+        return (getDisplacement().getNorm() * getDiffDirection()) / getDiffT();
+    }
+
+    StraightTrajectory const getStraightTrack() {
+        Line const line(getPositionPre(), getVelocityVector());
+        StraightTrajectory track(line, getDiffT());
+        return track;
     }
 
     DirectionVector getDirectionPost() const {
