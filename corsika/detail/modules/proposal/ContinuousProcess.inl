@@ -99,7 +99,7 @@ namespace corsika::proposal {
     if (step.getDisplacement().getSquaredNorm() == static_pow<2>(0_m)) return ProcessReturn::Ok;
 
     // calculate passed grammage
-    auto dX = step.getParticlePre().getNode()->getModelProperties().getIntegratedGrammage(step.getTrack());
+    auto dX = step.getParticlePre().getNode()->getModelProperties().getIntegratedGrammage(step.getStraightTrack());
 
     // get or build corresponding track integral calculator and solve the
     // integral
@@ -111,7 +111,7 @@ namespace corsika::proposal {
 
     // if the particle has a charge take multiple scattering into account
     if (step.getParticlePre().getChargeNumber() != 0) scatter(step.getParticlePre(), dE, dX);
-    step.getParticlePre().setEnergy(final_energy); // on the stack, this is just kinetic energy, E-m
+    step.add_dEkin(dE); // on the stack, this is just kinetic energy, E-m
 
     // also send to output
     TOutput::write(step.getPositionPre(), step.getPositionPost(), step.getParticlePre().getPID(), dE);
