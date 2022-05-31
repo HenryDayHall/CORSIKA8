@@ -135,16 +135,15 @@ int main(int argc, char** argv) {
       ->check(CLI::PositiveNumber)
       ->group("Primary");
   app.add_option("-z,--zenith", "Primary zenith angle (deg)")
-      ->required()
       ->default_val(0.)
-      ->check(CLI::Range(0, 90))
+      ->check(CLI::Range(0., 90.))
       ->group("Primary");
   app.add_option("-a,--azimuth", "Primary azimuth angle (deg)")
       ->default_val(0.)
-      ->check(CLI::Range(0, 360))
+      ->check(CLI::Range(0., 360.))
       ->group("Primary");
   app.add_option("-N,--nevent", nevent, "The number of events/showers to run.")
-      ->required()
+      ->default_val(1)
       ->check(CLI::PositiveNumber)
       ->group("Library/Output");
   app.add_option("-f,--filename", "Filename for output library.")
