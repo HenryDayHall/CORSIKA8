@@ -88,15 +88,13 @@ namespace corsika::qgsjetII {
 
     int const iBeam = static_cast<QgsjetIIXSClassIntType>(
         corsika::qgsjetII::getQgsjetIIXSCode(projectileId));
-    int const iTarget = is_nucleus(targetId) ? get_nucleus_A(targetId) : 1;
-    int const iProjectile = is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1;
-
+    
     CORSIKA_LOG_DEBUG(
         "QgsjetII::getCrossSection Elab= {} GeV iBeam= {}"
         " iProjectile= {} iTarget= {}",
-        ElabN / 1_GeV, iBeam, iProjectile, iTarget);
+        ElabN / 1_GeV, iBeam, AfactorProjectile, AfactorTarget);
     double const ElabNGeV{ElabN * (1 / 1_GeV)};
-    double const sigProd = qgsect_(ElabNGeV, iBeam, iProjectile, iTarget);
+    double const sigProd = qgsect_(ElabNGeV, iBeam, AfactorProjectile, AfactorTarget);
     CORSIKA_LOG_DEBUG("QgsjetII::getCrossSection sigProd= {} mb", sigProd);
     return sigProd * 1_mb;
   }
