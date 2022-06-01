@@ -139,6 +139,23 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
   [[maybe_unused]] auto const& env_dummy = env;
   [[maybe_unused]] auto const& node_dummy = nodePtr;
 
+  corsika::qgsjetII::InteractionModel model;
+
+  SECTION("cross-sections") {
+    auto projCode = GENERATE(Code::PiPlus, Code::Proton, Code::K0Long);
+    auto targetCode = GENERATE(Code::Oxygen, Code::Nitrogen);
+    auto projEnergy = GENERATE(100_GeV, 1_PeV, 1e20_eV);
+
+    auto momMagnitude = calculate_momentum(projEnergy, get_mass(projCode));
+    MomentumVector const projMomentum{*csPtr, 0_eV, momMagnitude, 0_eV};
+
+    REQUIRE(model.getCrossSection(
+                projCode, targetCode, FourMomentum{projEnergy, projMomentum},
+                FourMomentum{get_mass(Code::Oxygen), {*csPtr, 0_eV, 0_eV, 0_eV}}) /
+                1_mb >
+            0);
+  }
+
   SECTION("InteractionInterface") {
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
@@ -147,7 +164,6 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
     auto projectile = secViewPtr->getProjectile();
     auto const projectileMomentum = projectile.getMomentum();
 
-    corsika::qgsjetII::InteractionModel model;
     model.doInteraction(view, Code::Proton, Code::Oxygen,
                         {sqrt(static_pow<2>(110_GeV) + static_pow<2>(Proton::mass)),
                          MomentumVector{cs, 110_GeV, 0_GeV, 0_GeV}},
@@ -182,7 +198,6 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
     FourMomentum const targetP4(Oxygen::mass, MomentumVector(cs, {0_eV, 0_eV, 0_eV}));
     view.clear();
 
-    corsika::qgsjetII::InteractionModel model;
     model.doInteraction(view, pid, Code::Oxygen, projectileP4,
                         targetP4); // this also should produce some fragments
     CHECK(view.getSize() == Approx(150).margin(150)); // this is not physics validation
@@ -200,8 +215,6 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
     auto projectile = secViewPtr->getProjectile();
     auto const projectileMomentum = projectile.getMomentum();
 
-    corsika::qgsjetII::InteractionModel model;
-
     FourMomentum const aP4(100_GeV, {cs, 99_GeV, 0_GeV, 0_GeV});
     FourMomentum const bP4(1_TeV, {cs, 0.9_TeV, 0_GeV, 0_GeV});
 
@@ -216,13 +229,12 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
   }
 
   SECTION("Allowed Particles") {
-
     { // pi0 is internally converted into pi+/pi-
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
           Code::Pi0, 1000_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
       [[maybe_unused]] test::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
-      corsika::qgsjetII::InteractionModel model;
+
       model.doInteraction(view, Code::Pi0, Code::Oxygen,
                           {sqrt(static_pow<2>(1_TeV) + static_pow<2>(Pi0::mass)),
                            MomentumVector{cs, 1_TeV, 0_GeV, 0_GeV}},
@@ -234,7 +246,7 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
           Code::Rho0, 1000_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
       [[maybe_unused]] test::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
-      corsika::qgsjetII::InteractionModel model;
+
       model.doInteraction(view, Code::Rho0, Code::Oxygen,
                           {sqrt(static_pow<2>(1_TeV) + static_pow<2>(Rho0::mass)),
                            MomentumVector{cs, 1_TeV, 0_GeV, 0_GeV}},
@@ -246,7 +258,7 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
           Code::Lambda0, 100_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
       [[maybe_unused]] test::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
-      corsika::qgsjetII::InteractionModel model;
+
       model.doInteraction(view, Code::Lambda0, Code::Oxygen,
                           {sqrt(static_pow<2>(100_GeV) + static_pow<2>(Lambda0::mass)),
                            MomentumVector{cs, 100_GeV, 0_GeV, 0_GeV}},
@@ -259,7 +271,7 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
           *csPtr);
       [[maybe_unused]] test::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
-      corsika::qgsjetII::InteractionModel model;
+
       model.doInteraction(view, Code::Lambda0Bar, Code::Oxygen,
                           {sqrt(static_pow<2>(1_TeV) + static_pow<2>(Lambda0Bar::mass)),
                            MomentumVector{cs, 1_TeV, 0_GeV, 0_GeV}},
