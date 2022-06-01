@@ -69,28 +69,34 @@ namespace corsika::qgsjetII {
       return CrossSectionType::zero();
     }
 
+    auto const AfactorProjectile =
+        is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1;
+    auto const AfactorTarget = is_nucleus(targetId) ? get_nucleus_A(targetId) : 1;
+
     // define projectile, in lab frame
-    auto const SNN =
-        (projectileP4 / (is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1) +
-         targetP4 / (is_nucleus(targetId) ? get_nucleus_A(targetId) : 1))
-            .getNormSqr();
+    auto const S = (projectileP4 + targetP4).getNormSqr();
+    auto const SNN = S / (AfactorProjectile * AfactorTarget);
     auto const sqrtSNN = sqrt(SNN);
     if (!isValid(projectileId, targetId, sqrtSNN)) { return CrossSectionType::zero(); }
-    HEPEnergyType const Elab =
-        calculate_lab_energy(SNN, get_mass(projectileId), get_mass(targetId));
+
+    auto const projMass = get_mass(projectileId);
+    auto const targetMass = get_mass(targetId);
+
+    // lab-frame energy per projectile nucleon as required by qgsect()
+    HEPEnergyType const ElabN =
+        calculate_lab_energy(S, projMass, targetMass) / AfactorProjectile;
 
     int const iBeam = static_cast<QgsjetIIXSClassIntType>(
         corsika::qgsjetII::getQgsjetIIXSCode(projectileId));
-    int iTarget = 1;
-    if (is_nucleus(targetId)) { iTarget = get_nucleus_A(targetId); }
-    int iProjectile = 1;
-    if (is_nucleus(projectileId)) { iProjectile = get_nucleus_A(projectileId); }
+    int const iTarget = is_nucleus(targetId) ? get_nucleus_A(targetId) : 1;
+    int const iProjectile = is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1;
 
     CORSIKA_LOG_DEBUG(
         "QgsjetII::getCrossSection Elab= {} GeV iBeam= {}"
         " iProjectile= {} iTarget= {}",
-        Elab / 1_GeV, iBeam, iProjectile, iTarget);
-    double sigProd = qgsect_(Elab / 1_GeV, iBeam, iProjectile, iTarget);
+        ElabN / 1_GeV, iBeam, iProjectile, iTarget);
+    double const ElabNGeV{ElabN * (1 / 1_GeV)};
+    double const sigProd = qgsect_(ElabNGeV, iBeam, iProjectile, iTarget);
     CORSIKA_LOG_DEBUG("QgsjetII::getCrossSection sigProd= {} mb", sigProd);
     return sigProd * 1_mb;
   }
@@ -111,9 +117,9 @@ namespace corsika::qgsjetII {
         (projectileP4 / (is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1) +
          targetP4 / (is_nucleus(targetId) ? get_nucleus_A(targetId) : 1))
             .getNormSqr();
-    auto const sqrtS = sqrt(SNN);
+    auto const sqrtS_NN = sqrt(SNN);
     if (!corsika::qgsjetII::canInteract(projectileId) ||
-        !isValid(projectileId, targetId, sqrtS)) {
+        !isValid(projectileId, targetId, sqrtS_NN)) {
       throw std::runtime_error("invalid target/projectile/energy combination.");
     }
     auto const projectileMass =
