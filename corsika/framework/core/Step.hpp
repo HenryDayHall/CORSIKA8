@@ -79,7 +79,7 @@ namespace corsika {
 
     TimeType getTimePost() const { return getTimePre() + getDiffT(); }
 
-    DirectionVector const& getDirectionPre() const {
+    DirectionVector const getDirectionPre() const {
       return getParticlePre().getDirection();
     }
 
@@ -98,7 +98,7 @@ namespace corsika {
                                                      // Where does it happen, here?
     }
 
-    Point const& getPositionPre() const { return getParticlePre().getPosition(); }
+    Point const getPositionPre() const { return getParticlePre().getPosition(); }
 
     Point getPositionPost() const { return getPositionPre() + getDisplacement(); }
 
