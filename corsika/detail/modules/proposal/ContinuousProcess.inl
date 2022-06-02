@@ -70,16 +70,17 @@ namespace corsika::proposal {
     auto direction = PROPOSAL::Cartesian3D(d.getX().magnitude(), d.getY().magnitude(),
                                            d.getZ().magnitude());
 
-    auto E_f = step.getEkinPre() - loss;
+      auto E_i_total = step.getEkinPre() + step.getParticlePre().getMass();
+      auto E_f_total = step.getEkinPre() - loss;
 
-    // draw random numbers required for scattering process
+      // draw random numbers required for scattering process
     std::uniform_real_distribution<double> distr(0., 1.);
     auto rnd = std::array<double, 4>();
     for (auto& it : rnd) it = distr(RNG_);
 
     // calculate deflection based on particle energy, loss
     auto deflection = (c->second).scatter->CalculateMultipleScattering(
-        grammage / 1_g * square(1_cm), step.getEkinPre() / 1_MeV, E_f / 1_MeV, rnd);
+        grammage / 1_g * square(1_cm), E_i_total / 1_MeV, E_f_total / 1_MeV, rnd);
 
     [[maybe_unused]] auto [unused1, final_direction] =
         PROPOSAL::multiple_scattering::ScatterInitialDirection(direction, deflection);
@@ -104,10 +105,14 @@ namespace corsika::proposal {
     // get or build corresponding track integral calculator and solve the
     // integral
     auto c = getCalculator(step.getParticlePre(), calc);
+    auto E_i_total = (step.getEkinPre() + step.getParticlePre().getMass());
+    auto E_f_total = (c->second).disp->UpperLimitTrackIntegral(
+          E_i_total / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
+                   1_MeV;
+    auto dE = E_i_total - E_f_total;
     auto final_energy = (c->second).disp->UpperLimitTrackIntegral(
-                            step.getEkinPre() / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
+                        E_i_total / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
                         1_MeV;
-    auto dE = step.getEkinPre() - final_energy;
 
     // if the particle has a charge take multiple scattering into account
     if (step.getParticlePre().getChargeNumber() != 0) scatter(step, dE, dX);
