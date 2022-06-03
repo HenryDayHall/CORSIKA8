@@ -25,11 +25,10 @@
 namespace corsika::qgsjetII {
 
   inline InteractionModel::InteractionModel(boost::filesystem::path const dataPath) {
-    CORSIKA_LOG_DEBUG("Reading QGSJetII data tables from {}", dataPath);
-
     // initialize QgsjetII
     static bool initialized = false;
     if (!initialized) {
+	  CORSIKA_LOG_DEBUG("Reading QGSJetII data tables from {}", dataPath);
       qgset_();
       datadir DIR(dataPath.string() + "/");
       qgaini_(DIR.data);
@@ -120,35 +119,22 @@ namespace corsika::qgsjetII {
     auto const SNN = S / static_pow<2>(AfactorProjectile * AfactorTarget);
     auto const sqrtSNN = sqrt(SNN);
 
-
     if (!corsika::qgsjetII::canInteract(projectileId) ||
         !isValid(projectileId, targetId, sqrtSNN)) {
-      throw std::runtime_error("invalid target/projectile/energy combination.");
+      throw std::runtime_error(fmt::format("invalid target [{}]/ projectile [{}] /energy [{} GeV] combination.", get_name(targetId, full_name{}), get_name(projectileId, full_name{}), sqrtSNN/1_GeV));
     }
     
     auto const projMass = get_mass(projectileId);
     auto const targetMass = get_mass(targetId);
 
-    // lab-frame energy per projectile nucleon as required by qgsect()
-    HEPEnergyType const ElabN =
-        calculate_lab_energy(S, projMass, targetMass) / AfactorProjectile;    
-    
-    //~ auto const projectileMass =
-        //~ (is_nucleus(projectileId) ? constants::nucleonMass : get_mass(projectileId));
-    //~ auto const targetMass =
-        //~ (projectileId == Code::Proton
-             //~ ? get_mass(Code::Proton)
-             //~ : constants::nucleonMass); // qgsjet target is always proton or nucleon.
-                                        //~ // always nucleon??
-
-    // lab energy/hadron
-    //~ HEPEnergyType const Elab = calculate_lab_energy(SNN, projectileMass, targetMass);
-
-    int const beamA = is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 0;
+    // lab-frame energy per projectile nucleon
+    HEPEnergyType const Elab =
+        calculate_lab_energy(S, projMass, targetMass);
+    auto const ElabN = Elab / AfactorProjectile;
 
     CORSIKA_LOG_DEBUG("ebeam lab: {} GeV per projectile nucleon", ElabN / 1_GeV);
 
-    int const targetMassNumber = is_nucleus(targetId) ? get_nucleus_A(targetId) : 1;   // proton
+    int const targetMassNumber = AfactorTarget;
     CORSIKA_LOG_DEBUG("target: {}, qgsjetII code/A: {}", targetId, targetMassNumber);
 
     // select QGSJetII internal projectile type
@@ -156,10 +142,7 @@ namespace corsika::qgsjetII {
     QgsjetIIHadronType qgsjet_hadron_type = qgsjetII::getQgsjetIIHadronType(projectileId);
     if (qgsjet_hadron_type == QgsjetIIHadronType::NucleusType) {
       projectileMassNumber = get_nucleus_A(projectileId);
-      std::array<QgsjetIIHadronType, 2> constexpr nucleons = {
-          QgsjetIIHadronType::ProtonType, QgsjetIIHadronType::NeutronType};
-      std::uniform_int_distribution select(0, 1);
-      qgsjet_hadron_type = nucleons[select(rng_)];
+      qgsjet_hadron_type = bernoulli_(rng_) ? QgsjetIIHadronType::ProtonType : QgsjetIIHadronType::NeutronType;
     } else if (qgsjet_hadron_type == QgsjetIIHadronType::NeutralLightMesonType) {
       // from conex: replace pi0 or rho0 with pi+/pi- in alternating sequence
       qgsjet_hadron_type = alternate_;
@@ -190,18 +173,17 @@ namespace corsika::qgsjetII {
     // rest.
 
     // system of initial-state
-    COMBoost boost(projectileP4 / projectileMassNumber, targetP4 / targetMassNumber);
+    COMBoost boost{projectileP4, targetP4};
 
     auto const& originalCS = boost.getOriginalCS();
     auto const& csPrime =
         boost.getRotatedCS(); // z is along the CM motion (projectile, in Cascade)
 
-    HEPMomentumType const pLabMag =
-        sqrt((Elab - projectileMass) * (Elab + projectileMass));
-    MomentumVector pLab(csPrime, {0_eV, 0_eV, pLabMag});
+    HEPMomentumType const pLabMag = calculate_momentum(Elab, get_mass(projectileId));
+    MomentumVector const pLab{csPrime, {0_eV, 0_eV, pLabMag}};
 
     // internal QGSJetII system: hadron-nucleon lab. frame!
-    COMBoost boostInternal({Elab, pLab}, targetMass);
+    COMBoost const boostInternal({Elab, pLab}, targetMass);
 
     // fragments
     QGSJetIIFragmentsStack qfs;
@@ -213,22 +195,17 @@ namespace corsika::qgsjetII {
 
         HEPMassType const nucleonMass = get_mass(idFragm);
         // no pT, fragments just go forward
-        HEPEnergyType const projectileEnergyLabPerNucleon = ElabN;
-        MomentumVector momentum{csPrime,
-                                {0.0_GeV, 0.0_GeV,
-                                 sqrt((projectileEnergyLabPerNucleon + nucleonMass) *
-                                      (projectileEnergyLabPerNucleon - nucleonMass))}};
+        MomentumVector const momentum{csPrime, {0_eV, 0_eV, calculate_momentum(ElabN, nucleonMass)}};
 
         // this is not "CoM" here, but rather the system defined by projectile+target,
         // which in Cascade-mode is already lab
         auto const P4com =
-            boostInternal.toCoM(FourVector{projectileEnergyLabPerNucleon, momentum});
+            boostInternal.toCoM(FourVector{ElabN, momentum});
         auto const P4output = boost.fromCoM(P4com);
         auto p3output = P4output.getSpaceLikeComponents();
         p3output.rebase(originalCS); // transform back into standard lab frame
 
-        HEPEnergyType const mass = get_mass(idFragm);
-        HEPEnergyType const Ekin = sqrt(p3output.getSquaredNorm() + mass * mass) - mass;
+        HEPEnergyType const Ekin = calculate_kinetic_energy(p3output.getNorm(), nucleonMass);
 
         CORSIKA_LOG_DEBUG(
             "secondary fragment> id= {}"
@@ -259,24 +236,22 @@ namespace corsika::qgsjetII {
           }
         }
 
-        HEPMassType const nucleusMass = Proton::mass * Z + Neutron::mass * (A - Z);
+        Code const idFragm = get_nucleus_code(A, Z);
+        HEPEnergyType const mass = get_mass(idFragm);
         // no pT, frgments just go forward
-        HEPEnergyType const projectileEnergyLabPerNucleon = Elab / beamA;
         MomentumVector momentum{
             csPrime,
             {0.0_GeV, 0.0_GeV,
-             calculate_momentum(projectileEnergyLabPerNucleon * A, nucleusMass)}};
+             calculate_momentum(ElabN * A, mass)}};
 
         // this is not "CoM" here, but rather the system defined by projectile+target,
         // which in Cascade-mode is already lab
         auto const P4com =
-            boostInternal.toCoM(FourVector{projectileEnergyLabPerNucleon * A, momentum});
+            boostInternal.toCoM(FourVector{ElabN * A, momentum});
         auto const P4output = boost.fromCoM(P4com);
         auto p3output = P4output.getSpaceLikeComponents();
         p3output.rebase(originalCS); // transform back into standard lab frame
 
-        Code const idFragm = get_nucleus_code(A, Z);
-        HEPEnergyType const mass = get_mass(idFragm);
         HEPEnergyType const Ekin = calculate_kinetic_energy(p3output.getNorm(), mass);
 
         CORSIKA_LOG_DEBUG(

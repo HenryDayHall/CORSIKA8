@@ -156,7 +156,7 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
   }
 
   SECTION("InteractionInterface") {
-    auto projCode = GENERATE(/*Code::PiPlus, Code::Proton, Code::K0Long,*/ Code::Iron/*, Code::Nitrogen, Code::Helium*/);
+    auto projCode = GENERATE(Code::PiPlus, Code::Proton, Code::K0Long,Code::Iron, Code::Nitrogen, Code::Helium);
     auto targetCode = GENERATE(Code::Oxygen/*, Code::Nitrogen*/);
     auto projMomentum = GENERATE(1_PeV); //, 1e20_eV);
 
@@ -172,7 +172,7 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
                         FourMomentum{get_mass(targetCode), MomentumVector{cs, {0_eV, 0_eV, 0_eV}}});
 
     /* **********************************
-     As it turned out already two times (#291 and #307) that the detailed output of
+     As it turned out already twice (#291 and #307), the detailed output of
      QGSJetII event generation depends on the gfortran version used. This is not reliable
      and cannot be tested in a unit test here. One related problem was already found
     (#291) and is realted to undefined behaviour in the evaluation of functions in logical
