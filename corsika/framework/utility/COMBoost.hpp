@@ -76,10 +76,10 @@ namespace corsika {
     FourVector fromCoM(FourVector const& p4) const;
 
     //! returns the rotated coordinate system: +z is projectile direction
-    CoordinateSystemPtr getRotatedCS() const;
+    CoordinateSystemPtr const& getRotatedCS() const;
 
     //! returns the original coordinate system of the projectile (lab)
-    CoordinateSystemPtr getOriginalCS() const;
+    CoordinateSystemPtr const& getOriginalCS() const;
 
   protected:
     //! internal method
@@ -88,7 +88,7 @@ namespace corsika {
   private:
     Eigen::Matrix2d boost_;
     Eigen::Matrix2d inverseBoost_;
-    CoordinateSystemPtr originalCS_;
+    CoordinateSystemPtr const originalCS_;
     CoordinateSystemPtr rotatedCS_;
   };
 } // namespace corsika
