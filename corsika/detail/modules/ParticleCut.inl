@@ -151,7 +151,7 @@ namespace corsika {
     CORSIKA_LOG_DEBUG("kinetic energy threshold for photons is {} GeV",
                       cut_photons_ / 1_GeV);
     CORSIKA_LOG_DEBUG("kinetic energy threshold for muons is {} GeV", cut_muons_ / 1_GeV);
-    CORSIKA_LOG_DEBUG("kinetic energy threshold for hadros is {} GeV",
+    CORSIKA_LOG_DEBUG("kinetic energy threshold for hadrons is {} GeV",
                       cut_hadrons_ / 1_GeV);
 
     for (auto const& cut : cuts_) {

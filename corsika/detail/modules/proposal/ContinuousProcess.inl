@@ -70,8 +70,8 @@ namespace corsika::proposal {
     auto direction = PROPOSAL::Cartesian3D(d.getX().magnitude(), d.getY().magnitude(),
                                            d.getZ().magnitude());
 
-      auto E_i_total = step.getEkinPre() + step.getParticlePre().getMass();
-      auto E_f_total = step.getEkinPre() - loss;
+    auto E_i_total = step.getEkinPre() + step.getParticlePre().getMass();
+    auto E_f_total = E_i_total - loss;
 
       // draw random numbers required for scattering process
     std::uniform_real_distribution<double> distr(0., 1.);
@@ -89,7 +89,8 @@ namespace corsika::proposal {
     // scattering
     DirectionVector dU_{particle_dir.getCoordinateSystem(),
                         {final_direction.GetX(), final_direction.GetY(), final_direction.GetZ()}};
-    step.add_dU(dU_);
+    DirectionVector diff_dir_ = dU_ - particle_dir;
+    step.add_dU(diff_dir_);
   }
 
   template <typename TOutput>
