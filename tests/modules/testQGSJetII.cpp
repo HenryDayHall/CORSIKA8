@@ -142,32 +142,34 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
   corsika::qgsjetII::InteractionModel model;
 
   SECTION("cross-sections") {
-    auto projCode = GENERATE(Code::PiPlus, Code::Proton, Code::K0Long);
+    auto projCode = GENERATE(Code::PiPlus, Code::Proton, Code::K0Long, Code::Nitrogen, Code::Helium);
     auto targetCode = GENERATE(Code::Oxygen, Code::Nitrogen);
-    auto projEnergy = GENERATE(100_GeV, 1_PeV, 1e20_eV);
+    auto projEnergy = GENERATE(1_PeV, 1e18_eV);
 
     auto momMagnitude = calculate_momentum(projEnergy, get_mass(projCode));
     MomentumVector const projMomentum{*csPtr, 0_eV, momMagnitude, 0_eV};
 
     REQUIRE(model.getCrossSection(
                 projCode, targetCode, FourMomentum{projEnergy, projMomentum},
-                FourMomentum{get_mass(Code::Oxygen), {*csPtr, 0_eV, 0_eV, 0_eV}}) /
-                1_mb >
-            0);
+                FourMomentum{get_mass(targetCode), {*csPtr, 0_eV, 0_eV, 0_eV}}) /
+                1_mb > 0);
   }
 
   SECTION("InteractionInterface") {
+    auto projCode = GENERATE(/*Code::PiPlus, Code::Proton, Code::K0Long,*/ Code::Iron/*, Code::Nitrogen, Code::Helium*/);
+    auto targetCode = GENERATE(Code::Oxygen/*, Code::Nitrogen*/);
+    auto projMomentum = GENERATE(1_PeV); //, 1e20_eV);
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Proton, 110_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
+        Code::Proton, projMomentum, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
     test::StackView& view = *(secViewPtr.get());
     auto projectile = secViewPtr->getProjectile();
     auto const projectileMomentum = projectile.getMomentum();
 
-    model.doInteraction(view, Code::Proton, Code::Oxygen,
-                        {sqrt(static_pow<2>(110_GeV) + static_pow<2>(Proton::mass)),
-                         MomentumVector{cs, 110_GeV, 0_GeV, 0_GeV}},
-                        {Oxygen::mass, MomentumVector{cs, {0_eV, 0_eV, 0_eV}}});
+    model.doInteraction(view, projCode, targetCode,
+                        FourMomentum{calculate_total_energy(projMomentum, get_mass(projCode)),
+                         projectileMomentum},
+                        FourMomentum{get_mass(targetCode), MomentumVector{cs, {0_eV, 0_eV, 0_eV}}});
 
     /* **********************************
      As it turned out already two times (#291 and #307) that the detailed output of

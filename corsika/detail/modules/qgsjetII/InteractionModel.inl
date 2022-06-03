@@ -75,7 +75,7 @@ namespace corsika::qgsjetII {
 
     // define projectile, in lab frame
     auto const S = (projectileP4 + targetP4).getNormSqr();
-    auto const SNN = S / (AfactorProjectile * AfactorTarget);
+    auto const SNN = S / static_pow<2>(AfactorProjectile * AfactorTarget);
     auto const sqrtSNN = sqrt(SNN);
     if (!isValid(projectileId, targetId, sqrtSNN)) { return CrossSectionType::zero(); }
 
@@ -111,35 +111,44 @@ namespace corsika::qgsjetII {
         projectileId, corsika::qgsjetII::canInteract(projectileId));
 
     // define projectile, in lab frame
-    auto const SNN =
-        (projectileP4 / (is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1) +
-         targetP4 / (is_nucleus(targetId) ? get_nucleus_A(targetId) : 1))
-            .getNormSqr();
-    auto const sqrtS_NN = sqrt(SNN);
+    auto const AfactorProjectile =
+        is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1;
+    auto const AfactorTarget = is_nucleus(targetId) ? get_nucleus_A(targetId) : 1;
+
+    // define projectile, in lab frame
+    auto const S = (projectileP4 + targetP4).getNormSqr();
+    auto const SNN = S / static_pow<2>(AfactorProjectile * AfactorTarget);
+    auto const sqrtSNN = sqrt(SNN);
+
+
     if (!corsika::qgsjetII::canInteract(projectileId) ||
-        !isValid(projectileId, targetId, sqrtS_NN)) {
+        !isValid(projectileId, targetId, sqrtSNN)) {
       throw std::runtime_error("invalid target/projectile/energy combination.");
     }
-    auto const projectileMass =
-        (is_nucleus(projectileId) ? constants::nucleonMass : get_mass(projectileId));
-    auto const targetMass =
-        (projectileId == Code::Proton
-             ? get_mass(Code::Proton)
-             : constants::nucleonMass); // qgsjet target is always proton or nucleon.
-                                        // always nucleon??
+    
+    auto const projMass = get_mass(projectileId);
+    auto const targetMass = get_mass(targetId);
+
+    // lab-frame energy per projectile nucleon as required by qgsect()
+    HEPEnergyType const ElabN =
+        calculate_lab_energy(S, projMass, targetMass) / AfactorProjectile;    
+    
+    //~ auto const projectileMass =
+        //~ (is_nucleus(projectileId) ? constants::nucleonMass : get_mass(projectileId));
+    //~ auto const targetMass =
+        //~ (projectileId == Code::Proton
+             //~ ? get_mass(Code::Proton)
+             //~ : constants::nucleonMass); // qgsjet target is always proton or nucleon.
+                                        //~ // always nucleon??
 
     // lab energy/hadron
-    HEPEnergyType const Elab = calculate_lab_energy(SNN, projectileMass, targetMass);
+    //~ HEPEnergyType const Elab = calculate_lab_energy(SNN, projectileMass, targetMass);
 
-    int beamA = 0;
-    if (is_nucleus(projectileId)) { beamA = get_nucleus_A(projectileId); }
+    int const beamA = is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 0;
 
-    CORSIKA_LOG_DEBUG("ebeam lab: {} GeV ", Elab / 1_GeV);
+    CORSIKA_LOG_DEBUG("ebeam lab: {} GeV per projectile nucleon", ElabN / 1_GeV);
 
-    int targetMassNumber = 1;   // proton
-    if (is_nucleus(targetId)) { // nucleus
-      targetMassNumber = get_nucleus_A(targetId);
-    }
+    int const targetMassNumber = is_nucleus(targetId) ? get_nucleus_A(targetId) : 1;   // proton
     CORSIKA_LOG_DEBUG("target: {}, qgsjetII code/A: {}", targetId, targetMassNumber);
 
     // select QGSJetII internal projectile type
@@ -160,11 +169,11 @@ namespace corsika::qgsjetII {
     }
 
     count_++;
-    int qgsjet_hadron_type_int = static_cast<QgsjetIICodeIntType>(qgsjet_hadron_type);
+    int const qgsjet_hadron_type_int = static_cast<QgsjetIICodeIntType>(qgsjet_hadron_type);
     CORSIKA_LOG_DEBUG(
         "qgsjet_hadron_type_int={} projectileMassNumber={} targetMassNumber={}",
         qgsjet_hadron_type_int, projectileMassNumber, targetMassNumber);
-    qgini_(Elab / 1_GeV, qgsjet_hadron_type_int, projectileMassNumber, targetMassNumber);
+    qgini_(ElabN / 1_GeV, qgsjet_hadron_type_int, projectileMassNumber, targetMassNumber);
     qgconf_();
 
     CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
@@ -196,16 +205,15 @@ namespace corsika::qgsjetII {
 
     // fragments
     QGSJetIIFragmentsStack qfs;
+    std::bernoulli_distribution nucleonTypeDist;
     for (auto& fragm : qfs) {
       int const A = fragm.getFragmentSize();
       if (A == 1) { // nucleon
-        std::uniform_real_distribution<double> select;
-        Code idFragm = Code::Proton;
-        if (select(rng_) > 0.5) { idFragm = Code::Neutron; }
+        Code const idFragm = nucleonTypeDist(rng_) ? Code::Proton : Code::Neutron;
 
-        const HEPMassType nucleonMass = get_mass(idFragm);
+        HEPMassType const nucleonMass = get_mass(idFragm);
         // no pT, fragments just go forward
-        HEPEnergyType const projectileEnergyLabPerNucleon = Elab / beamA;
+        HEPEnergyType const projectileEnergyLabPerNucleon = ElabN;
         MomentumVector momentum{csPrime,
                                 {0.0_GeV, 0.0_GeV,
                                  sqrt((projectileEnergyLabPerNucleon + nucleonMass) *
