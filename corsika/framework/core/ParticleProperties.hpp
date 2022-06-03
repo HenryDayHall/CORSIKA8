@@ -108,6 +108,7 @@ namespace corsika {
 namespace corsika {
 
   // forward declarations to be used in GeneratedParticleProperties
+  struct full_name {}; //!< tag class for get_name()
 
   int16_t constexpr get_charge_number(Code const);     //!< electric charge in units of e
   ElectricChargeType constexpr get_charge(Code const); //!< electric charge
@@ -146,7 +147,9 @@ namespace corsika {
   PDGCode constexpr get_PDG(Code const);
   PDGCode constexpr get_PDG(unsigned int const A, unsigned int const Z);
   std::string_view constexpr get_name(Code const); //!< name of the particle as string
-  TimeType constexpr get_lifetime(Code const);     //!< lifetime
+  std::string get_name(Code,
+                       full_name); //!< get name of particle, including (A,Z) for nuclei
+  TimeType constexpr get_lifetime(Code const); //!< lifetime
 
   bool constexpr is_hadron(Code const); //!< true if particle is hadron
   bool constexpr is_em(Code const); //!< true if particle is electron, positron or photon

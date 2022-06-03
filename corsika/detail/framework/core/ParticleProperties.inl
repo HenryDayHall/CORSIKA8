@@ -92,6 +92,14 @@ namespace corsika {
     return particle::detail::names[static_cast<CodeIntType>(code)];
   }
 
+  inline std::string get_name(Code code, full_name) {
+    if (is_nucleus(code)) {
+      return fmt::format("nucleus ({},{})", get_nucleus_A(code), get_nucleus_Z(code));
+    }
+
+    return std::string{get_name(code)};
+  }
+
   inline TimeType constexpr get_lifetime(Code const p) {
     return particle::detail::lifetime[static_cast<CodeIntType>(p)] * second;
   }
