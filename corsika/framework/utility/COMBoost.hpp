@@ -56,14 +56,14 @@ namespace corsika {
     COMBoost(FourMomentum const& P4projectile, HEPEnergyType const massTarget);
 
     /**
-     * Construct a COMBoost to boost into the rest frame given a 3-momentum and mass.
+     * Construct a COMBoost to boost into the rest frame of a particle given its 3-momentum and mass.
      */
     COMBoost(MomentumVector const& momentum, HEPEnergyType const mass);
 
     /**
      * Construct a COMBoost given two four-vectors of projectile target.
      *
-     * The tow FourMomentum can define an arbitrary system.
+     * The two FourMomentum can define an arbitrary system.
      */
     COMBoost(FourMomentum const& P4projectile, FourMomentum const& P4target);
 

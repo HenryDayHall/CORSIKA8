@@ -102,7 +102,7 @@ namespace corsika {
 
   template <typename FourVector>
   inline FourVector COMBoost::fromCoM(FourVector const& p4) const {
-    auto const pCM = p4.getSpaceLikeComponents().getComponents(rotatedCS_);
+    auto pCM = p4.getSpaceLikeComponents().getComponents(rotatedCS_);
     auto const Ecm = p4.getTimeLikeComponent();
 
     Eigen::Vector2d com;
