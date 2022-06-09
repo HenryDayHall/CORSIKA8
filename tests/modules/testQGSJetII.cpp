@@ -237,6 +237,9 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
 
   SECTION("Allowed Particles") {
     HEPEnergyType const projMomentum = 500_GeV;
+    // pi0 is internally converted into pi+/pi-
+    // rho0 is internally converted into pi-/pi+
+    // (anti-)Lambda is internally converted into (anti-)neutron
     auto pid = GENERATE(Code::Pi0, Code::Rho0, Code::Lambda0, Code::Lambda0Bar);
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Proton, projMomentum, (DummyEnvironment::BaseNodeType* const)nodePtr,
