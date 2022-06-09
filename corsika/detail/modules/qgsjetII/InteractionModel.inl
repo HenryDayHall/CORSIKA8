@@ -74,7 +74,8 @@ namespace corsika::qgsjetII {
 
     // define projectile, in lab frame
     auto const S = (projectileP4 + targetP4).getNormSqr();
-    auto const SNN = S / static_pow<2>(AfactorProjectile * AfactorTarget);
+    auto const SNN =
+        (projectileP4 / AfactorProjectile + targetP4 / AfactorTarget).getNormSqr();
     auto const sqrtSNN = sqrt(SNN);
     if (!isValid(projectileId, targetId, sqrtSNN)) { return CrossSectionType::zero(); }
 
@@ -114,9 +115,9 @@ namespace corsika::qgsjetII {
         is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1;
     auto const AfactorTarget = is_nucleus(targetId) ? get_nucleus_A(targetId) : 1;
 
-    // define projectile, in lab frame
     auto const S = (projectileP4 + targetP4).getNormSqr();
-    auto const SNN = S / static_pow<2>(AfactorProjectile * AfactorTarget);
+    auto const SNN =
+        (projectileP4 / AfactorProjectile + targetP4 / AfactorTarget).getNormSqr();
     auto const sqrtSNN = sqrt(SNN);
 
     if (!corsika::qgsjetII::canInteract(projectileId) ||
