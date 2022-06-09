@@ -192,11 +192,10 @@ namespace corsika::qgsjetII {
 
     // fragments
     QGSJetIIFragmentsStack qfs;
-    std::bernoulli_distribution nucleonTypeDist;
     for (auto& fragm : qfs) {
       int const A = fragm.getFragmentSize();
       if (A == 1) { // nucleon
-        Code const idFragm = nucleonTypeDist(rng_) ? Code::Proton : Code::Neutron;
+        Code const idFragm = bernoulli_(rng_) ? Code::Proton : Code::Neutron;
 
         HEPMassType const nucleonMass = get_mass(idFragm);
         // no pT, fragments just go forward
