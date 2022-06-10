@@ -13,6 +13,8 @@
 #include <corsika/modules/sibyll/Decay.hpp>
 #include <corsika/modules/sibyll/NuclearInteractionModel.hpp>
 
+#include <corsika/modules/sibyll/InteractionModel.hpp>
+
 #include <corsika/framework/process/InteractionProcess.hpp>
 
 /**
@@ -29,7 +31,9 @@ namespace corsika::sibyll {
    * The sibyll::InteractionModel is wrapped as an InteractionProcess here in order
    * to provide all the functions for ProcessSequence.
    */
-  class Interaction : public HadronInteractionModel, public InteractionProcess<Interaction> {};
+  template <typename TEnvironment>
+  class Interaction : public InteractionModel<TEnvironment>,
+                      public InteractionProcess<Interaction<TEnvironment>> {};
 
   /**
    * @brief sibyll::NuclearInteraction is the process for ProcessSequence.
