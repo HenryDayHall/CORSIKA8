@@ -18,16 +18,16 @@
 namespace corsika::sibyll {
 
   /**
-   * @brief sibyll::InteractionModel provides the SIBYLL proton-nucleus interaction model.
+   * @brief Provides the SIBYLL hadron-nucleus interaction model.
    *
    * This is a TModel argument for InteractionProcess<TModel>.
    */
 
-  class InteractionModel {
+  class HadronInteractionModel {
 
   public:
-    InteractionModel();
-    ~InteractionModel();
+    HadronInteractionModel();
+    ~HadronInteractionModel();
 
     /**
      * @brief Set the Verbose flag.
@@ -58,9 +58,8 @@ namespace corsika::sibyll {
      *
      * @param projectile is the Code of the projectile
      * @param target is the Code of the target
-     * @param sqrtSnn is the center-of-mass energy (per nucleon pair)
-     * @param Aprojectil is the mass number of the projectils, if it is a nucleus
-     * @param Atarget is the mass number of the target, if it is a nucleus
+     * @param projectileP4: four-momentum of projectile
+     * @param targetP4: four-momentum of target
      *
      * @return a tuple of: inelastic cross section, elastic cross section
      */
@@ -76,9 +75,8 @@ namespace corsika::sibyll {
      *
      * @param projectile is the Code of the projectile
      * @param target is the Code of the target
-     * @param sqrtSnn is the center-of-mass energy (per nucleon pair)
-     * @param Aprojectil is the mass number of the projectils, if it is a nucleus
-     * @param Atarget is the mass number of the target, if it is a nucleus
+     * @param projectileP4: four-momentum of projectile
+     * @param targetP4: four-momentum of target
      *
      * @return inelastic cross section
      * elastic cross section
@@ -119,4 +117,4 @@ namespace corsika::sibyll {
 
 } // namespace corsika::sibyll
 
-#include <corsika/detail/modules/sibyll/InteractionModel.inl>
+#include <corsika/detail/modules/sibyll/HadronInteractionModel.inl>

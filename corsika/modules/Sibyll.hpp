@@ -9,7 +9,7 @@
 #pragma once
 
 #include <corsika/modules/sibyll/ParticleConversion.hpp>
-#include <corsika/modules/sibyll/InteractionModel.hpp>
+#include <corsika/modules/sibyll/HadronInteractionModel.hpp>
 #include <corsika/modules/sibyll/Decay.hpp>
 #include <corsika/modules/sibyll/NuclearInteractionModel.hpp>
 
@@ -29,7 +29,7 @@ namespace corsika::sibyll {
    * The sibyll::InteractionModel is wrapped as an InteractionProcess here in order
    * to provide all the functions for ProcessSequence.
    */
-  class Interaction : public InteractionModel, public InteractionProcess<Interaction> {};
+  class Interaction : public HadronInteractionModel, public InteractionProcess<Interaction> {};
 
   /**
    * @brief sibyll::NuclearInteraction is the process for ProcessSequence.

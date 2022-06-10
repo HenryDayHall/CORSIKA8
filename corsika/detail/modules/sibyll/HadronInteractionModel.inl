@@ -20,9 +20,9 @@
 
 namespace corsika::sibyll {
 
-  inline void InteractionModel::setVerbose(bool const flag) { sibyll_listing_ = flag; }
+  inline void HadronInteractionModel::setVerbose(bool const flag) { sibyll_listing_ = flag; }
 
-  inline InteractionModel::InteractionModel()
+  inline HadronInteractionModel::HadronInteractionModel()
       : sibyll_listing_(false) {
     // initialize Sibyll
     static bool initialized = false;
@@ -32,11 +32,11 @@ namespace corsika::sibyll {
     }
   }
 
-  inline InteractionModel::~InteractionModel() {
+  inline HadronInteractionModel::~HadronInteractionModel() {
     CORSIKA_LOG_DEBUG("Sibyll::Model n={}, Nnuc={}", count_, nucCount_);
   }
 
-  inline bool constexpr InteractionModel::isValid(Code const projectileId,
+  inline bool constexpr HadronInteractionModel::isValid(Code const projectileId,
                                                   Code const targetId,
                                                   HEPEnergyType const sqrtSnn) const {
     if ((minEnergyCoM_ > sqrtSnn) || (sqrtSnn > maxEnergyCoM_)) { return false; }
@@ -57,7 +57,7 @@ namespace corsika::sibyll {
   }
 
   inline std::tuple<CrossSectionType, CrossSectionType>
-  InteractionModel::getCrossSectionInelEla(Code const projectileId, Code const targetId,
+  HadronInteractionModel::getCrossSectionInelEla(Code const projectileId, Code const targetId,
                                            FourMomentum const& projectileP4,
                                            FourMomentum const& targetP4) const {
 
@@ -97,7 +97,7 @@ namespace corsika::sibyll {
    */
 
   template <typename TSecondaryView>
-  inline void InteractionModel::doInteraction(TSecondaryView& secondaries,
+  inline void HadronInteractionModel::doInteraction(TSecondaryView& secondaries,
                                               Code const projectileId,
                                               Code const targetId,
                                               FourMomentum const& projectileP4,

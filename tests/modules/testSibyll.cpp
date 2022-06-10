@@ -121,7 +121,7 @@ TEST_CASE("SibyllInterface", "modules") {
 
   SECTION("InteractionInterface - valid targets") {
 
-    corsika::sibyll::InteractionModel model;
+    corsika::sibyll::HadronInteractionModel model;
     // sibyll only accepts protons or nuclei with 4<=A<=18 as targets
     CHECK_FALSE(model.isValid(Code::Proton, Code::Electron, 100_GeV));
     CHECK(model.isValid(Code::Proton, Code::Hydrogen, 100_GeV));
@@ -168,7 +168,7 @@ TEST_CASE("SibyllInterface", "modules") {
     const HEPEnergyType P0 = 60_GeV;
     MomentumVector const plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
     // also print particles after sibyll was called
-    corsika::sibyll::InteractionModel model;
+    corsika::sibyll::HadronInteractionModel model;
     model.setVerbose(true);
     HEPEnergyType const Elab = sqrt(static_pow<2>(P0) + static_pow<2>(Proton::mass));
     FourMomentum const projectileP4(Elab, plab);
@@ -202,9 +202,9 @@ TEST_CASE("SibyllInterface", "modules") {
       total energy: E_tot = SQS/2 * (1+Nw) + (m_N**2-m_i**2)/(2*SQS) * (Nw-1) and P_tot
       = -m_N * Plab_i / SQS * (Nw-1).
 
-      A Lorentztransformation of these quantities to the lab. frame recovers Plab_i for
+      A Lorentz transformation of these quantities to the lab. frame recovers Plab_i for
       the total momentum, so momentum is exactly conserved, and Elab_i + Nw * m_N for the
-      total energy. Not surprisingly the total energy differs from the total energy before
+      total energy. Not surprisingly, the total energy differs from the total energy before
       the collision by the mass of the additional nucleons (Nw-1)*m_N. In relative terms
       the additional energy is entirely negligible and as it is not kinetic energy there
       is zero influence on the shower development.
@@ -252,7 +252,7 @@ TEST_CASE("SibyllInterface", "modules") {
 
     HEPMomentumType const P0 = 50_TeV;
     MomentumVector const plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
-    corsika::sibyll::InteractionModel hmodel;
+    corsika::sibyll::HadronInteractionModel hmodel;
     NuclearInteractionModel model(hmodel, *env);
 
     CHECK(model.isValid(Code::Helium, Code::Oxygen, 100_GeV));
