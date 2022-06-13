@@ -1,3 +1,13 @@
+/*
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
+#pragma once
+
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
@@ -5,11 +15,12 @@
 #include <corsika/modules/sibyll/NuclearInteractionModel.hpp>
 
 namespace corsika::sibyll {
-  template <typename TEnvironment>
   class InteractionModel {
   public:
     using nuclear_model_type =
-        NuclearInteractionModel<TEnvironment, HadronInteractionModel>;
+        NuclearInteractionModel<HadronInteractionModel>;
+        
+    template <typename TEnvironment>
     InteractionModel(TEnvironment const&);
 
     CrossSectionType getCrossSection(Code, Code, FourMomentum const&,
@@ -20,7 +31,9 @@ namespace corsika::sibyll {
                        FourMomentum const&);
 
     HadronInteractionModel& getHadronInteractionModel();
-    nuclear_model_type& getNuclearInteractionModel();
+    HadronInteractionModel const& getHadronInteractionModel() const;
+    nuclear_model_type& getNuclearInteractionModel();    
+    nuclear_model_type const& getNuclearInteractionModel() const;
 
   private:
     HadronInteractionModel hadronSibyll_;

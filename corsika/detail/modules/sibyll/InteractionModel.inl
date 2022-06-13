@@ -1,3 +1,13 @@
+/*
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+ 
+#pragma once
+
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
@@ -6,23 +16,29 @@
 
 namespace corsika::sibyll {
   template <typename TEnvironment>
-  InteractionModel<TEnvironment>::InteractionModel(TEnvironment const& environment)
+  inline InteractionModel::InteractionModel(TEnvironment const& environment)
       : hadronSibyll_{}
       , nuclearSibyll_{hadronSibyll_, environment} {}
 
-  template <typename TEnvironment>
-  HadronInteractionModel& InteractionModel<TEnvironment>::getHadronInteractionModel() {
+  inline HadronInteractionModel& InteractionModel::getHadronInteractionModel() {
+    return hadronSibyll_;
+  }
+  
+  inline HadronInteractionModel const& InteractionModel::getHadronInteractionModel() const {
     return hadronSibyll_;
   }
 
-  template <typename TEnvironment>
-  typename InteractionModel<TEnvironment>::nuclear_model_type&
-  InteractionModel<TEnvironment>::getNuclearInteractionModel() {
+  inline typename InteractionModel::nuclear_model_type&
+  InteractionModel::getNuclearInteractionModel() {
     return nuclearSibyll_;
   }
 
-  template <typename TEnvironment>
-  CrossSectionType InteractionModel<TEnvironment>::getCrossSection(
+  inline typename InteractionModel::nuclear_model_type const&
+  InteractionModel::getNuclearInteractionModel() const {
+    return nuclearSibyll_;
+  }
+
+  inline CrossSectionType InteractionModel::getCrossSection(
       Code projCode, Code targetCode, FourMomentum const& proj4mom,
       FourMomentum const& target4mom) const {
     if (is_nucleus(projCode))
@@ -33,9 +49,8 @@ namespace corsika::sibyll {
                                                          target4mom);
   }
 
-  template <typename TEnvironment>
   template <typename TSecondaries>
-  void InteractionModel<TEnvironment>::doInteraction(TSecondaries& view, Code projCode,
+  inline void InteractionModel::doInteraction(TSecondaries& view, Code projCode,
                                                      Code targetCode,
                                                      FourMomentum const& proj4mom,
                                                      FourMomentum const& target4mom) {
