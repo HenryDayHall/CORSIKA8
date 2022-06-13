@@ -15,11 +15,16 @@
 #include <corsika/modules/sibyll/NuclearInteractionModel.hpp>
 
 namespace corsika::sibyll {
+  /**
+   * This class combines sibyll::HadronInteractionModel, which can only handle hadron
+   * projectiles, and sibyll::NuclearInteractionModel, which can handle only nucleus
+   * projectile, into a single process. The getCrossSection() and doInteraction() methods
+   * forward to the underlying models, depending on the projectile type.
+   */
   class InteractionModel {
   public:
-    using nuclear_model_type =
-        NuclearInteractionModel<HadronInteractionModel>;
-        
+    using nuclear_model_type = NuclearInteractionModel<HadronInteractionModel>;
+
     template <typename TEnvironment>
     InteractionModel(TEnvironment const&);
 
@@ -32,7 +37,7 @@ namespace corsika::sibyll {
 
     HadronInteractionModel& getHadronInteractionModel();
     HadronInteractionModel const& getHadronInteractionModel() const;
-    nuclear_model_type& getNuclearInteractionModel();    
+    nuclear_model_type& getNuclearInteractionModel();
     nuclear_model_type const& getNuclearInteractionModel() const;
 
   private:
