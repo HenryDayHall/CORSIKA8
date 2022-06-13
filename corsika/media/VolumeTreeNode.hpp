@@ -44,7 +44,7 @@ namespace corsika {
      * func is ignored.
      */
     template <typename TCallable, bool preorder = true>
-    void walk(TCallable func);
+    void walk(TCallable func) const;
 
     void addChild(VTNUPtr pChild);
 
