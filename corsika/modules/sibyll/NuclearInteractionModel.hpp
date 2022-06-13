@@ -28,7 +28,7 @@ namespace corsika::sibyll {
   public:
     template <class TEnvironment>
     NuclearInteractionModel(TNucleonModel&, TEnvironment const&);
-    
+
     ~NuclearInteractionModel();
 
     bool constexpr isValid(Code const projectileId, Code const targetId,
@@ -36,7 +36,7 @@ namespace corsika::sibyll {
 
     template <class TEnvironment>
     void initializeNuclearCrossSections(TEnvironment const&);
-    
+
     void printCrossSectionTable(Code) const;
     CrossSectionType readCrossSectionTable(int const, Code const,
                                            HEPEnergyType const) const;

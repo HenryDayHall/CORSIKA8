@@ -53,8 +53,7 @@ namespace corsika::sibyll {
   } // namespace corsika::sibyll
 
   template <typename TNucleonModel>
-  inline void
-  NuclearInteractionModel<TNucleonModel>::printCrossSectionTable(
+  inline void NuclearInteractionModel<TNucleonModel>::printCrossSectionTable(
       Code const pCode) const {
     if (!hadronicInteraction_.isValid(Code::Proton, pCode, 100_GeV)) { // LCOV_EXCL_START
       CORSIKA_LOG_ERROR("Invalid target type {} for hadron interaction model.", pCode);
@@ -86,8 +85,8 @@ namespace corsika::sibyll {
 
   template <typename TNucleonModel>
   template <typename TEnvironment>
-  inline void
-  NuclearInteractionModel<TNucleonModel>::initializeNuclearCrossSections(TEnvironment const& environment) {
+  inline void NuclearInteractionModel<TNucleonModel>::initializeNuclearCrossSections(
+      TEnvironment const& environment) {
 
     auto const& universe = *(environment.getUniverse());
     // generate complete list of all nuclei types in universe
@@ -158,8 +157,7 @@ namespace corsika::sibyll {
   }
 
   template <typename TNucleonModel>
-  inline CrossSectionType
-  NuclearInteractionModel<TNucleonModel>::readCrossSectionTable(
+  inline CrossSectionType NuclearInteractionModel<TNucleonModel>::readCrossSectionTable(
       int const ia, Code const pTarget, HEPEnergyType const elabnuc) const {
 
     int const ib = targetComponentsIndex_.at(pTarget) + 1; // table index in fortran
@@ -176,11 +174,9 @@ namespace corsika::sibyll {
   }
 
   template <typename TNucleonModel>
-  CrossSectionType inline NuclearInteractionModel<
-      TNucleonModel>::getCrossSection(Code const projectileId,
-                                                    Code const targetId,
-                                                    FourMomentum const& projectileP4,
-                                                    FourMomentum const& targetP4) const {
+  CrossSectionType inline NuclearInteractionModel<TNucleonModel>::getCrossSection(
+      Code const projectileId, Code const targetId, FourMomentum const& projectileP4,
+      FourMomentum const& targetP4) const {
 
     HEPEnergyType const sqrtSnn = (projectileP4 + targetP4).getNorm();
     if (!isValid(projectileId, targetId, sqrtSnn)) { return CrossSectionType::zero(); }

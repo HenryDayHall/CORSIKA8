@@ -5,7 +5,7 @@
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
- 
+
 #pragma once
 
 #include <corsika/framework/core/ParticleProperties.hpp>
@@ -23,8 +23,9 @@ namespace corsika::sibyll {
   inline HadronInteractionModel& InteractionModel::getHadronInteractionModel() {
     return hadronSibyll_;
   }
-  
-  inline HadronInteractionModel const& InteractionModel::getHadronInteractionModel() const {
+
+  inline HadronInteractionModel const& InteractionModel::getHadronInteractionModel()
+      const {
     return hadronSibyll_;
   }
 
@@ -51,9 +52,9 @@ namespace corsika::sibyll {
 
   template <typename TSecondaries>
   inline void InteractionModel::doInteraction(TSecondaries& view, Code projCode,
-                                                     Code targetCode,
-                                                     FourMomentum const& proj4mom,
-                                                     FourMomentum const& target4mom) {
+                                              Code targetCode,
+                                              FourMomentum const& proj4mom,
+                                              FourMomentum const& target4mom) {
     if (is_nucleus(projCode))
       return getNuclearInteractionModel().doInteraction(view, projCode, targetCode,
                                                         proj4mom, target4mom);

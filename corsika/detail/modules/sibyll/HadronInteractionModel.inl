@@ -20,7 +20,9 @@
 
 namespace corsika::sibyll {
 
-  inline void HadronInteractionModel::setVerbose(bool const flag) { sibyll_listing_ = flag; }
+  inline void HadronInteractionModel::setVerbose(bool const flag) {
+    sibyll_listing_ = flag;
+  }
 
   inline HadronInteractionModel::HadronInteractionModel()
       : sibyll_listing_(false) {
@@ -36,9 +38,8 @@ namespace corsika::sibyll {
     CORSIKA_LOG_DEBUG("Sibyll::Model n={}, Nnuc={}", count_, nucCount_);
   }
 
-  inline bool constexpr HadronInteractionModel::isValid(Code const projectileId,
-                                                  Code const targetId,
-                                                  HEPEnergyType const sqrtSnn) const {
+  inline bool constexpr HadronInteractionModel::isValid(
+      Code const projectileId, Code const targetId, HEPEnergyType const sqrtSnn) const {
     if ((minEnergyCoM_ > sqrtSnn) || (sqrtSnn > maxEnergyCoM_)) { return false; }
 
     if (is_nucleus(targetId)) {
@@ -57,9 +58,10 @@ namespace corsika::sibyll {
   }
 
   inline std::tuple<CrossSectionType, CrossSectionType>
-  HadronInteractionModel::getCrossSectionInelEla(Code const projectileId, Code const targetId,
-                                           FourMomentum const& projectileP4,
-                                           FourMomentum const& targetP4) const {
+  HadronInteractionModel::getCrossSectionInelEla(Code const projectileId,
+                                                 Code const targetId,
+                                                 FourMomentum const& projectileP4,
+                                                 FourMomentum const& targetP4) const {
 
     int targetSibCode = 1; // nucleon or particle count
     if (is_nucleus(targetId)) { targetSibCode = get_nucleus_A(targetId); }
@@ -98,10 +100,10 @@ namespace corsika::sibyll {
 
   template <typename TSecondaryView>
   inline void HadronInteractionModel::doInteraction(TSecondaryView& secondaries,
-                                              Code const projectileId,
-                                              Code const targetId,
-                                              FourMomentum const& projectileP4,
-                                              FourMomentum const& targetP4) {
+                                                    Code const projectileId,
+                                                    Code const targetId,
+                                                    FourMomentum const& projectileP4,
+                                                    FourMomentum const& targetP4) {
 
     int targetSibCode = 1; // nucleon or particle count
     if (is_nucleus(targetId)) { targetSibCode = get_nucleus_A(targetId); }
