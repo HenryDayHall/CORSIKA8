@@ -286,11 +286,8 @@ int main(int argc, char** argv) {
   TrackWriter tracks;
   output.add("tracks", tracks);
 
-  corsika::sibyll::Interaction sibyll;
-  InteractionCounter sibyllCounted(sibyll);
-  corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
-  InteractionCounter sibyllNucCounted(sibyllNuc);
-  auto heModelCounted = make_sequence(sibyllNucCounted, sibyllCounted);
+  corsika::sibyll::Interaction sibyll{env};
+  InteractionCounter sibyllCounted{sibyll};
 
   corsika::pythia8::Decay decayPythia;
 
@@ -324,7 +321,8 @@ int main(int argc, char** argv) {
   // energy threshold for high energy hadronic model. Affects LE/HE switch for hadron
   // interactions and the hadronic photon model in proposal
   HEPEnergyType heHadronModelThreshold = 63.1_GeV;
-  corsika::proposal::Interaction emCascade(env, sibyll, heHadronModelThreshold);
+  corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(),
+                                           heHadronModelThreshold);
   // NOT available for PROPOSAL due to interface trouble:
   // InteractionCounter emCascadeCounted(emCascade);
   // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env);
@@ -346,7 +344,7 @@ int main(int argc, char** argv) {
     bool operator()(const Particle& p) const { return (p.getKineticEnergy() < cutE_); }
   };
   auto hadronSequence =
-      make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, heModelCounted);
+      make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, sibyllCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   TrackWriter trackWriter{tracks};
@@ -420,8 +418,7 @@ int main(int argc, char** argv) {
         observationLevel.getEnergyGround() / 1_GeV, (Efinal / E0 - 1) * 100);
 
     // auto const hists = heModelCounted.getHistogram() + urqmdCounted.getHistogram();
-    auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
-                       urqmdCounted.getHistogram();
+    auto const hists = sibyllCounted.getHistogram() + urqmdCounted.getHistogram();
 
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);

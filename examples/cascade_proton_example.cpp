@@ -122,7 +122,6 @@ int main() {
   setup::Tracking tracking;
   StackInspector<setup::Stack<EnvType>> stackInspect(1000, true, E0);
 
-  RNGManager<>::getInstance().registerRandomStream("sibyll");
   RNGManager<>::getInstance().registerRandomStream("pythia");
   corsika::pythia8::Interaction pythia;
   corsika::pythia8::Decay decay;

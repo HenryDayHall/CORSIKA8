@@ -136,8 +136,7 @@ int main() {
 
   RNGManager<>::getInstance().registerRandomStream("sibyll");
   RNGManager<>::getInstance().registerRandomStream("pythia");
-  corsika::sibyll::Interaction sibyll;
-  corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
+  corsika::sibyll::Interaction sibyll{env};
   corsika::sibyll::Decay decay;
 
   // cascade with only HE model ==> HE cut
@@ -148,8 +147,7 @@ int main() {
   output.add("tracks", trackWriter); // register TrackWriter
 
   // assemble all processes into an ordered process list
-  auto sequence = make_sequence(stackInspect, make_sequence(sibyllNuc, sibyll), decay,
-                                eLoss, cut, trackWriter);
+  auto sequence = make_sequence(stackInspect, sibyll, decay, eLoss, cut, trackWriter);
 
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);
