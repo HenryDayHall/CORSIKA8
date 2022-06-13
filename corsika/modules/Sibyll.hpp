@@ -41,13 +41,14 @@ namespace corsika::sibyll {
    * The sibyll::NuclearInteractionModel is wrapped as an InteractionProcess here in order
    * to provide all the functions for ProcessSequence.
    */
-  template <class TEnvironment, class TNucleonModel>
+  template <class TNucleonModel>
   class NuclearInteraction
-      : public NuclearInteractionModel<TEnvironment, TNucleonModel>,
-        public InteractionProcess<NuclearInteraction<TEnvironment, TNucleonModel>> {
+      : public NuclearInteractionModel<TNucleonModel>,
+        public InteractionProcess<NuclearInteraction<TNucleonModel>> {
   public:
+    template <typename TEnvironment>
     NuclearInteraction(TNucleonModel& model, TEnvironment const& env)
-        : NuclearInteractionModel<TEnvironment, TNucleonModel>(model, env) {}
+        : NuclearInteractionModel<TNucleonModel>{model, env} {}
   };
 
 } // namespace corsika::sibyll
