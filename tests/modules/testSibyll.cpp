@@ -253,20 +253,20 @@ TEST_CASE("SibyllInterface", "modules") {
     HEPMomentumType const P0 = 50_TeV;
     MomentumVector const plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
     corsika::sibyll::HadronInteractionModel hmodel;
-    NuclearInteractionModel model(hmodel, *env);
+    NuclearInteractionModel nuclearModel(hmodel, *env);
 
-    CHECK(model.isValid(Code::Helium, Code::Oxygen, 100_GeV));
-    CHECK_FALSE(model.isValid(Code::PiPlus, Code::Oxygen, 100_GeV));
-    CHECK_FALSE(model.isValid(Code::Electron, Code::Oxygen, 100_GeV));
+    CHECK(nuclearModel.isValid(Code::Helium, Code::Oxygen, 100_GeV));
+    CHECK_FALSE(nuclearModel.isValid(Code::PiPlus, Code::Oxygen, 100_GeV));
+    CHECK_FALSE(nuclearModel.isValid(Code::Electron, Code::Oxygen, 100_GeV));
 
     Code const pid = Code::Oxygen;
     HEPEnergyType const Elab = sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid)));
     FourMomentum const P4(Elab, plab);
     FourMomentum const targetP4(get_mass(Code::Oxygen),
                                 MomentumVector(cs, {0_eV, 0_eV, 0_eV}));
-    model.doInteraction(view, pid, Code::Oxygen, P4, targetP4);
-    CrossSectionType const cx = model.getCrossSection(pid, Code::Oxygen, P4, targetP4);
-    CHECK(cx / 1_mb > 0);       // this is not physics validation
+    nuclearModel.doInteraction(view, pid, Code::Oxygen, P4, targetP4);
+    CrossSectionType const cx = nuclearModel.getCrossSection(pid, Code::Oxygen, P4, targetP4);
+    CHECK(cx > 0_mb);       // this is not physics validation
     CHECK(view.getSize() != 0); // this is not physics validation
 
     // invalid to underlying model
@@ -274,10 +274,10 @@ TEST_CASE("SibyllInterface", "modules") {
         100_GeV,
         {cs, {sqrt(static_pow<2>(100_GeV) - static_pow<2>(MuPlus::mass)), 0_eV, 0_eV}});
     CrossSectionType const cx0 =
-        model.getCrossSection(Code::MuPlus, Code::Oxygen, P4mu, targetP4);
+        nuclearModel.getCrossSection(Code::MuPlus, Code::Oxygen, P4mu, targetP4);
     CHECK(cx0 / 1_mb == Approx(0));
 
-    CHECK_THROWS(model.doInteraction(view, Code::MuPlus, Code::Oxygen, P4mu, targetP4));
+    CHECK_THROWS(nuclearModel.doInteraction(view, Code::MuPlus, Code::Oxygen, P4mu, targetP4));
   }
 }
 

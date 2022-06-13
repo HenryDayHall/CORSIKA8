@@ -102,7 +102,7 @@ TEST_CASE("CONEX") {
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env};
 
   // need to initialize Sibyll, done in constructor:
-  corsika::sibyll::Interaction sibyll;
+  corsika::sibyll::HadronInteractionModel sibyll;
   [[maybe_unused]] corsika::sibyll::NuclearInteractionModel sibyllNuc(sibyll, env);
 
   EnergyLossWriter<WriterOff> w1(showerAxis);
