@@ -234,11 +234,8 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
 
-  corsika::sibyll::Interaction sibyll;
-  InteractionCounter sibyllCounted(sibyll);
-
-  corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
-  InteractionCounter sibyllNucCounted(sibyllNuc);
+  corsika::sibyll::Interaction sibyll{env};
+  InteractionCounter sibyllCounted{sibyll};
 
   corsika::pythia8::Decay decayPythia;
 
@@ -303,8 +300,7 @@ int main(int argc, char** argv) {
       return (p.getEnergy() < cutE_);
     }
   };
-  auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted,
-                                    make_sequence(sibyllNucCounted, sibyllCounted));
+  auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted, sibyllCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
   auto sequence = make_sequence(hadronSequence, decaySequence, eLoss, cut, conex_model,
                                 longprof, observationLevel, trackCheck);
@@ -327,8 +323,7 @@ int main(int argc, char** argv) {
       "relative difference (%): {}",
       Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
 
-  auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
-                     urqmdCounted.getHistogram();
+  auto const hists = sibyllCounted.getHistogram() + urqmdCounted.getHistogram();
 
   save_hist(hists.labHist(), "inthist_lab_hybrid.npz", true);
   save_hist(hists.CMSHist(), "inthist_cms_hybrid.npz", true);

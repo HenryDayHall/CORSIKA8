@@ -54,11 +54,11 @@ namespace corsika {
 
   template <typename IModelProperties>
   template <typename TCallable, bool preorder>
-  inline void VolumeTreeNode<IModelProperties>::walk(TCallable func) {
+  inline void VolumeTreeNode<IModelProperties>::walk(TCallable func) const {
     if constexpr (preorder) { func(*this); }
 
     std::for_each(childNodes_.begin(), childNodes_.end(),
-                  [&](auto& v) { v->walk(func); });
+                  [&](auto const& v) { v->walk(func); });
 
     if constexpr (!preorder) { func(*this); };
   }

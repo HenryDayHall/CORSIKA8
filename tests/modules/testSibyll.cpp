@@ -121,7 +121,7 @@ TEST_CASE("SibyllInterface", "modules") {
 
   SECTION("InteractionInterface - valid targets") {
 
-    corsika::sibyll::InteractionModel model;
+    corsika::sibyll::HadronInteractionModel model;
     // sibyll only accepts protons or nuclei with 4<=A<=18 as targets
     CHECK_FALSE(model.isValid(Code::Proton, Code::Electron, 100_GeV));
     CHECK(model.isValid(Code::Proton, Code::Hydrogen, 100_GeV));
@@ -168,7 +168,7 @@ TEST_CASE("SibyllInterface", "modules") {
     const HEPEnergyType P0 = 60_GeV;
     MomentumVector const plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
     // also print particles after sibyll was called
-    corsika::sibyll::InteractionModel model;
+    corsika::sibyll::HadronInteractionModel model;
     model.setVerbose(true);
     HEPEnergyType const Elab = sqrt(static_pow<2>(P0) + static_pow<2>(Proton::mass));
     FourMomentum const projectileP4(Elab, plab);
@@ -202,12 +202,12 @@ TEST_CASE("SibyllInterface", "modules") {
       total energy: E_tot = SQS/2 * (1+Nw) + (m_N**2-m_i**2)/(2*SQS) * (Nw-1) and P_tot
       = -m_N * Plab_i / SQS * (Nw-1).
 
-      A Lorentztransformation of these quantities to the lab. frame recovers Plab_i for
+      A Lorentz transformation of these quantities to the lab. frame recovers Plab_i for
       the total momentum, so momentum is exactly conserved, and Elab_i + Nw * m_N for the
-      total energy. Not surprisingly the total energy differs from the total energy before
-      the collision by the mass of the additional nucleons (Nw-1)*m_N. In relative terms
-      the additional energy is entirely negligible and as it is not kinetic energy there
-      is zero influence on the shower development.
+      total energy. Not surprisingly, the total energy differs from the total energy
+      before the collision by the mass of the additional nucleons (Nw-1)*m_N. In relative
+      terms the additional energy is entirely negligible and as it is not kinetic energy
+      there is zero influence on the shower development.
 
       Due to the ommission of the hadron masses in Sibyll, the total energy and momentum
       in the center-of-mass system after the collision are just: E_tot = SQS/2 * (1+Nw)
@@ -252,21 +252,22 @@ TEST_CASE("SibyllInterface", "modules") {
 
     HEPMomentumType const P0 = 50_TeV;
     MomentumVector const plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
-    corsika::sibyll::InteractionModel hmodel;
-    NuclearInteractionModel model(hmodel, *env);
+    corsika::sibyll::HadronInteractionModel hmodel;
+    NuclearInteractionModel nuclearModel(hmodel, *env);
 
-    CHECK(model.isValid(Code::Helium, Code::Oxygen, 100_GeV));
-    CHECK_FALSE(model.isValid(Code::PiPlus, Code::Oxygen, 100_GeV));
-    CHECK_FALSE(model.isValid(Code::Electron, Code::Oxygen, 100_GeV));
+    CHECK(nuclearModel.isValid(Code::Helium, Code::Oxygen, 100_GeV));
+    CHECK_FALSE(nuclearModel.isValid(Code::PiPlus, Code::Oxygen, 100_GeV));
+    CHECK_FALSE(nuclearModel.isValid(Code::Electron, Code::Oxygen, 100_GeV));
 
     Code const pid = Code::Oxygen;
     HEPEnergyType const Elab = sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid)));
     FourMomentum const P4(Elab, plab);
     FourMomentum const targetP4(get_mass(Code::Oxygen),
                                 MomentumVector(cs, {0_eV, 0_eV, 0_eV}));
-    model.doInteraction(view, pid, Code::Oxygen, P4, targetP4);
-    CrossSectionType const cx = model.getCrossSection(pid, Code::Oxygen, P4, targetP4);
-    CHECK(cx / 1_mb > 0);       // this is not physics validation
+    nuclearModel.doInteraction(view, pid, Code::Oxygen, P4, targetP4);
+    CrossSectionType const cx =
+        nuclearModel.getCrossSection(pid, Code::Oxygen, P4, targetP4);
+    CHECK(cx > 0_mb);           // this is not physics validation
     CHECK(view.getSize() != 0); // this is not physics validation
 
     // invalid to underlying model
@@ -274,10 +275,34 @@ TEST_CASE("SibyllInterface", "modules") {
         100_GeV,
         {cs, {sqrt(static_pow<2>(100_GeV) - static_pow<2>(MuPlus::mass)), 0_eV, 0_eV}});
     CrossSectionType const cx0 =
-        model.getCrossSection(Code::MuPlus, Code::Oxygen, P4mu, targetP4);
+        nuclearModel.getCrossSection(Code::MuPlus, Code::Oxygen, P4mu, targetP4);
     CHECK(cx0 / 1_mb == Approx(0));
 
-    CHECK_THROWS(model.doInteraction(view, Code::MuPlus, Code::Oxygen, P4mu, targetP4));
+    CHECK_THROWS(
+        nuclearModel.doInteraction(view, Code::MuPlus, Code::Oxygen, P4mu, targetP4));
+  }
+
+  SECTION("CombinedInterface") {
+    corsika::sibyll::InteractionModel combinedModel{*env};
+    corsika::sibyll::HadronInteractionModel const& hmodel =
+        combinedModel.getHadronInteractionModel();
+    auto const& nuclearModel = combinedModel.getNuclearInteractionModel();
+
+    FourMomentum pP{
+        1_TeV, {cs, {calculate_momentum(1_TeV, get_mass(Code::Proton)), 0_eV, 0_eV}}};
+    FourMomentum pT{get_mass(Code::Oxygen), {cs, {0_eV, 0_eV, 0_eV}}};
+
+    // pion projectiles go to hadron model
+    CHECK(combinedModel.getCrossSection(Code::PiPlus, Code::Oxygen, pP, pT) ==
+          hmodel.getCrossSection(Code::PiPlus, Code::Oxygen, pP, pT));
+    CHECK_FALSE(combinedModel.getCrossSection(Code::PiPlus, Code::Oxygen, pP, pT) ==
+                nuclearModel.getCrossSection(Code::PiPlus, Code::Oxygen, pP, pT));
+
+    // nuclear projectiles go to nuclear model
+    CHECK(combinedModel.getCrossSection(Code::Helium, Code::Oxygen, pP, pT) ==
+          nuclearModel.getCrossSection(Code::Helium, Code::Oxygen, pP, pT));
+    CHECK_FALSE(combinedModel.getCrossSection(Code::Helium, Code::Oxygen, pP, pT) ==
+                hmodel.getCrossSection(Code::Helium, Code::Oxygen, pP, pT));
   }
 }
 

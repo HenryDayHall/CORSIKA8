@@ -19,28 +19,27 @@
 
 namespace corsika::sibyll {
 
-  template <typename TEnvironment, typename TNucleonModel>
-  inline NuclearInteractionModel<TEnvironment, TNucleonModel>::NuclearInteractionModel(
+  template <typename TNucleonModel>
+  template <typename TEnvironment>
+  inline NuclearInteractionModel<TNucleonModel>::NuclearInteractionModel(
       TNucleonModel& hadint, TEnvironment const& env)
-      : environment_(env)
-      , hadronicInteraction_(hadint) {
+      : hadronicInteraction_(hadint) {
 
     // initialize nuclib
     // TODO: make sure this does not overlap with sibyll
     nuc_nuc_ini_();
 
     // initialize cross sections
-    initializeNuclearCrossSections();
+    initializeNuclearCrossSections(env);
   }
 
-  template <typename TEnvironment, typename TNucleonModel>
-  inline NuclearInteractionModel<TEnvironment,
-                                 TNucleonModel>::~NuclearInteractionModel() {
+  template <typename TNucleonModel>
+  inline NuclearInteractionModel<TNucleonModel>::~NuclearInteractionModel() {
     CORSIKA_LOG_DEBUG("Nuclib::NuclearInteractionModel n={} Nnuc={}", count_, nucCount_);
   }
 
-  template <typename TEnvironment, typename TNucleonModel>
-  inline bool constexpr NuclearInteractionModel<TEnvironment, TNucleonModel>::isValid(
+  template <typename TNucleonModel>
+  inline bool constexpr NuclearInteractionModel<TNucleonModel>::isValid(
       Code const projectileId, Code const targetId, HEPEnergyType const sqrtSnn) const {
 
     // also depends on underlying model, for Proton/Neutron projectile
@@ -53,9 +52,8 @@ namespace corsika::sibyll {
     return true;
   } // namespace corsika::sibyll
 
-  template <typename TEnvironment, typename TNucleonModel>
-  inline void
-  NuclearInteractionModel<TEnvironment, TNucleonModel>::printCrossSectionTable(
+  template <typename TNucleonModel>
+  inline void NuclearInteractionModel<TNucleonModel>::printCrossSectionTable(
       Code const pCode) const {
     if (!hadronicInteraction_.isValid(Code::Proton, pCode, 100_GeV)) { // LCOV_EXCL_START
       CORSIKA_LOG_ERROR("Invalid target type {} for hadron interaction model.", pCode);
@@ -85,11 +83,12 @@ namespace corsika::sibyll {
     CORSIKA_LOG_DEBUG(table.str());
   }
 
-  template <typename TEnvironment, typename TNucleonModel>
-  inline void
-  NuclearInteractionModel<TEnvironment, TNucleonModel>::initializeNuclearCrossSections() {
+  template <typename TNucleonModel>
+  template <typename TEnvironment>
+  inline void NuclearInteractionModel<TNucleonModel>::initializeNuclearCrossSections(
+      TEnvironment const& environment) {
 
-    auto& universe = *(environment_.getUniverse());
+    auto const& universe = *(environment.getUniverse());
     // generate complete list of all nuclei types in universe
 
     auto const allElementsInUniverse = std::invoke([&]() {
@@ -157,9 +156,8 @@ namespace corsika::sibyll {
     for (auto& ptarg : allElementsInUniverse) { printCrossSectionTable(ptarg); }
   }
 
-  template <typename TEnvironment, typename TNucleonModel>
-  inline CrossSectionType
-  NuclearInteractionModel<TEnvironment, TNucleonModel>::readCrossSectionTable(
+  template <typename TNucleonModel>
+  inline CrossSectionType NuclearInteractionModel<TNucleonModel>::readCrossSectionTable(
       int const ia, Code const pTarget, HEPEnergyType const elabnuc) const {
 
     int const ib = targetComponentsIndex_.at(pTarget) + 1; // table index in fortran
@@ -175,12 +173,10 @@ namespace corsika::sibyll {
     return sig * 1_mb;
   }
 
-  template <typename TEnvironment, typename TNucleonModel>
-  CrossSectionType inline NuclearInteractionModel<
-      TEnvironment, TNucleonModel>::getCrossSection(Code const projectileId,
-                                                    Code const targetId,
-                                                    FourMomentum const& projectileP4,
-                                                    FourMomentum const& targetP4) const {
+  template <typename TNucleonModel>
+  CrossSectionType inline NuclearInteractionModel<TNucleonModel>::getCrossSection(
+      Code const projectileId, Code const targetId, FourMomentum const& projectileP4,
+      FourMomentum const& targetP4) const {
 
     HEPEnergyType const sqrtSnn = (projectileP4 + targetP4).getNorm();
     if (!isValid(projectileId, targetId, sqrtSnn)) { return CrossSectionType::zero(); }
@@ -192,9 +188,9 @@ namespace corsika::sibyll {
     return sigProd;
   }
 
-  template <typename TEnvironment, typename TNucleonModel>
+  template <typename TNucleonModel>
   template <typename TSecondaryView>
-  inline void NuclearInteractionModel<TEnvironment, TNucleonModel>::doInteraction(
+  inline void NuclearInteractionModel<TNucleonModel>::doInteraction(
       TSecondaryView& view, Code const projectileId, Code const targetId,
       FourMomentum const& projectileP4, FourMomentum const& targetP4) {
 

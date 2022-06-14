@@ -322,11 +322,8 @@ int main(int argc, char** argv) {
   ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, dEdX);
 
   /* === START: SETUP PROCESS LIST === */
-  corsika::sibyll::Interaction sibyll;
+  corsika::sibyll::Interaction sibyll{env};
   InteractionCounter sibyllCounted(sibyll);
-  corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
-  InteractionCounter sibyllNucCounted(sibyllNuc);
-  auto heModelCounted = make_sequence(sibyllNucCounted, sibyllCounted);
 
   corsika::pythia8::Decay decayPythia;
 
@@ -357,7 +354,8 @@ int main(int argc, char** argv) {
   // interactions and the hadronic photon model in proposal
   HEPEnergyType heHadronModelThreshold = 63.1_GeV;
 
-  corsika::proposal::Interaction emCascade(env, sibyll, heHadronModelThreshold);
+  corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(),
+                                           heHadronModelThreshold);
   // NOT possible right now, due to interface difference for PROPOSAL:
   //  InteractionCounter emCascadeCounted(emCascade);
   // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>>
@@ -380,7 +378,7 @@ int main(int argc, char** argv) {
     bool operator()(Particle const& p) const { return (p.getKineticEnergy() < cutE_); }
   };
   auto hadronSequence =
-      make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, heModelCounted);
+      make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, sibyllCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   // track writer
@@ -450,8 +448,7 @@ int main(int argc, char** argv) {
         "relative difference (%): {}",
         Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
 
-    auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
-                       urqmdCounted.getHistogram();
+    auto const hists = sibyllCounted.getHistogram() + urqmdCounted.getHistogram();
 
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);

@@ -35,7 +35,7 @@ namespace corsika::proposal {
     CORSIKA_LOGGER_DEBUG(
         logger_, "Threshold for HE hadronic interactions in proposal set to Elab={} GeV",
         _heenthresholdNN / 1_GeV);
-  };
+  }
 
   template <typename THadronicModel>
   template <typename TStackView>

@@ -22,17 +22,21 @@ namespace corsika::sibyll {
    *
    * @tparam TNucleonModel
    */
-  template <class TEnvironment, class TNucleonModel>
+  template <class TNucleonModel>
   class NuclearInteractionModel {
 
   public:
+    template <class TEnvironment>
     NuclearInteractionModel(TNucleonModel&, TEnvironment const&);
+
     ~NuclearInteractionModel();
 
     bool constexpr isValid(Code const projectileId, Code const targetId,
                            HEPEnergyType const sqrtSnn) const;
 
-    void initializeNuclearCrossSections();
+    template <class TEnvironment>
+    void initializeNuclearCrossSections(TEnvironment const&);
+
     void printCrossSectionTable(Code) const;
     CrossSectionType readCrossSectionTable(int const, Code const,
                                            HEPEnergyType const) const;
@@ -56,7 +60,6 @@ namespace corsika::sibyll {
     int count_ = 0;
     int nucCount_ = 0;
 
-    TEnvironment const& environment_;
     TNucleonModel& hadronicInteraction_;
     std::map<Code, int> targetComponentsIndex_;
     default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("sibyll");

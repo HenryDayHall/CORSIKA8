@@ -223,11 +223,8 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
 
-  corsika::sibyll::Interaction sibyll;
-  InteractionCounter sibyllCounted(sibyll);
-
-  corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
-  InteractionCounter sibyllNucCounted(sibyllNuc);
+  corsika::sibyll::Interaction sibyll{env};
+  InteractionCounter sibyllCounted{sibyll};
 
   corsika::pythia8::Decay decayPythia;
 
@@ -265,8 +262,7 @@ int main(int argc, char** argv) {
         : cutE_(cutE) {}
     bool operator()(const Particle& p) const { return (p.getEnergy() < cutE_); }
   };
-  auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted,
-                                    make_sequence(sibyllNucCounted, sibyllCounted));
+  auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted, sibyllCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   // directory for outputs
@@ -299,8 +295,7 @@ int main(int argc, char** argv) {
   EAS.run();
   output.endOfShower();
 
-  auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
-                     urqmdCounted.getHistogram();
+  auto const hists = sibyllCounted.getHistogram() + urqmdCounted.getHistogram();
 
   save_hist(hists.labHist(), labHist_file, true);
   save_hist(hists.CMSHist(), cMSHist_file, true);

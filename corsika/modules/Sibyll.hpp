@@ -9,9 +9,11 @@
 #pragma once
 
 #include <corsika/modules/sibyll/ParticleConversion.hpp>
-#include <corsika/modules/sibyll/InteractionModel.hpp>
+#include <corsika/modules/sibyll/HadronInteractionModel.hpp>
 #include <corsika/modules/sibyll/Decay.hpp>
 #include <corsika/modules/sibyll/NuclearInteractionModel.hpp>
+
+#include <corsika/modules/sibyll/InteractionModel.hpp>
 
 #include <corsika/framework/process/InteractionProcess.hpp>
 
@@ -29,7 +31,11 @@ namespace corsika::sibyll {
    * The sibyll::InteractionModel is wrapped as an InteractionProcess here in order
    * to provide all the functions for ProcessSequence.
    */
-  class Interaction : public InteractionModel, public InteractionProcess<Interaction> {};
+  struct Interaction : public InteractionModel, public InteractionProcess<Interaction> {
+    template <typename TEnvironment>
+    Interaction(TEnvironment const& env)
+        : InteractionModel{env} {}
+  };
 
   /**
    * @brief sibyll::NuclearInteraction is the process for ProcessSequence.
@@ -37,13 +43,14 @@ namespace corsika::sibyll {
    * The sibyll::NuclearInteractionModel is wrapped as an InteractionProcess here in order
    * to provide all the functions for ProcessSequence.
    */
-  template <class TEnvironment, class TNucleonModel>
+  template <class TNucleonModel>
   class NuclearInteraction
-      : public NuclearInteractionModel<TEnvironment, TNucleonModel>,
-        public InteractionProcess<NuclearInteraction<TEnvironment, TNucleonModel>> {
+      : public NuclearInteractionModel<TNucleonModel>,
+        public InteractionProcess<NuclearInteraction<TNucleonModel>> {
   public:
+    template <typename TEnvironment>
     NuclearInteraction(TNucleonModel& model, TEnvironment const& env)
-        : NuclearInteractionModel<TEnvironment, TNucleonModel>(model, env) {}
+        : NuclearInteractionModel<TNucleonModel>{model, env} {}
   };
 
 } // namespace corsika::sibyll
