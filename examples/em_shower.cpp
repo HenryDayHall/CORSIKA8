@@ -1,10 +1,10 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * This software is distributed under the terms of the GNU General Public
- * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
- * the license.
- */
+* (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+*
+* This software is distributed under the terms of the GNU General Public
+* Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+* the license.
+*/
 
 #include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/process/SwitchProcessSequence.hpp>
@@ -34,6 +34,7 @@
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
 
+#include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
 #include <corsika/modules/ParticleCut.hpp>
@@ -51,28 +52,28 @@
 #include <typeinfo>
 
 /*
-  NOTE, WARNING, ATTENTION
+ NOTE, WARNING, ATTENTION
 
-  The .../Random.hpppp implement the hooks of external modules to the C8 random
-  number generator. It has to occur excatly ONCE per linked
-  executable. If you include the header below multiple times and
-  link this togehter, it will fail.
- */
+ The .../Random.hpppp implement the hooks of external modules to the C8 random
+ number generator. It has to occur excatly ONCE per linked
+ executable. If you include the header below multiple times and
+ link this togehter, it will fail.
+*/
 #include <corsika/modules/Random.hpp>
 
 using namespace corsika;
 using namespace std;
 
 void registerRandomStreams(int seed) {
-  RNGManager<>::getInstance().registerRandomStream("cascade");
-  RNGManager<>::getInstance().registerRandomStream("proposal");
-  RNGManager<>::getInstance().registerRandomStream("sibyll");
-  if (seed == 0) {
-    std::random_device rd;
-    seed = rd();
-    cout << "new random seed (auto) " << seed << endl;
-  }
-  RNGManager<>::getInstance().setSeed(seed);
+ RNGManager<>::getInstance().registerRandomStream("cascade");
+ RNGManager<>::getInstance().registerRandomStream("proposal");
+ RNGManager<>::getInstance().registerRandomStream("sibyll");
+ if (seed == 0) {
+   std::random_device rd;
+   seed = rd();
+   cout << "new random seed (auto) " << seed << endl;
+ }
+ RNGManager<>::getInstance().setSeed(seed);
 }
 
 template <typename T>
@@ -80,131 +81,131 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
-  logging::set_level(logging::level::info);
+ logging::set_level(logging::level::info);
 
-  if (argc != 2) {
-    std::cerr << "usage: em_shower <energy/GeV>" << std::endl;
-    return 1;
-  }
-  feenableexcept(FE_INVALID);
-  // initialize random number sequence(s)
-  int seed = 44;
-  registerRandomStreams(seed);
+ if (argc != 3) {
+   std::cerr << "usage: em_shower <energy/GeV> <theta>" << std::endl;
+   return 1;
+ }
+ feenableexcept(FE_INVALID);
+ // initialize random number sequence(s)
+ int seed = 2723141261;
+ registerRandomStreams(seed);
 
-  // setup environment, geometry
-  using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-  using EnvType = Environment<EnvironmentInterface>;
-  EnvType env;
-  CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
-  Point const center{rootCS, 0_m, 0_m, 0_m};
+ // setup environment, geometry
+ using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+ using EnvType = Environment<EnvironmentInterface>;
+ EnvType env;
+ CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
+ Point const center{rootCS, 0_m, 0_m, 0_m};
 
-  // build a Linsley US Standard atmosphere into `env`
-  create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-      env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
-      MagneticFieldVector{rootCS, 0_T, 50_uT, 0_T});
+ // build a Linsley US Standard atmosphere into `env`
+ create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
+     env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
+     MagneticFieldVector{rootCS, 20.4_uT, 0_T, 43.23_uT});
 
-  std::unordered_map<Code, HEPEnergyType> energy_resolution = {
-      {Code::Electron, 10_MeV},
-      {Code::Positron, 10_MeV},
-      {Code::Photon, 10_MeV},
-  };
-  for (auto [pcode, energy] : energy_resolution)
-    set_energy_production_threshold(pcode, energy);
+ std::unordered_map<Code, HEPEnergyType> energy_resolution = {
+     {Code::Electron, 2_MeV},
+     {Code::Positron, 2_MeV},
+     {Code::Photon, 2_MeV},
+ };
+ for (auto [pcode, energy] : energy_resolution)
+   set_energy_production_threshold(pcode, energy);
 
-  // setup particle stack, and add primary particle
-  setup::Stack<EnvType> stack;
-  stack.clear();
-  const Code beamCode = Code::Electron;
-  auto const mass = get_mass(beamCode);
-  const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[1]));
-  double theta = 0.;
-  auto const thetaRad = theta / 180. * M_PI;
+ // setup particle stack, and add primary particle
+ setup::Stack<EnvType> stack;
+ stack.clear();
 
-  HEPMomentumType P0 = calculate_momentum(E0, mass);
-  auto momentumComponents = [](double thetaRad, HEPMomentumType ptot) {
-    return std::make_tuple(ptot * sin(thetaRad), 0_eV, -ptot * cos(thetaRad));
-  };
+ const Code beamCode = Code::Electron;
+ auto const mass = get_mass(beamCode);
+ const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[1]));
+ double theta = 1. * std::stof(std::string(argv[2]));
+ auto const thetaRad = theta / 180. * M_PI;
 
-  auto const [px, py, pz] = momentumComponents(thetaRad, P0);
-  auto plab = MomentumVector(rootCS, {px, py, pz});
-  cout << "input particle: " << beamCode << endl;
-  cout << "input angles: theta=" << theta << endl;
-  cout << "input momentum: " << plab.getComponents() / 1_GeV
-       << ", norm = " << plab.getNorm() << endl;
+ HEPMomentumType P0 = calculate_momentum(E0, mass);
+ auto momentumComponents = [](double thetaRad, HEPMomentumType ptot) {
+   return std::make_tuple(ptot * sin(thetaRad), 0_eV, -ptot * cos(thetaRad));
+ };
 
-  auto const observationHeight = 1.4_km + constants::EarthRadius::Mean;
-  auto const injectionHeight = 112.75_km + constants::EarthRadius::Mean;
-  auto const t = -observationHeight * cos(thetaRad) +
-                 sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
-                      static_pow<2>(injectionHeight));
-  Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
-  Point const injectionPos =
-      showerCore + DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
+ auto const [px, py, pz] = momentumComponents(thetaRad, P0);
+ auto plab = MomentumVector(rootCS, {px, py, pz});
+ cout << "input particle: " << beamCode << endl;
+ cout << "input angles: theta=" << theta << endl;
+ cout << "input momentum: " << plab.getComponents() / 1_GeV
+      << ", norm = " << plab.getNorm() << endl;
 
-  std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
+ auto const observationHeight = 0.0_km + constants::EarthRadius::Mean;
+ auto const injectionHeight = 112.75_km + constants::EarthRadius::Mean;
+ auto const t = -observationHeight * cos(thetaRad) +
+                sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
+                     static_pow<2>(injectionHeight));
+ Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
+ Point const injectionPos =
+     showerCore + DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
-  stack.addParticle(std::make_tuple(
-      beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
-      plab.normalized(), injectionPos, 0_ns));
+ std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
 
-  CORSIKA_LOG_INFO("shower axis length: {} ",
-                   (showerCore - injectionPos).getNorm() * 1.02);
+ stack.addParticle(std::make_tuple(
+     beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
+     plab.normalized(), injectionPos, 0_ns));
 
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
-                              false, 1000};
+ CORSIKA_LOG_INFO("shower axis length: {} ",
+                  (showerCore - injectionPos).getNorm() * 1.02);
 
-  OutputManager output("em_shower_outputs");
+ ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
+                             false, 1000};
 
-  EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
-  // register energy losses as output
-  output.add("dEdX", dEdX);
+ std::string outname_ {"em_shower_outputs"};
+ OutputManager output(outname_ + std::to_string(std::stof(std::string(argv[1]))) + "theta-" + std::to_string(std::stof(std::string(argv[2]))));
 
-  // setup processes, decays and interactions
+ EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
+ // register energy losses as output
+ output.add("dEdX", dEdX);
 
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(60_GeV, 60_GeV, 100_PeV, 100_PeV, true,
-                                             dEdX);
-  corsika::sibyll::Interaction sibyll{env};
-  HEPEnergyType heThresholdNN = 80_GeV;
-  corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(),
-                                           heThresholdNN);
-  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
-  //  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
+ // setup processes, decays and interactions
 
-  //  NOT possible right now, due to interface differenc in PROPOSAL
-  //  InteractionCounter emCascadeCounted(emCascade);
+ ParticleCut<SubWriter<decltype(dEdX)>> cut(2_MeV, 2_MeV, 100_GeV, 100_GeV, true, dEdX);
+ corsika::sibyll::Interaction sibyll;
+ HEPEnergyType heThresholdNN = 60_GeV;
+ corsika::proposal::Interaction emCascade(env, sibyll, heThresholdNN);
+ corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
+ //  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
-  TrackWriter tracks;
-  output.add("tracks", tracks);
+ //  NOT possible right now, due to interface differenc in PROPOSAL
+ //  InteractionCounter emCascadeCounted(emCascade);
 
-  // long. profile
-  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
-  output.add("profile", profile);
-  LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
+ TrackWriter tracks;
+ output.add("tracks", tracks);
 
-  Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane<setup::Tracking, ParticleWriterParquet> observationLevel{
-      obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
-  output.add("particles", observationLevel);
+ // long. profile
+ LongitudinalWriter profile{showerAxis, 10_g / square(1_cm)};
+ output.add("profile", profile);
+ LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
-  auto sequence =
-      make_sequence(emCascade, emContinuous, longprof, cut, observationLevel, tracks);
-  // define air shower object, run simulation
-  setup::Tracking tracking;
+ Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
+ ObservationPlane<setup::Tracking, ParticleWriterParquet> observationLevel{
+     obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
+ output.add("particles", observationLevel);
 
-  output.startOfLibrary();
-  Cascade EAS(env, tracking, sequence, output, stack);
+ auto sequence =
+     make_sequence(emCascade, emContinuous, longprof, cut, observationLevel, tracks);
+ // define air shower object, run simulation
+ setup::Tracking tracking;
 
-  // to fix the point of first interaction, uncomment the following two lines:
-  //  EAS.forceInteraction();
+ output.startOfLibrary();
+ Cascade EAS(env, tracking, sequence, output, stack);
 
-  EAS.run();
+ // to fix the point of first interaction, uncomment the following two lines:
+ //  EAS.forceInteraction();
 
-  HEPEnergyType const Efinal = dEdX.getEnergyLost() + observationLevel.getEnergyGround();
+ EAS.run();
 
-  CORSIKA_LOG_INFO(
-      "total energy budget (GeV): {}, "
-      "relative difference (%): {}",
-      Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
+ HEPEnergyType const Efinal = dEdX.getEnergyLost() + observationLevel.getEnergyGround();
 
-  output.endOfLibrary();
+ CORSIKA_LOG_INFO(
+     "total energy budget (GeV): {}, "
+     "relative difference (%): {}",
+     Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
+
+ output.endOfLibrary();
 }
