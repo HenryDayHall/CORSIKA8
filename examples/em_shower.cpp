@@ -165,9 +165,9 @@ int main(int argc, char** argv) {
  // setup processes, decays and interactions
 
  ParticleCut<SubWriter<decltype(dEdX)>> cut(2_MeV, 2_MeV, 100_GeV, 100_GeV, true, dEdX);
- corsika::sibyll::Interaction sibyll;
+ corsika::sibyll::Interaction sibyll{env};
  HEPEnergyType heThresholdNN = 60_GeV;
- corsika::proposal::Interaction emCascade(env, sibyll, heThresholdNN);
+ corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(), heThresholdNN);
  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
  //  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
