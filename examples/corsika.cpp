@@ -66,7 +66,7 @@
 
 #include <iomanip>
 #include <limits>
-#include <string>
+#include <string_view>
 
 /*
   NOTE, WARNING, ATTENTION
@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
   CLI11_PARSE(app, argc, argv);
 
   if (app.count("--verbosity")) {
-    string const loglevel = app["verbosity"]->as<string>();
+    std::string_view const loglevel = app["--verbosity"]->as<std::string_view>();
     if (loglevel == "warn") {
       logging::set_level(logging::level::warn);
     } else if (loglevel == "info") {
