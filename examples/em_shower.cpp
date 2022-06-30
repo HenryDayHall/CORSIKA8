@@ -174,8 +174,8 @@ int main(int argc, char** argv) {
  //  NOT possible right now, due to interface differenc in PROPOSAL
  //  InteractionCounter emCascadeCounted(emCascade);
 
- TrackWriter tracks;
- output.add("tracks", tracks);
+  // TrackWriter tracks;
+  // output.add("tracks", tracks);
 
  // long. profile
  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm)};
@@ -188,7 +188,7 @@ int main(int argc, char** argv) {
  output.add("particles", observationLevel);
 
  auto sequence =
-     make_sequence(emCascade, emContinuous, longprof, cut, observationLevel, tracks);
+     make_sequence(emCascade, emContinuous, longprof, cut, observationLevel);
  // define air shower object, run simulation
  setup::Tracking tracking;
 

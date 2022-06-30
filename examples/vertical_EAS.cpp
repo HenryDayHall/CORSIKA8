@@ -226,8 +226,8 @@ int main(int argc, char** argv) {
   LongitudinalProfile<SubWriter<decltype(longProf)>> profile{longProf};
 
   // create a track writer and register it with the output manager
-  TrackWriter<TrackWriterParquet> trackWriter;
-  output.add("tracks", trackWriter);
+  //  TrackWriter<TrackWriterParquet> trackWriter;
+  //  output.add("tracks", trackWriter);
 
   // setup processes, decays and interactions
 
@@ -295,7 +295,7 @@ int main(int argc, char** argv) {
   output.add("particles", observationLevel);
 
   auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emCascade, emContinuous,
-                                cut, trackWriter, observationLevel, profile);
+                                cut, observationLevel, profile);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
