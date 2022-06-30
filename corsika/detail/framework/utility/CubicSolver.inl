@@ -254,7 +254,7 @@ namespace corsika {
 
     if (pre_opt.size()) {
       x1 = pre_opt[0]; //*std::max_element(pre_opt.begin(), pre_opt.end());
-#ifdef DEBUG
+#ifdef _C8_DEBUG_
       for (long double test_v : pre_opt) {
         CORSIKA_LOG_TRACE("test,andre x={} f(x)={}", test_v,
                           cubic_function(test_v, a, b, c, d));

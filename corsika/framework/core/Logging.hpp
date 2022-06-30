@@ -33,7 +33,7 @@
 #define SPDLOG_FUNCTION __PRETTY_FUNCTION__
 
 // if this is a Debug build, include debug messages in objects
-#ifdef DEBUG
+#ifdef _C8_DEBUG_
 // trace is the highest level of logging (ALL messages will be printed)
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #else // otherwise, remove everything but "error" and worse messages

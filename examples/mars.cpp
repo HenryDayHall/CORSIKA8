@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
   } else if (loglevel == "debug") {
     logging::set_level(logging::level::debug);
   } else if (loglevel == "trace") {
-#ifndef DEBUG
+#ifndef _C8_DEBUG_
     CORSIKA_LOG_ERROR("trace log level requires a Debug build.");
     return 1;
 #endif
