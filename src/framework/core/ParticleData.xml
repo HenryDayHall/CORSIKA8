@@ -1,5 +1,7 @@
 <chapter name="Particle Data">  
-<!-- MR 2202-06-30: copied & adapted from Pythia 8.307 -->
+<!-- MR 2202-06-30: copied & adapted from Pythia 8.307
+     note: some occurrences of "minus minus" have been replaced by "&#45;&#45;"
+     since it this string is not allowed inside XML comments -->
 <particle id="0" name="void" spinType="0" chargeType="0" colType="0" 
           m0="0.00000"> 
 </particle> 
@@ -600,7 +602,7 @@
  <channel onMode="1" bRatio="1.00" products="5 -5 52"/> 
 </particle> 
  
-<particle id="59" name="DM++" antiName="DM--" spinType="2" chargeType="6" colType="0" 
+<particle id="59" name="DM++" antiName="DM&#45;&#45;" spinType="2" chargeType="6" colType="0" 
           m0="100.00000"> 
   <channel onMode="1" bRatio="1.00" products="211 57"/> 
 </particle> 
@@ -652,11 +654,11 @@
  <channel onMode="1" bRatio="0.1081660" products="-13 14"/> 
  <channel onMode="1" bRatio="0.1080870" products="-15 16"/> 
 </particle> 
--->
+ 
 <particle id="110" name="Reggeon" spinType="0" chargeType="0" colType="0" 
           m0="0.00000"> 
 </particle> 
- 
+-->
 <particle id="111" name="pi0" spinType="1" chargeType="0" colType="0" 
           m0="0.13498" tau0="2.55313e-05"> 
  <channel onMode="1" bRatio="0.9879900" products="22 22"/> 
@@ -3675,12 +3677,12 @@
  <channel onMode="1" bRatio="0.0180000" meMode="22" products="-13 14 3 3303"/> 
  <channel onMode="1" bRatio="0.9640000" meMode="42" products="2 -1 3 3303"/> 
 </particle> 
- 
+<!--
 <particle id="4334" name="Omega*_c0" antiName="Omega*_cbar0" spinType="4" chargeType="0" colType="0" 
           m0="2.76590"> 
  <channel onMode="1" bRatio="1.0000000" products="4332 22"/> 
 </particle> 
-<!--
+ 
 <particle id="4403" name="cc_1" antiName="cc_1bar" spinType="3" chargeType="4" colType="-1" 
           m0="3.27531"> 
 </particle> 
@@ -3895,12 +3897,12 @@
           m0="5.81130" mWidth="0.0050"> 
  <channel onMode="1" bRatio="1.0000000" products="5122 211"/> 
 </particle> 
- 
+<!-- 
 <particle id="5224" name="Sigma*_b+" antiName="Sigma*_bbar-" spinType="4" chargeType="3" colType="0" 
           m0="5.83210"> 
  <channel onMode="1" bRatio="1.0000000" products="5122 211"/> 
 </particle> 
- 
+-->
 <particle id="5232" name="Xi_b0" antiName="Xi_bbar0" spinType="2" chargeType="0" colType="0" 
           m0="5.78800" tau0="3.64000e-01"> 
  <channel onMode="1" bRatio="0.1080010" meMode="22" products="-12 11 4 3201"/> 
@@ -4528,13 +4530,13 @@
  <channel onMode="1" bRatio="0.5000000" products="513 411"/> 
  <channel onMode="1" bRatio="0.5000000" products="523 421"/> 
 </particle> 
- 
+<!-- 
 <particle id="10551" name="chi_0b" spinType="1" chargeType="0" colType="0" 
           m0="9.85940"> 
  <channel onMode="1" bRatio="0.9800000" meMode="91" products="21 21"/> 
  <channel onMode="1" bRatio="0.0200000" products="553 22"/> 
 </particle> 
- 
+-->
 <particle id="10553" name="h_1b" spinType="3" chargeType="0" colType="0" 
           m0="9.89860" mWidth="0.01000" mMin="9.85500" mMax="9.89500"> 
  <channel onMode="1" bRatio="1.0000000" meMode="91" products="21 21"/> 
@@ -4689,13 +4691,13 @@
  <channel onMode="1" bRatio="0.5000000" products="513 411"/> 
  <channel onMode="1" bRatio="0.5000000" products="523 421"/> 
 </particle> 
- 
+<!-- 
 <particle id="20553" name="chi_1b" spinType="3" chargeType="0" colType="0" 
           m0="9.89280"> 
  <channel onMode="1" bRatio="0.3500000" products="553 22"/> 
  <channel onMode="1" bRatio="0.6500000" meMode="91" products="21 21"/> 
 </particle> 
- 
+-->
 <particle id="30113" name="rho(1700)0" spinType="3" chargeType="0" colType="0" 
           m0="1.720" mWidth="0.250" mMin="0.278" mMax="2.97" 
           varWidth="on"> 
@@ -8993,7 +8995,7 @@
           m0="500.00000" tau0="1e-05"> 
 </particle> 
  
-<particle id="1006223" name="R++(~t uu1)" antiName="Rbar--(~t uu1)" spinType="3" chargeType="6" colType="0" 
+<particle id="1006223" name="R++(~t uu1)" antiName="Rbar&#45;&#45;(~t uu1)" spinType="3" chargeType="6" colType="0" 
           m0="500.00000" tau0="1e-05"> 
 </particle> 
  
@@ -9093,7 +9095,7 @@
           m0="500.00000" tau0="1e-05"> 
 </particle> 
  
-<particle id="1092224" name="R++(~g uuu)" antiName="Rbar--(~g uuu)" spinType="4" chargeType="6" colType="0" 
+<particle id="1092224" name="R++(~g uuu)" antiName="Rbar&#45;&#45;(~g uuu)" spinType="4" chargeType="6" colType="0" 
           m0="500.00000" tau0="1e-05"> 
 </particle> 
  
@@ -9129,7 +9131,7 @@
            m0="500.00000" tau0="1e-05"> 
 </particle> 
  
-<particle id="1094224" name="R++(~g cuu)" antiName="Rbar--(~g cuu)" spinType="4" chargeType="6" colType="0" 
+<particle id="1094224" name="R++(~g cuu)" antiName="Rbar&#45;&#45;(~g cuu)" spinType="4" chargeType="6" colType="0" 
            m0="500.00000" tau0="1e-05"> 
 </particle> 
  
@@ -10991,7 +10993,7 @@
  <channel onMode="1" bRatio="0.0371500" products="-15 9900016"/> 
 </particle> 
  
-<particle id="9900041" name="H_L++" antiName="H_L--" spinType="1" chargeType="6" colType="0" 
+<particle id="9900041" name="H_L++" antiName="H_L&#45;&#45;" spinType="1" chargeType="6" colType="0" 
           m0="200.00000" mWidth="0.88159" mMin="50.00000" mMax="0.00000"> 
  <channel onMode="1" bRatio="0.0902660" products="-11 -11"/> 
  <channel onMode="1" bRatio="0.0018050" products="-11 -13"/> 
@@ -11002,7 +11004,7 @@
  <channel onMode="1" bRatio="0.0017900" products="24 24"/> 
 </particle> 
  
-<particle id="9900042" name="H_R++" antiName="H_R--" spinType="1" chargeType="6" colType="0" 
+<particle id="9900042" name="H_R++" antiName="H_R&#45;&#45;" spinType="1" chargeType="6" colType="0" 
           m0="200.00000" mWidth="0.88001" mMin="50.00000" mMax="0.00000"> 
  <channel onMode="1" bRatio="0.0904280" products="-11 -11"/> 
  <channel onMode="1" bRatio="0.0018090" products="-11 -13"/> 
@@ -11093,7 +11095,7 @@
           m0="0.00000"> 
 </particle> 
  
-<particle id="9902220" name="Delta_dif++" antiName="Delta_difbar--" spinType="0" chargeType="0" colType="0" 
+<particle id="9902220" name="Delta_dif++" antiName="Delta_difbar&#45;&#45;" spinType="0" chargeType="0" colType="0" 
           m0="0.00000"> 
 </particle> 
  
@@ -11141,7 +11143,7 @@
           m0="0.00000"> 
 </particle> 
  
-<particle id="9904220" name="Sigma_cdif++" antiName="Sigma_cdifbar--" spinType="0" chargeType="6" colType="0" 
+<particle id="9904220" name="Sigma_cdif++" antiName="Sigma_cdifbar&#45;&#45;" spinType="0" chargeType="6" colType="0" 
           m0="0.00000"> 
 </particle> 
  
