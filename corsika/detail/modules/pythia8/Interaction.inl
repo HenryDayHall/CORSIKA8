@@ -28,6 +28,11 @@ namespace corsika::pythia8 {
 
   inline Interaction::Interaction(boost::filesystem::path const& mpiInitFile, bool const print_listing)
     : print_listing_(print_listing) {
+      Pythia8::RndmEngine* rndm = new corsika::pythia8::Random();
+      pythiaColl_.setRndmEnginePtr(rndm);
+      pythiaMain_.setRndmEnginePtr(rndm);
+
+      CORSIKA_LOG_INFO("Pythia8 MPI init file: {}", mpiInitFile.native());
       // Main Pythia object for managing the cascade evolution.
       // Can also do decays, but no hard processes.
       
