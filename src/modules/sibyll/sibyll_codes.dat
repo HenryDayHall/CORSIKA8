@@ -46,7 +46,7 @@ KStarMinus               29      0       CannotInteract
 KStar0_1430_0            66      0       CannotInteract
 KStar0_1430_0Bar         67      0       CannotInteract
 KStar0_1430_Plus         64      0       CannotInteract
-KStar0_1430_MinusBar     65      0       CannotInteract
+KStar0_1430_Minus        65      0       CannotInteract
 DPlus                    59      1       Kaon
 DMinus                   60      1       Kaon
 DStarPlus                78      0       CannotInteract
@@ -68,12 +68,12 @@ DeltaMinus               43      0       CannotInteract
 DeltaPlusBar             -43     0       CannotInteract
 Proton                   13      1       Baryon
 AntiProton               -13     1       Baryon
-N1440Plus                51      0       CannotInteract
-N1440MinusBar            -51     0       CannotInteract
+P1440Plus                51      0       CannotInteract
+P1440MinusBar            -51     0       CannotInteract
 N1440_0                  52      0       CannotInteract
 N1440_0Bar               -52     0       CannotInteract
-N1710Plus                53      0       CannotInteract
-N1710MinusBar            -53     0       CannotInteract
+P1710Plus                53      0       CannotInteract
+P1710MinusBar            -53     0       CannotInteract
 N1710_0                  54      0       CannotInteract
 N1710_0Bar               -54     0       CannotInteract
 DeltaPlus                41      0       CannotInteract
