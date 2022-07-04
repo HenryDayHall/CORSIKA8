@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
  *
@@ -27,14 +27,15 @@ namespace corsika {
     // label this as a time-domain antenna.
     static constexpr bool is_time_domain{true};
 
-    TimeType const start_time_;         ///< The start time of this waveform.
-    TimeType const duration_;           ///< The duration of this waveform.
-    InverseTimeType const sample_rate_; ///< The sampling rate of this antenna.
-    int num_bins_;                      ///< The number of bins used.
-    std::vector<double> waveformEX_;    ///< EX polarization
-    std::vector<double> waveformEY_;    ///< EY polarization
-    std::vector<double> waveformEZ_;    ///< EZ polarization
-    TimeType const ground_hit_time_; ///< The time the primary particle hits the ground.
+    TimeType const start_time_;                  ///< The start time of this waveform.
+    TimeType const duration_;                    ///< The duration of this waveform.
+    InverseTimeType const sample_rate_;          ///< The sampling rate of this antenna.
+    int num_bins_;                               ///< The number of bins used.
+    std::vector<double> waveformEX_;             ///< EX polarization.
+    std::vector<double> waveformEY_;             ///< EY polarization.
+    std::vector<double> waveformEZ_;             ///< EZ polarization.
+    TimeType const ground_hit_time_;             ///< The time the primary particle hits the ground.
+    std::vector<long double> const time_axis_;   ///< The time axis corresponding to the electric field.
 
     using Antenna<TimeDomainAntenna>::getName;
     using Antenna<TimeDomainAntenna>::getLocation;
@@ -51,10 +52,10 @@ namespace corsika {
      * @param waveformE_         The xtensor initialized to zero for E-field.
      *
      */
-    TimeDomainAntenna(std::string const& name, Point const& location,
+    TimeDomainAntenna(std::string const& name, Point const& location, CoordinateSystemPtr coordinateSystem,
                       TimeType const& start_time, TimeType const& duration,
                       InverseTimeType const& sample_rate,
-                      TimeType const& ground_hit_time);
+                      TimeType const ground_hit_time);
 
     /**
      * Receive an electric field at this antenna.
@@ -80,35 +81,35 @@ namespace corsika {
      *
      * This returns them in nanoseconds for ease of use.
      */
-    auto& getDataX() const;
+    auto const& getDataX() const;
 
     /**
      * Return the time-units of each waveform for Y polarization
      *
      * This returns them in nanoseconds for ease of use.
      */
-    auto& getDataY() const;
+    auto const& getDataY() const;
 
     /**
      * Return the time-units of each waveform for Z polarization
      *
      * This returns them in nanoseconds for ease of use.
      */
-    auto& getDataZ() const;
+    auto const& getDataZ() const;
+
+    /**
+     * Creates time-units of each waveform.
+     *
+     * It creates them in nanoseconds for ease of use.
+     */
+    std::vector<long double> createTimeAxis() const;
 
     /**
      * Return the time-units of each waveform.
      *
      * This returns them in nanoseconds for ease of use.
      */
-    auto getAxis() const;
-
-    // TODO: These should get deleted or renamed to something more sensible
-    auto getWaveformX() const;
-
-    auto getWaveformY() const;
-
-    auto getWaveformZ() const;
+    auto const& getAxis() const;
 
     /**
      * Reset the antenna before starting a new simulation.

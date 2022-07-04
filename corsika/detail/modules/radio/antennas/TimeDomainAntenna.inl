@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
  *
@@ -13,13 +13,14 @@
 
 namespace corsika {
 
-  inline TimeDomainAntenna::TimeDomainAntenna(const std::string& name,
-                                              const Point& location,
-                                              const TimeType& start_time,
-                                              const TimeType& duration,
-                                              const InverseTimeType& sample_rate,
-                                              const TimeType& ground_hit_time)
-      : Antenna(name, location)
+  inline TimeDomainAntenna::TimeDomainAntenna(std::string const& name,
+                                              Point const& location,
+                                              CoordinateSystemPtr coordinateSystem,
+                                              TimeType const& start_time,
+                                              TimeType const& duration,
+                                              InverseTimeType const& sample_rate,
+                                              TimeType const ground_hit_time)
+      : Antenna(name, location, coordinateSystem)
       , start_time_(start_time)
       , duration_(duration)
       , sample_rate_(sample_rate)
@@ -27,7 +28,8 @@ namespace corsika {
       , num_bins_(static_cast<std::size_t>(duration * sample_rate + 1.5l))
       , waveformEX_(num_bins_, 0)
       , waveformEY_(num_bins_, 0)
-      , waveformEZ_(num_bins_, 0){};
+      , waveformEZ_(num_bins_, 0)
+      , time_axis_(createTimeAxis()) {};
 
   inline void TimeDomainAntenna::receive(const TimeType time,
                                          const Vector<dimensionless_d>& receive_vector,
@@ -40,15 +42,13 @@ namespace corsika {
       // NOTE: static cast is implicitly flooring
       auto timebin_{static_cast<std::size_t>(
           std::floor((time - start_time_) * sample_rate_ + 0.5l))};
-      //            CORSIKA_LOG_DEBUG("Timebin: {}", timebin_);
-
-      // ToDO: ask explicitly for a CS and use that specific on for writing the output
 
       // store the x,y,z electric field components.
-      waveformEX_.at(timebin_) += (efield.getComponents().getX() / (1_V / 1_m));
-      waveformEY_.at(timebin_) += (efield.getComponents().getY() / (1_V / 1_m));
-      waveformEZ_.at(timebin_) += (efield.getComponents().getZ() / (1_V / 1_m));
-      // TODO: Check how they are stored in memory, row-wise or column-wise?
+      auto const& Electric_field_components{efield.getComponents(coordinateSystem_)};
+      waveformEX_.at(timebin_) += (Electric_field_components.getX() * (1_m / 1_V));
+      waveformEY_.at(timebin_) += (Electric_field_components.getY() * (1_m / 1_V));
+      waveformEZ_.at(timebin_) += (Electric_field_components.getZ() * (1_m / 1_V));
+      // TODO: Check how they are stored in memory, row-wise or column-wise? Probably use a 3D object
     }
   }
 
@@ -63,25 +63,23 @@ namespace corsika {
       // NOTE: static cast is implicitly flooring
       auto timebin_{static_cast<std::size_t>(
           std::floor((time - start_time_) * sample_rate_ + 0.5l))};
-      //            CORSIKA_LOG_DEBUG("Timebin: {}", timebin_);
-
-      // ToDO: ask explicitly for a CS and use that specific on for writing the output
 
       // store the x,y,z electric field components.
-      waveformEX_.at(timebin_) += (vectorP.getComponents().getX() / (1_V * 1_s / 1_m));
-      waveformEY_.at(timebin_) += (vectorP.getComponents().getY() / (1_V * 1_s / 1_m));
-      waveformEZ_.at(timebin_) += (vectorP.getComponents().getZ() / (1_V * 1_s / 1_m));
-      // TODO: Check how they are stored in memory, row-wise or column-wise?
+      auto const& Vector_potential_components{vectorP.getComponents(coordinateSystem_)};
+      waveformEX_.at(timebin_) += (Vector_potential_components.getX() * (1_m / (1_V * 1_s)));
+      waveformEY_.at(timebin_) += (Vector_potential_components.getY() * (1_m / (1_V * 1_s)));
+      waveformEZ_.at(timebin_) += (Vector_potential_components.getZ() * (1_m / (1_V * 1_s)));
+      // TODO: Check how they are stored in memory, row-wise or column-wise? Probably use a 3D object
     }
   }
 
-  inline auto& TimeDomainAntenna::getDataX() const { return waveformEX_; }
+  inline auto const& TimeDomainAntenna::getDataX() const { return waveformEX_; }
 
-  inline auto& TimeDomainAntenna::getDataY() const { return waveformEY_; }
+  inline auto const& TimeDomainAntenna::getDataY() const { return waveformEY_; }
 
-  inline auto& TimeDomainAntenna::getDataZ() const { return waveformEZ_; }
+  inline auto const& TimeDomainAntenna::getDataZ() const { return waveformEZ_; }
 
-  inline auto TimeDomainAntenna::getAxis() const {
+  inline std::vector<long double> TimeDomainAntenna::createTimeAxis() const {
 
     // create a 1-D xtensor to store time values so we can print them later.
     std::vector<long double> times(num_bins_, 0);
@@ -90,7 +88,6 @@ namespace corsika {
     auto sample_period{1 / sample_rate_};
 
     // fill in every time-value
-    // TODO: Vectorize this
     for (std::size_t i = 0; i < num_bins_; i++) {
       // create the current time in nanoseconds
       times.at(i) = static_cast<long double>(
@@ -100,17 +97,7 @@ namespace corsika {
     return times;
   }
 
-  inline auto TimeDomainAntenna::getWaveformX() const {
-    return std::make_pair(getAxis(), waveformEX_);
-  }
-
-  inline auto TimeDomainAntenna::getWaveformY() const {
-    return std::make_pair(getAxis(), waveformEY_);
-  }
-
-  inline auto TimeDomainAntenna::getWaveformZ() const {
-    return std::make_pair(getAxis(), waveformEZ_);
-  }
+  inline auto const& TimeDomainAntenna::getAxis() const { return time_axis_; }
 
   inline void TimeDomainAntenna::reset() {
     std::fill(waveformEX_.begin(), waveformEX_.end(), 0);
