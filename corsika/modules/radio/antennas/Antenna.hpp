@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
  *
@@ -28,6 +28,7 @@ namespace corsika {
   public:
     std::string const name_;    ///< The name/identifier of this antenna.
     Point const location_;      ///< The location of this antenna.
+    CoordinateSystemPtr const coordinateSystem_; ///< The coordinate system of the antenna
     std::string filename_ = ""; ///< The filename for the output file for this antenna.
 
     // this stores the polarization vector of an electric field
@@ -41,7 +42,7 @@ namespace corsika {
      * @param location    The location of this antenna.
      *
      */
-    Antenna(std::string const& name, Point const& location);
+    Antenna(std::string const& name, Point const& location, CoordinateSystemPtr const& coordinateSystem);
 
     /**
      * Receive a signal at this antenna.
@@ -84,7 +85,7 @@ namespace corsika {
      * This is used when writing the antenna information to disk
      * and will be converted to a 32-bit float before writing.
      */
-    std::vector<double>& getDataX() const;
+    std::vector<double> const& getDataX() const;
 
     /**
      * Return a reference to the underlying data for Y polarization.
@@ -92,7 +93,7 @@ namespace corsika {
      * This is used when writing the antenna information to disk
      * and will be converted to a 32-bit float before writing.
      */
-    std::vector<double>& getDataY() const;
+    std::vector<double> const& getDataY() const;
 
     /**
      * Return a reference to the underlying data for Z polarization.
@@ -100,7 +101,7 @@ namespace corsika {
      * This is used when writing the antenna information to disk
      * and will be converted to a 32-bit float before writing.
      */
-    std::vector<double>& getDataZ() const;
+    std::vector<double> const& getDataZ() const;
 
     /**
      * Prepare for the start of the library.
@@ -111,7 +112,7 @@ namespace corsika {
     /**
      * Flush the data from this shower to disk.
      */
-    void endOfShower(int const event, std::string const radioImplementation,
+    void endOfShower(int const event, std::string const& radioImplementation,
                      double const sampleRate);
 
   protected:

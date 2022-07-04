@@ -107,8 +107,8 @@ int main() {
   const InverseTimeType t3{5e+11_Hz};
 
   // the antennas
-  TimeDomainAntenna ant1("antenna CoREAS", point1, t1, t2, t3, t1);
-  TimeDomainAntenna ant2("antenna ZHS", point1, t1, t2, t3, t1);
+  TimeDomainAntenna ant1("antenna CoREAS", point1, rootCS, t1, t2, t3, t1);
+  TimeDomainAntenna ant2("antenna ZHS", point1, rootCS, t1, t2, t3, t1);
 
   // the detectors
   AntennaCollection<TimeDomainAntenna> detectorCoREAS;

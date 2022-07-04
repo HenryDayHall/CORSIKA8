@@ -210,7 +210,7 @@ int main(int argc, char** argv) {
       auto triggertime_1{(triggerpoint_ - point_1).getNorm() / constants::c};
       std::string name_1 = "CoREAS_R=" + std::to_string(rr_1) +
                            "_m--Phi=" + std::to_string(phi_1) + "degrees";
-      TimeDomainAntenna antenna_1(name_1, point_1, triggertime_1, duration_, sampleRate_,
+      TimeDomainAntenna antenna_1(name_1, point_1, rootCS, triggertime_1, duration_, sampleRate_,
                                   triggertime_1);
       detectorCoREAS.addAntenna(antenna_1);
     }
@@ -230,7 +230,7 @@ int main(int argc, char** argv) {
       auto triggertime_{(triggerpoint_ - point_).getNorm() / constants::c};
       std::string name_ =
           "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
-      TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_,
+      TimeDomainAntenna antenna_(name_, point_, rootCS, triggertime_, duration_, sampleRate_,
                                  triggertime_);
       detectorZHS.addAntenna(antenna_);
     }

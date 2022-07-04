@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
  *
@@ -14,9 +14,10 @@
 namespace corsika {
 
   template <typename TAntennaImpl>
-  inline Antenna<TAntennaImpl>::Antenna(std::string const& name, Point const& location)
+  inline Antenna<TAntennaImpl>::Antenna(std::string const& name, Point const& location, CoordinateSystemPtr const& coordinateSystem)
       : name_(name)
-      , location_(location){};
+      , location_(location)
+      , coordinateSystem_(coordinateSystem) {};
 
   template <typename TAntennaImpl>
   inline Point const& Antenna<TAntennaImpl>::getLocation() const {
@@ -68,15 +69,15 @@ namespace corsika {
 
   template <typename TAntennaImpl>
   inline void Antenna<TAntennaImpl>::endOfShower(const int event,
-                                                 const std::string radioImplementation,
+                                                 std::string const& radioImplementation,
                                                  const double sampleRate) {
 
     // get the copy of the waveform data for this event
     // we transpose it so that we can match dimensions with the
     // time array that is already in the output file
-    std::vector<double> dataX = this->implementation().getDataX();
-    std::vector<double> dataY = this->implementation().getDataY();
-    std::vector<double> dataZ = this->implementation().getDataZ();
+    std::vector<double> const& dataX = this->implementation().getDataX();
+    std::vector<double> const& dataY = this->implementation().getDataY();
+    std::vector<double> const& dataZ = this->implementation().getDataZ();
 
     if (radioImplementation == "ZHS") {
       std::vector<double> electricFieldX(dataX.size() - 1,
@@ -89,24 +90,18 @@ namespace corsika {
         electricFieldZ.at(i) = -(dataZ.at(i + 1) - dataZ.at(i)) * sampleRate;
       }
       // cnpy needs a vector for the shape
-      std::vector<size_t> shapeX = {electricFieldX.size()};
-      std::vector<size_t> shapeY = {electricFieldY.size()};
-      std::vector<size_t> shapeZ = {electricFieldZ.size()};
       cnpy::npz_save(filename_, std::to_string(event) + "X", electricFieldX.data(),
-                     shapeX, "a");
+                     {electricFieldX.size()}, "a");
       cnpy::npz_save(filename_, std::to_string(event) + "Y", electricFieldY.data(),
-                     shapeY, "a");
+                     {electricFieldY.size()}, "a");
       cnpy::npz_save(filename_, std::to_string(event) + "Z", electricFieldZ.data(),
-                     shapeZ, "a");
+                     {electricFieldZ.size()}, "a");
     } else {
       // cnpy needs a vector for the shape
-      std::vector<size_t> shapeX = {dataX.size()};
-      std::vector<size_t> shapeY = {dataY.size()};
-      std::vector<size_t> shapeZ = {dataZ.size()};
       // and write this event to the .npz archive
-      cnpy::npz_save(filename_, std::to_string(event) + "X", dataX.data(), shapeX, "a");
-      cnpy::npz_save(filename_, std::to_string(event) + "Y", dataY.data(), shapeY, "a");
-      cnpy::npz_save(filename_, std::to_string(event) + "Z", dataZ.data(), shapeZ, "a");
+      cnpy::npz_save(filename_, std::to_string(event) + "X", dataX.data(), {dataX.size()}, "a");
+      cnpy::npz_save(filename_, std::to_string(event) + "Y", dataY.data(), {dataY.size()}, "a");
+      cnpy::npz_save(filename_, std::to_string(event) + "Z", dataZ.data(), {dataZ.size()}, "a");
     }
   }
 

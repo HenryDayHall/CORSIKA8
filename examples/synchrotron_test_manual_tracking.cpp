@@ -95,8 +95,8 @@ int main() {
   std::cout << "number of points in time: " << duration * sampleRate_ << std::endl;
 
   // create 2 antennas
-  TimeDomainAntenna ant1("CoREAS antenna", point1, start, duration, sampleRate_, start);
-  TimeDomainAntenna ant2("ZHS antenna", point1, start, duration, sampleRate_, start);
+  TimeDomainAntenna ant1("CoREAS antenna", point1, rootCS, start, duration, sampleRate_, start);
+  TimeDomainAntenna ant2("ZHS antenna", point1, rootCS, start, duration, sampleRate_, start);
 
   // construct a radio detector instance to store our antennas
   AntennaCollection<TimeDomainAntenna> detectorCoREAS;

@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -93,8 +93,8 @@ TEST_CASE("Radio", "[processes]") {
     const TimeType t4{11_s};
 
     // check that I can create an antenna at (1, 2, 3)
-    TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3, t1);
-    TimeDomainAntenna ant2("antenna_name2", point2, t1, t2, t3, t1);
+    TimeDomainAntenna ant1("antenna_name", point1, rootCSCoREAS, t1, t2, t3, t1);
+    TimeDomainAntenna ant2("antenna_name2", point2, rootCSCoREAS, t1, t2, t3, t1);
 
     // construct a radio detector instance to store our antennas
     AntennaCollection<TimeDomainAntenna> detector;
@@ -197,8 +197,8 @@ TEST_CASE("Radio", "[processes]") {
     const TimeType t4{11_s};
 
     // check that I can create an antenna at (1, 2, 3)
-    TimeDomainAntenna ant1("antenna_zhs", point1, t1, t2, t3, t1);
-    TimeDomainAntenna ant2("antenna_zhs2", point2, t1, t2, t3, t1);
+    TimeDomainAntenna ant1("antenna_zhs", point1, rootCSZHS, t1, t2, t3, t1);
+    TimeDomainAntenna ant2("antenna_zhs2", point2, rootCSZHS, t1, t2, t3, t1);
 
     // construct a radio detector instance to store our antennas
     AntennaCollection<TimeDomainAntenna> detector;
@@ -292,8 +292,8 @@ TEST_CASE("Antennas") {
         const TimeType t4{11_s};
 
         // check that I can create an antenna at (1, 2, 3)
-        TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3, t1);
-        TimeDomainAntenna ant2("antenna_name2", point2, t4, t2, t3, t4);
+        TimeDomainAntenna ant1("antenna_name", point1, rootCS6, t1, t2, t3, t1);
+        TimeDomainAntenna ant2("antenna_name2", point2, rootCS6, t4, t2, t3, t4);
 
         // assert that the antenna name is correct
         REQUIRE(ant1.getName() == "antenna_name");
@@ -324,21 +324,24 @@ TEST_CASE("Antennas") {
         ant1.receive(15_s, v1, v11);
         ant2.receive(16_s, v2, v22);
 
-        // use getWaveform() methods
-        auto[tx, Ex] = ant1.getWaveformX();
+        // use getDataX,Y,Z() and getAxis() methods
+        auto Ex = ant1.getDataX();
         CHECK(Ex[5] - 10 == 0);
+        auto tx = ant1.getAxis();
         CHECK(tx[5] - 5 * 1_s / 1_ns == Approx(0.0));
-        auto[ty, Ey] = ant1.getWaveformY();
+        auto Ey = ant1.getDataY();
         CHECK(Ey[5] - 10 == 0);
-        auto[tz, Ez] = ant1.getWaveformZ();
+        auto Ez = ant1.getDataZ();
         CHECK(Ez[5] - 10 == 0);
+        auto ty = ant1.getAxis();
+        auto tz = ant1.getAxis();
         CHECK(tx[5] - ty[5] == 0);
         CHECK(ty[5] - tz[5] == 0);
-        auto[tx2, Ex2] = ant2.getWaveformX();
+        auto Ex2 = ant2.getDataX();
         CHECK(Ex2[5] - 20 == 0);
-        auto[ty2, Ey2] = ant2.getWaveformY();
+        auto Ey2 = ant2.getDataY();
         CHECK(Ey2[5] - 20 == 0);
-        auto[tz2, Ez2] = ant2.getWaveformZ();
+        auto Ez2 = ant2.getDataZ();
         CHECK(Ez2[5] - 20 == 0);
 
         // the following creates a star-shaped pattern of antennas in the ground
@@ -360,7 +363,7 @@ TEST_CASE("Antennas") {
                 std::string var_ = "antenna_R=" + std::to_string(rr_) +
                                    "_m-Phi=" + std::to_string(phi_) + "degrees";
                 antenna_names.push_back(var_);
-                TimeDomainAntenna ant111(var_, point_, time__, t2222, t3333, time__);
+                TimeDomainAntenna ant111(var_, point_, rootCS6, time__, t2222, t3333, time__);
                 detector__.addAntenna(ant111);
             }
         }
