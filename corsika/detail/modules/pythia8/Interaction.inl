@@ -9,6 +9,7 @@
 #pragma once
 
 #include <tuple>
+#include <stdexcept>
 
 #include <boost/filesystem/path.hpp>
 #include <fmt/core.h>
@@ -236,7 +237,6 @@ namespace corsika::pythia8 {
     // References to the two event records. Clear main event record.
     Pythia8::Event& eventMain = pythiaMain_.event;
     Pythia8::Event& eventColl = pythiaColl_.event;
-    eventMain.clear();
     
     COMBoost const labFrameBoost{targetP4.getSpaceLikeComponents(), get_mass(targetId)};
     auto const proj4MomLab = labFrameBoost.toCoM(projectileP4);
@@ -248,6 +248,9 @@ namespace corsika::pythia8 {
     Pythia8::Vec4 const pNow{pProjLab.getX() * invGeV, pProjLab.getY() * invGeV, pProjLab.getZ() * invGeV, proj4MomLab.getTimeLikeComponent() * invGeV};
     
     // Insert incoming particle in cleared main event record.
+    int unsuccessful_iterations{0};
+    do { // retry event generation if Pythia gets stuck
+    eventMain.clear();
     eventMain.append(90, -11, 0, 0, 1, 1, 0, 0, pNow, pNow.mCalc());
     int const iHad = eventMain.append(idNow, 12, 0, 0, 0, 0, 0, 0, pNow, projectile.getMass() * (1/1_GeV));
     
@@ -322,6 +325,11 @@ namespace corsika::pythia8 {
         pythiaColl_.setKinematics(eventMain[iProj].p(), Pythia8::Vec4());
         
         if (!pythiaColl_.next(procType)) {
+          CORSIKA_LOG_ERROR("Pythia collision next() failed {} {} {}", eventMain[iProj].p(), idProj, idNuc);
+          eventMain.clear();
+          ++unsuccessful_iterations;
+          goto event_repeat; // retry event, last remaining good use-cse for goto
+          
           throw std::runtime_error("Pythia collision next() failed!");
         }
 
@@ -357,6 +365,15 @@ namespace corsika::pythia8 {
 
       // End of loop over interactions in a nucleus.
       }
+      break; //
+
+      event_repeat:;
+    } while (unsuccessful_iterations < 100);
+
+    if (unsuccessful_iterations >= 100) {
+      CORSIKA_LOG_ERROR("Pythia event generation failed after 100 trials; returning without secondaries");
+      return;
+    } 
 
 
     MomentumVector Plab_final{labFrameBoost.getOriginalCS()};
@@ -365,7 +382,7 @@ namespace corsika::pythia8 {
     for (Pythia8::Particle const& p8p: eventColl) {
       // skip particles that have decayed / are initial particles in pythia's event record
       if (!p8p.isFinal()) continue;
-
+      try {
       auto const pyId = convert_from_PDG(static_cast<PDGCode>(p8p.id()));
 
       MomentumVector const pyPlab(rotCS,
@@ -381,6 +398,10 @@ namespace corsika::pythia8 {
 
       Plab_final += pnew.getMomentum();
       Elab_final += pnew.getEnergy();
+      } catch (std::out_of_range const& ex) {
+        CORSIKA_LOG_CRITICAL("Pythia ID {} unknown in C8", p8p.id());
+        throw ex;
+      }
     }
     
     eventMain.clear();
