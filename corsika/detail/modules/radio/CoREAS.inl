@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -17,17 +17,15 @@ namespace corsika {
   inline ProcessReturn CoREAS<TRadioDetector, TPropagator>::simulate(
       Particle const& particle, Track const& track) {
 
-    //      CORSIKA_LOG_DEBUG("CoREAS initiated");
-
     // get the global simulation time for that track.
-    auto startTime_{
+    auto const startTime_{
         track.getTime(particle, 0)}; // time at the start point of the track hopefully. I
                                      // should use something similar to fCoreHitTime (?)
-    auto endTime_{track.getTime(particle, 1)}; // time at end point of track.
+    auto const endTime_{track.getTime(particle, 1)}; // time at end point of track.
     trackcounter_ += 1;
     //      CORSIKA_LOG_DEBUG("Number of total tracks for radio: {} ", trackcounter_);
 
-    if (startTime_ - endTime_ == 0_s) {
+    if (startTime_ == endTime_) {
       tinycounter_ += 1;
       //        CORSIKA_LOG_ERROR("Tiny track number: {} ", tinycounter_);
       return ProcessReturn::Ok;
@@ -36,15 +34,17 @@ namespace corsika {
       // get start and end position of the track
       Point const startPoint_{track.getPosition(0)};
       Point const endPoint_{track.getPosition(1)};
+      // get the coordinate system of the startpoint and hence the track
+      auto const cs_ {startPoint_.getCoordinateSystem()};
 
-      auto currDirection{(endPoint_ - startPoint_).normalized()};
+      auto const currDirection{(endPoint_ - startPoint_).normalized()};
       // calculate the track length
-      auto tracklength_{(endPoint_ - startPoint_).getNorm()};
+      auto const tracklength_{(endPoint_ - startPoint_).getNorm()};
 
       // beta is velocity / speed of light. Start & end should be the same in endpoints!
-      auto corrBetaValue{(endPoint_ - startPoint_).getNorm() /
+      auto const corrBetaValue{(endPoint_ - startPoint_).getNorm() /
                          (constants::c * (endTime_ - startTime_))};
-      auto beta_{currDirection * corrBetaValue};
+      auto const beta_{currDirection * corrBetaValue};
 
       // get particle charge
       auto const charge_{get_charge(particle.getPID())};
@@ -58,8 +58,6 @@ namespace corsika {
 
       // loop over each antenna in the antenna collection (detector)
       for (auto& antenna : antennas_.getAntennas()) {
-
-        //        CORSIKA_LOG_DEBUG("Antenna: {} ", antenna.getName());
 
         // get the SignalPathCollection (path1) from the start "endpoint" to the antenna.
         auto paths1{this->propagator_.propagate(
@@ -84,20 +82,18 @@ namespace corsika {
             // because of numerical limitations here you might need std::fabs(preDoppler)
             // in the if statement - same with post & mid
             if (preDoppler_ == 0) {
-              //            CORSIKA_LOG_ERROR("preDoppler factor numerically zero!");
+              CORSIKA_LOG_INFO("preDoppler factor numerically zero in COREAS");
               // redo calculation with higher precision
-              long double indexL_{paths1[i].refractive_index_source_};
-              long double betaX_{static_cast<double>(
-                  beta_.getComponents().getX())}; // ToDO: .getX(specificCS)
-              long double betaY_{static_cast<double>(beta_.getComponents().getY())};
-              long double betaZ_{static_cast<double>(beta_.getComponents().getZ())};
-              long double startX_{
-                  static_cast<double>(paths1[i].emit_.getComponents().getX())};
-              long double startY_{
-                  static_cast<double>(paths1[i].emit_.getComponents().getY())};
-              long double startZ_{
-                  static_cast<double>(paths1[i].emit_.getComponents().getZ())};
-              long double doppler =
+              auto const& beta_components_{beta_.getComponents(cs_)};
+              auto const& emit_components_{paths1[i].emit_.getComponents(cs_)};
+              long double const indexL_{paths1[i].refractive_index_source_};
+              long double const betaX_{static_cast<double>(beta_components_.getX())};
+              long double const betaY_{static_cast<double>(beta_components_.getY())};
+              long double const betaZ_{static_cast<double>(beta_components_.getZ())};
+              long double const startX_{static_cast<double>(emit_components_.getX())};
+              long double const startY_{static_cast<double>(emit_components_.getY())};
+              long double const startZ_{static_cast<double>(emit_components_.getZ())};
+              long double const doppler =
                   1.0l -
                   indexL_ * (betaX_ * startX_ + betaY_ * startY_ + betaZ_ * startZ_);
               preDoppler_ = doppler;
@@ -110,19 +106,18 @@ namespace corsika {
             // check if postDoppler has become zero in case of refractive index of unity
             // because of numerical limitations
             if (postDoppler_ == 0) {
-              //            CORSIKA_LOG_ERROR("postDoppler factor numerically zero!");
+              CORSIKA_LOG_INFO("postDoppler factor numerically zero in CoREAS");
               // redo calculation with higher precision
-              long double indexL_{paths2[i].refractive_index_source_};
-              long double betaX_{static_cast<double>(beta_.getComponents().getX())};
-              long double betaY_{static_cast<double>(beta_.getComponents().getY())};
-              long double betaZ_{static_cast<double>(beta_.getComponents().getZ())};
-              long double endX_{
-                  static_cast<double>(paths2[i].emit_.getComponents().getX())};
-              long double endY_{
-                  static_cast<double>(paths2[i].emit_.getComponents().getY())};
-              long double endZ_{
-                  static_cast<double>(paths2[i].emit_.getComponents().getZ())};
-              long double doppler =
+              auto const& beta_components_{beta_.getComponents(cs_)};
+              auto const& emit_components_{paths2[i].emit_.getComponents(cs_)};
+              long double const indexL_{paths2[i].refractive_index_source_};
+              long double const betaX_{static_cast<double>(beta_components_.getX())};
+              long double const betaY_{static_cast<double>(beta_components_.getY())};
+              long double const betaZ_{static_cast<double>(beta_components_.getZ())};
+              long double const endX_{static_cast<double>(emit_components_.getX())};
+              long double const endY_{static_cast<double>(emit_components_.getY())};
+              long double const endZ_{static_cast<double>(emit_components_.getZ())};
+              long double const doppler =
                   1.0l - indexL_ * (betaX_ * endX_ + betaY_ * endY_ + betaZ_ * endZ_);
               postDoppler_ = doppler;
             }
@@ -148,30 +143,20 @@ namespace corsika {
                 ((std::fabs(preDoppler_) < approxThreshold_) ||
                  (std::fabs(postDoppler_) < approxThreshold_))) {
 
-              //            CORSIKA_LOG_WARN("used ZHS-like approximation in CoREAS");
+              CORSIKA_LOG_INFO("used ZHS-like approximation in CoREAS");
               zhscounter_ += 1;
-              // this shouldn't be a log error but it helps to track it down easily. This
-              // will be changed soon.
-              //            CORSIKA_LOG_ERROR("Used ZHS approx: {} out of {} times",
-              //            zhscounter_, trackcounter_);
+              // CORSIKA_LOG_INFO("Used ZHS approx: {} out of {} times", zhscounter_, trackcounter_);
 
               // clear the existing paths for this particle and track, since we don't need
               // them anymore
               paths1.clear();
               paths2.clear();
 
-              // get "mid" position of the track geometrically
-              //              auto const midVector_{(startPoint_ - endPoint_) / 2};
-              //              auto const midPoint_{
-              //                      Point(midVector_.getCoordinateSystem(),
-              //                      midVector_.getComponents().getX(),
-              //                            midVector_.getComponents().getY(),
-              //                            midVector_.getComponents().getZ())};
-              auto halfVector_{(startPoint_ - endPoint_) * 0.5};
-              auto midPoint_{endPoint_ + halfVector_};
+              auto const halfVector_{(startPoint_ - endPoint_) * 0.5};
+              auto const midPoint_{endPoint_ + halfVector_};
 
               // get global simulation time for the middle point of that track.
-              TimeType midTime_{(startTime_ + endTime_) * 0.5};
+              TimeType const midTime_{(startTime_ + endTime_) * 0.5};
 
               // get the SignalPathCollection (path3) from the middle "endpoint" to the
               // antenna.
@@ -187,22 +172,18 @@ namespace corsika {
 
                 // check if midDoppler has become zero because of numerical limitations
                 if (midDoppler_ == 0) {
-                  //                CORSIKA_LOG_ERROR("midDoppler factor numerically
-                  //                zero!");
+                  CORSIKA_LOG_INFO("midDoppler factor numerically zero in COREAS");
                   // redo calculation with higher precision
-                  long double indexL_{path.refractive_index_source_};
-                  long double betaX_{static_cast<double>(beta_.getComponents().getX())};
-                  long double betaY_{static_cast<double>(
-                      beta_.getComponents()
-                          .getY())}; // ToDO: check that beta and emit have the same CS!
-                  long double betaZ_{static_cast<double>(beta_.getComponents().getZ())};
-                  long double midX_{
-                      static_cast<double>(path.emit_.getComponents().getX())};
-                  long double midY_{
-                      static_cast<double>(path.emit_.getComponents().getY())};
-                  long double midZ_{
-                      static_cast<double>(path.emit_.getComponents().getZ())};
-                  long double doppler =
+                  auto const& beta_components_{beta_.getComponents(cs_)};
+                  auto const& emit_components_{path.emit_.getComponents(cs_)};
+                  long double const indexL_{path.refractive_index_source_};
+                  long double const betaX_{static_cast<double>(beta_components_.getX())};
+                  long double const betaY_{static_cast<double>(beta_components_.getY())};
+                  long double const betaZ_{static_cast<double>(beta_components_.getZ())};
+                  long double const midX_{static_cast<double>(emit_components_.getX())};
+                  long double const midY_{static_cast<double>(emit_components_.getY())};
+                  long double const midZ_{static_cast<double>(emit_components_.getZ())};
+                  long double const doppler =
                       1.0l - indexL_ * (betaX_ * midX_ + betaY_ * midY_ + betaZ_ * midZ_);
                   midDoppler_ = doppler;
                 }
@@ -233,7 +214,7 @@ namespace corsika {
                   endPointReceiveTime_ = midPointReceiveTime_ - 0.5 * deltaT_;
                 }
 
-                const TimeType gridResolution_{1 / antenna.sample_rate_};
+                TimeType const gridResolution_{1 / antenna.sample_rate_};
                 deltaT_ = endPointReceiveTime_ - startPointReceiveTime_;
 
                 // redistribute contributions over time scale defined by the observation
@@ -245,14 +226,14 @@ namespace corsika {
 
                   // ToDO: be careful with times in C8!!! where is the zero (time). Is it
                   // close-by?
-                  const long startBin = static_cast<long>(
+                  long const startBin = static_cast<long>(
                       std::floor(startPointReceiveTime_ / gridResolution_ + 0.5l));
-                  const long endBin = static_cast<long>(
+                  long const endBin = static_cast<long>(
                       std::floor(endPointReceiveTime_ / gridResolution_ + 0.5l));
-                  const double startBinFraction =
+                  double const startBinFraction =
                       (startPointReceiveTime_ / gridResolution_) -
                       std::floor(startPointReceiveTime_ / gridResolution_);
-                  const double endBinFraction =
+                  double const endBinFraction =
                       (endPointReceiveTime_ / gridResolution_) -
                       std::floor(endPointReceiveTime_ / gridResolution_);
 
@@ -274,8 +255,8 @@ namespace corsika {
                             gridResolution_; // shift EV2_ to next gridpoint
                       } else                 // points on both sides of bin center
                       {
-                        const double leftDist = 1.0 - startBinFraction;
-                        const double rightDist = endBinFraction;
+                        double const leftDist = 1.0 - startBinFraction;
+                        double const rightDist = endBinFraction;
                         // check if asymmetry to right or left
                         if (rightDist >= leftDist) {
                           endPointReceiveTime_ +=
@@ -300,8 +281,8 @@ namespace corsika {
                             gridResolution_; // shift EV1_ to next gridpoint
                       } else                 // points on both sides of bin center
                       {
-                        const double leftDist = 1.0 - endBinFraction;
-                        const double rightDist = startBinFraction;
+                        double const leftDist = 1.0 - endBinFraction;
+                        double const rightDist = startBinFraction;
                         // check if asymmetry to right or left
                         if (rightDist >= leftDist) {
                           startPointReceiveTime_ +=
@@ -324,8 +305,6 @@ namespace corsika {
             } // end of ZHS-like approximation
             else {
 
-              //                CORSIKA_LOG_INFO("Endpoints calculation --- CoREAS");
-
               // calculate electric field vector for startpoint
               ElectricFieldVector EV1_ =
                   (paths1[i].emit_.cross(paths1[i].emit_.cross(beta_))) / preDoppler_ /
@@ -341,7 +320,7 @@ namespace corsika {
                 //                  CORSIKA_LOG_ERROR("Doppler factors are less than 1.e-9
                 //                  for this track");
 
-                const TimeType gridResolution_{1 / antenna.sample_rate_};
+                TimeType const gridResolution_{1 / antenna.sample_rate_};
                 TimeType deltaT_{endPointReceiveTime_ - startPointReceiveTime_};
 
                 if (abs(deltaT_) < (gridResolution_)) {
@@ -349,14 +328,14 @@ namespace corsika {
                   EV1_ *= std::fabs(deltaT_ / gridResolution_); // Todo: rename EV1 and 2
                   EV2_ *= std::fabs(deltaT_ / gridResolution_);
 
-                  const long startBin = static_cast<long>(
+                  long const startBin = static_cast<long>(
                       std::floor(startPointReceiveTime_ / gridResolution_ + 0.5l));
-                  const long endBin = static_cast<long>(
+                  long const endBin = static_cast<long>(
                       std::floor(endPointReceiveTime_ / gridResolution_ + 0.5l));
-                  const double startBinFraction =
+                  double const startBinFraction =
                       (startPointReceiveTime_ / gridResolution_) -
                       std::floor(startPointReceiveTime_ / gridResolution_);
-                  const double endBinFraction =
+                  double const endBinFraction =
                       (endPointReceiveTime_ / gridResolution_) -
                       std::floor(endPointReceiveTime_ / gridResolution_);
 
@@ -375,8 +354,8 @@ namespace corsika {
                           gridResolution_; // shift EV2_ to next gridpoint
                     } else                 // points on both sides of bin center
                     {
-                      const double leftDist = 1.0 - startBinFraction;
-                      const double rightDist = endBinFraction;
+                      double const leftDist = 1.0 - startBinFraction;
+                      double const rightDist = endBinFraction;
                       // check if asymmetry to right or left
                       if (rightDist >= leftDist) {
                         endPointReceiveTime_ +=
@@ -397,10 +376,10 @@ namespace corsika {
           } // End of loop over both paths to get signal info
         }   // End of try block
         catch (size_t i) {
-          //            CORSIKA_LOG_ERROR("Signal Paths do not have the same size!");
+          CORSIKA_LOG_ERROR("Signal Paths do not have the same size in CoREAS");
         }
       } // End of looping over antennas
-      //        CORSIKA_LOG_DEBUG("CoREAS simulation performed");
+
       return ProcessReturn::Ok;
     }
   } // End of simulate method
