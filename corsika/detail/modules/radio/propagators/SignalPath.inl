@@ -13,10 +13,10 @@
 namespace corsika {
 
   inline SignalPath::SignalPath(
-      const TimeType propagation_time, const double average_refractive_index,
-      const double refractive_index_source, const double refractive_index_destination,
-      const Vector<dimensionless_d> emit, const Vector<dimensionless_d> receive,
-      const LengthType R_distance, const std::deque<Point>& points)
+      TimeType const propagation_time, double const average_refractive_index,
+      double const refractive_index_source, double const refractive_index_destination,
+      Vector<dimensionless_d> const& emit, Vector<dimensionless_d> const& receive,
+      LengthType const R_distance, std::deque<Point> const& points)
       : Path(points)
       , propagation_time_(propagation_time)
       , average_refractive_index_(average_refractive_index)

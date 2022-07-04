@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -13,16 +13,16 @@ namespace corsika {
 
   template <typename TEnvironment>
   // TODO: maybe the constructor doesn't take any arguments for the environment (?)
-  inline StraightPropagator<TEnvironment>::StraightPropagator(const TEnvironment& env)
+  inline StraightPropagator<TEnvironment>::StraightPropagator(TEnvironment const& env)
       : RadioPropagator<StraightPropagator, TEnvironment>(env){};
 
   template <typename TEnvironment>
   inline typename StraightPropagator<TEnvironment>::SignalPathCollection
-  StraightPropagator<TEnvironment>::propagate(const Point& source,
-                                              const Point& destination,
-                                              const LengthType stepsize) const {
+  StraightPropagator<TEnvironment>::propagate(Point const& source,
+                                              Point const& destination,
+                                              LengthType const stepsize) const {
 
-    /**
+    /*
      * get the normalized (unit) vector from `source` to `destination'.
      * this is also the `emit` and `receive` vectors in the SignalPath class.
      * in this case emit and receive unit vectors should be the same
@@ -30,20 +30,20 @@ namespace corsika {
      */
 
     // these are used for the direction of emission and reception of signal at the antenna
-    auto emit_{(destination - source).normalized()};
-    auto receive_{-emit_};
+    auto const emit_{(destination - source).normalized()};
+    auto const receive_{-emit_};
 
     // the distance from the point of emission to an observer
-    auto distance_{(destination - source).getNorm()};
+    auto const distance_{(destination - source).getNorm()};
 
     try {
       if (stepsize <= 0.5 * distance_) {
 
         // "step" is the direction vector with length `stepsize`
-        auto step{emit_ * stepsize};
+        auto const step{emit_ * stepsize};
 
         // calculate the number of points (roughly) for the numerical integration
-        auto n_points{(destination - source).getNorm() / stepsize};
+        auto const n_points{(destination - source).getNorm() / stepsize};
 
         // get the universe for this environment
         auto const* const universe{Base::env_.getUniverse().get()};
@@ -56,7 +56,7 @@ namespace corsika {
         rindex.reserve(n_points);
 
         // get and store the refractive index of the first point 'source'
-        auto const* nodeSource{universe->getContainingNode(source)};
+        auto const* const nodeSource{universe->getContainingNode(source)};
         auto const ri_source{nodeSource->getModelProperties().getRefractiveIndex(source)};
         rindex.push_back(ri_source);
         points.push_back(source);
@@ -67,7 +67,7 @@ namespace corsika {
              point = point + step) {
 
           // get the environment node at this specific 'point'
-          auto const* node{universe->getContainingNode(point)};
+          auto const* const node{universe->getContainingNode(point)};
 
           // get the associated refractivity at 'point'
           auto const refractive_index{
@@ -83,7 +83,7 @@ namespace corsika {
         auto const extrapoint_{points.back() + step};
 
         // add the refractive index of last point 'destination' and store it
-        auto const* node{universe->getContainingNode(destination)};
+        auto const* const node{universe->getContainingNode(destination)};
         auto const ri_destination{
             node->getModelProperties().getRefractiveIndex(destination)};
         //      auto const ri_destination{1.000327};
@@ -98,7 +98,7 @@ namespace corsika {
 
         if ((N - 1) % 2 == 0) {
           // Apply the standard Simpson's rule
-          auto h = ((destination - source).getNorm()) / (N - 1);
+          auto const h = ((destination - source).getNorm()) / (N - 1);
 
           for (std::size_t index = 1; index < (N - 1); index += 2) {
             sum += 4 * rindex.at(index);
@@ -118,19 +118,19 @@ namespace corsika {
           // Apply Simpson's rule for one "extra" point and then subtract the difference
           points.pop_back();
           rindex.pop_back();
-          auto const* node{universe->getContainingNode(extrapoint_)};
+          auto const* const node{universe->getContainingNode(extrapoint_)};
           auto const ri_extrapoint{
               node->getModelProperties().getRefractiveIndex(extrapoint_)};
           rindex.push_back(ri_extrapoint);
           points.push_back(extrapoint_);
           auto const extrapoint2_{extrapoint_ + step};
-          auto const* node2{universe->getContainingNode(extrapoint2_)};
+          auto const* const node2{universe->getContainingNode(extrapoint2_)};
           auto const ri_extrapoint2{
               node2->getModelProperties().getRefractiveIndex(extrapoint2_)};
           rindex.push_back(ri_extrapoint2);
           points.push_back(extrapoint2_);
           N = rindex.size();
-          auto h = ((extrapoint2_ - source).getNorm()) / (N - 1);
+          auto const h = ((extrapoint2_ - source).getNorm()) / (N - 1);
           for (std::size_t index = 1; index < (N - 1); index += 2) {
             sum += 4 * rindex.at(index);
             refra_ += rindex.at(index);
@@ -153,7 +153,7 @@ namespace corsika {
         // TimeType time = ri_destination * (distance_ / constants::c);
 
         // compute the average refractive index.
-        auto averageRefractiveIndex_ = refra_ / N;
+        auto const averageRefractiveIndex_ = refra_ / N;
 
         return {SignalPath(time, averageRefractiveIndex_, ri_source, ri_destination,
                            emit_, receive_, distance_, points)};

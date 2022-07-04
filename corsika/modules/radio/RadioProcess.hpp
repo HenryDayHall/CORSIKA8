@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -30,10 +30,7 @@ namespace corsika {
                            RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>>,
                        public BaseOutput {
 
-    //    using ParticleType = corsika::setup::Stack::particle_type;
-    //    using TrackType = corsika::LeapFrogTrajectory;
-
-    /**
+    /*
      * A collection of filter objects for deciding on valid particles and tracks.
      */
     // std::vector<std::function<bool(ParticleType&, TrackType const&)>> filters_;
@@ -43,7 +40,7 @@ namespace corsika {
      */
     TRadioImpl& implementation();
 
-    /*
+    /**
      *  Get a const reference to the underlying implementation.
      */
     TRadioImpl const& implementation() const;

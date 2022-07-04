@@ -54,8 +54,8 @@ namespace corsika {
   }
 
   template <typename TTimeType, typename TSpaceVecType>
-  inline FourVector<TTimeType, TSpaceVecType>&
-  FourVector<TTimeType, TSpaceVecType>::operator+=(FourVector const& b) {
+  inline FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::
+  operator+=(FourVector const& b) {
     timeLike_ += b.timeLike_;
     spaceLike_ += b.spaceLike_;
 

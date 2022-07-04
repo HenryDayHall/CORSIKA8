@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -12,13 +12,13 @@
 namespace corsika {
 
   template <typename TEnvironment>
-  inline SimplePropagator<TEnvironment>::SimplePropagator(const TEnvironment& env)
+  inline SimplePropagator<TEnvironment>::SimplePropagator(TEnvironment const& env)
       : RadioPropagator<SimplePropagator, TEnvironment>(env){};
 
   template <typename TEnvironment>
   inline typename SimplePropagator<TEnvironment>::SignalPathCollection
-  SimplePropagator<TEnvironment>::propagate(const Point& source, const Point& destination,
-                                            const LengthType stepsize) const {
+  SimplePropagator<TEnvironment>::propagate(Point const& source, Point const& destination,
+                                            LengthType const stepsize) const {
 
     /**
      * This is the simplest case of straight propagator
@@ -28,11 +28,11 @@ namespace corsika {
      */
 
     // these are used for the direction of emission and reception of signal at the antenna
-    auto emit_{(destination - source).normalized()};
-    auto receive_{-emit_};
+    auto const emit_{(destination - source).normalized()};
+    auto const receive_{-emit_};
 
     // the geometrical distance from the point of emission to an observer
-    auto distance_{(destination - source).getNorm()};
+    auto const distance_{(destination - source).getNorm()};
 
     // get the universe for this environment
     auto const* const universe{Base::env_.getUniverse().get()};
@@ -45,22 +45,22 @@ namespace corsika {
     rindex.reserve(2);
 
     // get and store the refractive index of the first point 'source'.
-    auto const* nodeSource{universe->getContainingNode(source)};
+    auto const* const nodeSource{universe->getContainingNode(source)};
     auto const ri_source{nodeSource->getModelProperties().getRefractiveIndex(source)};
     rindex.push_back(ri_source);
     points.push_back(source);
 
     // add the refractive index of last point 'destination' and store it.
-    auto const* node{universe->getContainingNode(destination)};
+    auto const* const node{universe->getContainingNode(destination)};
     auto const ri_destination{node->getModelProperties().getRefractiveIndex(destination)};
     rindex.push_back(ri_destination);
     points.push_back(destination);
 
     // compute the average refractive index.
-    auto averageRefractiveIndex_ = (ri_source + ri_destination) / 2;
+    auto const averageRefractiveIndex_ = (ri_source + ri_destination) / 2;
 
     // compute the total time delay.
-    TimeType time = averageRefractiveIndex_ * (distance_ / constants::c);
+    TimeType const time = averageRefractiveIndex_ * (distance_ / constants::c);
 
     return {SignalPath(time, averageRefractiveIndex_, ri_source, ri_destination, emit_,
                        receive_, distance_, points)};

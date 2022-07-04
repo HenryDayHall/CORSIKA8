@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -19,13 +19,13 @@ namespace corsika {
     auto const startTime{particle.getTime()};
     auto const endTime{particle.getTime() + track.getDuration()};
 
-    if (startTime - endTime == 0_s) {
+    if (startTime == endTime) {
       return ProcessReturn::Ok;
     } else {
 
       auto const startPoint{track.getPosition(0)};
       auto const endPoint{track.getPosition(1)};
-      LengthType trackLength{(startPoint - endPoint).getNorm()};
+      LengthType const trackLength{(startPoint - endPoint).getNorm()};
 
       auto const betaModule{(endPoint - startPoint).getNorm() /
                             (constants::c * (endTime - startTime))};
@@ -35,8 +35,8 @@ namespace corsika {
 
       // // get "mid" position of the track geometrically
 
-      auto halfVector{(startPoint - endPoint) / 2};
-      auto midPoint{endPoint + halfVector};
+      auto const halfVector{(startPoint - endPoint) / 2};
+      auto const midPoint{endPoint + halfVector};
 
       auto const constants{charge / (4 * M_PI) / (constants::epsilonZero) / constants::c};
 
@@ -61,11 +61,11 @@ namespace corsika {
             auto point1{startPoint};
             TimeType time1{startTime};
             for (int j{0}; j < nSubTracks; j++) {
-              auto point2{point1 + step};
-              TimeType time2{time1 + timeStep};
-              auto newHalfVector{(point1 - point2) / 2.};
-              auto newMidPoint{point2 + newHalfVector};
-              auto newMidPaths{
+              auto const point2{point1 + step};
+              TimeType const time2{time1 + timeStep};
+              auto const newHalfVector{(point1 - point2) / 2.};
+              auto const newMidPoint{point2 + newHalfVector};
+              auto const newMidPaths{
                   this->propagator_.propagate(newMidPoint, antenna.getLocation(), 1_m)};
               // A function for calculating the field should be made since it is repeated
               // later
@@ -74,7 +74,7 @@ namespace corsika {
                 double const n_source{newMidPaths[k].refractive_index_source_};
 
                 double const betaTimesK{beta.dot(newMidPaths[k].emit_)};
-                TimeType midTime{(time1 + time2) / 2.};
+                TimeType const midTime{(time1 + time2) / 2.};
                 TimeType detectionTime1{time1 + newMidPaths[k].propagation_time_ -
                                         n_source * betaTimesK * (time1 - midTime)};
                 TimeType detectionTime2{time2 + newMidPaths[k].propagation_time_ -
@@ -153,7 +153,7 @@ namespace corsika {
             double const n_source{midPaths[i].refractive_index_source_};
 
             double const betaTimesK{beta.dot(midPaths[i].emit_)};
-            TimeType midTime{(startTime + endTime) / 2};
+            TimeType const midTime{(startTime + endTime) / 2};
             TimeType detectionTime1{startTime + midPaths[i].propagation_time_ -
                                     n_source * betaTimesK * (startTime - midTime)};
             TimeType detectionTime2{endTime + midPaths[i].propagation_time_ -
