@@ -141,10 +141,8 @@ namespace corsika::qgsjetII {
     CORSIKA_LOG_DEBUG("target: {}, qgsjetII code/A: {}", targetId, targetMassNumber);
 
     // select QGSJetII internal projectile type
-    int projectileMassNumber = 1; // "1" means "hadron"
     QgsjetIIHadronType qgsjet_hadron_type = qgsjetII::getQgsjetIIHadronType(projectileId);
     if (qgsjet_hadron_type == QgsjetIIHadronType::NucleusType) {
-      projectileMassNumber = get_nucleus_A(projectileId);
       qgsjet_hadron_type = bernoulli_(rng_) ? QgsjetIIHadronType::ProtonType
                                             : QgsjetIIHadronType::NeutronType;
     } else if (qgsjet_hadron_type == QgsjetIIHadronType::NeutralLightMesonType) {
@@ -160,8 +158,8 @@ namespace corsika::qgsjetII {
         static_cast<QgsjetIICodeIntType>(qgsjet_hadron_type);
     CORSIKA_LOG_DEBUG(
         "qgsjet_hadron_type_int={} projectileMassNumber={} targetMassNumber={}",
-        qgsjet_hadron_type_int, projectileMassNumber, targetMassNumber);
-    qgini_(ElabN / 1_GeV, qgsjet_hadron_type_int, projectileMassNumber, targetMassNumber);
+        qgsjet_hadron_type_int, AfactorProjectile, AfactorTarget);
+    qgini_(ElabN / 1_GeV, qgsjet_hadron_type_int, AfactorProjectile, AfactorTarget);
     qgconf_();
 
     CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
@@ -178,7 +176,7 @@ namespace corsika::qgsjetII {
     // rest.
 
     // system of initial-state
-    COMBoost boost{projectileP4, targetP4};
+    COMBoost boost(projectileP4 / AfactorProjectile, targetP4 / AfactorTarget);
 
     auto const& originalCS = boost.getOriginalCS();
     auto const& csPrime =
@@ -188,7 +186,8 @@ namespace corsika::qgsjetII {
     MomentumVector const pLab{csPrime, {0_eV, 0_eV, pLabMag}};
 
     // internal QGSJetII system: hadron-nucleon lab. frame!
-    COMBoost const boostInternal({Elab, pLab}, targetMass);
+    COMBoost const boostInternal({Elab / AfactorProjectile, pLab / AfactorProjectile},
+                                 targetMass / AfactorTarget); // felix
 
     // fragments
     QGSJetIIFragmentsStack qfs;
