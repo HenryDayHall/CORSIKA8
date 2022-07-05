@@ -75,9 +75,9 @@ namespace corsika {
     // get the copy of the waveform data for this event
     // we transpose it so that we can match dimensions with the
     // time array that is already in the output file
-    std::vector<double> const& dataX = this->implementation().getDataX();
-    std::vector<double> const& dataY = this->implementation().getDataY();
-    std::vector<double> const& dataZ = this->implementation().getDataZ();
+    std::vector<double> const& dataX = this->implementation().getWaveformX();
+    std::vector<double> const& dataY = this->implementation().getWaveformY();
+    std::vector<double> const& dataZ = this->implementation().getWaveformZ();
 
     if (radioImplementation == "ZHS") {
       std::vector<double> electricFieldX(dataX.size() - 1,

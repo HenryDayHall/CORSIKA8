@@ -73,11 +73,11 @@ namespace corsika {
     }
   }
 
-  inline auto const& TimeDomainAntenna::getDataX() const { return waveformEX_; }
+  inline auto const& TimeDomainAntenna::getWaveformX() const { return waveformEX_; }
 
-  inline auto const& TimeDomainAntenna::getDataY() const { return waveformEY_; }
+  inline auto const& TimeDomainAntenna::getWaveformY() const { return waveformEY_; }
 
-  inline auto const& TimeDomainAntenna::getDataZ() const { return waveformEZ_; }
+  inline auto const& TimeDomainAntenna::getWaveformZ() const { return waveformEZ_; }
 
   inline std::vector<long double> TimeDomainAntenna::createTimeAxis() const {
 

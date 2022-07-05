@@ -30,7 +30,7 @@ namespace corsika {
     TimeType const start_time_;                  ///< The start time of this waveform.
     TimeType const duration_;                    ///< The duration of this waveform.
     InverseTimeType const sample_rate_;          ///< The sampling rate of this antenna.
-    int num_bins_;                               ///< The number of bins used.
+    int const num_bins_;                         ///< The number of bins used.
     std::vector<double> waveformEX_;             ///< EX polarization.
     std::vector<double> waveformEY_;             ///< EY polarization.
     std::vector<double> waveformEZ_;             ///< EZ polarization.
@@ -45,11 +45,11 @@ namespace corsika {
      *
      * @param name               The name of this antenna.
      * @param location           The location of this antenna.
+     * @param coordinateSystem   The coordinate system of this antenna.
      * @param start_time         The starting time of this waveform.
      * @param duration           The duration of this waveform.
      * @param sample_rate        The sample rate of this waveform.
-     * @param num_bins_          The number of timebins to store E-field.
-     * @param waveformE_         The xtensor initialized to zero for E-field.
+     * @param ground_hit_time    The time the primary particle hits the ground on a straight vertical line.
      *
      */
     TimeDomainAntenna(std::string const& name, Point const& location, CoordinateSystemPtr coordinateSystem,
@@ -81,21 +81,21 @@ namespace corsika {
      *
      * This returns them in nanoseconds for ease of use.
      */
-    auto const& getDataX() const;
+    auto const& getWaveformX() const;
 
     /**
      * Return the time-units of each waveform for Y polarization
      *
      * This returns them in nanoseconds for ease of use.
      */
-    auto const& getDataY() const;
+    auto const& getWaveformY() const;
 
     /**
      * Return the time-units of each waveform for Z polarization
      *
      * This returns them in nanoseconds for ease of use.
      */
-    auto const& getDataZ() const;
+    auto const& getWaveformZ() const;
 
     /**
      * Creates time-units of each waveform.

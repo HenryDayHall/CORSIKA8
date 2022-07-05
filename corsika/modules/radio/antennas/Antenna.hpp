@@ -80,28 +80,28 @@ namespace corsika {
     std::vector<long double> getAxis() const;
 
     /**
-     * Return a reference to the underlying data for X polarization.
+     * Return a reference to the underlying waveform data for X polarization.
      *
      * This is used when writing the antenna information to disk
      * and will be converted to a 32-bit float before writing.
      */
-    std::vector<double> const& getDataX() const;
+    std::vector<double> const& getWaveformX() const;
 
     /**
-     * Return a reference to the underlying data for Y polarization.
+     * Return a reference to the underlying waveform data for Y polarization.
      *
      * This is used when writing the antenna information to disk
      * and will be converted to a 32-bit float before writing.
      */
-    std::vector<double> const& getDataY() const;
+    std::vector<double> const& getWaveformY() const;
 
     /**
-     * Return a reference to the underlying data for Z polarization.
+     * Return a reference to the underlying waveform data for Z polarization.
      *
      * This is used when writing the antenna information to disk
      * and will be converted to a 32-bit float before writing.
      */
-    std::vector<double> const& getDataZ() const;
+    std::vector<double> const& getWaveformZ() const;
 
     /**
      * Prepare for the start of the library.
