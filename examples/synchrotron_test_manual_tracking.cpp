@@ -28,7 +28,7 @@
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/ZHS.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
-#include <corsika/modules/radio/detectors/RadioDetector.hpp>
+#include <corsika/modules/radio/detectors/AntennaCollection.hpp>
 #include <corsika/modules/radio/propagators/SimplePropagator.hpp>
 
 /*

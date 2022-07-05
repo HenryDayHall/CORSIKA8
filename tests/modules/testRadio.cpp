@@ -10,7 +10,7 @@
 #include <corsika/modules/radio/ZHS.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
-#include <corsika/modules/radio/detectors/RadioDetector.hpp>
+#include <corsika/modules/radio/detectors/AntennaCollection.hpp>
 #include <corsika/modules/radio/propagators/StraightPropagator.hpp>
 #include <corsika/modules/radio/propagators/SimplePropagator.hpp>
 #include <corsika/modules/radio/propagators/SignalPath.hpp>
@@ -325,23 +325,23 @@ TEST_CASE("Antennas") {
         ant2.receive(16_s, v2, v22);
 
         // use getDataX,Y,Z() and getAxis() methods
-        auto Ex = ant1.getDataX();
+        auto Ex = ant1.getWaveformX();
         CHECK(Ex[5] - 10 == 0);
         auto tx = ant1.getAxis();
         CHECK(tx[5] - 5 * 1_s / 1_ns == Approx(0.0));
-        auto Ey = ant1.getDataY();
+        auto Ey = ant1.getWaveformY();
         CHECK(Ey[5] - 10 == 0);
-        auto Ez = ant1.getDataZ();
+        auto Ez = ant1.getWaveformZ();
         CHECK(Ez[5] - 10 == 0);
         auto ty = ant1.getAxis();
         auto tz = ant1.getAxis();
         CHECK(tx[5] - ty[5] == 0);
         CHECK(ty[5] - tz[5] == 0);
-        auto Ex2 = ant2.getDataX();
+        auto Ex2 = ant2.getWaveformX();
         CHECK(Ex2[5] - 20 == 0);
-        auto Ey2 = ant2.getDataY();
+        auto Ey2 = ant2.getWaveformY();
         CHECK(Ey2[5] - 20 == 0);
-        auto Ez2 = ant2.getDataZ();
+        auto Ez2 = ant2.getWaveformZ();
         CHECK(Ez2[5] - 20 == 0);
 
         // the following creates a star-shaped pattern of antennas in the ground
@@ -368,6 +368,7 @@ TEST_CASE("Antennas") {
             }
         }
 
+        CHECK(detector__.size() == 16);
         CHECK(detector__.getAntennas().size() == 16);
         int i = 0;
         // this prints out the antenna names and locations
@@ -375,6 +376,12 @@ TEST_CASE("Antennas") {
             CHECK(antenna.getName() == antenna_names[i]);
             CHECK(distance(antenna.getLocation(), antenna_locations[i]) / 1_m == 0);
             i++;
+        }
+
+        // Check the .at() method for radio detectors
+        for (size_t i = 0; i <= detector__.size(); i++) {
+          CHECK(detector__.at(i).getName() == antenna_names[i]);
+          CHECK(distance(detector__.at(i).getLocation(), antenna_locations[i]) / 1_m == 0);
         }
 
     } // END: SECTION("TimeDomainAntenna")

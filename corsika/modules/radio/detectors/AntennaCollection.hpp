@@ -42,7 +42,7 @@ namespace corsika {
     /**
      * Get the number of antennas in the collection
      */
-    int size() { return antennas_.size(); }
+    int const size() { return antennas_.size(); }
 
     /**
      * Get a *non*-const reference to the collection of antennas.
@@ -51,7 +51,16 @@ namespace corsika {
      */
     std::vector<TAntennaImpl>& getAntennas() {
       return antennas_;
-    } // maybe this should be const?
+    }
+
+    /**
+     * Get a const reference to the collection of antennas.
+     *
+     * @returns    An iterable mutable reference to the antennas.
+     */
+    std::vector<TAntennaImpl> const& getAntennas() const {
+      return antennas_;
+    }
 
     /**
      * Reset all the antenna waveforms.

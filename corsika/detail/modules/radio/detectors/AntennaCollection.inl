@@ -9,7 +9,7 @@
  */
 #pragma once
 
-#include <corsika/modules/radio/detectors/RadioDetector.hpp>
+#include <corsika/modules/radio/detectors/AntennaCollection.hpp>
 
 namespace corsika {
 
@@ -25,7 +25,7 @@ namespace corsika {
 
   template <typename TAntennaImpl>
   inline TAntennaImpl AntennaCollection::at(std::size_t const i) {
-    antennas_.at(i);
+    return antennas_.at(i);
   }
 
   inline int AntennaCollection::size() { return antennas_.size(); }
