@@ -383,7 +383,8 @@ namespace corsika::pythia8 {
       // skip particles that have decayed / are initial particles in pythia's event record
       if (!p8p.isFinal()) continue;
       try {
-      auto const pyId = convert_from_PDG(static_cast<PDGCode>(p8p.id()));
+      auto const volatile id = static_cast<PDGCode>(p8p.id());
+      auto const pyId = convert_from_PDG(id);
 
       MomentumVector const pyPlab(rotCS,
                                   {p8p.px() * 1_GeV, p8p.py() * 1_GeV, p8p.pz() * 1_GeV});
