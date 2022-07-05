@@ -17,8 +17,8 @@
 
 namespace corsika {
 
-  /*
-   * Simple TimeCut process. Stops the sequence at the indicated time
+  /**
+   * Simple TimeCut process, removes particles older than specified cut time.
    */
   class TimeCut : public ContinuousProcess<TimeCut> {
 
