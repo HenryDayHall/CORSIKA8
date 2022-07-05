@@ -24,7 +24,6 @@ namespace corsika {
                                         TPropagator> {
 
   public:
-    using VectorPotential = Vector<VectorPotentialType::dimension_type>;
     // an identifier for which algorithm was used
     static constexpr auto algorithm = "ZHS";
 

@@ -22,8 +22,6 @@ namespace corsika {
                             TPropagator> {
 
   public:
-    using ElectricFieldVector = Vector<ElectricFieldType::dimension_type>;
-
     // an identifier for which algorithm was used
     static constexpr auto algorithm = "CoREAS";
 

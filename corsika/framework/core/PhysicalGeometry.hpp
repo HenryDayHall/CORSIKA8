@@ -43,4 +43,14 @@ namespace corsika {
    **/
   using LengthVector = Vector<length_d>;
 
+  /**
+   * A 3D vector defined in a specific coordinate system with units ElectricFieldType
+   **/
+  typedef Vector<ElectricFieldType::dimension_type> ElectricFieldVector;
+
+  /**
+   * A 3D vector defined in a specific coordinate system with units VectorPotentialType
+   **/
+  typedef Vector<VectorPotentialType::dimension_type> VectorPotential;
+
 } // namespace corsika
