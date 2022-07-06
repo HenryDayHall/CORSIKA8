@@ -14,28 +14,30 @@
 namespace corsika {
 
   template <typename TAntennaImpl>
-  inline AntennaCollection::AntennaCollection {
-    std::vector<TAntennaImpl> antennas_;
-  }
-
-  template <typename TAntennaImpl>
-  inline void AntennaCollection::addAntenna(TAntennaImpl const& antenna) {
+  inline void AntennaCollection<TAntennaImpl>::addAntenna(TAntennaImpl const& antenna) {
     antennas_.push_back(antenna);
   }
 
   template <typename TAntennaImpl>
-  inline TAntennaImpl AntennaCollection::at(std::size_t const i) {
+  inline TAntennaImpl& AntennaCollection<TAntennaImpl>::at(std::size_t const i) {
     return antennas_.at(i);
   }
 
-  inline int AntennaCollection::size() { return antennas_.size(); }
+  template <typename TAntennaImpl>
+  inline TAntennaImpl const& AntennaCollection<TAntennaImpl>::at(std::size_t const i) const {
+    return antennas_.at(i);
+  }
 
   template <typename TAntennaImpl>
-  inline std::vector<TAntennaImpl>& AntennaCollection::getAntennas() {
+  inline int AntennaCollection<TAntennaImpl>::size() const { return antennas_.size(); }
+
+  template <typename TAntennaImpl>
+  inline std::vector<TAntennaImpl>& AntennaCollection<TAntennaImpl>::getAntennas() {
     return antennas_;
   }
 
-  inline void AntennaCollection::reset() {
+  template <typename TAntennaImpl>
+  inline void AntennaCollection<TAntennaImpl>::reset() {
     std::for_each(antennas_.begin(), antennas_.end(), std::mem_fn(&TAntennaImpl::reset));
   }
 
