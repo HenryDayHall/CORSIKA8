@@ -379,7 +379,7 @@ TEST_CASE("Antennas") {
         }
 
         // Check the .at() method for radio detectors
-        for (size_t i = 0; i <= detector__.size(); i++) {
+        for (size_t i = 0; i <= (detector__.size()-1); i++) {
           CHECK(detector__.at(i).getName() == antenna_names[i]);
           CHECK(distance(detector__.at(i).getLocation(), antenna_locations[i]) / 1_m == 0);
         }
