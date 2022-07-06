@@ -195,7 +195,7 @@ namespace corsika {
                 // CoREAS calculation -> get ElectricFieldVector for "midPoint"
                 ElectricFieldVector EVmid_ = (path.emit_.cross(path.emit_.cross(beta_))) /
                                              midDoppler_ / path.R_distance_ * constants_ *
-                                             antenna.sample_rate_;
+                                             antenna.getSampleRate();
 
                 ElectricFieldVector EV1_{EVmid_};
                 ElectricFieldVector EV2_{EVmid_ * (-1.0)};
@@ -214,7 +214,7 @@ namespace corsika {
                   endPointReceiveTime_ = midPointReceiveTime_ - 0.5 * deltaT_;
                 }
 
-                TimeType const gridResolution_{1 / antenna.sample_rate_};
+                TimeType const gridResolution_{1 / antenna.getSampleRate()};
                 deltaT_ = endPointReceiveTime_ - startPointReceiveTime_;
 
                 // redistribute contributions over time scale defined by the observation
@@ -308,19 +308,19 @@ namespace corsika {
               // calculate electric field vector for startpoint
               ElectricFieldVector EV1_ =
                   (paths1[i].emit_.cross(paths1[i].emit_.cross(beta_))) / preDoppler_ /
-                  paths1[i].R_distance_ * constants_ * antenna.sample_rate_;
+                  paths1[i].R_distance_ * constants_ * antenna.getSampleRate();
 
               // calculate electric field vector for endpoint
               ElectricFieldVector EV2_ =
                   (paths2[i].emit_.cross(paths2[i].emit_.cross(beta_))) / postDoppler_ /
-                  paths2[i].R_distance_ * constants_ * (-1.0) * antenna.sample_rate_;
+                  paths2[i].R_distance_ * constants_ * (-1.0) * antenna.getSampleRate();
 
               if ((preDoppler_ < 1.e-9) || (postDoppler_ < 1.e-9)) {
 
                 //                  CORSIKA_LOG_ERROR("Doppler factors are less than 1.e-9
                 //                  for this track");
 
-                TimeType const gridResolution_{1 / antenna.sample_rate_};
+                TimeType const gridResolution_{1 / antenna.getSampleRate()};
                 TimeType deltaT_{endPointReceiveTime_ - startPointReceiveTime_};
 
                 if (abs(deltaT_) < (gridResolution_)) {

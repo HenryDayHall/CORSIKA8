@@ -21,11 +21,6 @@ namespace corsika {
    */
   class TimeDomainAntenna : public Antenna<TimeDomainAntenna> {
 
-  public:
-    // import the methods from the antenna
-
-    // label this as a time-domain antenna.
-    static constexpr bool is_time_domain{true};
 
     TimeType const start_time_;                  ///< The start time of this waveform.
     TimeType const duration_;                    ///< The duration of this waveform.
@@ -36,6 +31,12 @@ namespace corsika {
     std::vector<double> waveformEZ_;             ///< EZ polarization.
     TimeType const ground_hit_time_;             ///< The time the primary particle hits the ground.
     std::vector<long double> const time_axis_;   ///< The time axis corresponding to the electric field.
+
+  public:
+    // import the methods from the antenna
+
+    // label this as a time-domain antenna.
+    static constexpr bool is_time_domain{true};
 
     using Antenna<TimeDomainAntenna>::getName;
     using Antenna<TimeDomainAntenna>::getLocation;
@@ -110,6 +111,16 @@ namespace corsika {
      * This returns them in nanoseconds for ease of use.
      */
     auto const& getAxis() const;
+
+    /**
+     * Returns the sampling rate of the time domain antenna.
+     */
+    InverseTimeType const& getSampleRate() const;
+
+    /**
+     * Returns the start time of detection for the time domain antenna.
+     */
+    TimeType const& getStartTime() const;
 
     /**
      * Reset the antenna before starting a new simulation.

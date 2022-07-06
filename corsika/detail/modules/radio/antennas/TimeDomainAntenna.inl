@@ -99,6 +99,10 @@ namespace corsika {
 
   inline auto const& TimeDomainAntenna::getAxis() const { return time_axis_; }
 
+  inline InverseTimeType const& TimeDomainAntenna::getSampleRate() const { return sample_rate_; }
+
+  inline TimeType const& TimeDomainAntenna::getStartTime() const { return start_time_; }
+
   inline void TimeDomainAntenna::reset() {
     std::fill(waveformEX_.begin(), waveformEX_.end(), 0);
     std::fill(waveformEY_.begin(), waveformEY_.end(), 0);

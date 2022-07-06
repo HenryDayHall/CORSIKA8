@@ -83,7 +83,7 @@ namespace corsika {
     // before the next event
     for (auto& antenna : antennas_.getAntennas()) {
       antenna.endOfShower(event_, this->implementation().algorithm,
-                          antenna.sample_rate_ * 1_s);
+                          antenna.getSampleRate() * 1_s);
       antenna.reset();
     }
 
