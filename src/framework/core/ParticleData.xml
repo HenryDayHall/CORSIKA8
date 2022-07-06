@@ -10857,7 +10857,7 @@
  <channel onMode="1" bRatio="0.9000000" meMode="3" products="221 211"/> 
  <channel onMode="1" bRatio="0.1000000" meMode="3" products="321 311"/> 
 </particle> 
- 
+-->
 <particle id="9000221" name="f_0(500)" spinType="1" chargeType="0" colType="0" 
           m0="0.475" mWidth="0.550" mMin="0.27915" mMax="1.00" 
           varWidth="off"> 
@@ -10865,7 +10865,7 @@
  <channel onMode="1" bRatio="0.66" meMode="3" products="211 -211"/> 
  <channel onMode="1" bRatio="0.01" meMode="3" products="22 22"/> 
 </particle> 
- 
+<!--
 <particle id="9010221" name="f_0(980)" spinType="1" chargeType="0" colType="0" 
           m0="1.00000" mWidth="0.050" mMin="0.8" mMax="1.2" 
           varWidth="on"> 
