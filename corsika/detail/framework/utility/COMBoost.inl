@@ -23,7 +23,7 @@ namespace corsika {
                             HEPMassType const massTarget)
       : originalCS_{P4projectile.getSpaceLikeComponents().getCoordinateSystem()}
       , rotatedCS_{make_rotationToZ(originalCS_, P4projectile.getSpaceLikeComponents())} {
-    auto const pProjectile = P4projectile.getSpaceLikeComponents();
+    auto const& pProjectile = P4projectile.getSpaceLikeComponents();
     auto const pProjNormSquared = pProjectile.getSquaredNorm();
     auto const pProjNorm = sqrt(pProjNormSquared);
 
@@ -82,7 +82,7 @@ namespace corsika {
 
   template <typename FourVector>
   inline FourVector COMBoost::toCoM(FourVector const& p4) const {
-    auto pComponents = p4.getSpaceLikeComponents().getComponents(rotatedCS_);
+    auto const pComponents = p4.getSpaceLikeComponents().getComponents(rotatedCS_);
     Eigen::Vector3d eVecRotated = pComponents.getEigenVector();
     Eigen::Vector2d lab;
 
@@ -134,8 +134,10 @@ namespace corsika {
     inverseBoost_ << coshEta, -sinhEta, -sinhEta, coshEta;
   }
 
-  inline CoordinateSystemPtr COMBoost::getRotatedCS() const { return rotatedCS_; }
+  inline CoordinateSystemPtr const& COMBoost::getRotatedCS() const { return rotatedCS_; }
 
-  inline CoordinateSystemPtr COMBoost::getOriginalCS() const { return originalCS_; }
+  inline CoordinateSystemPtr const& COMBoost::getOriginalCS() const {
+    return originalCS_;
+  }
 
 } // namespace corsika

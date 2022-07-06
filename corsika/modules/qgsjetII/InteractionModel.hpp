@@ -19,6 +19,8 @@
 
 #include <boost/filesystem/path.hpp>
 
+#include <random>
+
 namespace corsika::qgsjetII {
 
   class InteractionModel {
@@ -69,6 +71,7 @@ namespace corsika::qgsjetII {
 
     corsika::default_prng_type& rng_ =
         corsika::RNGManager<>::getInstance().getRandomStream("qgsjet");
+    std::bernoulli_distribution bernoulli_;
     static size_t constexpr maxMassNumber_ = 208;
     static HEPEnergyType constexpr sqrtSmin_ = 10_GeV;
   };
