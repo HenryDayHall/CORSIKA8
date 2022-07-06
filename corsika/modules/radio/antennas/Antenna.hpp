@@ -12,6 +12,7 @@
 #include <cnpy.hpp>
 #include <boost/filesystem.hpp>
 #include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/core/PhysicalGeometry.hpp>
 
 namespace corsika {
 
@@ -25,15 +26,14 @@ namespace corsika {
   template <typename TAntennaImpl>
   class Antenna {
 
-  public:
+  protected:
     std::string const name_;    ///< The name/identifier of this antenna.
     Point const location_;      ///< The location of this antenna.
     CoordinateSystemPtr const coordinateSystem_; ///< The coordinate system of the antenna
     std::string filename_ = ""; ///< The filename for the output file for this antenna.
 
-    // this stores the polarization vector of an electric field
-    using ElectricFieldVector = Vector<ElectricFieldType::dimension_type>;
-    using VectorPotential = Vector<VectorPotentialType::dimension_type>;
+  public:
+    using axistype = std::vector<long double>;
 
     /**
      * \brief Construct a base antenna instance.
@@ -77,7 +77,7 @@ namespace corsika {
      * This should be an xtensor-convertible type with
      * a ->data() method that converts to a raw pointer.
      */
-    std::vector<long double> getAxis() const;
+    axistype getAxis() const;
 
     /**
      * Return a reference to the underlying waveform data for X polarization.

@@ -37,7 +37,7 @@ namespace corsika {
     filename_ = (directory / this->getName()).string() + ".npz";
 
     // get the axis labels for this antenna and write the first row.
-    std::vector<long double> axis = this->implementation().getAxis();
+    axistype axis = this->implementation().getAxis();
 
     // check for the axis name
     std::string label = "Unknown";
