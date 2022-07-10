@@ -2156,7 +2156,7 @@
 </particle> 
  
 <particle id="513" name="B*0" antiName="B*bar0" spinType="3" chargeType="0" colType="0" 
-          m0="5.32520"> 
+          m0="5.32520" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file -->
  <channel onMode="1" bRatio="1.0000000" products="511 22"/> 
 </particle> 
 <!--
@@ -2910,7 +2910,7 @@
 </particle> 
  
 <particle id="523" name="B*+" antiName="B*-" spinType="3" chargeType="3" colType="0" 
-          m0="5.32520"> 
+          m0="5.32520" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file --> 
  <channel onMode="1" bRatio="1.0000000" products="521 22"/> 
 </particle> 
 <!--
@@ -3175,7 +3175,7 @@
 </particle> 
  
 <particle id="533" name="B*_s0" antiName="B*_sbar0" spinType="3" chargeType="0" colType="0" 
-          m0="5.41540"> 
+          m0="5.41540" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file --> 
  <channel onMode="1" bRatio="1.0000000" products="531 22"/> 
 </particle> 
 -->
@@ -3308,15 +3308,15 @@
 </particle> 
  
 <particle id="555" name="chi_2b" spinType="5" chargeType="0" colType="0" 
-          m0="9.91220"> 
+          m0="9.91220" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file --> 
  <channel onMode="1" bRatio="0.2200000" products="553 22"/> 
  <channel onMode="1" bRatio="0.7800000" meMode="91" products="21 21"/> 
 </particle> 
- 
+<!--
 <particle id="990" name="Pomeron" spinType="0" chargeType="0" colType="0" 
           m0="0.00000"> 
 </particle> 
-<!--
+ 
 <particle id="1103" name="dd_1" antiName="dd_1bar" spinType="3" chargeType="-2" colType="-1" 
           m0="0.77133"> 
 </particle> 
@@ -3679,7 +3679,7 @@
 </particle> 
  
 <particle id="4334" name="Omega*_c0" antiName="Omega*_cbar0" spinType="4" chargeType="0" colType="0" 
-          m0="2.76590"> 
+          m0="2.76590" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file -->
  <channel onMode="1" bRatio="1.0000000" products="4332 22"/> 
 </particle> 
 <!--
@@ -3899,7 +3899,7 @@
 </particle> 
  
 <particle id="5224" name="Sigma*_b+" antiName="Sigma*_bbar-" spinType="4" chargeType="3" colType="0" 
-          m0="5.83210"> 
+          m0="5.83210" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file -->
  <channel onMode="1" bRatio="1.0000000" products="5122 211"/> 
 </particle> 
 
@@ -4532,7 +4532,7 @@
 </particle> 
  
 <particle id="10551" name="chi_0b" spinType="1" chargeType="0" colType="0" 
-          m0="9.85940"> 
+          m0="9.85940" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file -->
  <channel onMode="1" bRatio="0.9800000" meMode="91" products="21 21"/> 
  <channel onMode="1" bRatio="0.0200000" products="553 22"/> 
 </particle> 
