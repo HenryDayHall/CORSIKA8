@@ -214,10 +214,10 @@ int main(int argc, char** argv) {
   output.add("energyloss", dEdX);
 
   // construct the continuous energy loss model
-  // BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
+   BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
   // construct a particle cut
-  ParticleCut<SubWriter<decltype(dEdX)>> cut{2_MeV, 2_MeV, 60_GeV, 300_MeV, true, dEdX};
+  ParticleCut<SubWriter<decltype(dEdX)>> cut{2_MeV, 2_MeV, 2_GeV, 300_MeV, true, dEdX};
 
   // setup longitudinal profile
   LongitudinalWriter longProf{showerAxis};
@@ -235,8 +235,8 @@ int main(int argc, char** argv) {
   InteractionCounter sibyllCounted{sibyll};
 
   HEPEnergyType heThresholdNN = 60_GeV;
-  corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(), heThresholdNN);
-  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
+//  corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(), heThresholdNN);
+//  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
 
   corsika::pythia8::Decay decayPythia;
 
@@ -294,7 +294,7 @@ int main(int argc, char** argv) {
       obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
   output.add("particles", observationLevel);
 
-  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emCascade, emContinuous,
+  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emContinuous,
                                 cut, observationLevel, profile);
 
   // define air shower object, run simulation
