@@ -78,6 +78,10 @@ add_executable (synchrotron_test_C8tracking synchrotron_test_C8tracking.cpp)
 target_link_libraries (synchrotron_test_C8tracking CORSIKA8::CORSIKA8)
 CORSIKA_REGISTER_EXAMPLE (synchrotron_test_C8tracking RUN_OPTIONS 4 2 10000.)
 
+add_executable (clover_leaf clover_leaf.cpp)
+target_link_libraries (clover_leaf CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (clover_leaf RUN_OPTIONS 4 2 10000.)
+
 add_executable (radio_em_shower radio_em_shower.cpp)
 target_link_libraries (radio_em_shower CORSIKA8::CORSIKA8)
 CORSIKA_REGISTER_EXAMPLE (radio_em_shower RUN_OPTIONS 10 -2008702799)
