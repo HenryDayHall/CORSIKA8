@@ -172,15 +172,10 @@ int main(int argc, char** argv) {
 
  TimeType const groundHitTime{(showerCore - injectionPos).getNorm() / constants::c};
 
- // int ring_number {std::stof(std::string(argv[2]))};
- //  std::cout << "Ring number : " << ring_number << std::endl;
- // auto const radius_ {ring_number * 25_m};
- //  std::cout << "Radius = " << radius_ << std::endl;
- // const int rr_ = static_cast<int>(radius_ / 1_m);
  std::string outname_ = "radio_em_shower_outputs"; // + std::to_string(rr_);
  OutputManager output(outname_);
 
- // Radio objects
+ // Radio antennas and relevant information
  // the antenna time variables
  const TimeType duration_{1e-6_s};
  const InverseTimeType sampleRate_{1e+9_Hz};
@@ -197,11 +192,11 @@ int main(int argc, char** argv) {
  auto const triggerpoint_{Point(rootCS, injectionPosX_, injectionPosY_, injectionPosZ_)};
  std::cout << "Trigger Point is: " << triggerpoint_ << std::endl;
 
- // // setup CoREAS antennas
- for (auto radius_1 = 25_m; radius_1 <= 500_m; radius_1 += 25_m) {
-   for (auto phi_1 = 0; phi_1 <= 315; phi_1 += 45) {
-     // auto radius_1 = 200_m;
-     // auto phi_1 = 45;
+ // // setup CoREAS antennas - use the for loop for star shape pattern
+// for (auto radius_1 = 25_m; radius_1 <= 500_m; radius_1 += 25_m) {
+//   for (auto phi_1 = 0; phi_1 <= 315; phi_1 += 45) {
+     auto radius_1 = 200_m;
+     auto phi_1 = 45;
      auto phiRad_1 = phi_1 / 180. * M_PI;
      auto rr_1 = static_cast<int>(radius_1 / 1_m);
      auto const point_1{Point(rootCS, showerCoreX_ + radius_1 * cos(phiRad_1),
@@ -214,15 +209,14 @@ int main(int argc, char** argv) {
      TimeDomainAntenna antenna_1(name_1, point_1, rootCS, triggertime_1, duration_, sampleRate_,
                                  triggertime_1);
      detectorCoREAS.addAntenna(antenna_1);
-   }
- }
+//   }
+// }
 
- // primary particle times -> t ground
- // setup ZHS antennas
- for (auto radius_ = 25_m; radius_ <= 500_m; radius_ += 25_m) {
-   for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
-     // auto radius_ = 200_m;
-     // auto phi_ = 45;
+ // // setup ZHS antennas - use the for loop for star shape pattern
+// for (auto radius_ = 25_m; radius_ <= 500_m; radius_ += 25_m) {
+//   for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
+     auto radius_ = 200_m;
+     auto phi_ = 45;
      auto phiRad_ = phi_ / 180. * M_PI;
      auto rr_ = static_cast<int>(radius_ / 1_m);
      auto const point_{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_),
@@ -234,11 +228,8 @@ int main(int argc, char** argv) {
      TimeDomainAntenna antenna_(name_, point_, rootCS, triggertime_, duration_, sampleRate_,
                                 triggertime_);
      detectorZHS.addAntenna(antenna_);
-   }
- }
-
- // ----------------------- Radio objects
- // --------------------------------------------------------------------
+//   }
+// }
 
  // setup processes, decays and interactions
 
