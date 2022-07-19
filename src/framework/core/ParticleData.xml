@@ -3755,12 +3755,12 @@
           m0="5.81550" mWidth="0.0053"> 
  <channel onMode="1" bRatio="1.0000000" products="5122 -211"/> 
 </particle> 
-<!--
+ 
 <particle id="5114" name="Sigma*_b-" antiName="Sigma*_bbar+" spinType="4" chargeType="-3" colType="0" 
-          m0="5.83510"> 
+          m0="5.83510" tau0="1.0e-10"><!-- MR: no lifetime/width given in original file -->
  <channel onMode="1" bRatio="1.0000000" products="5122 -211"/> 
 </particle> 
--->
+ 
 <particle id="5122" name="Lambda_b0" antiName="Lambda_bbar0" spinType="2" chargeType="0" colType="0" 
           m0="5.61940" tau0="3.69000e-01"> 
  <channel onMode="1" bRatio="0.0546000" meMode="22" products="-12 11 4122"/> 
@@ -3887,12 +3887,12 @@
           m0="5.80000" mWidth="0.00515"> 
  <channel onMode="1" bRatio="1.0000000" products="5122 111"/> 
 </particle> 
-<!--
+ 
 <particle id="5214" name="Sigma*_b0" antiName="Sigma*_bbar0" spinType="4" chargeType="0" colType="0" 
-          m0="5.81000"> 
+          m0="5.81000" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file --> 
  <channel onMode="1" bRatio="1.0000000" products="5122 111"/> 
 </particle> 
--->
+ 
 <particle id="5222" name="Sigma_b+" antiName="Sigma_bbar-" spinType="2" chargeType="3" colType="0" 
           m0="5.81130" mWidth="0.0050"> 
  <channel onMode="1" bRatio="1.0000000" products="5122 211"/> 
@@ -3989,17 +3989,17 @@
           m0="5.97000"> 
  <channel onMode="1" bRatio="1.0000000" products="5132 22"/> 
 </particle> 
- 
+--> 
 <particle id="5322" name="Xi'_b0" antiName="Xi'_bbar0" spinType="2" chargeType="0" colType="0" 
-          m0="5.96000"> 
+          m0="5.96000" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file --> 
  <channel onMode="1" bRatio="1.0000000" products="5232 22"/> 
 </particle> 
  
 <particle id="5324" name="Xi*_b0" antiName="Xi*_bbar0" spinType="4" chargeType="0" colType="0" 
-          m0="5.97000"> 
+          m0="5.97000" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file --> 
  <channel onMode="1" bRatio="1.0000000" products="5232 22"/> 
 </particle> 
--->
+ 
 <particle id="5332" name="Omega_b-" antiName="Omega_bbar+" spinType="2" chargeType="-3" colType="0" 
           m0="6.07000" tau0="3.64000e-01"> 
  <channel onMode="1" bRatio="0.1080010" meMode="22" products="-12 11 4 3303"/> 
@@ -4691,13 +4691,13 @@
  <channel onMode="1" bRatio="0.5000000" products="513 411"/> 
  <channel onMode="1" bRatio="0.5000000" products="523 421"/> 
 </particle> 
-<!-- 
+  
 <particle id="20553" name="chi_1b" spinType="3" chargeType="0" colType="0" 
-          m0="9.89280"> 
+          m0="9.89280" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file -->
  <channel onMode="1" bRatio="0.3500000" products="553 22"/> 
  <channel onMode="1" bRatio="0.6500000" meMode="91" products="21 21"/> 
 </particle> 
--->
+
 <particle id="30113" name="rho(1700)0" spinType="3" chargeType="0" colType="0" 
           m0="1.720" mWidth="0.250" mMin="0.278" mMax="2.97" 
           varWidth="on"> 
