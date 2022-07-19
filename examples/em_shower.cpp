@@ -1,5 +1,5 @@
 /*
-* (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+* (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
 *
 * This software is distributed under the terms of the GNU General Public
 * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -55,9 +55,9 @@
  NOTE, WARNING, ATTENTION
 
  The .../Random.hpppp implement the hooks of external modules to the C8 random
- number generator. It has to occur excatly ONCE per linked
+ number generator. It has to occur exactly ONCE per linked
  executable. If you include the header below multiple times and
- link this togehter, it will fail.
+ link this together, it will fail.
 */
 #include <corsika/modules/Random.hpp>
 
@@ -84,12 +84,14 @@ int main(int argc, char** argv) {
  logging::set_level(logging::level::info);
 
  if (argc != 3) {
-   std::cerr << "usage: em_shower <energy/GeV> <theta>" << std::endl;
+   std::cerr << "usage: em_shower <energy/GeV> [seed] - put 0 for random seed" << std::endl;
    return 1;
  }
  feenableexcept(FE_INVALID);
+ int seed = 0;
+
+ if (argc > 2) { seed = std::stoi(std::string(argv[2])); }
  // initialize random number sequence(s)
- int seed = 2723141261;
  registerRandomStreams(seed);
 
  // setup environment, geometry
@@ -119,7 +121,7 @@ int main(int argc, char** argv) {
  const Code beamCode = Code::Electron;
  auto const mass = get_mass(beamCode);
  const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[1]));
- double theta = 1. * std::stof(std::string(argv[2]));
+ double theta = 0.;
  auto const thetaRad = theta / 180. * M_PI;
 
  HEPMomentumType P0 = calculate_momentum(E0, mass);
@@ -155,8 +157,7 @@ int main(int argc, char** argv) {
  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
                              false, 1000};
 
- std::string outname_ {"em_shower_outputs"};
- OutputManager output(outname_ + std::to_string(std::stof(std::string(argv[1]))) + "theta-" + std::to_string(std::stof(std::string(argv[2]))));
+ OutputManager output("em_shower_outputs");
 
  EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
  // register energy losses as output
@@ -174,8 +175,8 @@ int main(int argc, char** argv) {
  //  NOT possible right now, due to interface differenc in PROPOSAL
  //  InteractionCounter emCascadeCounted(emCascade);
 
-  // TrackWriter tracks;
-  // output.add("tracks", tracks);
+ TrackWriter tracks;
+ output.add("tracks", tracks);
 
  // long. profile
  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm)};

@@ -1,5 +1,5 @@
 /*
-* (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+* (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
 *
 * This software is distributed under the terms of the GNU General Public
 * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -68,9 +68,9 @@
  NOTE, WARNING, ATTENTION
 
  The .../Random.hpppp implement the hooks of external modules to the C8 random
- number generator. It has to occur excatly ONCE per linked
+ number generator. It has to occur exactly ONCE per linked
  executable. If you include the header below multiple times and
- link this togehter, it will fail.
+ link this together, it will fail.
 */
 #include <corsika/modules/Random.hpp>
 
@@ -105,7 +105,7 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
-  logging::set_level(logging::level::warn);
+  logging::set_level(logging::level::info);
 
   CORSIKA_LOG_INFO("vertical_EAS");
 
@@ -135,13 +135,14 @@ int main(int argc, char** argv) {
       env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
       MagneticFieldVector{rootCS, 20.4_uT, 0_T, 43.23_uT});
 
-  std::unordered_map<Code, HEPEnergyType> energy_resolution = {
-      {Code::Electron, 2_MeV},
-      {Code::Positron, 2_MeV},
-      {Code::Photon, 2_MeV},
-  };
-  for (auto [pcode, energy] : energy_resolution)
-    set_energy_production_threshold(pcode, energy);
+  // Uncomment if you want to use PROPOSAL
+//  std::unordered_map<Code, HEPEnergyType> energy_resolution = {
+//      {Code::Electron, 2_MeV},
+//      {Code::Positron, 2_MeV},
+//      {Code::Photon, 2_MeV},
+//  };
+//  for (auto [pcode, energy] : energy_resolution)
+//    set_energy_production_threshold(pcode, energy);
 
   // pre-setup particle stack
   unsigned short const A = std::stoi(std::string(argv[1]));
@@ -216,7 +217,8 @@ int main(int argc, char** argv) {
   // construct the continuous energy loss model
    BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
-  // construct a particle cut
+  // construct a particle cut - cuts are set to values close to reality, put higher
+  // values for faster runs
   ParticleCut<SubWriter<decltype(dEdX)>> cut{2_MeV, 2_MeV, 2_GeV, 300_MeV, true, dEdX};
 
   // setup longitudinal profile
@@ -226,8 +228,8 @@ int main(int argc, char** argv) {
   LongitudinalProfile<SubWriter<decltype(longProf)>> profile{longProf};
 
   // create a track writer and register it with the output manager
-  //  TrackWriter<TrackWriterParquet> trackWriter;
-  //  output.add("tracks", trackWriter);
+  TrackWriter<TrackWriterParquet> trackWriter;
+  output.add("tracks", trackWriter);
 
   // setup processes, decays and interactions
 
@@ -235,6 +237,7 @@ int main(int argc, char** argv) {
   InteractionCounter sibyllCounted{sibyll};
 
   HEPEnergyType heThresholdNN = 60_GeV;
+  // PROPOSAL is disabled for this example
 //  corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(), heThresholdNN);
 //  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
 
