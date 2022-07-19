@@ -16,15 +16,24 @@
 
 #include <exception>
 #include <algorithm>
+#include <iostream>
 
 namespace corsika {
 
   template <typename TOutput>
   inline LongitudinalWriter<TOutput>::LongitudinalWriter(ShowerAxis const& axis,
                                                          GrammageType dX)
+      : LongitudinalWriter<TOutput>{axis, static_cast<unsigned int>(axis.getMaximumX() / dX) + 1, dX}
+      {}
+      
+  template <typename TOutput>
+  inline LongitudinalWriter<TOutput>::LongitudinalWriter(ShowerAxis const& axis,
+                                                         size_t nbins, GrammageType dX)
       : TOutput(number_profile::ProfileIndexNames)
       , showerAxis_(axis)
-      , dX_(dX) {}
+      , dX_(dX)
+      , nBins_(nbins)
+      , profile_{nbins} {}
 
   template <typename TOutput>
   inline void LongitudinalWriter<TOutput>::startOfLibrary(
@@ -34,10 +43,11 @@ namespace corsika {
 
   template <typename TOutput>
   inline void LongitudinalWriter<TOutput>::startOfShower(unsigned int const showerId) {
+    profile_.clear();
+    for (size_t i=0; i < nBins_; ++i) {
+        profile_.emplace_back();
+    }
     TOutput::startOfShower(showerId);
-    // figure out the number of bins and resize the profile container accordingly
-    nBins_ = static_cast<unsigned int>(showerAxis_.getMaximumX() / dX_) + 1;
-    profile_.resize(nBins_);
   }
 
   template <typename TOutput>

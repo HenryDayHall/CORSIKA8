@@ -120,7 +120,7 @@ TEST_CASE("LongitudinalWriter") {
   CHECK(config["type"].as<std::string>() == "LongitudinalProfile");
   CHECK(config["units"]["grammage"].as<std::string>() == "g/cm^2");
   CHECK(config["bin-size"].as<double>() == 10.);
-  CHECK(config["nbins"].as<int>() == 200);
+  CHECK(config["nbins"].as<int>() == static_cast<int>(showerAxis.getMaximumX() / (10_g/1_cm/1_cm)) + 1);
 
   auto const summary = test.getSummary(); // nothing to check yet
 }
