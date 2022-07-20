@@ -82,7 +82,7 @@ namespace corsika {
             // because of numerical limitations here you might need std::fabs(preDoppler)
             // in the if statement - same with post & mid
             if (preDoppler_ == 0) {
-              CORSIKA_LOG_INFO("preDoppler factor numerically zero in COREAS");
+              CORSIKA_LOG_WARN("preDoppler factor numerically zero in COREAS");
               // redo calculation with higher precision
               auto const& beta_components_{beta_.getComponents(cs_)};
               auto const& emit_components_{paths1[i].emit_.getComponents(cs_)};
@@ -106,7 +106,7 @@ namespace corsika {
             // check if postDoppler has become zero in case of refractive index of unity
             // because of numerical limitations
             if (postDoppler_ == 0) {
-              CORSIKA_LOG_INFO("postDoppler factor numerically zero in CoREAS");
+              CORSIKA_LOG_WARN("postDoppler factor numerically zero in CoREAS");
               // redo calculation with higher precision
               auto const& beta_components_{beta_.getComponents(cs_)};
               auto const& emit_components_{paths2[i].emit_.getComponents(cs_)};
@@ -143,7 +143,7 @@ namespace corsika {
                 ((std::fabs(preDoppler_) < approxThreshold_) ||
                  (std::fabs(postDoppler_) < approxThreshold_))) {
 
-              CORSIKA_LOG_INFO("used ZHS-like approximation in CoREAS");
+              // CORSIKA_LOG_INFO("used ZHS-like approximation in CoREAS");
               zhscounter_ += 1;
               // CORSIKA_LOG_INFO("Used ZHS approx: {} out of {} times", zhscounter_, trackcounter_);
 
@@ -172,7 +172,7 @@ namespace corsika {
 
                 // check if midDoppler has become zero because of numerical limitations
                 if (midDoppler_ == 0) {
-                  CORSIKA_LOG_INFO("midDoppler factor numerically zero in COREAS");
+                  CORSIKA_LOG_WARN("midDoppler factor numerically zero in COREAS");
                   // redo calculation with higher precision
                   auto const& beta_components_{beta_.getComponents(cs_)};
                   auto const& emit_components_{path.emit_.getComponents(cs_)};
@@ -316,9 +316,6 @@ namespace corsika {
                   paths2[i].R_distance_ * constants_ * (-1.0) * antenna.getSampleRate();
 
               if ((preDoppler_ < 1.e-9) || (postDoppler_ < 1.e-9)) {
-
-                //                  CORSIKA_LOG_ERROR("Doppler factors are less than 1.e-9
-                //                  for this track");
 
                 TimeType const gridResolution_{1 / antenna.getSampleRate()};
                 TimeType deltaT_{endPointReceiveTime_ - startPointReceiveTime_};
