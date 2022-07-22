@@ -327,7 +327,7 @@ int main(int argc, char** argv) {
   // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env);
   BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
-  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
+  LongitudinalWriter profile{showerAxis, 200, 10_g / square(1_cm)};
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
