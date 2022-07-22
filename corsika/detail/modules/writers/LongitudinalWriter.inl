@@ -23,9 +23,9 @@ namespace corsika {
   template <typename TOutput>
   inline LongitudinalWriter<TOutput>::LongitudinalWriter(ShowerAxis const& axis,
                                                          GrammageType dX)
-      : LongitudinalWriter<TOutput>{axis, static_cast<unsigned int>(axis.getMaximumX() / dX) + 1, dX}
-      {}
-      
+      : LongitudinalWriter<TOutput>{
+            axis, static_cast<unsigned int>(axis.getMaximumX() / dX) + 1, dX} {}
+
   template <typename TOutput>
   inline LongitudinalWriter<TOutput>::LongitudinalWriter(ShowerAxis const& axis,
                                                          size_t nbins, GrammageType dX)
@@ -44,9 +44,7 @@ namespace corsika {
   template <typename TOutput>
   inline void LongitudinalWriter<TOutput>::startOfShower(unsigned int const showerId) {
     profile_.clear();
-    for (size_t i=0; i < nBins_; ++i) {
-        profile_.emplace_back();
-    }
+    for (size_t i = 0; i < nBins_; ++i) { profile_.emplace_back(); }
     TOutput::startOfShower(showerId);
   }
 

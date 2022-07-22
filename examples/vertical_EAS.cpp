@@ -1,9 +1,9 @@
 /*
-* (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
-*
-* This software is distributed under the terms of the GNU General Public
-* Licence version 3 (GPL Version 3). See file LICENSE for a full version of
-* the license.
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
  */
 
 #define TRACE
@@ -136,13 +136,13 @@ int main(int argc, char** argv) {
       MagneticFieldVector{rootCS, 20.4_uT, 0_T, 43.23_uT});
 
   // Uncomment if you want to use PROPOSAL
-//  std::unordered_map<Code, HEPEnergyType> energy_resolution = {
-//      {Code::Electron, 2_MeV},
-//      {Code::Positron, 2_MeV},
-//      {Code::Photon, 2_MeV},
-//  };
-//  for (auto [pcode, energy] : energy_resolution)
-//    set_energy_production_threshold(pcode, energy);
+  //  std::unordered_map<Code, HEPEnergyType> energy_resolution = {
+  //      {Code::Electron, 2_MeV},
+  //      {Code::Positron, 2_MeV},
+  //      {Code::Photon, 2_MeV},
+  //  };
+  //  for (auto [pcode, energy] : energy_resolution)
+  //    set_energy_production_threshold(pcode, energy);
 
   // pre-setup particle stack
   unsigned short const A = std::stoi(std::string(argv[1]));
@@ -215,7 +215,7 @@ int main(int argc, char** argv) {
   output.add("energyloss", dEdX);
 
   // construct the continuous energy loss model
-   BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
   // construct a particle cut - cuts are set to values close to reality, put higher
   // values for faster runs
@@ -238,8 +238,9 @@ int main(int argc, char** argv) {
 
   HEPEnergyType heThresholdNN = 60_GeV;
   // PROPOSAL is disabled for this example
-//  corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(), heThresholdNN);
-//  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
+  //  corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(),
+  //  heThresholdNN); corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>>
+  //  emContinuous(env, dEdX);
 
   corsika::pythia8::Decay decayPythia;
 
