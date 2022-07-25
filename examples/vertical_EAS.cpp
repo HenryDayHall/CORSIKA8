@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -54,6 +54,7 @@
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/UrQMD.hpp>
 #include <corsika/modules/Epos.hpp>
+#include <corsika/modules/PROPOSAL.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -64,13 +65,13 @@
 #include <string>
 
 /*
-  NOTE, WARNING, ATTENTION
+ NOTE, WARNING, ATTENTION
 
-  The .../Random.hpppp implement the hooks of external modules to the C8 random
-  number generator. It has to occur excatly ONCE per linked
-  executable. If you include the header below multiple times and
-  link this togehter, it will fail.
- */
+ The .../Random.hpppp implement the hooks of external modules to the C8 random
+ number generator. It has to occur exactly ONCE per linked
+ executable. If you include the header below multiple times and
+ link this together, it will fail.
+*/
 #include <corsika/modules/Random.hpp>
 
 using namespace corsika;
@@ -128,12 +129,20 @@ int main(int argc, char** argv) {
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
-  GeomagneticModel wmm(center, corsika_data("GeoMag/WMM.COF"));
 
   // build a Linsley US Standard atmosphere into `env`
   create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
       env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
-      wmm.getField(2022.5, 10_km, 49, 8.4));
+      MagneticFieldVector{rootCS, 20.4_uT, 0_T, 43.23_uT});
+
+  // Uncomment if you want to use PROPOSAL
+  //  std::unordered_map<Code, HEPEnergyType> energy_resolution = {
+  //      {Code::Electron, 2_MeV},
+  //      {Code::Positron, 2_MeV},
+  //      {Code::Photon, 2_MeV},
+  //  };
+  //  for (auto [pcode, energy] : energy_resolution)
+  //    set_energy_production_threshold(pcode, energy);
 
   // pre-setup particle stack
   unsigned short const A = std::stoi(std::string(argv[1]));
@@ -171,7 +180,7 @@ int main(int argc, char** argv) {
   cout << "input momentum: " << plab.getComponents() / 1_GeV
        << ", norm = " << plab.getNorm() << endl;
 
-  auto const observationHeight = 0_km + constants::EarthRadius::Mean;
+  auto const observationHeight = 0.0_km + constants::EarthRadius::Mean;
   auto const injectionHeight = 111.75_km + constants::EarthRadius::Mean;
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
@@ -208,8 +217,9 @@ int main(int argc, char** argv) {
   // construct the continuous energy loss model
   BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
-  // construct a particle cut
-  ParticleCut<SubWriter<decltype(dEdX)>> cut{E0, E0, 60_GeV, 60_GeV, true, dEdX};
+  // construct a particle cut - cuts are set to values close to reality, put higher
+  // values for faster runs
+  ParticleCut<SubWriter<decltype(dEdX)>> cut{2_MeV, 2_MeV, 2_GeV, 300_MeV, true, dEdX};
 
   // setup longitudinal profile
   LongitudinalWriter longProf{showerAxis};
@@ -225,6 +235,12 @@ int main(int argc, char** argv) {
 
   corsika::sibyll::Interaction sibyll{env};
   InteractionCounter sibyllCounted{sibyll};
+
+  HEPEnergyType heThresholdNN = 60_GeV;
+  // PROPOSAL is disabled for this example
+  //  corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(),
+  //  heThresholdNN); corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>>
+  //  emContinuous(env, dEdX);
 
   corsika::pythia8::Decay decayPythia;
 
@@ -282,18 +298,14 @@ int main(int argc, char** argv) {
       obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
   output.add("particles", observationLevel);
 
-  // auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence,
-  // emContinuous,
-  //                               cut, trackWriter, observationLevel, longprof);
   auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emContinuous,
-                                cut, trackWriter, observationLevel, profile);
+                                cut, observationLevel, profile);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
+  output.startOfLibrary();
   Cascade EAS(env, tracking, sequence, output, stack);
-  output.startOfShower();
   EAS.run();
-  output.endOfShower();
 
   auto const hists = sibyllCounted.getHistogram() + urqmdCounted.getHistogram();
 

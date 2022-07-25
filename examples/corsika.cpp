@@ -66,7 +66,7 @@
 
 #include <iomanip>
 #include <limits>
-#include <string>
+#include <string_view>
 
 /*
   NOTE, WARNING, ATTENTION
@@ -135,16 +135,15 @@ int main(int argc, char** argv) {
       ->check(CLI::PositiveNumber)
       ->group("Primary");
   app.add_option("-z,--zenith", "Primary zenith angle (deg)")
-      ->required()
       ->default_val(0.)
-      ->check(CLI::Range(0, 90))
+      ->check(CLI::Range(0., 90.))
       ->group("Primary");
   app.add_option("-a,--azimuth", "Primary azimuth angle (deg)")
       ->default_val(0.)
-      ->check(CLI::Range(0, 360))
+      ->check(CLI::Range(0., 360.))
       ->group("Primary");
   app.add_option("-N,--nevent", nevent, "The number of events/showers to run.")
-      ->required()
+      ->default_val(1)
       ->check(CLI::PositiveNumber)
       ->group("Library/Output");
   app.add_option("-f,--filename", "Filename for output library.")
@@ -169,7 +168,7 @@ int main(int argc, char** argv) {
   CLI11_PARSE(app, argc, argv);
 
   if (app.count("--verbosity")) {
-    string const loglevel = app["verbosity"]->as<string>();
+    std::string_view const loglevel = app["--verbosity"]->as<std::string_view>();
     if (loglevel == "warn") {
       logging::set_level(logging::level::warn);
     } else if (loglevel == "info") {
@@ -177,7 +176,7 @@ int main(int argc, char** argv) {
     } else if (loglevel == "debug") {
       logging::set_level(logging::level::debug);
     } else if (loglevel == "trace") {
-#ifndef DEBUG
+#ifndef _C8_DEBUG_
       CORSIKA_LOG_ERROR("trace log level requires a Debug build.");
       return 1;
 #endif
@@ -328,7 +327,7 @@ int main(int argc, char** argv) {
   // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env);
   BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
-  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
+  LongitudinalWriter profile{showerAxis, 200, 10_g / square(1_cm)};
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 

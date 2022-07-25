@@ -95,8 +95,10 @@ namespace corsika {
      * Construct a new writer.
      */
     LongitudinalWriter(ShowerAxis const& axis,
-                       GrammageType dX = 10_g / square(1_cm), // profile binning
-                       size_t const nBins = 200);             // number of bins
+                       GrammageType dX = 10_g / square(1_cm)); // profile binning
+
+    LongitudinalWriter(ShowerAxis const& axis, size_t nbins,
+                       GrammageType dX = 10_g / square(1_cm));
 
     void startOfLibrary(boost::filesystem::path const& directory) final override;
 
@@ -135,8 +137,8 @@ namespace corsika {
 
   private:
     ShowerAxis const& showerAxis_; ///< conversion between geometry and grammage
-    GrammageType dX_;              ///< binning of profile.
-    size_t nBins_;                 ///< number of profile bins.
+    GrammageType const dX_;        ///< binning of profile.
+    size_t const nBins_;           ///< number of profile bins.
     std::vector<number_profile::ProfileData> profile_; // longitudinal profile
   };
 

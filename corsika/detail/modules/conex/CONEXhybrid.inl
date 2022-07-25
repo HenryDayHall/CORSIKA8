@@ -273,10 +273,10 @@ namespace corsika {
     ::conex::get_shower_hadron_(icuth, nX, Hadrons[0]);
 
     // make sure CONEX binning is same to C8:
-    GrammageType dX = (X[1] - X[0]) * 1_g / square(1_cm);
+    GrammageType const dX = (X[1] - X[0]) * (1_g / square(1_cm));
 
     for (int i = 0; i < nX; ++i) {
-      GrammageType curX = X[i] * 1_g / square(1_cm);
+      GrammageType const curX = X[i] * (1_g / square(1_cm));
       SubWriter<TOutputE>::write(curX, curX + dX,
                                  Code::Unknown, // this is sum of all dEdX
                                  dEdX[i] * 1_GeV / 1_g * square(1_cm) * dX);

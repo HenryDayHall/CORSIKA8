@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -34,6 +34,7 @@
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
 
+#include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
 #include <corsika/modules/ParticleCut.hpp>
@@ -51,13 +52,13 @@
 #include <typeinfo>
 
 /*
-  NOTE, WARNING, ATTENTION
+ NOTE, WARNING, ATTENTION
 
-  The .../Random.hpppp implement the hooks of external modules to the C8 random
-  number generator. It has to occur excatly ONCE per linked
-  executable. If you include the header below multiple times and
-  link this togehter, it will fail.
- */
+ The .../Random.hpppp implement the hooks of external modules to the C8 random
+ number generator. It has to occur exactly ONCE per linked
+ executable. If you include the header below multiple times and
+ link this together, it will fail.
+*/
 #include <corsika/modules/Random.hpp>
 
 using namespace corsika;
@@ -82,13 +83,16 @@ int main(int argc, char** argv) {
 
   logging::set_level(logging::level::info);
 
-  if (argc != 2) {
-    std::cerr << "usage: em_shower <energy/GeV>" << std::endl;
+  if (argc != 3) {
+    std::cerr << "usage: em_shower <energy/GeV> [seed]" << std::endl
+              << "seed = 0 for randomized seed" << std::endl;
     return 1;
   }
   feenableexcept(FE_INVALID);
+  int seed = 0;
+
+  if (argc > 2) { seed = std::stoi(std::string(argv[2])); }
   // initialize random number sequence(s)
-  int seed = 44;
   registerRandomStreams(seed);
 
   // setup environment, geometry
@@ -101,12 +105,12 @@ int main(int argc, char** argv) {
   // build a Linsley US Standard atmosphere into `env`
   create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
       env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
-      MagneticFieldVector{rootCS, 0_T, 50_uT, 0_T});
+      MagneticFieldVector{rootCS, 20.4_uT, 0_T, 43.23_uT});
 
   std::unordered_map<Code, HEPEnergyType> energy_resolution = {
-      {Code::Electron, 10_MeV},
-      {Code::Positron, 10_MeV},
-      {Code::Photon, 10_MeV},
+      {Code::Electron, 2_MeV},
+      {Code::Positron, 2_MeV},
+      {Code::Photon, 2_MeV},
   };
   for (auto [pcode, energy] : energy_resolution)
     set_energy_production_threshold(pcode, energy);
@@ -114,6 +118,7 @@ int main(int argc, char** argv) {
   // setup particle stack, and add primary particle
   setup::Stack<EnvType> stack;
   stack.clear();
+
   const Code beamCode = Code::Electron;
   auto const mass = get_mass(beamCode);
   const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[1]));
@@ -132,7 +137,7 @@ int main(int argc, char** argv) {
   cout << "input momentum: " << plab.getComponents() / 1_GeV
        << ", norm = " << plab.getNorm() << endl;
 
-  auto const observationHeight = 1.4_km + constants::EarthRadius::Mean;
+  auto const observationHeight = 0.0_km + constants::EarthRadius::Mean;
   auto const injectionHeight = 112.75_km + constants::EarthRadius::Mean;
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
@@ -161,10 +166,9 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
 
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(60_GeV, 60_GeV, 100_PeV, 100_PeV, true,
-                                             dEdX);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(2_MeV, 2_MeV, 100_GeV, 100_GeV, true, dEdX);
   corsika::sibyll::Interaction sibyll{env};
-  HEPEnergyType heThresholdNN = 80_GeV;
+  HEPEnergyType heThresholdNN = 60_GeV;
   corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(),
                                            heThresholdNN);
   corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
@@ -177,7 +181,7 @@ int main(int argc, char** argv) {
   output.add("tracks", tracks);
 
   // long. profile
-  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
+  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm)};
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
@@ -186,8 +190,7 @@ int main(int argc, char** argv) {
       obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
   output.add("particles", observationLevel);
 
-  auto sequence =
-      make_sequence(emCascade, emContinuous, longprof, cut, observationLevel, tracks);
+  auto sequence = make_sequence(emCascade, emContinuous, longprof, cut, observationLevel);
   // define air shower object, run simulation
   setup::Tracking tracking;
 

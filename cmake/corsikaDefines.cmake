@@ -24,7 +24,7 @@ set (CMAKE_CXX_FLAGS_COVERAGE "-g --coverage")
 set (CMAKE_EXE_LINKER_FLAGS_COVERAGE "--coverage")
 set (CMAKE_SHARED_LINKER_FLAGS_COVERAGE "--coverage")
 # set a flag to inform code that we are in debug mode
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_C8_DEBUG_")
 
 
 #+++++++++++++++++++++++++++++

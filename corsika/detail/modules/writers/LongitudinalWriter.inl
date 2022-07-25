@@ -15,17 +15,25 @@
 #include <corsika/media/ShowerAxis.hpp>
 
 #include <exception>
+#include <algorithm>
+#include <iostream>
 
 namespace corsika {
 
   template <typename TOutput>
   inline LongitudinalWriter<TOutput>::LongitudinalWriter(ShowerAxis const& axis,
-                                                         GrammageType dX,
-                                                         size_t const nBins)
+                                                         GrammageType dX)
+      : LongitudinalWriter<TOutput>{
+            axis, static_cast<unsigned int>(axis.getMaximumX() / dX) + 1, dX} {}
+
+  template <typename TOutput>
+  inline LongitudinalWriter<TOutput>::LongitudinalWriter(ShowerAxis const& axis,
+                                                         size_t nbins, GrammageType dX)
       : TOutput(number_profile::ProfileIndexNames)
       , showerAxis_(axis)
       , dX_(dX)
-      , nBins_(nBins) {}
+      , nBins_(nbins)
+      , profile_{nbins} {}
 
   template <typename TOutput>
   inline void LongitudinalWriter<TOutput>::startOfLibrary(
@@ -35,10 +43,9 @@ namespace corsika {
 
   template <typename TOutput>
   inline void LongitudinalWriter<TOutput>::startOfShower(unsigned int const showerId) {
-    TOutput::startOfShower(showerId);
-    // reset profile
     profile_.clear();
-    profile_.resize(nBins_);
+    for (size_t i = 0; i < nBins_; ++i) { profile_.emplace_back(); }
+    TOutput::startOfShower(showerId);
   }
 
   template <typename TOutput>
@@ -66,15 +73,15 @@ namespace corsika {
     GrammageType const grammageEnd = showerAxis_.getProjectedX(track.getPosition(1));
 
     // Note: particle may go also "upward", thus, grammageEnd<grammageStart
-    int const binStart = std::ceil(grammageStart / dX_);
-    int const binEnd = std::floor(grammageEnd / dX_);
+    size_t const binStart = std::ceil(grammageStart / dX_);
+    size_t const binEnd = std::floor(grammageEnd / dX_);
 
     CORSIKA_LOGGER_TRACE(TOutput::getLogger(),
                          "grammageStart={} End={} binStart={}, end={}",
                          grammageStart / 1_g * square(1_cm),
                          grammageEnd / 1_g * square(1_cm), binStart, binEnd);
 
-    for (int bin = binStart; bin <= binEnd; ++bin) {
+    for (size_t bin = binStart; bin <= std::min(binEnd, profile_.size() - 1); ++bin) {
       if (pid == Code::Photon) {
         profile_.at(bin)[static_cast<int>(number_profile::ProfileIndex::Photon)] +=
             weight;
