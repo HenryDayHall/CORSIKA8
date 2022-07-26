@@ -43,7 +43,7 @@ namespace corsika::pythia8 {
       pythiaMain_.readString("321:mayDecay = on");
       pythiaMain_.readString("130:mayDecay = on");
 
-      // Redure statistics printout to relevant ones.
+      // Reduce statistics printout to relevant ones.
       pythiaMain_.readString("Stat:showProcessLevel = off");  
       pythiaMain_.readString("Stat:showPartonLevel = off");  
       
@@ -349,7 +349,7 @@ namespace corsika::pythia8 {
         sizeOld = eventMain.size();
         for (int iSub = 3; iSub < eventColl.size(); ++iSub) {
           if (!eventColl[iSub].isFinal()) continue;
-          int iNew = eventMain.append(eventColl[iSub]);
+          int const iNew = eventMain.append(eventColl[iSub]);
           eventMain[iNew].mothers(iNuc, iProj);
           eventMain[iNew].vProdAdd(vNow);
         }
@@ -377,9 +377,9 @@ namespace corsika::pythia8 {
 
 
     MomentumVector Plab_final{labFrameBoost.getOriginalCS()};
-    auto Elab_final = HEPEnergyType::zero();        
-        
-    for (Pythia8::Particle const& p8p: eventColl) {
+    auto Elab_final = HEPEnergyType::zero();
+
+    for (Pythia8::Particle const& p8p : eventMain) {
       // skip particles that have decayed / are initial particles in pythia's event record
       if (!p8p.isFinal()) continue;
       try {
