@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 
   logging::set_level(logging::level::info);
 
-  if (argc != 3) {
+  if (!(argc == 2 || argc == 3)) {
     std::cerr << "usage: em_shower <energy/GeV> [seed]" << std::endl
               << "seed = 0 for randomized seed" << std::endl;
     return 1;
@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
   feenableexcept(FE_INVALID);
   int seed = 0;
 
-  if (argc > 2) { seed = std::stoi(std::string(argv[2])); }
+  if (argc >= 3) { seed = std::stoi(std::string(argv[2])); }
   // initialize random number sequence(s)
   registerRandomStreams(seed);
 
