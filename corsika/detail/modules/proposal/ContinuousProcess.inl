@@ -111,13 +111,10 @@ namespace corsika::proposal {
           E_i_total / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
                    1_MeV;
     auto dE = E_i_total - E_f_total;
-    auto final_energy = (c->second).disp->UpperLimitTrackIntegral(
-                        E_i_total / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
-                        1_MeV;
 
     // if the particle has a charge take multiple scattering into account
     if (step.getParticlePre().getChargeNumber() != 0) scatter(step, dE, dX);
-    step.add_dEkin(dE); // on the stack, this is just kinetic energy, E-m
+    step.add_dEkin(-dE); // on the stack, this is just kinetic energy, E-m
 
     // also send to output
     TOutput::write(step.getPositionPre(), step.getPositionPost(), step.getParticlePre().getPID(), dE);
