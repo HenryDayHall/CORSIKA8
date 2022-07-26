@@ -93,7 +93,7 @@ using MyExtraEnv =
 
 int main(int argc, char** argv) {
 
- logging::set_level(logging::level::info);
+ logging::set_level(logging::level::warn);
 
  if (argc != 3) {
    std::cerr

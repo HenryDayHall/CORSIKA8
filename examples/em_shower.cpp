@@ -81,7 +81,7 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::warn);
 
   if (!(argc == 2 || argc == 3)) {
     std::cerr << "usage: em_shower <energy/GeV> [seed]" << std::endl

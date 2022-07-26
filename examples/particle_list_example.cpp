@@ -32,7 +32,7 @@ using namespace std;
 //
 int main() {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::warn);
   corsika_logger->set_pattern("[%n:%^%-8l%$] %v");
 
   logging::info(

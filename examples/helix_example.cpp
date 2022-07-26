@@ -20,7 +20,7 @@ using namespace corsika;
 
 int main() {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::warn);
 
   CORSIKA_LOG_INFO("helix_example");
 
