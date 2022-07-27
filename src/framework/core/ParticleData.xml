@@ -3275,9 +3275,9 @@
  <channel onMode="3" bRatio="0.0043000" products="521 -313"/> 
  <channel onMode="3" bRatio="0.0167000" products="523 -313"/> 
 </particle> 
-<!--
+ 
 <particle id="543" name="B*_c+" antiName="B*_c-" spinType="3" chargeType="3" colType="0" 
-          m0="6.34000"> 
+          m0="6.34000" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file -->
  <channel onMode="1" bRatio="1.0000000" products="541 22"/> 
 </particle> 
  
@@ -3293,7 +3293,7 @@
           m0="9.40000" mWidth="0.010" mMin="9.30000" mMax="9.50000"> 
  <channel onMode="1" bRatio="1.0000000" meMode="91" products="21 21"/> 
 </particle> 
--->
+ 
 <particle id="553" name="Upsilon" spinType="3" chargeType="0" colType="0" 
           m0="9.46030" mWidth="0.00005" mMin="9.45980" mMax="9.46080"> 
  <channel onMode="1" bRatio="0.7757000" meMode="92" products="21 21 21"/> 
@@ -3984,12 +3984,12 @@
           m0="5.96000"> 
  <channel onMode="1" bRatio="1.0000000" products="5132 22"/> 
 </particle> 
- 
+-->
 <particle id="5314" name="Xi*_b-" antiName="Xi*_bbar+" spinType="4" chargeType="-3" colType="0" 
-          m0="5.97000"> 
+          m0="5.97000" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file -->
  <channel onMode="1" bRatio="1.0000000" products="5132 22"/> 
 </particle> 
---> 
+ 
 <particle id="5322" name="Xi'_b0" antiName="Xi'_bbar0" spinType="2" chargeType="0" colType="0" 
           m0="5.96000" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file --> 
  <channel onMode="1" bRatio="1.0000000" products="5232 22"/> 
