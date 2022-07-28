@@ -241,29 +241,6 @@ int main(int argc, char** argv) {
 
   corsika::pythia8::Decay decayPythia;
 
-  // use sibyll decay routine for decays of particles unknown to pythia
-  corsika::sibyll::Decay decaySibyll{{
-      Code::N1440Plus,
-      Code::N1440MinusBar,
-      Code::N1440_0,
-      Code::N1440_0Bar,
-      Code::N1710Plus,
-      Code::N1710MinusBar,
-      Code::N1710_0,
-      Code::N1710_0Bar,
-
-      Code::Pi1300Plus,
-      Code::Pi1300Minus,
-      Code::Pi1300_0,
-
-      Code::KStar0_1430_0,
-      Code::KStar0_1430_0Bar,
-      Code::KStar0_1430_Plus,
-      Code::KStar0_1430_MinusBar,
-  }};
-
-  decaySibyll.printDecayConfig();
-
   // register energy losses as output
   EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
   output.add("energyloss", dEdX);
@@ -303,8 +280,7 @@ int main(int argc, char** argv) {
     }
   };
   auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted, sibyllCounted);
-  auto decaySequence = make_sequence(decayPythia, decaySibyll);
-  auto sequence = make_sequence(hadronSequence, decaySequence, eLoss, cut, conex_model,
+  auto sequence = make_sequence(hadronSequence, decayPythia, eLoss, cut, conex_model,
                                 longprof, observationLevel, trackCheck);
 
   // define air shower object, run simulation
