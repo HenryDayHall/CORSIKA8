@@ -51,7 +51,7 @@ CORSIKA_REGISTER_EXAMPLE (particle_list_example)
 
 add_executable (em_shower em_shower.cpp)
 target_link_libraries (em_shower CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (em_shower RUN_OPTIONS "100.")
+CORSIKA_REGISTER_EXAMPLE (em_shower RUN_OPTIONS 100 8472)
 
 add_executable (hybrid_MC hybrid_MC.cpp)
 target_link_libraries (hybrid_MC  CORSIKA8::CORSIKA8)
