@@ -36,8 +36,6 @@ namespace conex {
 
   extern double double_rndm_interface();
 
-  extern "C" {}
-
   // the CONEX fortran interface
 
   extern "C" {
@@ -67,6 +65,7 @@ namespace conex {
   void get_shower_muon_(const int&, const int&, float&, float&);
   void get_shower_gamma_(const int&, const int&, float&);
   void get_shower_electron_(const int&, const int&, float&);
+  void get_shower_positron_(const int&, const int&, float&);
   void get_shower_hadron_(const int&, const int&, float&);
   }
 
