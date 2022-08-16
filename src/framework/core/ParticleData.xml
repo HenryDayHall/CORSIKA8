@@ -3979,12 +3979,12 @@
 <particle id="5303" name="bs_1" antiName="bs_1bar" spinType="3" chargeType="-2" colType="-1" 
           m0="5.57536"> 
 </particle> 
-
+-->
 <particle id="5312" name="Xi'_b-" antiName="Xi'_bbar+" spinType="2" chargeType="-3" colType="0" 
-          m0="5.96000"> 
+          m0="5.96000" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file -->
  <channel onMode="1" bRatio="1.0000000" products="5132 22"/> 
 </particle> 
--->
+ 
 <particle id="5314" name="Xi*_b-" antiName="Xi*_bbar+" spinType="4" chargeType="-3" colType="0" 
           m0="5.97000" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file -->
  <channel onMode="1" bRatio="1.0000000" products="5132 22"/> 
