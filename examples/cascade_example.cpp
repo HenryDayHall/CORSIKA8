@@ -135,7 +135,7 @@ int main() {
   StackInspector<setup::Stack<EnvType>> stackInspect(100, true, E0);
 
   RNGManager<>::getInstance().registerRandomStream("sibyll");
-  RNGManager<>::getInstance().registerRandomStream("pythia");
+
   corsika::sibyll::Interaction sibyll{env};
   corsika::sibyll::Decay decay;
 
