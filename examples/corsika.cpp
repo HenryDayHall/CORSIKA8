@@ -290,29 +290,6 @@ int main(int argc, char** argv) {
 
   corsika::pythia8::Decay decayPythia;
 
-  // use sibyll decay routine for decays of particles unknown to pythia
-  corsika::sibyll::Decay decaySibyll{{
-      Code::N1440Plus,
-      Code::N1440MinusBar,
-      Code::N1440_0,
-      Code::N1440_0Bar,
-      Code::N1710Plus,
-      Code::N1710MinusBar,
-      Code::N1710_0,
-      Code::N1710_0Bar,
-
-      Code::Pi1300Plus,
-      Code::Pi1300Minus,
-      Code::Pi1300_0,
-
-      Code::KStar0_1430_0,
-      Code::KStar0_1430_0Bar,
-      Code::KStar0_1430_Plus,
-      Code::KStar0_1430_MinusBar,
-  }};
-
-  // decaySibyll.printDecayConfig();
-
   HEPEnergyType const emcut = 50_GeV;
   HEPEnergyType const hadcut = 50_GeV;
   ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, dEdX);
@@ -344,7 +321,6 @@ int main(int argc, char** argv) {
   };
   auto hadronSequence =
       make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, sibyllCounted);
-  auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   TrackWriter trackWriter{tracks};
 
@@ -356,8 +332,8 @@ int main(int argc, char** argv) {
   output.add("particles", observationLevel);
 
   // assemble the final process sequence
-  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, cut,
-                                emCascade, emContinuous, // trackWriter,
+  auto sequence = make_sequence(stackInspect, hadronSequence, decayPythia, cut, emCascade,
+                                emContinuous, // trackWriter,
                                 observationLevel, longprof);
   /* === END: SETUP PROCESS LIST === */
 
