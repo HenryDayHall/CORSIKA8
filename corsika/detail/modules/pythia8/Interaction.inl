@@ -27,11 +27,14 @@ namespace corsika::pythia8 {
     CORSIKA_LOG_INFO("Pythia::Interaction n= {}", count_);
   }
 
-  inline Interaction::Interaction(boost::filesystem::path const& mpiInitFile, bool const print_listing)
-    : print_listing_(print_listing) {
-      Pythia8::RndmEngine* rndm = new corsika::pythia8::Random();
-      pythiaColl_.setRndmEnginePtr(rndm);
-      pythiaMain_.setRndmEnginePtr(rndm);
+ inline Interaction::Interaction(boost::filesystem::path const& mpiInitFile,
+                                  bool const print_listing)
+      : print_listing_(print_listing)
+      , pythiaMain_{CORSIKA_Pythia8_XML_DIR, false}
+      , pythiaColl_{CORSIKA_Pythia8_XML_DIR, false} {
+    Pythia8::RndmEngine* rndm = new corsika::pythia8::Random();
+    pythiaColl_.setRndmEnginePtr(rndm);
+    pythiaMain_.setRndmEnginePtr(rndm);
 
       CORSIKA_LOG_INFO("Pythia8 MPI init file: {}", mpiInitFile.native());
       // Main Pythia object for managing the cascade evolution.
@@ -142,17 +145,17 @@ namespace corsika::pythia8 {
     return true; // TODO: implement this
   }
 
-  CrossSectionType
-  Interaction::getCrossSection(Code const projectileId, Code const targetId,
+  inline std::tuple<CrossSectionType, CrossSectionType>
+  Interaction::getCrossSectionInelEla(Code const projectileId, Code const targetId,
                                       FourMomentum const& projectileP4,
-                                      FourMomentum const& targetP4) const
-                                      {
-
-    HEPEnergyType const CoMenergy = is_nucleus(targetId) ?
-        (projectileP4 + targetP4 / get_nucleus_A(targetId)).getNorm() : (projectileP4 + targetP4).getNorm();
+                                      FourMomentum const& targetP4) const {
+    HEPEnergyType const CoMenergy =
+        is_nucleus(targetId)
+            ? (projectileP4 + targetP4 / get_nucleus_A(targetId)).getNorm()
+            : (projectileP4 + targetP4).getNorm();
 
     if (!isValid(projectileId, targetId, CoMenergy)) {
-      return CrossSectionType::zero();
+      return std::make_tuple(CrossSectionType::zero(), CrossSectionType::zero());
     }
 
     // input particle PDG
@@ -162,20 +165,36 @@ namespace corsika::pythia8 {
     
     auto const sigTot = pythiaColl_.getSigmaTotal(pdgCodeBeam, 2212, ecm_GeV) * 1_mb;
     auto const sigEla = pythiaColl_.getSigmaPartial(pdgCodeBeam, 2212, ecm_GeV, 2) * 1_mb;
-    //~ auto const sigProd = sigTot - sigEla;
-    
-    // TODO: handle hydrogen as proton
-    if (!is_nucleus(targetId)) {
+
+    return std::make_tuple(sigTot - sigEla, sigEla);
+  }
+
+  CrossSectionType Interaction::getCrossSection(Code const projectileId,
+                                                Code const targetId,
+                                                FourMomentum const& projectileP4,
+                                                FourMomentum const& targetP4) const {
+
+    auto const [sigProd, sigEla] =
+        getCrossSectionInelEla(projectileId, targetId, projectileP4, targetP4);
+
+    auto const sigTot = sigProd + sigEla;
+
+    if (!is_nucleus(targetId) || get_nucleus_A(targetId) == 1) {
       return sigTot;
     } else {
       return sigTot * get_nucleus_A(targetId) / getAverageSubcollisions(targetId, sigTot);
     }
   }
-  
-  double Interaction::getAverageSubcollisions(Code targetId, CrossSectionType sigTot) const {
+
+  double Interaction::getAverageSubcollisions(Code targetId,
+                                              CrossSectionType sigTot) const {
+    if (targetId == Code::Proton || targetId == Code::Neutron ||
+        targetId == Code::AntiProton || targetId == Code::AntiNeutron)
+      return 1;
+
     auto const Z = get_nucleus_Z(targetId);
     auto const A = get_nucleus_A(targetId);
-    
+
     double nCollAvg;
     
     if (Z == 7 && A == 14) nCollAvg = (sigTot < 31._mb) // this is from the paper
@@ -250,40 +269,44 @@ namespace corsika::pythia8 {
     // Insert incoming particle in cleared main event record.
     int unsuccessful_iterations{0};
     do { // retry event generation if Pythia gets stuck
-    eventMain.clear();
-    eventMain.append(90, -11, 0, 0, 1, 1, 0, 0, pNow, pNow.mCalc());
-    int const iHad = eventMain.append(idNow, 12, 0, 0, 0, 0, 0, 0, pNow, projectile.getMass() * (1/1_GeV));
-    
-    Pythia8::Vec4 const vNow{}; // production vertex; useless but necessary (?) TODO: ask TS
-    
-    eventMain[iHad].vProd(vNow);
-    
-    auto const [Anow, Znow] = std::invoke([targetId]() {
-       if (targetId == Code::Proton) {
-           return std::make_pair(1, 1);
-       } else if (targetId == Code::Neutron) {
-           return std::make_pair(1, 0);
-       } else if (is_nucleus(targetId)) {
-        return std::make_pair<int, int>(get_nucleus_A(targetId), get_nucleus_Z(targetId));
-       } else {
-           return std::make_pair(0, 0); //TODO: what to do in this case?
-       }
-    });
-    
-    // Set up for collisions on a nucleus.
-    int np      = Znow;
-    int nn      = Anow - Znow;
-    int sizeOld = 0;
-    int sizeNew = 0;
-    Pythia8::Vec4 const dirNow = pNow / pNow.pAbs();
-    Pythia8::Rndm& rndm  = pythiaMain_.rndm;
-    
-    double constexpr mp = get_mass(Code::Proton) / 1_GeV;
-    double const sqrtSNN_GeV = (pNow + Pythia8::Vec4{0, 0, 0, mp}).mCalc();
-    
-    auto const nCollAvg = getAverageSubcollisions(targetId, pythiaColl_.getSigmaTotal(idNow, 2212, sqrtSNN_GeV) * 1_mb);
-    double const probMore = 1. - 1. / nCollAvg;
-    
+      eventMain.clear();
+      eventMain.append(90, -11, 0, 0, 1, 1, 0, 0, pNow, pNow.mCalc());
+      int const iHad = eventMain.append(idNow, 12, 0, 0, 0, 0, 0, 0, pNow,
+                                        get_mass(projectileId) * (1 / 1_GeV));
+
+      Pythia8::Vec4 const
+          vNow{}; // production vertex; useless but necessary (?) TODO: ask TS
+
+      eventMain[iHad].vProd(vNow);
+
+      auto const [Anow, Znow] = std::invoke([targetId]() {
+        if (targetId == Code::Proton) {
+          return std::make_pair(1, 1);
+        } else if (targetId == Code::Neutron) {
+          return std::make_pair(1, 0);
+        } else if (is_nucleus(targetId)) {
+          return std::make_pair<int, int>(get_nucleus_A(targetId),
+                                          get_nucleus_Z(targetId));
+        } else {
+          return std::make_pair(0, 0); // TODO: what to do in this case?
+        }
+      });
+
+      // Set up for collisions on a nucleus.
+      int np = Znow;
+      int nn = Anow - Znow;
+      int sizeOld = 0;
+      int sizeNew = 0;
+      Pythia8::Vec4 const dirNow = pNow / pNow.pAbs();
+      Pythia8::Rndm& rndm = pythiaMain_.rndm;
+
+      double constexpr mp = get_mass(Code::Proton) / 1_GeV;
+      double const sqrtSNN_GeV = (pNow + Pythia8::Vec4{0, 0, 0, mp}).mCalc();
+
+      auto const nCollAvg = getAverageSubcollisions(
+          targetId, pythiaColl_.getSigmaTotal(idNow, 2212, sqrtSNN_GeV) * 1_mb);
+      double const probMore = 1. - 1. / nCollAvg;
+
       // Loop over varying number of hit nucleons in target nucleus.
       for (int iColl = 1; iColl <= Anow; ++iColl) {
         if (iColl > 1 && rndm.flat() > probMore) break;
@@ -325,7 +348,8 @@ namespace corsika::pythia8 {
         pythiaColl_.setKinematics(eventMain[iProj].p(), Pythia8::Vec4());
         
         if (!pythiaColl_.next(procType)) {
-          CORSIKA_LOG_ERROR("Pythia collision next() failed {} {} {}", eventMain[iProj].p(), idProj, idNuc);
+          CORSIKA_LOG_WARN("Pythia collision next() failed {} {} {}",
+                           eventMain[iProj].p(), idProj, idNuc);
           eventMain.clear();
           ++unsuccessful_iterations;
           goto event_repeat; // retry event, last remaining good use-cse for goto
