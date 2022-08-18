@@ -78,6 +78,8 @@ namespace corsika::proposal {
     //! InteractionType::Decay
     //! InteractionType::Annihilation
     //! InteractionType::Photopair
+    //! InteractionType::Photoproduction
+    //! InteractionType::Photoeffect
     //!
     //! more information can be found at:
     //! https://github.com/tudo-astroparticlephysics/PROPOSAL
