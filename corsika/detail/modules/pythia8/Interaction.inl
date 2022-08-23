@@ -154,6 +154,13 @@ namespace corsika::pythia8 {
             ? (projectileP4 + targetP4 / get_nucleus_A(targetId)).getNorm()
             : (projectileP4 + targetP4).getNorm();
 
+    if (is_nucleus(targetId) || is_nucleus(projectileId)) {
+      CORSIKA_LOG_ERROR(
+          "Pythia8::Interaction::getCrossSectionInelEla() called with nuclear projectile "
+          "or target");
+      return std::make_tuple(CrossSectionType::zero(), CrossSectionType::zero());
+    }
+
     if (!isValid(projectileId, targetId, CoMenergy)) {
       return std::make_tuple(CrossSectionType::zero(), CrossSectionType::zero());
     }
@@ -174,14 +181,14 @@ namespace corsika::pythia8 {
                                                 FourMomentum const& projectileP4,
                                                 FourMomentum const& targetP4) const {
 
-    auto const [sigProd, sigEla] =
-        getCrossSectionInelEla(projectileId, targetId, projectileP4, targetP4);
-
-    auto const sigTot = sigProd + sigEla;
-
     if (!is_nucleus(targetId) || get_nucleus_A(targetId) == 1) {
-      return sigTot;
+      auto const [sigProd, sigEla] =
+          getCrossSectionInelEla(projectileId, targetId, projectileP4, targetP4);
+      return sigProd + sigEla;
     } else {
+      auto const [sigProd, sigEla] =
+          getCrossSectionInelEla(projectileId, Code::Proton, projectileP4, targetP4);
+      auto const sigTot = sigProd + sigEla;
       return sigTot * get_nucleus_A(targetId) / getAverageSubcollisions(targetId, sigTot);
     }
   }
