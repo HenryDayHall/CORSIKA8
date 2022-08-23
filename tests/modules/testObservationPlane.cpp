@@ -56,8 +56,9 @@ TEST_CASE("ObservationPlane", "interface") {
     ObservationPlane<setup::Tracking, WriterOff> obs(obsPlane,
                                                      DirectionVector(cs, {0., 1., 0.}));
 
+    Step step(particle, no_used_track);
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
-    ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
+    ProcessReturn const ret = obs.doContinuous(step, true);
 
     CHECK(length / 10_m == Approx(1).margin(1e-4));
     CHECK(ret == ProcessReturn::ParticleAbsorbed);
@@ -85,9 +86,10 @@ TEST_CASE("ObservationPlane", "interface") {
     ObservationPlane<setup::Tracking, WriterOff> obs(
         obsPlane, DirectionVector(cs, {0., 0., 1.}), false);
 
+    Step step(particle, no_used_track);
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
-    ProcessReturn const ret = obs.doContinuous(particle, no_used_track, false);
-    ProcessReturn const ret2 = obs.doContinuous(particle, no_used_track, true);
+    ProcessReturn const ret = obs.doContinuous(step, false);
+    ProcessReturn const ret2 = obs.doContinuous(step, true);
 
     CHECK(length / 1_m == Approx(1).margin(1e-4));
     CHECK(ret == ProcessReturn::Ok);
@@ -106,8 +108,9 @@ TEST_CASE("ObservationPlane", "interface") {
     ObservationPlane<setup::Tracking, WriterOff> obs(obsPlane,
                                                      DirectionVector(cs, {0., 1., 0.}));
 
+    Step step(particle, no_used_track);
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
-    ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
+    ProcessReturn const ret = obs.doContinuous(step, true);
 
     CHECK(length / 10_m == Approx(1.1375).margin(1e-4));
     CHECK(ret == ProcessReturn::ParticleAbsorbed);
