@@ -9,6 +9,7 @@
 #pragma once
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/Step.hpp>
 
 #include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/process/ContinuousProcessStepLength.hpp>
