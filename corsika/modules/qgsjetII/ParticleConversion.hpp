@@ -78,11 +78,14 @@ namespace corsika::qgsjetII {
   }
 
   QgsjetIIXSClass constexpr getQgsjetIIXSCode(Code const code) {
-    return corsika2qgsjetIIXStype[static_cast<CodeIntType>(code)];
+    return is_nucleus(code) ? QgsjetIIXSClass::Baryons
+                            : corsika2qgsjetIIXStype[static_cast<CodeIntType>(code)];
   }
 
   QgsjetIIXSClassIntType constexpr getQgsjetIIXSCodeRaw(Code const code) {
-    return static_cast<QgsjetIIXSClassIntType>(getQgsjetIIXSCode(code));
+    return is_nucleus(code)
+               ? static_cast<QgsjetIIXSClassIntType>(QgsjetIIXSClass::Baryons)
+               : static_cast<QgsjetIIXSClassIntType>(getQgsjetIIXSCode(code));
   }
 
   bool constexpr canInteract(Code const code) {
