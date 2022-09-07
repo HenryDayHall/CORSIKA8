@@ -1,0 +1,70 @@
+/*
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
+#pragma once
+
+#include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+
+//#include <sophia.hpp>
+
+#include <string>
+
+namespace corsika::sophia {
+
+  enum class SophiaCode : int8_t;
+  using SophiaCodeIntType = std::underlying_type<SophiaCode>::type;
+
+  // /**
+  //    These are the possible projectile for which Sibyll knows the cross section
+  //  */
+  // enum class SibyllXSClass : int8_t {
+  //   CannotInteract = 0,
+  //   Baryon = 1,
+  //   Pion = 2,
+  //   Kaon = 3,
+  // };
+  // using SibyllXSClassIntType = std::underlying_type<SibyllXSClass>::type;
+
+#include <corsika/modules/sophia/Generated.inc>
+
+  SophiaCode constexpr convertToSophia(Code const pCode) {
+    return corsika2sophia[static_cast<CodeIntType>(pCode)];
+  }
+
+  Code constexpr convertFromSophia(SophiaCode const pCode) {
+    auto const s = static_cast<SophiaCodeIntType>(pCode);
+    auto const corsikaCode = sophia2corsika[s - minSophia];
+    if (corsikaCode == Code::Unknown) {
+      throw std::runtime_error(std::string("SOPHIA/CORSIKA conversion of ")
+                                   .append(std::to_string(s))
+                                   .append(" impossible"));
+    }
+    return corsikaCode;
+  }
+
+  int constexpr convertToSophiaRaw(Code const code) {
+    return static_cast<int>(convertToSophia(code));
+  }
+
+  // int constexpr getSibyllXSCode(Code const code) {
+  //   if (is_nucleus(code))
+  //     return static_cast<SibyllXSClassIntType>(SibyllXSClass::CannotInteract);
+  //   return static_cast<SibyllXSClassIntType>(
+  //       corsika2sibyllXStype[static_cast<CodeIntType>(code)]);
+  // }
+
+  bool constexpr canInteract(Code const pCode) {
+    return (pCode == Code::Photon ? True : False);
+  }
+
+  HEPMassType getSophiaMass(Code const);
+
+} // namespace corsika::sophia
+
+#include <corsika/detail/modules/sophia/ParticleConversion.inl>
