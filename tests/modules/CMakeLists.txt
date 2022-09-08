@@ -12,7 +12,8 @@ set (test_modules_sources
   testParticleCut.cpp
   testSibyll.cpp
   testEpos.cpp
-        testRadio.cpp
+  testRadio.cpp
+  testSophia.cpp
   )
 
 CORSIKA_ADD_TEST (testModules SOURCES ${test_modules_sources})
