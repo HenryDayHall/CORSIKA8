@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# (c) Copyright 2018-2019 CORSIKA Project, corsika-project@lists.kit.edu
+# (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
 #
 # See file AUTHORS for a list of contributors.
 #
@@ -48,7 +48,7 @@ def generate_sophia_enum(particle_db):
     '''
      generates the enum to access sophia particles by readable names
     '''
-    output = "enum class sophiaCode : int8_t {\n"
+    output = "enum class SophiaCode : int8_t {\n"
     for identifier, pData in particle_db.items():
         if 'sophia_code' in pData:
             output += "  {:s} = {:d},\n".format(identifier, pData['sophia_code'])
@@ -61,13 +61,13 @@ def generate_corsika2sophia(particle_db):
     '''
     generates the look-up table to convert corsika codes to sophia codes
     '''
-    string = "std::array<sophiaCode, {:d}> constexpr corsika2sophia = {{\n".format(len(particle_db))
+    string = "std::array<SophiaCode, {:d}> constexpr corsika2sophia = {{\n".format(len(particle_db))
     for identifier, pData in particle_db.items():
         if pData['isNucleus']: continue
         if 'sophia_code' in pData:
-            string += "  sophiaCode::{:s}, \n".format(identifier)
+            string += "  SophiaCode::{:s}, \n".format(identifier)
         else:
-            string += "  sophiaCode::Unknown, // {:s}\n".format(identifier + ' not implemented in sophia')
+            string += "  SophiaCode::Unknown, // {:s}\n".format(identifier + ' not implemented in sophia')
     string += "};\n"
     return string
     
@@ -77,13 +77,13 @@ def generate_corsika2sophia_xsType(particle_db):
     '''
     generates the look-up table to convert corsika codes to sophia codes
     '''
-    string = "std::array<sophiaXSClass, {:d}> constexpr corsika2sophiaXStype = {{\n".format(len(particle_db))
+    string = "std::array<SophiaXSClass, {:d}> constexpr corsika2sophiaXStype = {{\n".format(len(particle_db))
     for identifier, pData in particle_db.items():
         if pData['isNucleus']: continue
         if 'sophia_xsType' in pData:
-            string += "  sophiaXSClass::{:s}, // {:s}\n".format(pData['sophia_xsType'], identifier)
+            string += "  SophiaXSClass::{:s}, // {:s}\n".format(pData['sophia_xsType'], identifier)
         else:
-            string += "  sophiaXSClass::CannotInteract, // {:s}\n".format(identifier + ' not implemented in sophia')
+            string += "  SophiaXSClass::CannotInteract, // {:s}\n".format(identifier + ' not implemented in sophia')
     string += "};\n"
     return string
 
@@ -99,7 +99,7 @@ def generate_sophia2corsika(particle_db) :
         if 'sophia_code' in pData:
             minID = min(minID, pData['sophia_code'])
 
-    string += "sophiaCodeIntType constexpr minsophia = {:d};\n\n".format(minID)
+    string += "SophiaCodeIntType constexpr minSophia = {:d};\n\n".format(minID)
 
     pDict = {}
     for identifier, pData in particle_db.items() :
@@ -135,4 +135,4 @@ if __name__ == "__main__":
         print(generate_sophia_enum(particle_db), file=f)
         print(generate_corsika2sophia(particle_db), file=f)
         print(generate_sophia2corsika(particle_db), file=f)
-        print(generate_corsika2sophia_xsType(particle_db), file=f)
+        #print(generate_corsika2sophia_xsType(particle_db), file=f)

@@ -10,7 +10,7 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 
-//#include <sibyll2.3d.hpp>
+#include <sophia.hpp>
 
 namespace corsika::sophia {
 

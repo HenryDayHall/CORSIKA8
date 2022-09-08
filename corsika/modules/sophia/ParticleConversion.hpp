@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -11,7 +11,7 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-//#include <sophia.hpp>
+#include <sophia.hpp>
 
 #include <string>
 
@@ -29,7 +29,7 @@ namespace corsika::sophia {
   //   Pion = 2,
   //   Kaon = 3,
   // };
-  // using SibyllXSClassIntType = std::underlying_type<SibyllXSClass>::type;
+  //using SophiaXSClassIntType = std::underlying_type<SophiaXSClass>::type;
 
 #include <corsika/modules/sophia/Generated.inc>
 
@@ -52,15 +52,15 @@ namespace corsika::sophia {
     return static_cast<int>(convertToSophia(code));
   }
 
-  // int constexpr getSibyllXSCode(Code const code) {
+  // int constexpr getSophiaXSCode(Code const code) {
   //   if (is_nucleus(code))
-  //     return static_cast<SibyllXSClassIntType>(SibyllXSClass::CannotInteract);
-  //   return static_cast<SibyllXSClassIntType>(
-  //       corsika2sibyllXStype[static_cast<CodeIntType>(code)]);
+  //     return static_cast<SophiaXSClassIntType>(SophiaXSClass::CannotInteract);
+  //   return static_cast<SophiaXSClassIntType>(
+  //       corsika2sophiaXStype[static_cast<CodeIntType>(code)]);
   // }
 
   bool constexpr canInteract(Code const pCode) {
-    return (pCode == Code::Photon ? True : False);
+    return (pCode == Code::Photon ? true : false);
   }
 
   HEPMassType getSophiaMass(Code const);

@@ -135,7 +135,7 @@ C      IDB(23) = -ABS(IDB(23))
 C**anfe 2016/01/20 Initialize the non-default RMMARD
 C**                random number generator with default
 C**                seed, if necessary        
-       if (.not.(U(1,1).gt.0D0)) Call INIT_RMMARD(12345)
+c       if (.not.(U(1,1).gt.0D0)) Call INIT_RMMARD(12345)
 C  incoming nucleon
        pm = AM(L0)
        P_nuc(1) = 0.D0
@@ -1268,7 +1268,7 @@ c ... for D1950:
       END
 
 C->
-       DOUBLE PRECISION FUNCTION GAUSS (FUN, A,B)
+       DOUBLE PRECISION FUNCTION SO_GAUSS (FUN, A,B)
 c*********************************************************
 C	Returns the  8 points Gauss-Legendre integral
 C	of function FUN from A to B
@@ -1298,7 +1298,7 @@ C...........................................................
 	  DX = XR*X(NJ)
 	  SS = SS + W(NJ) * (FUN(XM+DX) + FUN(XM-DX))
 	ENDDO
-	GAUSS = XR*SS
+	SO_GAUSS = XR*SS
 	RETURN
 	END
 
@@ -1311,7 +1311,7 @@ c***************************
 c** last change: 12/10/98 **
 c** author:      A.Muecke **
 c***************************
-      BLOCK DATA DATDEC
+      BLOCK DATA SO_DATDEC
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       IMPLICIT INTEGER (I-N)
       SAVE

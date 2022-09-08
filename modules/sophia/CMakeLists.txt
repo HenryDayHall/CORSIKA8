@@ -1,18 +1,17 @@
 set (
   MODEL_SOURCES
-#  sibyll2.3d.cpp
   eventgen.f
-  inpoutput.f
+  #inpoutput.f
   jetset74dp.f
-  sampling.f
-  SOPHIA20.f
+  #sampling.f
+  #SOPHIA20.f
+  sophia.cpp
   )
 
-#set (
-#  MODEL_HEADERS
-#  sibyll2.3d.hpp
-#  nuclib.hpp
-#  )
+set (
+  MODEL_HEADERS
+  sophia.hpp
+  )
 
 enable_language (Fortran)
 add_library (Sophia_static STATIC ${MODEL_SOURCES})
