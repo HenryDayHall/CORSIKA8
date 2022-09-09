@@ -76,11 +76,14 @@ extern struct {
   double am2[49];
 } so_mass1_;
 
+// sophia initialization
+void initial_(const int&);
+
 // sophia main subroutine
-void eventgen_(const int&, const double&, const double&, const double&, const int&);
+void eventgen_(const int&, const double&, const double&, const double&, int&);
 
 // print event
-void print_event_(int&);
+void print_event_(const int&);
 
 // decay routine (LA,P0,ND,LL,P)
 // void decpar_(const int&, const double*, int&, int*, double*);

@@ -28,10 +28,10 @@ namespace corsika::sophia {
    * The sophia::InteractionModel is wrapped as an InteractionProcess here in order
    * to provide all the functions for ProcessSequence.
    */
-  struct Interaction : public InteractionModel, public InteractionProcess<Interaction> {
-    template <typename TEnvironment>
-    Interaction(TEnvironment const& env)
-        : InteractionModel{env} {}
-  };
+  // struct Interaction : public InteractionModel, public InteractionProcess<Interaction> {
+  //   template <typename TEnvironment>
+  //   Interaction(TEnvironment const& env)
+  //       : InteractionModel{env} {}
+  // };
 
 } // namespace corsika::sophia
