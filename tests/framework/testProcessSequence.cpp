@@ -115,12 +115,10 @@ public:
     checkCont |= 1;
     LengthVector displacement_ {get_root_CoordinateSystem(), 1_m, 0_m, 0_m};
     DirectionVector dU_ {get_root_CoordinateSystem(), {1, 0, 0} };
-    for (int i = 0; i < nData; ++i) {
-      d.add_dt(1_s);
-      d.add_displacement(displacement_);
-      d.add_dU(dU_);
-      d.add_dEkin(1_eV);
-    }
+    d.add_dt(1_s);
+    d.add_displacement(displacement_);
+    d.add_dU(dU_);
+    d.add_dEkin(1_eV);
     return ProcessReturn::Ok;
   }
 
@@ -141,12 +139,10 @@ private:
 class ContinuousProcess2 : public ContinuousProcess<ContinuousProcess2> {
 public:
   ContinuousProcess2(int const v, LengthType const step)
-      : v_(v)
-      , step_(step) {
+      : step_(step) {
     CORSIKA_LOG_DEBUG(
-        "globalCount: {}"
-        ", v_: {}",
-        globalCount, v_);
+        "globalCount: {}",
+        globalCount);
     globalCount++;
   }
 
@@ -157,7 +153,7 @@ public:
     flag_ = flag;
     CORSIKA_LOG_DEBUG("ContinuousProcess2::DoContinuous");
     checkCont |= 2;
-    for (int i = 0; i < nData; ++i) d.add_dt(10_s);
+    d.add_dt(10_s);
     return ProcessReturn::Ok;
   }
 
@@ -170,7 +166,6 @@ public:
   void resetFlag() { flag_ = false; }
 
 private:
-  int v_ = 0;
   LengthType step_ = 0_m;
   mutable bool flag_ = false;
 };
@@ -178,12 +173,10 @@ private:
 class ContinuousProcess3 : public ContinuousProcess<ContinuousProcess3> {
 public:
   ContinuousProcess3(int const v, LengthType const step)
-      : v_(v)
-      , step_(step) {
+      : step_(step) {
     CORSIKA_LOG_DEBUG(
-        "globalCount: {}"
-        ", v_: {} ",
-        globalCount, v_);
+        "globalCount: {}",
+        globalCount);
     globalCount++;
   }
 
@@ -207,7 +200,6 @@ public:
   void resetFlag() { flag_ = false; }
 
 private:
-  int v_ = 0;
   LengthType step_ = 0_m;
   mutable bool flag_ = false;
 };
@@ -534,9 +526,6 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     globalCount = 0;
     CORSIKA_LOG_DEBUG("-->docont");
 
-    // validation data
-    double test_data[nData] = {0};
-
     // reset
     particle = DummyData();
     track = DummyTrajectory();
@@ -544,15 +533,14 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     int const nLoop = 5;
     CORSIKA_LOG_DEBUG("Running loop with n={}", nLoop);
     for (int iLoop = 0; iLoop < nLoop; ++iLoop) {
-      for (int i = 0; i < nData; ++i) { test_data[i] += 0.933 + 0.111; }
       sequence2.doContinuous(step, ContinuousProcessIndex(1));
     }
-    CHECK(step.getDiffT() / 1_s == Approx(770));
-    CHECK(step.getDiffEkin() / 1_eV == Approx(70));
-    CHECK(step.getDisplacement().getX(get_root_CoordinateSystem()) / 1_m == Approx(70));
+    CHECK(step.getDiffT() / 1_s == Approx(77));
+    CHECK(step.getDiffEkin() / 1_eV == Approx(7));
+    CHECK(step.getDisplacement().getX(get_root_CoordinateSystem()) / 1_m == Approx(7));
     CHECK(step.getDisplacement().getY(get_root_CoordinateSystem()) / 1_m == Approx(0));
     CHECK(step.getDisplacement().getZ(get_root_CoordinateSystem()) / 1_m == Approx(0));
-    CHECK(step.getDiffDirection().getX(get_root_CoordinateSystem()) == Approx(70));
+    CHECK(step.getDiffDirection().getX(get_root_CoordinateSystem()) == Approx(7));
     CHECK(step.getDiffDirection().getY(get_root_CoordinateSystem()) == Approx(0));
     CHECK(step.getDiffDirection().getZ(get_root_CoordinateSystem()) == Approx(0));
     CORSIKA_LOG_DEBUG("done");
