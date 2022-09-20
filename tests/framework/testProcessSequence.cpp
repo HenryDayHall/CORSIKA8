@@ -786,7 +786,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
       CHECK(checkInteract == 0);
       CHECK(checkDecay == 0);
 
-      // for a small cx_select selection must be sucessful
+      // for a small cx_select selection must be successful
       cx_select = 28_mb; // -> Process3
       checkInteract = 0;
       particle.data_[0] = -100; // data negative --> sequence2

@@ -34,7 +34,7 @@ namespace corsika {
       if (deleteOnHit_) {
         // since this is basically a bug, it cannot be tested LCOV_EXCL_START
         LengthType const check =
-            (step.getPositionPre() - plane_.getCenter()).dot(plane_.getNormal());
+            (step.getPositionPost() - plane_.getCenter()).dot(plane_.getNormal());
         if (check < 0_m) {
           CORSIKA_LOG_WARN("PARTICLE AVOIDED OBSERVATIONPLANE {}", check);
           CORSIKA_LOG_WARN("Temporary fix: write and remove particle.");
@@ -46,14 +46,14 @@ namespace corsika {
         return ProcessReturn::Ok;
     }
 
-    HEPEnergyType const energy = step.getEkinPre();
+    HEPEnergyType const energy = step.getEkinPost();
     Point const pointOfIntersection = step.getPositionPost();
     Vector const displacement = pointOfIntersection - plane_.getCenter();
 
     // add our particles to the output file stream
-    double const weight = 1.; // particle.getWeight()
+    double const weight = step.getParticlePre().getWeight(); // particle.getWeight()
     this->write(step.getParticlePre().getPID(), energy, displacement.dot(xAxis_),
-                displacement.dot(yAxis_), 0_m, step.getTimePre(), weight);
+                displacement.dot(yAxis_), 0_m, step.getTimePost(), weight);
 
     CORSIKA_LOG_TRACE("Particle detected absorbed={}", deleteOnHit_);
 

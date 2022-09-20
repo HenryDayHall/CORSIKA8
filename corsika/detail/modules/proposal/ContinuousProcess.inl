@@ -108,7 +108,7 @@ namespace corsika::proposal {
     auto c = getCalculator(step.getParticlePre(), calc);
     auto E_i_total = (step.getEkinPre() + step.getParticlePre().getMass());
     auto E_f_total = (c->second).disp->UpperLimitTrackIntegral(
-          E_i_total / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
+          E_i_total * (1 / 1_MeV), dX * ((1 / 1_g) * 1_cm * 1_cm)) *
                    1_MeV;
     auto dE = E_i_total - E_f_total;
 
