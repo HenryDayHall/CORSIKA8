@@ -88,7 +88,9 @@ namespace corsika {
     }
 
     StraightTrajectory getStraightTrack() const {
-        Line const line(getPositionPre(), getVelocityVector());
+        Point const& pos_Pre = getParticlePre().getPosition();
+        VelocityVector const vel_ = getVelocityVector();
+        Line const line(pos_Pre, vel_);
         StraightTrajectory track(line, getDiffT());
         return track;
     }
@@ -98,9 +100,11 @@ namespace corsika {
                                                      // Where does it happen, here?
     }
 
-    Point const getPositionPre() const { return getParticlePre().getPosition(); }
+    Point const& getPositionPre() const { return getParticlePre().getPosition(); }
 
-    Point getPositionPost() const { return getPositionPre() + getDisplacement(); }
+    Point getPositionPost() const {
+      Point const& pos_Pre = getPositionPre();
+      return pos_Pre + getDisplacement(); }
 
   private:
     TParticle const& particlePreStep_;
