@@ -43,6 +43,8 @@ namespace corsika {
                     parquet::ConvertedType::NONE);
    output_.addField("end_t", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                     parquet::ConvertedType::NONE);
+   output_.addField("node_ptr", parquet::Repetition::REQUIRED, parquet::Type::INT64,
+                    parquet::ConvertedType::UINT_64);
 
    // and build the streamer
    output_.buildStreamer();
@@ -62,7 +64,8 @@ namespace corsika {
                                        QuantityVector<length_d> const& start,
                                        TimeType const t_start,
                                        QuantityVector<length_d> const& end,
-                                       TimeType const t_end) {
+                                       TimeType const t_end,
+                                       size_t const node_ptr) {
 
    // write the next row - we must write `shower_` first.
    // clang-format off
@@ -79,6 +82,7 @@ namespace corsika {
        << static_cast<float>(end[1] / 1_m)
        << static_cast<float>(end[2] / 1_m)
        << static_cast<float>(t_end / 1_ns)
+       << static_cast<size_t>(node_ptr)
        << parquet::EndRow;
    // clang-format on
  }

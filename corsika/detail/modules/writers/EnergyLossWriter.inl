@@ -62,12 +62,11 @@ namespace corsika {
  }
 
  template <typename TOutput>
- template <typename TTrack>
- inline void EnergyLossWriter<TOutput>::write(TTrack const& track, Code const PID,
+ inline void EnergyLossWriter<TOutput>::write(Point const& p0, Point const& p1, Code const PID,
                                               HEPEnergyType const dE) {
 
-   GrammageType grammageStart = showerAxis_.getProjectedX(track.getPosition(0));
-   GrammageType grammageEnd = showerAxis_.getProjectedX(track.getPosition(1));
+   GrammageType grammageStart = showerAxis_.getProjectedX(p0);
+   GrammageType grammageEnd = showerAxis_.getProjectedX(p1);
 
    if (grammageStart > grammageEnd) { // particle going upstream
      std::swap(grammageStart, grammageEnd);
@@ -83,7 +82,7 @@ namespace corsika {
 
    if (deltaX < dX_threshold_) {
      CORSIKA_LOGGER_TRACE(TOutput::getLogger(), "Point-like dE");
-     this->write(track.getPosition(0), PID, dE);
+     this->write(p0, PID, dE);
      return;
    }
 
@@ -123,6 +122,7 @@ namespace corsika {
    CORSIKA_LOGGER_TRACE(TOutput::getLogger(), "total energy added to histogram: {} GeV ",
                         energyCount / 1_GeV);
  }
+
 
  template <typename TOutput>
  inline void EnergyLossWriter<TOutput>::write(Point const& point, Code const,
