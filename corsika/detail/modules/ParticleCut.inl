@@ -70,10 +70,7 @@ namespace corsika {
   }
 
   template <typename TOutput>
-  template <typename TParticle>
-  inline bool ParticleCut<TOutput>::isBelowEnergyCut(TParticle const& vP) const {
-    auto const energyLab = vP.getKineticEnergy();
-    auto const pid = vP.getPID();
+  inline bool ParticleCut<TOutput>::isBelowEnergyCut(Code const pid, HEPEnergyType const energyLab) const {
     // nuclei
     if (is_nucleus(pid)) {
       // calculate energy per nucleon
@@ -85,25 +82,21 @@ namespace corsika {
   }
 
   template <typename TOutput>
-  template <typename TParticle>
-  inline bool ParticleCut<TOutput>::checkCutParticle(TParticle const& particle) {
+  inline bool ParticleCut<TOutput>::checkCutParticle(Code const pid, HEPEnergyType const kine_energy, TimeType const timePost) const {
 
-    Code const pid = particle.getPID();
-    HEPEnergyType const kine_energy = particle.getKineticEnergy();
-    HEPEnergyType const energy = particle.getEnergy();
+    HEPEnergyType const energy = kine_energy + get_mass(pid);
     CORSIKA_LOG_DEBUG(
         "ParticleCut: checking {} ({}), E_kin= {} GeV, E={} GeV, m={} "
         "GeV",
-        pid, particle.getPDG(), kine_energy / 1_GeV, energy / 1_GeV,
-        particle.getMass() / 1_GeV);
-    CORSIKA_LOG_DEBUG("p={}", particle.asString());
+        pid, get_PDG(pid), kine_energy / 1_GeV, energy / 1_GeV,
+        get_mass(pid) / 1_GeV);
     if (doCutInv_ && is_neutrino(pid)) {
       CORSIKA_LOG_DEBUG("removing inv. particle...");
       return true;
-    } else if (isBelowEnergyCut(particle)) {
+    } else if (isBelowEnergyCut(pid, kine_energy)) {
       CORSIKA_LOG_DEBUG("removing low en. particle...");
       return true;
-    } else if (particle.getTime() > 10_ms) {
+    } else if (timePost > 10_ms) {
       CORSIKA_LOG_DEBUG("removing OLD particle...");
       return true;
     } else {
@@ -120,9 +113,10 @@ namespace corsika {
     HEPEnergyType energy_event = 0_GeV; // per event counting for printout
     auto particle = vS.begin();
     while (particle != vS.end()) {
-      if (checkCutParticle(particle)) {
-        HEPEnergyType Ekin = particle.getKineticEnergy();
-        this->write(particle.getPosition(), particle.getPID(), Ekin);
+      Code pid = particle.getPID();
+      HEPEnergyType Ekin = particle.getKineticEnergy();
+      if (checkCutParticle(pid, Ekin, particle.getTime())) {
+        this->write(particle.getPosition(), pid, Ekin);
         particle.erase();
       }
       ++particle; // next entry in SecondaryView
@@ -134,8 +128,8 @@ namespace corsika {
   template <typename TParticle>
   inline ProcessReturn ParticleCut<TOutput>::doContinuous(Step<TParticle>& step,
                                                           bool const) {
-    if (checkCutParticle(step.getParticlePre())) {
-      this->write(step.getPositionPre(), step.getParticlePre().getPID(), step.getEkinPre()); // ToDO: should the cut happen at the start of the track? For now, I set it to happen at the start
+    if (checkCutParticle(step.getParticlePre().getPID(), step.getEkinPost(), step.getTimePost())) {
+      this->write(step.getPositionPost(), step.getParticlePre().getPID(), step.getEkinPost()); // ToDO: should the cut happen at the start of the track? For now, I set it to happen at the start
       CORSIKA_LOG_TRACE("removing during continuous");
       // signal to upstream code that this particle was deleted
       return ProcessReturn::ParticleAbsorbed;

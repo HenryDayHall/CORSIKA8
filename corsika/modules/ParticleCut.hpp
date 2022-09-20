@@ -108,11 +108,10 @@ namespace corsika {
     YAML::Node getConfig() const override;
 
   private:
-    template <typename TParticle>
-    bool checkCutParticle(TParticle const& p);
 
-    template <typename TParticle>
-    bool isBelowEnergyCut(TParticle const&) const;
+    bool checkCutParticle(Code const, HEPEnergyType const, TimeType const) const;
+
+    bool isBelowEnergyCut(Code const, HEPEnergyType const) const;
 
   private:
     HEPEnergyType cut_electrons_;
