@@ -48,6 +48,11 @@ namespace corsika::epos {
       if (eid != 0) {
         ::epos::nodcy_.nrnody = ::epos::nodcy_.nrnody + 1;
         ::epos::nodcy_.nody[::epos::nodcy_.nrnody - 1] = eid;
+      } else {
+        CORSIKA_LOG_WARN(
+            "particle conversion Corsika-->Epos not known for {}. Using {}. Setting "
+            "unstable in Epos!",
+            p, eid);
       }
     }
   }
@@ -284,7 +289,7 @@ namespace corsika::epos {
                          "beamA={}, "
                          "beamZ={} "
                          "targetId={}, "
-                         "ELab={:4.3f} GeV,",
+                         "ELab={:12.2f} GeV,",
                          BeamId, BeamA, BeamZ, TargetId, EnergyLab / 1_GeV);
 
     // read cross section from epos internal tables
@@ -300,7 +305,7 @@ namespace corsika::epos {
       int const iBeam = epos::getEposXSCode(
           BeamId); // 0 (can not interact, 1: pion-like, 2: proton-like, 3:kaon-like)
       CORSIKA_LOGGER_TRACE(logger_,
-                           "projectile cross section type={} "
+                           "readCrossSectionTableLab: projectile cross section type={} "
                            "(0: cannot interact, 1:pion, 2:baryon, 3:kaon)",
                            iBeam);
 
@@ -314,15 +319,24 @@ namespace corsika::epos {
 
     int iMode = 3; // 0: air, >0 not air
 
-    CORSIKA_LOGGER_DEBUG(logger_,
-                         "inside Epos "
+    CORSIKA_LOGGER_TRACE(logger_,
+                         "readCrossSectionTableLab: inside Epos "
                          "beamId={}, beamXS={}",
                          ::epos::hadr2_.idproj, ::epos::had10_.iclpro);
+
+    CORSIKA_LOGGER_TRACE(logger_,
+                         "readCrossSectionTableLab: calling Epos cross section with"
+                         "Ekin = {}, Abeam = {}, Atarget = {}, iMode = {}",
+                         Ekin, Abeam, Atarget, iMode);
 
     // cross section from table, FAST
     float sigProdEpos = ::epos::eposcrse_(Ekin, Abeam, Atarget, iMode);
     // sig-el from analytic calculation, no fast
     float sigElaEpos = ::epos::eposelacrse_(Ekin, Abeam, Atarget, iMode);
+
+    CORSIKA_LOGGER_TRACE(logger_,
+                         "readCrossSectionTableLab: result: sigProd = {}, sigEla = {}",
+                         sigProdEpos, sigElaEpos);
 
     return std::make_tuple(sigProdEpos * 1_mb, sigElaEpos * 1_mb);
   }
