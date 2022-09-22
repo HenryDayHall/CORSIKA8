@@ -28,15 +28,15 @@ AntiNeutron            -1220     1       Baryon
 Proton                  1120     1       Baryon
 AntiProton             -1120     1       Baryon
 Eta                      220	 0       CannotInteract
-Lambda0                 2130	 0       CannotInteract
-Lambda0Bar             -2130	 0       CannotInteract
+Lambda0                 2130	 1       Baryon
+Lambda0Bar             -2130	 1       Baryon
 
-SigmaPlus               1130     0       CannotInteract
-SigmaMinusBar          -1130     0       CannotInteract
-Sigma0                  1230     0       CannotInteract
-Sigma0Bar              -1230     0       CannotInteract
-SigmaMinus              2230     0       CannotInteract
-SigmaPlusBar           -2230     0       CannotInteract
+SigmaPlus               1130     1       Baryon
+SigmaMinusBar          -1130     1       Baryon
+Sigma0                  1230     1       Baryon
+Sigma0Bar              -1230     1       Baryon
+SigmaMinus              2230     1       Baryon
+SigmaPlusBar           -2230     1       Baryon
 
 DeltaPlus               1121     0       CannotInteract
 DeltaMinusBar          -1121     0       CannotInteract
