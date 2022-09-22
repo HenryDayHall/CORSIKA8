@@ -19,6 +19,10 @@ PiPlus                   120     1       Pion
 PiMinus                 -120     1       Pion
 KPlus                    130     1       Kaon
 KMinus                  -130     1       Kaon
+K0                      230      0       CannotInteract
+K0Bar                  -230      0       CannotInteract
+K0Long                  -20      1       Kaon
+K0Short                  20      1       Kaon
 Neutron                1220      1       Baryon
 AntiNeutron            -1220     1       Baryon
 Proton                  1120     1       Baryon
