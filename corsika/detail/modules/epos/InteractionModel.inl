@@ -21,6 +21,7 @@
 #include <string>
 #include <tuple>
 #include <cmath>
+#include "corsika/framework/core/ParticleProperties.hpp"
 
 namespace corsika::epos {
 
@@ -64,7 +65,8 @@ namespace corsika::epos {
     if (!is_nucleus(targetId) && targetId != Code::Neutron && targetId != Code::Proton) {
       return false;
     }
-    if (is_nucleus(targetId) && (get_nucleus_A(targetId) >= maxTargetMassNumber_)) {
+    if (is_nucleus(targetId) &&
+        (get_nucleus_A(targetId) >= get_nucleus_A(maxNucleus_))) {
       return false;
     }
     if ((minEnergyCoM_ > sqrtS) || (sqrtS > maxEnergyCoM_)) { return false; }
@@ -141,9 +143,10 @@ namespace corsika::epos {
     strcpy(::epos::fname_.fncs, CS.data);
     ::epos::nfname_.nfncs = CS.length;
 
-    // initialiazes maximum energy and mass
-    initializeEventCoM(Code::Lead, Lead::nucleus_A, Lead::nucleus_Z, Code::Lead,
-                       Lead::nucleus_A, Lead::nucleus_Z, 1_PeV);
+    // initializes maximum energy and mass
+    initializeEventCoM(
+        maxNucleus_, get_nucleus_A(maxNucleus_), get_nucleus_Z(maxNucleus_), maxNucleus_,
+        get_nucleus_A(maxNucleus_), get_nucleus_Z(maxNucleus_), maxEnergyCoM_);
   }
 
   inline void InteractionModel::initializeEventCoM(Code const idBeam, int const iBeamA,

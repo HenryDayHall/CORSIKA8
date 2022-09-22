@@ -148,7 +148,7 @@ TEST_CASE("Epos", "modules") {
     CHECK_FALSE(model.isValid(Code::Proton, Code::Electron, 100_GeV));
     CHECK(model.isValid(Code::Proton, Code::Hydrogen, 100_GeV));
     CHECK(model.isValid(Code::Proton, Code::Helium, 100_GeV));
-    CHECK_FALSE(model.isValid(Code::Proton, Code::Iron, 100_GeV));
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Iron, 10_EeV));
     CHECK(model.isValid(Code::Proton, Code::Oxygen, 100_GeV));
   }
 
