@@ -27,7 +27,6 @@ Neutron                1220      1       Baryon
 AntiNeutron            -1220     1       Baryon
 Proton                  1120     1       Baryon
 AntiProton             -1120     1       Baryon
-Eta                      220	 0       CannotInteract
 Lambda0                 2130	 1       Baryon
 Lambda0Bar             -2130	 1       Baryon
 
@@ -38,6 +37,13 @@ Sigma0Bar              -1230     1       Baryon
 SigmaMinus              2230     1       Baryon
 SigmaPlusBar           -2230     1       Baryon
 
+SigmaStarPlus           1131     0       CannotInteract
+SigmaStarMinusBar      -1131     0       CannotInteract
+SigmaStar0              1231     0       CannotInteract
+SigmaStar0Bar          -1231     0       CannotInteract
+SigmaStarMinus          2231     0       CannotInteract
+SigmaStarPlusBar       -2231     0       CannotInteract
+
 DeltaPlus               1121     0       CannotInteract
 DeltaMinusBar          -1121     0       CannotInteract
 Delta0                  1221     0       CannotInteract
@@ -45,23 +51,30 @@ Delta0Bar              -1221     0       CannotInteract
 DeltaMinus              2221     0       CannotInteract
 DeltaPlusBar           -2221     0       CannotInteract
 
+DeltaPlusPlus           1111     0       CannotInteract
+DeltaMinusMinusBar     -1111     0       CannotInteract
+
 Xi0                     1330     0       CannotInteract
 XiMinus	                2330 	 0       CannotInteract
 Xi0Bar	               -1330	 0       CannotInteract
 XiPlusBar              -2330 	 0       CannotInteract
 
+XiStar0                 1331     0       CannotInteract
+XiStarMinus	            2331 	 0       CannotInteract
+XiStar0Bar	           -1331	 0       CannotInteract
+XiStarPlusBar          -2331 	 0       CannotInteract
+
 OmegaMinus              3331     0       CannotInteract
 OmegaPlusBar           -3331     0       CannotInteract
 
+
+Eta                      220	 0       CannotInteract
 EtaPrime                 330     0       CannotInteract
 Phi                      331     0       CannotInteract
 Omega                    221     0       CannotInteract
 Rho0                     111     1       Pion
 RhoPlus                  121     0       CannotInteract
 RhoMinus                -121     0       CannotInteract
-
-DeltaPlusPlus           1111     0       CannotInteract
-DeltaMinusMinusBar     -1111     0       CannotInteract
 
 KStarPlus                131     0       CannotInteract
 KStarMinus              -131     0       CannotInteract

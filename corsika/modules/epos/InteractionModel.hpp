@@ -109,7 +109,7 @@ namespace corsika::epos {
     std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_epos_Interaction");
     HEPEnergyType const minEnergyCoM_ = 6 * 1e9 * electronvolt;
     HEPEnergyType const maxEnergyCoM_ = 2.e6 * 1e9 * electronvolt;
-    static Code constexpr maxNucleus_ = Code::Lead;    
+    static Code constexpr maxNucleus_ = Code::Lead;
   };
 
 } // namespace corsika::epos

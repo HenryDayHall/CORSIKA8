@@ -50,7 +50,7 @@ namespace corsika::epos {
         ::epos::nodcy_.nrnody = ::epos::nodcy_.nrnody + 1;
         ::epos::nodcy_.nody[::epos::nodcy_.nrnody - 1] = eid;
       } else {
-        CORSIKA_LOG_WARN(
+        CORSIKA_LOG_DEBUG(
             "particle conversion Corsika-->Epos not known for {}. Using {}. Setting "
             "unstable in Epos!",
             p, eid);
@@ -65,8 +65,7 @@ namespace corsika::epos {
     if (!is_nucleus(targetId) && targetId != Code::Neutron && targetId != Code::Proton) {
       return false;
     }
-    if (is_nucleus(targetId) &&
-        (get_nucleus_A(targetId) >= get_nucleus_A(maxNucleus_))) {
+    if (is_nucleus(targetId) && (get_nucleus_A(targetId) >= get_nucleus_A(maxNucleus_))) {
       return false;
     }
     if ((minEnergyCoM_ > sqrtS) || (sqrtS > maxEnergyCoM_)) { return false; }
