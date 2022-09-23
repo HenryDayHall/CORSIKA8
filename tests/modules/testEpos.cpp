@@ -66,8 +66,8 @@ TEST_CASE("EposBasics", "module,process") {
 
   SECTION("cross-section type") {
     CHECK(corsika::epos::getEposXSCode(Code::Electron) == 0);
-    CHECK(corsika::epos::getEposXSCode(Code::K0Long) == 0);
-    CHECK(corsika::epos::getEposXSCode(Code::SigmaPlus) == 0);
+    CHECK(corsika::epos::getEposXSCode(Code::K0Long) == 3);
+    CHECK(corsika::epos::getEposXSCode(Code::SigmaPlus) == 2);
     CHECK(corsika::epos::getEposXSCode(Code::KMinus) == 3);
     CHECK(corsika::epos::getEposXSCode(Code::PiMinus) == 1);
     CHECK(corsika::epos::getEposXSCode(Code::Proton) == 2);
