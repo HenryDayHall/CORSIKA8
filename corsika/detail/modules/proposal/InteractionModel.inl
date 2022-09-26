@@ -49,7 +49,7 @@ namespace corsika::proposal {
     auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(c);
     calc_[std::make_pair(comp.getHash(), code)] = std::make_tuple(
         PROPOSAL::make_secondaries(inter_types, particle[code], media.at(comp.getHash())),
-        PROPOSAL::make_interaction(c, true));
+        PROPOSAL::make_interaction(c, true, true));
   }
 
   template <typename THadronicModel>
