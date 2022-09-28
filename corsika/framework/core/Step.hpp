@@ -100,7 +100,7 @@ namespace corsika {
                                                      // Where does it happen, here?
     }
 
-    Point const& getPositionPre() const { return getParticlePre().getPosition(); }
+    Point const getPositionPre() const { return getParticlePre().getPosition(); }
 
     Point getPositionPost() const {
       Point const& pos_Pre = getPositionPre();
