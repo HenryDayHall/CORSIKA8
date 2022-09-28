@@ -23,7 +23,7 @@ namespace corsika {
    // build the schema
    output_.addField("pdg", parquet::Repetition::REQUIRED, parquet::Type::INT32,
                     parquet::ConvertedType::INT_32);
-   output_.addField("energy", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+   output_.addField("start_energy", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                     parquet::ConvertedType::NONE);
    output_.addField("weight", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                     parquet::ConvertedType::NONE);
@@ -41,10 +41,12 @@ namespace corsika {
                     parquet::ConvertedType::NONE);
    output_.addField("end_z", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                     parquet::ConvertedType::NONE);
+   output_.addField("end_energy", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                    parquet::ConvertedType::NONE);
    output_.addField("end_t", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                     parquet::ConvertedType::NONE);
-   output_.addField("node_ptr", parquet::Repetition::REQUIRED, parquet::Type::INT64,
-                    parquet::ConvertedType::UINT_64);
+//   output_.addField("node_ptr", parquet::Repetition::REQUIRED, parquet::Type::INT64,
+//                    parquet::ConvertedType::UINT_64);
 
    // and build the streamer
    output_.buildStreamer();
@@ -65,8 +67,8 @@ namespace corsika {
                                        TimeType const t_start,
                                        QuantityVector<length_d> const& end,
                                        HEPEnergyType const KinenergyPost,
-                                       TimeType const t_end,
-                                       void const* node_ptr) {
+                                       TimeType const t_end) {
+//                                       void const* node_ptr) {
 
    // write the next row - we must write `shower_` first.
    // clang-format off
@@ -84,7 +86,7 @@ namespace corsika {
        << static_cast<float>(end[2] / 1_m)
        << static_cast<float>(KinenergyPost / 1_GeV)
        << static_cast<float>(t_end / 1_ns)
-       << static_cast<void const*>(node_ptr)
+//       << static_cast<void const*>(node_ptr)
        << parquet::EndRow;
    // clang-format on
  }
