@@ -99,10 +99,10 @@ TEST_CASE("EnergyLossWriter") {
   StraightTrajectory trackPointLike(line, time / 1e7); // ultra short
   StraightTrajectory trackInverse({track.getPosition(1), -v0}, time);
   // test write
-  test.write(track, Code::Proton, 100_GeV);
-  test.write(trackInverse, Code::Proton, 100_GeV); // equivalent
-  test.write(trackShort, Code::Proton, 100_GeV);   // this is in a single bin
-  test.write(trackPointLike, Code::Proton,
+  test.write(track.getPosition(0), track.getPosition(1), Code::Proton, 100_GeV);
+  test.write(trackInverse.getPosition(0), trackInverse.getPosition(1), Code::Proton, 100_GeV); // equivalent
+  test.write(trackShort.getPosition(0), trackShort.getPosition(1), Code::Proton, 100_GeV);   // this is in a single bin
+  test.write(trackPointLike.getPosition(0), trackPointLike.getPosition(1), Code::Proton,
              100_GeV); // this is just a located point-like dE
 
   // incompatible binning

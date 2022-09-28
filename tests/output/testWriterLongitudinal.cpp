@@ -92,12 +92,12 @@ TEST_CASE("LongitudinalWriter") {
   auto const time = 1000_ns;
   StraightTrajectory track(line, time);
   // test write
-  test.write(track, Code::Proton, 1.0);
-  test.write(track, Code::Photon, 1.0);
-  test.write(track, Code::Electron, 1.0);
-  test.write(track, Code::Positron, 1.0);
-  test.write(track, Code::MuPlus, 1.0);
-  test.write(track, Code::MuMinus, 1.0);
+  test.write(track.getPosition(0), track.getPosition(1), Code::Proton, 1.0);
+  test.write(track.getPosition(0), track.getPosition(1), Code::Photon, 1.0);
+  test.write(track.getPosition(0), track.getPosition(1), Code::Electron, 1.0);
+  test.write(track.getPosition(0), track.getPosition(1), Code::Positron, 1.0);
+  test.write(track.getPosition(0), track.getPosition(1), Code::MuPlus, 1.0);
+  test.write(track.getPosition(0), track.getPosition(1), Code::MuMinus, 1.0);
 
   test.write(10_g / square(1_cm), 20_g / square(1_cm), Code::PiPlus, 1.0);
   test.write(10_g / square(1_cm), 20_g / square(1_cm), Code::Electron, 1.0);
