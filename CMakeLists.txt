@@ -111,22 +111,9 @@ add_compile_options (
 # Setup external dependencies.
 #
 ###
-include (conan) # self-provided in 'cmake' directory
-#
-# download and build all dependencies
-message (STATUS "Installing dependencies from Conan (this may take some time)...")
-if (APPLE)
-  # compiler.libcxx is not available on MacOS
-  set(SETTINGS compiler.cppstd=17)
-else (APPLE)
-  set(SETTINGS compiler.libcxx=libstdc++11 compiler.cppstd=17)
-endif (APPLE)
-#
-conan_cmake_run (CONANFILE conanfile.txt
-                 BASIC_SETUP CMAKE_TARGETS
-                 BUILD missing
-                 BUILD_TYPE "Release"
-                 SETTINGS ${SETTINGS})
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup(TARGETS)
+
 #
 # add cnpy temporarily. As long as SaveBoostHistogram does not save to parquet directly
 #

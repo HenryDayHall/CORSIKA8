@@ -91,6 +91,7 @@ Once Conan is installed, follow these steps to download and install CORSIKA 8:
 git clone --recursive git@gitlab.iap.kit.edu:AirShowerPhysics/corsika.git
 mkdir corsika-build
 cd corsika-build
+../corsika/conan-install.sh
 cmake ../corsika -DCMAKE_INSTALL_PREFIX=../corsika-install
 make -j8
 make install
@@ -113,6 +114,7 @@ git clone --recursive https://gitlab.iap.kit.edu/AirShowerPhysics/corsika.git
 sudo docker run -v $PWD:/corsika -it corsika/devel:clang-8 /bin/bash
 mkdir build
 cd build
+../corsika/conan-install.sh
 cmake ../corsika -DCMAKE_INSTALL_PREFIX=../corsika-install
 make -j8
 make install
