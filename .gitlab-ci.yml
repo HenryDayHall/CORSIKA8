@@ -126,6 +126,7 @@ config-clang-8:
   script:
     - mkdir -p build
     - cd build
+    - ../conan-install.sh
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
     - set -o pipefail
@@ -176,6 +177,7 @@ build_test-clang-8:
   script:
     - mkdir -p build
     - cd build
+    - ../conan-install.sh
     - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- VERBOSE=1 -j4
     - set -o pipefail
