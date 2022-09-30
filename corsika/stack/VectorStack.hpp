@@ -125,11 +125,11 @@ namespace corsika {
       return super_type::getStackData().getKineticEnergy(super_type::getIndex());
     }
     //! Get direction
-    DirectionVector getDirection() const {
+    DirectionVector const& getDirection() const {
       return super_type::getStackData().getDirection(super_type::getIndex());
     }
     //! Get position
-    Point getPosition() const {
+    Point const& getPosition() const {
       return super_type::getStackData().getPosition(super_type::getIndex());
     }
     //! Get time
@@ -205,8 +205,8 @@ namespace corsika {
 
     Code getPID(size_t i) const { return dataPID_[i]; }
     HEPEnergyType getKineticEnergy(size_t i) const { return dataEkin_[i]; }
-    DirectionVector getDirection(size_t i) const { return direction_[i]; }
-    Point getPosition(size_t i) const { return position_[i]; }
+    DirectionVector const& getDirection(size_t i) const { return direction_[i]; }
+    Point const& getPosition(size_t i) const { return position_[i]; }
     TimeType getTime(size_t i) const { return time_[i]; }
 
     /**
