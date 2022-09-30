@@ -55,7 +55,7 @@ namespace corsika {
     void write(Code const pid, HEPEnergyType const KinenergyPre, double const weight,
                QuantityVector<length_d> const& start, TimeType const t_start,
                QuantityVector<length_d> const& end, HEPEnergyType const KinenergyPost,
-               TimeType const t_end); // , void const* node_ptr);
+               TimeType const t_end, size_t node_ptr);
 
   private:
     ParquetStreamer output_; ///< The primary output file.

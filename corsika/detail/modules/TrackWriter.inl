@@ -27,7 +27,7 @@ namespace corsika {
 
     // write the track to the file
     TOutput::write(step.getParticlePre().getPID(), step.getEkinPre(), step.getParticlePre().getWeight(), start, step.getTimePre(), end,
-                   step.getEkinPost(), step.getTimePost()); // , reinterpret_cast<void const*>(step.getParticlePre().getNode()));
+                   step.getEkinPost(), step.getTimePost(), reinterpret_cast<size_t>(step.getParticlePre().getNode()));
 
     return ProcessReturn::Ok;
   }
