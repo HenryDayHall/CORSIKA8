@@ -103,7 +103,7 @@ check-clang-format:
       - ${CI_PROJECT_DIR}/build/CMakeFiles/CMakeOutput.log
 
 # config for gcc
-config-u-18_04:
+config-u-22_04:
   extends: .config
   image: corsika/devel:u-22.04
 
@@ -147,11 +147,11 @@ config-clang-14:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
 
 # build_test for gcc
-build_test-u-18_04:
+build_test-u-22_04:
   extends: .build_test
   image: corsika/devel:u-22.04
   needs:
-    - job: config-u-18_04
+    - job: config-u-22_04
       artifacts: false
 
 # build_test for clang
@@ -208,11 +208,11 @@ build_test-clang-14:
       - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
 
 # build_test_example for gcc
-build_test_example-u-18_04:
+build_test_example-u-22_04:
   extends: .build_test_example
   image: corsika/devel:u-22.04
   needs:
-    - job: config-u-18_04
+    - job: config-u-22_04
       artifacts: false
 
 
@@ -271,11 +271,11 @@ build_test_example-clang-14:
       - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
 
 # release for gcc
-release-full-u-18_04:
+release-full-u-22_04:
   extends: .release
   image: corsika/devel:u-22.04
   needs:
-    - job: config-u-18_04
+    - job: config-u-22_04
       artifacts: false
 
 # release for clang
@@ -295,7 +295,7 @@ release-full-clang-14:
 coverage:
   image: corsika/devel:u-22.04
   needs:
-    - job: config-u-18_04
+    - job: config-u-22_04
       artifacts: false
   stage: optional
   tags:
@@ -334,7 +334,7 @@ coverage:
 sanity:
   image: corsika/devel:u-22.04
   needs:
-    - job: config-u-18_04
+    - job: config-u-22_04
       artifacts: false
 
   stage: optional
@@ -378,12 +378,12 @@ sanity:
     - cd ${CI_PROJECT_DIR}  # reset the directory
   coverage: '/^TOTAL\s*\d+\s*\d+\s*(.*\%)/'
 
-# the default Python version Ubuntu 18.04 is Python3.8
+# the default Python version Ubuntu 22.04 is Python3.8
 python-3.8:
   extends: .python
   image: corsika/analysis:python-3.9.5
   needs:
-    - job: build_test_example-u-18_04
+    - job: build_test_example-u-22_04
       artifacts: true
   artifacts:
     when: always
