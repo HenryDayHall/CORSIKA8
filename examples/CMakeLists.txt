@@ -37,9 +37,6 @@ add_executable (vertical_EAS vertical_EAS.cpp)
 target_link_libraries (vertical_EAS CORSIKA8::CORSIKA8)
 CORSIKA_REGISTER_EXAMPLE (vertical_EAS RUN_OPTIONS 4 2 10000.)
 
-add_executable (cont_ex cont_ex.cpp)
-target_link_libraries (cont_ex CORSIKA8::CORSIKA8)
-
 add_executable (stopping_power stopping_power.cpp)
 target_link_libraries (stopping_power CORSIKA8::CORSIKA8)
 CORSIKA_REGISTER_EXAMPLE (stopping_power)
