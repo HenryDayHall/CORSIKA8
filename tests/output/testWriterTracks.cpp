@@ -17,18 +17,13 @@
 
 using namespace corsika;
 
-auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
-auto const& cs = *csPtr;
-[[maybe_unused]] auto const& env_dummy = env;
-[[maybe_unused]] auto const& node_dummy = nodePtr;
-
 struct TestWriterTrack : public TrackWriterParquet {
 
   YAML::Node getConfig() const { return YAML::Node(); }
 
   void checkWrite() {
     TrackWriterParquet::write(Code::Unknown, 1_eV, 1.0, {2_m, 3_m, 4_m}, 1_ns,
-                              {5_m, 6_m, 7_m}, 0_eV, 2_ns, nodePtr);
+                              {5_m, 6_m, 7_m}, 0_eV, 2_ns);
   }
 };
 
