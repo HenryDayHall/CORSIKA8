@@ -1,16 +1,17 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * This software is distributed under the terms of the GNU General Public
- * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
- * the license.
- */
+* (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+*
+* This software is distributed under the terms of the GNU General Public
+* Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+* the license.
+*/
 
 #include <array>
 #include <iomanip>
 #include <iostream>
 
 #include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/core/Step.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
@@ -18,96 +19,115 @@
 using namespace corsika;
 using namespace std;
 
-const int nData = 10;
+const int nSteps = 10;
 
 class Process1 : public ContinuousProcess<Process1> {
 public:
-  Process1() {}
-  template <typename D, typename T>
-  ProcessReturn doContinuous(D& d, T&, bool const) const {
-    for (int i = 0; i < nData; ++i) d.p[i] += 1;
-    return ProcessReturn::Ok;
-  }
+ Process1() {}
+ template <typename D>
+ ProcessReturn doContinuous(Step<D>& d, bool const) const {
+   LengthVector displacement_ {get_root_CoordinateSystem(), 1_m, 0_m, 0_m};
+   DirectionVector dU_ {get_root_CoordinateSystem(), {1, 0, 0} };
+   for (int i = 0; i < nSteps; ++i) {
+     d.add_displacement(displacement_);
+     d.add_dU(dU_);
+   }
+   return ProcessReturn::Ok;
+ }
 };
 
 class Process2 : public ContinuousProcess<Process2> {
 public:
-  Process2() {}
+ Process2() {}
 
-  template <typename D, typename T>
-  inline ProcessReturn doContinuous(D& d, T&, bool const) const {
-    for (int i = 0; i < nData; ++i) d.p[i] -= 0.1 * i;
-    return ProcessReturn::Ok;
-  }
+ template <typename D>
+ inline ProcessReturn doContinuous(Step<D>& d, bool const) const {
+   LengthVector displacement_ {get_root_CoordinateSystem(), 0.1_m, 0_m, 0_m};
+   for (int i = 0; i < nSteps; ++i) {
+     d.add_displacement(-displacement_);
+   }
+   return ProcessReturn::Ok;
+ }
 };
 
 class Process3 : public ContinuousProcess<Process3> {
 public:
-  Process3() {}
+ Process3() {}
 
-  template <typename D, typename T>
-  inline ProcessReturn doContinuous(D&, T&, bool const) const {
-    return ProcessReturn::Ok;
-  }
+ template <typename D>
+ inline ProcessReturn doContinuous(Step<D>&, bool const) const {
+   return ProcessReturn::Ok;
+ }
 };
 
 class Process4 : public ContinuousProcess<Process4> {
 public:
-  Process4(const double v)
-      : fV(v) {}
-  template <typename D, typename T>
-  inline ProcessReturn doContinuous(D& d, T&, bool const) const {
-    for (int i = 0; i < nData; ++i) d.p[i] *= fV;
-    return ProcessReturn::Ok;
-  }
+ Process4(const double v)
+     : fV(v) {}
+ template <typename D>
+ inline ProcessReturn doContinuous(Step<D>& d, bool const) const {
+   for (int i = 0; i < nSteps; ++i) {
+     d.add_dEkin(i * fV * 1_eV);
+   }
+   return ProcessReturn::Ok;
+ }
 
 private:
-  double fV;
+ double fV;
 };
 
 struct DummyData {
-  double p[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+ Point getPosition() const { return Point(get_root_CoordinateSystem(), 0_m, 0_m, 0_m); }
+ DirectionVector getDirection() const { return DirectionVector{get_root_CoordinateSystem(), {0, 0, 0} }; }
+
 };
 struct DummyStack {
-  void clear() {}
+ void clear() {}
 };
-struct DummyTrajectory {};
+struct DummyTrajectory {
+ TimeType getDuration(int u) const { return 0_s; }
+ Point getPosition(int u) const { return Point(get_root_CoordinateSystem(), 0_m, 0_m, 0_m); }
+ DirectionVector getDirection(int u) const { return DirectionVector{get_root_CoordinateSystem(), {0, 0, 0} }; }
+
+};
 
 void modular() {
 
-  //              = 0
-  Process1 m1;      // + 1.0
-  Process2 m2;      // - (0.1*i)
-  Process3 m3;      // * 1.0
-  Process4 m4(1.5); // * 1.5
+ //              = 0
+ Process1 m1;      // + 1.0m
+ Process2 m2;      // - 0.1m
+ Process3 m3;      // * 1.0
+ Process4 m4(1.5); // * i * 1.5_eV
 
-  auto sequence = make_sequence(m1, m2, m3, m4);
+ auto sequence = make_sequence(m1, m2, m3, m4);
 
-  DummyData particle;
-  DummyTrajectory track;
+ DummyData particle;
+ DummyTrajectory track;
+ Step step(particle, track);
 
-  double check[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+ sequence.doContinuous(step, ContinuousProcessIndex(0));
+ double X = 0;
+ double energy = 0;
+ double direction = 0;
+ for (int i = 0; i < nSteps; ++i) {
+   X += 1. - 0.1;
+   energy += i * 1.5;
+   direction += 1.;
+ }
 
-  const int nEv = 10;
-  for (int iEv = 0; iEv < nEv; ++iEv) {
-    sequence.doContinuous(particle, track, ContinuousProcessIndex(0));
-    for (int i = 0; i < nData; ++i) {
-      check[i] += 1. - 0.1 * i;
-      check[i] *= 1.5;
-    }
-  }
+ assert(static_cast<int>(step.getDisplacement().getX(get_root_CoordinateSystem()) / 1_m) == static_cast<int>(X));
+ assert((step.getDiffEkin() / 1_eV) == energy);
+ assert((step.getDiffDirection().getX(get_root_CoordinateSystem())) == direction);
 
-  for (int i = 0; i < nData; ++i) { assert(particle.p[i] == check[i]); }
-
-  cout << " done (checking...) " << endl;
+ cout << " done (checking...) " << endl;
 }
 
 int main() {
 
-  logging::set_level(logging::level::info);
+ logging::set_level(logging::level::info);
 
-  std::cout << "staticsequence_example" << std::endl;
+ std::cout << "staticsequence_example" << std::endl;
 
-  modular();
-  return 0;
+ modular();
+ return 0;
 }
