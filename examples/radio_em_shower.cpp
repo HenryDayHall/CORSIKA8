@@ -253,7 +253,7 @@ int main(int argc, char** argv) {
  output.add("tracks", tracks);
 
  // long. profile
- LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
+ LongitudinalWriter profile{showerAxis, 10_g / square(1_cm)};
  output.add("profile", profile);
  LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
