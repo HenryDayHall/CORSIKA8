@@ -175,9 +175,8 @@ namespace corsika {
         p.h = p_h;
       }
 
-      legendre = pow(-1, p.m) * boost::math::tr1::assoc_legendre(p.n, p.m, sin(lat_sph));
-      next_legendre =
-          pow(-1, p.m) * boost::math::tr1::assoc_legendre(p.n + 1, p.m, sin(lat_sph));
+      legendre = boost::math::tr1::assoc_legendre(p.n, p.m, sin(lat_sph));
+      next_legendre = boost::math::tr1::assoc_legendre(p.n + 1, p.m, sin(lat_sph));
 
       // Schmidt semi-normalization
       if (p.m > 0) {
