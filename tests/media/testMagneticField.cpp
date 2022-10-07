@@ -14,13 +14,8 @@
 #include <corsika/media/IMediumModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/IMagneticFieldModel.hpp>
-#include <corsika/media/VolumeTreeNode.hpp>
 #include <corsika/media/GeomagneticModel.hpp>
 
-#include <SetupTestTrajectory.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
-
-#include <boost/filesystem.hpp>
 #include <catch2/catch.hpp>
 
 using namespace corsika;
