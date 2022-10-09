@@ -80,7 +80,7 @@ namespace corsika::sophia {
     initial_(nucleonSophiaCode);
     double Enucleon = nucleonP4.getTimeLikeComponent() / 1_GeV;
     double Ephoton = photonP4.getTimeLikeComponent() / 1_GeV;
-    double theta = 0.0; // set head on collision
+    double theta = 0.0; // set nucleon at rest in collision
     int Imode;
     CORSIKA_LOGGER_DEBUG(logger_,
                         "calling SOPHIA eventgen with L0={}, E0={}, eps={},theta={}",

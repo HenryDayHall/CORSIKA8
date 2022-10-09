@@ -62,9 +62,11 @@ namespace corsika::sophia {
      * @return inelastic cross section
      * elastic cross section
      */
-    CrossSectionType getCrossSection(Code const projectile, Code const target,
-                                     FourMomentum const& projectileP4,
-                                     FourMomentum const& targetP4) const {
+    CrossSectionType getCrossSection(
+        [[maybe_unused]] Code const projectile, [[maybe_unused]] Code const target,
+        [[maybe_unused]] FourMomentum const& projectileP4,
+        [[maybe_unused]] FourMomentum const& targetP4) const {
+      CORSIKA_LOGGER_ERROR(logger_, "cross section not implemented in SOPHIA!");
       return CrossSectionType::zero();
     }
     /**

@@ -18,16 +18,17 @@
 
 namespace corsika::proposal {
 
-  template <typename THadronicModel>
+  template <typename THadronicLEModel, typename THadronicHEModel>
   template <typename TEnvironment>
-  inline InteractionModel<THadronicModel>::InteractionModel(
-      TEnvironment const& _env, THadronicModel& _hadint,
+  inline InteractionModel<THadronicLEModel, THadronicHEModel>::InteractionModel(
+      TEnvironment const& _env, THadronicLEModel& _hadintLE, THadronicHEModel& _hadintHE,
       HEPEnergyType const& _enthreshold)
       : ProposalProcessBase(_env)
-      , HadronicPhotonModel<THadronicModel>(_hadint, _enthreshold) {}
+      , HadronicPhotonModel<THadronicLEModel, THadronicHEModel>(_hadintLE, _hadintHE,
+                                                                _enthreshold) {}
 
-  template <typename THadronicModel>
-  inline void InteractionModel<THadronicModel>::buildCalculator(
+  template <typename THadronicLEModel, typename THadronicHEModel>
+  inline void InteractionModel<THadronicLEModel, THadronicHEModel>::buildCalculator(
       Code code, NuclearComposition const& comp) {
     // search crosssection builder for given particle
     auto p_cross = cross.find(code);
@@ -52,9 +53,10 @@ namespace corsika::proposal {
         PROPOSAL::make_interaction(c, true, true));
   }
 
-  template <typename THadronicModel>
+  template <typename THadronicLEModel, typename THadronicHEModel>
   template <typename TStackView>
-  inline ProcessReturn InteractionModel<THadronicModel>::doInteraction(
+  inline ProcessReturn
+  InteractionModel<THadronicLEModel, THadronicHEModel>::doInteraction(
       TStackView& view, Code const projectileId, FourMomentum const& projectileP4) {
 
     auto const projectile = view.getProjectile();
@@ -138,9 +140,10 @@ namespace corsika::proposal {
     return ProcessReturn::Ok;
   }
 
-  template <typename THadronicModel>
+  template <typename THadronicLEModel, typename THadronicHEModel>
   template <typename TParticle>
-  inline CrossSectionType InteractionModel<THadronicModel>::getCrossSection(
+  inline CrossSectionType
+  InteractionModel<THadronicLEModel, THadronicHEModel>::getCrossSection(
       TParticle const& projectile, Code const projectileId,
       FourMomentum const& projectileP4) {
 
