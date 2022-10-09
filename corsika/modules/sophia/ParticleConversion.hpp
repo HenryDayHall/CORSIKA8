@@ -29,7 +29,7 @@ namespace corsika::sophia {
   //   Pion = 2,
   //   Kaon = 3,
   // };
-  //using SophiaXSClassIntType = std::underlying_type<SophiaXSClass>::type;
+  // using SophiaXSClassIntType = std::underlying_type<SophiaXSClass>::type;
 
 #include <corsika/modules/sophia/Generated.inc>
 

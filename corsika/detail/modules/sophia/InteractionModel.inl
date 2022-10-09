@@ -83,8 +83,8 @@ namespace corsika::sophia {
     double theta = 0.0; // set nucleon at rest in collision
     int Imode;
     CORSIKA_LOGGER_DEBUG(logger_,
-                        "calling SOPHIA eventgen with L0={}, E0={}, eps={},theta={}",
-                        nucleonSophiaCode, Enucleon, Ephoton, theta);
+                         "calling SOPHIA eventgen with L0={}, E0={}, eps={},theta={}",
+                         nucleonSophiaCode, Enucleon, Ephoton, theta);
     count_++;
     // call sophia
     eventgen_(nucleonSophiaCode, Enucleon, Ephoton, theta, Imode);
@@ -124,10 +124,10 @@ namespace corsika::sophia {
           calculate_kinetic_energy(momentum.getNorm(), get_mass(pid));
 
       CORSIKA_LOGGER_TRACE(logger_, "SOPHIA: pid={}, p={} GeV", pidSophia,
-                          momentumSophia.getComponents() / 1_GeV);
+                           momentumSophia.getComponents() / 1_GeV);
 
       CORSIKA_LOGGER_TRACE(logger_, "CORSIKA: pid={}, p={} GeV", pid,
-                          momentum.getComponents() / 1_GeV);
+                           momentum.getComponents() / 1_GeV);
 
       auto pnew =
           secondaries.addSecondary(std::make_tuple(pid, Ekin, momentum.normalized()));
@@ -136,7 +136,7 @@ namespace corsika::sophia {
       E_final += pnew.getEnergy();
     }
     CORSIKA_LOGGER_TRACE(logger_, "Efinal={} GeV,Pfinal={} GeV", E_final / 1_GeV,
-                        P_final.getComponents() / 1_GeV);
+                         P_final.getComponents() / 1_GeV);
   }
 
 } // namespace corsika::sophia

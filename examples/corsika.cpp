@@ -82,8 +82,7 @@
 using namespace corsika;
 using namespace std;
 
-using EnvironmentInterface =
-    IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
 using EnvType = Environment<EnvironmentInterface>;
 
 using Particle = setup::Stack<EnvType>::particle_type;
@@ -110,7 +109,7 @@ void registerRandomStreams(int seed) {
 template <typename T>
 using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
 
   // the main command line description
   CLI::App app{"Simulate standard (downgoing) showers with CORSIKA 8."};
@@ -171,8 +170,7 @@ int main(int argc, char **argv) {
   CLI11_PARSE(app, argc, argv);
 
   if (app.count("--verbosity")) {
-    std::string_view const loglevel =
-        app["--verbosity"]->as<std::string_view>();
+    std::string_view const loglevel = app["--verbosity"]->as<std::string_view>();
     if (loglevel == "warn") {
       logging::set_level(logging::level::warn);
     } else if (loglevel == "info") {
@@ -193,8 +191,7 @@ int main(int argc, char **argv) {
   // gets all messed up
   if (app.count("--pdg") == 0) {
     if ((app.count("-A") == 0) || (app.count("-Z") == 0)) {
-      CORSIKA_LOG_ERROR(
-          "If --pdg is not provided, then both -A and -Z are required.");
+      CORSIKA_LOG_ERROR("If --pdg is not provided, then both -A and -Z are required.");
       return 1;
     }
   }
@@ -204,7 +201,7 @@ int main(int argc, char **argv) {
 
   /* === START: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
   EnvType env;
-  CoordinateSystemPtr const &rootCS = env.getCoordinateSystem();
+  CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
   GeomagneticModel wmm(center, corsika_data("GeoMag/WMM.COF"));
 
@@ -218,10 +215,9 @@ int main(int argc, char **argv) {
   ofstream atmout("earth.dat");
   for (LengthType h = 0_m; h < 110_km; h += 100_m) {
     Point const ptest{rootCS, 0_m, 0_m, constants::EarthRadius::Mean + h};
-    auto rho = env.getUniverse()
-                   ->getContainingNode(ptest)
-                   ->getModelProperties()
-                   .getMassDensity(ptest);
+    auto rho =
+        env.getUniverse()->getContainingNode(ptest)->getModelProperties().getMassDensity(
+            ptest);
     atmout << h / 1_m << " " << rho / 1_kg * cube(1_m) << "\n";
   }
   atmout.close();
@@ -257,8 +253,8 @@ int main(int argc, char **argv) {
 
   // convert the momentum to the zenith and azimuth angle of the primary
   auto const [px, py, pz] =
-      std::make_tuple(P0 * sin(thetaRad) * cos(phiRad),
-                      P0 * sin(thetaRad) * sin(phiRad), -P0 * cos(thetaRad));
+      std::make_tuple(P0 * sin(thetaRad) * cos(phiRad), P0 * sin(thetaRad) * sin(phiRad),
+                      -P0 * cos(thetaRad));
   auto plab = MomentumVector(rootCS, {px, py, pz});
   /* === END: CONSTRUCT PRIMARY PARTICLE === */
 
@@ -270,16 +266,14 @@ int main(int argc, char **argv) {
                       static_pow<2>(injectionHeight));
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =
-      showerCore +
-      DirectionVector{rootCS,
-                      {-sin(thetaRad) * cos(phiRad),
-                       -sin(thetaRad) * sin(phiRad), cos(thetaRad)}} *
-          t;
+      showerCore + DirectionVector{rootCS,
+                                   {-sin(thetaRad) * cos(phiRad),
+                                    -sin(thetaRad) * sin(phiRad), cos(thetaRad)}} *
+                       t;
 
   // we make the axis much longer than the inj-core distance since the
   // profile will go beyond the core, depending on zenith angle
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2,
-                              env};
+  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
   /* === END: CONSTRUCT GEOMETRY === */
 
   // create the output manager that we then register outputs with
@@ -326,8 +320,7 @@ int main(int argc, char **argv) {
 
   HEPEnergyType const emcut = 50_GeV;
   HEPEnergyType const hadcut = 50_GeV;
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true,
-                                             dEdX);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, dEdX);
 
   // energy threshold for high energy hadronic model. Affects LE/HE switch for
   // hadron interactions and the hadronic photon model in proposal
@@ -351,13 +344,12 @@ int main(int argc, char **argv) {
   // assemble all processes into an ordered process list
   struct EnergySwitch {
     HEPEnergyType cutE_;
-    EnergySwitch(HEPEnergyType cutE) : cutE_(cutE) {}
-    bool operator()(const Particle &p) const {
-      return (p.getKineticEnergy() < cutE_);
-    }
+    EnergySwitch(HEPEnergyType cutE)
+        : cutE_(cutE) {}
+    bool operator()(const Particle& p) const { return (p.getKineticEnergy() < cutE_); }
   };
-  auto hadronSequence = make_select(EnergySwitch(heHadronModelThreshold),
-                                    urqmdCounted, sibyllCounted);
+  auto hadronSequence =
+      make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, sibyllCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   TrackWriter trackWriter{tracks};
@@ -370,8 +362,8 @@ int main(int argc, char **argv) {
   output.add("particles", observationLevel);
 
   // assemble the final process sequence
-  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence,
-                                cut, emCascade, emContinuous, // trackWriter,
+  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, cut,
+                                emCascade, emContinuous, // trackWriter,
                                 observationLevel, longprof);
   /* === END: SETUP PROCESS LIST === */
 
@@ -390,8 +382,7 @@ int main(int argc, char **argv) {
   CORSIKA_LOG_INFO("Primary Energy: {}", E0);
   CORSIKA_LOG_INFO("Primary Momentum: {}", P0);
   CORSIKA_LOG_INFO("Point of Injection: {}", injectionPos.getCoordinates());
-  CORSIKA_LOG_INFO("Shower Axis Length: {}",
-                   (showerCore - injectionPos).getNorm() * 1.2);
+  CORSIKA_LOG_INFO("Shower Axis Length: {}", (showerCore - injectionPos).getNorm() * 1.2);
 
   // trigger the output manager to open the library for writing
   output.startOfLibrary();
@@ -403,10 +394,8 @@ int main(int argc, char **argv) {
 
     // directory for outputs
     string const outdir(app["--filename"]->as<std::string>());
-    string const labHist_file =
-        outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
-    string const cMSHist_file =
-        outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
+    string const labHist_file = outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
+    string const cMSHist_file = outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
 
     // setup particle stack, and add primary particle
     stack.clear();
@@ -428,16 +417,15 @@ int main(int argc, char **argv) {
     HEPEnergyType const Efinal =
         dEdX.getEnergyLost() + observationLevel.getEnergyGround();
 
-    CORSIKA_LOG_INFO("total energy budget (GeV): {} (dEdX={} ground={}), "
-                     "relative difference (%): {}",
-                     Efinal / 1_GeV, dEdX.getEnergyLost() / 1_GeV,
-                     observationLevel.getEnergyGround() / 1_GeV,
-                     (Efinal / E0 - 1) * 100);
+    CORSIKA_LOG_INFO(
+        "total energy budget (GeV): {} (dEdX={} ground={}), "
+        "relative difference (%): {}",
+        Efinal / 1_GeV, dEdX.getEnergyLost() / 1_GeV,
+        observationLevel.getEnergyGround() / 1_GeV, (Efinal / E0 - 1) * 100);
 
     // auto const hists = heModelCounted.getHistogram() +
     // urqmdCounted.getHistogram();
-    auto const hists =
-        sibyllCounted.getHistogram() + urqmdCounted.getHistogram();
+    auto const hists = sibyllCounted.getHistogram() + urqmdCounted.getHistogram();
 
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);

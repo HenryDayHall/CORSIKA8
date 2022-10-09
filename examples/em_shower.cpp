@@ -80,7 +80,7 @@ void registerRandomStreams(int seed) {
 template <typename T>
 using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
 
   logging::set_level(logging::level::warn);
 
@@ -92,18 +92,15 @@ int main(int argc, char **argv) {
   feenableexcept(FE_INVALID);
   int seed = 0;
 
-  if (argc >= 3) {
-    seed = std::stoi(std::string(argv[2]));
-  }
+  if (argc >= 3) { seed = std::stoi(std::string(argv[2])); }
   // initialize random number sequence(s)
   registerRandomStreams(seed);
 
   // setup environment, geometry
-  using EnvironmentInterface =
-      IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+  using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
   using EnvType = Environment<EnvironmentInterface>;
   EnvType env;
-  CoordinateSystemPtr const &rootCS = env.getCoordinateSystem();
+  CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
 
   // build a Linsley US Standard atmosphere into `env`
@@ -148,11 +145,9 @@ int main(int argc, char **argv) {
                       static_pow<2>(injectionHeight));
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =
-      showerCore +
-      DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
+      showerCore + DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
-  std::cout << "point of injection: " << injectionPos.getCoordinates()
-            << std::endl;
+  std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
 
   stack.addParticle(std::make_tuple(
       beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
@@ -161,8 +156,8 @@ int main(int argc, char **argv) {
   CORSIKA_LOG_INFO("shower axis length: {} ",
                    (showerCore - injectionPos).getNorm() * 1.02);
 
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02,
-                              env, false, 1000};
+  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
+                              false, 1000};
 
   OutputManager output("em_shower_outputs");
 
@@ -172,15 +167,13 @@ int main(int argc, char **argv) {
 
   // setup processes, decays and interactions
 
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(2_MeV, 2_MeV, 100_GeV, 100_GeV,
-                                             true, dEdX);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(2_MeV, 2_MeV, 100_GeV, 100_GeV, true, dEdX);
   corsika::sibyll::Interaction sibyll{env};
   corsika::sophia::InteractionModel sophia;
   HEPEnergyType heThresholdNN = 60_GeV;
   corsika::proposal::Interaction emCascade(
       env, sophia, sibyll.getHadronInteractionModel(), heThresholdNN);
-  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(
-      env, dEdX);
+  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
   //  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
   //  NOT possible right now, due to interface differenc in PROPOSAL
@@ -199,8 +192,7 @@ int main(int argc, char **argv) {
       obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
   output.add("particles", observationLevel);
 
-  auto sequence =
-      make_sequence(emCascade, emContinuous, longprof, cut, observationLevel);
+  auto sequence = make_sequence(emCascade, emContinuous, longprof, cut, observationLevel);
   // define air shower object, run simulation
   setup::Tracking tracking;
 
@@ -212,12 +204,12 @@ int main(int argc, char **argv) {
 
   EAS.run();
 
-  HEPEnergyType const Efinal =
-      dEdX.getEnergyLost() + observationLevel.getEnergyGround();
+  HEPEnergyType const Efinal = dEdX.getEnergyLost() + observationLevel.getEnergyGround();
 
-  CORSIKA_LOG_INFO("total energy budget (GeV): {}, "
-                   "relative difference (%): {}",
-                   Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
+  CORSIKA_LOG_INFO(
+      "total energy budget (GeV): {}, "
+      "relative difference (%): {}",
+      Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
 
   output.endOfLibrary();
 }
