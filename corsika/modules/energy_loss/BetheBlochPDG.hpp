@@ -54,8 +54,7 @@ namespace corsika {
      *        globally limiting factor (or not)
      clang-format-on **/
     template <typename TParticle>
-    ProcessReturn doContinuous(Step<TParticle>& step,
-                               bool const limitFlag);
+    ProcessReturn doContinuous(Step<TParticle>& step, bool const limitFlag);
 
     template <typename TParticle, typename TTrajectory>
     LengthType getMaxStepLength(TParticle const&, TTrajectory const&) const;

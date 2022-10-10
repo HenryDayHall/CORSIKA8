@@ -73,7 +73,7 @@ namespace corsika::proposal {
     auto E_i_total = step.getEkinPre() + step.getParticlePre().getMass();
     auto E_f_total = E_i_total - loss;
 
-      // draw random numbers required for scattering process
+    // draw random numbers required for scattering process
     std::uniform_real_distribution<double> distr(0., 1.);
     auto rnd = std::array<double, 4>();
     for (auto& it : rnd) it = distr(RNG_);
@@ -87,8 +87,9 @@ namespace corsika::proposal {
 
     // update particle direction after continuous loss caused by multiple
     // scattering
-    DirectionVector dU_{particle_dir.getCoordinateSystem(),
-                        {final_direction.GetX(), final_direction.GetY(), final_direction.GetZ()}};
+    DirectionVector dU_{
+        particle_dir.getCoordinateSystem(),
+        {final_direction.GetX(), final_direction.GetY(), final_direction.GetZ()}};
     DirectionVector diff_dir_ = dU_ - particle_dir;
     step.add_dU(diff_dir_);
   }
@@ -98,18 +99,20 @@ namespace corsika::proposal {
   inline ProcessReturn ContinuousProcess<TOutput>::doContinuous(Step<TParticle>& step,
                                                                 bool const) {
     if (!canInteract(step.getParticlePre().getPID())) return ProcessReturn::Ok;
-    if (step.getDisplacement().getSquaredNorm() == static_pow<2>(0_m)) return ProcessReturn::Ok;
+    if (step.getDisplacement().getSquaredNorm() == static_pow<2>(0_m))
+      return ProcessReturn::Ok;
 
     // calculate passed grammage
-    auto dX = step.getParticlePre().getNode()->getModelProperties().getIntegratedGrammage(step.getStraightTrack());
+    auto dX = step.getParticlePre().getNode()->getModelProperties().getIntegratedGrammage(
+        step.getStraightTrack());
 
     // get or build corresponding track integral calculator and solve the
     // integral
     auto c = getCalculator(step.getParticlePre(), calc);
     auto E_i_total = (step.getEkinPre() + step.getParticlePre().getMass());
     auto E_f_total = (c->second).disp->UpperLimitTrackIntegral(
-          E_i_total * (1 / 1_MeV), dX * ((1 / 1_g) * 1_cm * 1_cm)) *
-                   1_MeV;
+                         E_i_total * (1 / 1_MeV), dX * ((1 / 1_g) * 1_cm * 1_cm)) *
+                     1_MeV;
     auto dE = E_i_total - E_f_total;
 
     // if the particle has a charge take multiple scattering into account
@@ -117,7 +120,8 @@ namespace corsika::proposal {
     step.add_dEkin(-dE); // on the stack, this is just kinetic energy, E-m
 
     // also send to output
-    TOutput::write(step.getPositionPre(), step.getPositionPost(), step.getParticlePre().getPID(), dE);
+    TOutput::write(step.getPositionPre(), step.getPositionPost(),
+                   step.getParticlePre().getPID(), dE);
 
     return ProcessReturn::Ok;
   }

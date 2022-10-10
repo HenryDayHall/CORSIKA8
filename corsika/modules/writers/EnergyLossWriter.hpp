@@ -1,10 +1,10 @@
 /*
-* (c) Copyright 2021 CORSIKA Project, corsika-project@lists.kit.edu
-*
-* This software is distributed under the terms of the GNU General Public
-* Licence version 3 (GPL Version 3). See file LICENSE for a full version of
-* the license.
-*/
+ * (c) Copyright 2021 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
 
 #pragma once
 
@@ -19,153 +19,153 @@
 #include <array>
 
 /**
-* @file EnergyLossWriter.hpp
-*/
+ * @file EnergyLossWriter.hpp
+ */
 
 namespace corsika {
 
- // clang-format-off
- /**
-  * The energy loss writer can be used to pool several energy loss processes into one
-  * output file/stream.
-  *
-  * Typically many processes/modules can lead to energy losses in the shower. The
-  * EnergyLossWriter can be used in combination with the SubWriter class to collect all
-  * of them into a single output stream:
-  *
-  * \code {.cpp}
-  * # showerAxis must be a ShowerAxis object
-  * # the X binning can be specified.
-  * EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
-  * # add to OutputManager:
-  * output.add("energyloss", dEdX);
-  * # add SubWriters, e.g. Bethe-Bloch:
-  * BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss{dEdX};
-  * ...
-  * \endcode
-  *
-  * The EnergyLossWriter processes data on single-particle-level. The final output
-  * writer, e.g. EnergyLossWriterParquet, processes data on profile-level (bins in X).
-  * The default output option is parquet format.
-  *
-  * @tparam TOutput
-  */
- // clang-format-on
+  // clang-format-off
+  /**
+   * The energy loss writer can be used to pool several energy loss processes into one
+   * output file/stream.
+   *
+   * Typically many processes/modules can lead to energy losses in the shower. The
+   * EnergyLossWriter can be used in combination with the SubWriter class to collect all
+   * of them into a single output stream:
+   *
+   * \code {.cpp}
+   * # showerAxis must be a ShowerAxis object
+   * # the X binning can be specified.
+   * EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
+   * # add to OutputManager:
+   * output.add("energyloss", dEdX);
+   * # add SubWriters, e.g. Bethe-Bloch:
+   * BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss{dEdX};
+   * ...
+   * \endcode
+   *
+   * The EnergyLossWriter processes data on single-particle-level. The final output
+   * writer, e.g. EnergyLossWriterParquet, processes data on profile-level (bins in X).
+   * The default output option is parquet format.
+   *
+   * @tparam TOutput
+   */
+  // clang-format-on
 
- /**
-  * Local helper namespace to store number and names of dEdX profile columns.
-  */
- namespace dEdX_output {
+  /**
+   * Local helper namespace to store number and names of dEdX profile columns.
+   */
+  namespace dEdX_output {
 
-   /**
-    * Definition of longitudinal profile columns.
-    */
-   enum class ProfileIndex { Total, Entries };
+    /**
+     * Definition of longitudinal profile columns.
+     */
+    enum class ProfileIndex { Total, Entries };
 
-   /**
-    * Number of columns (static).
-    */
-   size_t constexpr NColumns = static_cast<int>(ProfileIndex::Entries);
+    /**
+     * Number of columns (static).
+     */
+    size_t constexpr NColumns = static_cast<int>(ProfileIndex::Entries);
 
-   /**
-    * Names of columns in output.
-    */
-   static std::array<char const*, NColumns> constexpr ProfileIndexNames{{"total"}};
+    /**
+     * Names of columns in output.
+     */
+    static std::array<char const*, NColumns> constexpr ProfileIndexNames{{"total"}};
 
-   /**
-    * Data type to store column data.
-    */
-   typedef std::array<HEPEnergyType, NColumns> Profile;
+    /**
+     * Data type to store column data.
+     */
+    typedef std::array<HEPEnergyType, NColumns> Profile;
 
- } // namespace dEdX_output
+  } // namespace dEdX_output
 
- /**
-  * The EnergyLossWriter can be used to pool the dEdX energy loss of several
-  * processes/modules into one output file/stream.
-  *
-  * Typically several processes/modules can lead to energy losses along the shower axis
-  * in the shower. The EnergyLossWriter can be used in combination with the SubWriter
-  * class to collect all of them into a single output stream:
-  *
-  * \code {.cpp}
-  * # showerAxis must be a ShowerAxis object
-  * # the X binning can be specified.
-  * EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
-  * # add to OutputManager:
-  * output.add("energyloss", dEdX);
-  * # add SubWriters, e.g. BetheBlochPDG, CONEX:
-  * BetheBlochPDG<SubWriter<decltype(dEdX)>> long{dEdX};
-  * CONEXhybrid<SubWriter<decltype(dEdX)>> conex{..., dEdX};
-  * ...
-  * \endcode
-  *
-  * The default output option is parquet format.
-  *
-  * @tparam TOutput
-  */
+  /**
+   * The EnergyLossWriter can be used to pool the dEdX energy loss of several
+   * processes/modules into one output file/stream.
+   *
+   * Typically several processes/modules can lead to energy losses along the shower axis
+   * in the shower. The EnergyLossWriter can be used in combination with the SubWriter
+   * class to collect all of them into a single output stream:
+   *
+   * \code {.cpp}
+   * # showerAxis must be a ShowerAxis object
+   * # the X binning can be specified.
+   * EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
+   * # add to OutputManager:
+   * output.add("energyloss", dEdX);
+   * # add SubWriters, e.g. BetheBlochPDG, CONEX:
+   * BetheBlochPDG<SubWriter<decltype(dEdX)>> long{dEdX};
+   * CONEXhybrid<SubWriter<decltype(dEdX)>> conex{..., dEdX};
+   * ...
+   * \endcode
+   *
+   * The default output option is parquet format.
+   *
+   * @tparam TOutput
+   */
 
- template <typename TOutput = EnergyLossWriterParquet<dEdX_output::NColumns>>
- class EnergyLossWriter : public TOutput {
+  template <typename TOutput = EnergyLossWriterParquet<dEdX_output::NColumns>>
+  class EnergyLossWriter : public TOutput {
 
- public:
-   /**
-    * Construct a new writer.
-    */
-   EnergyLossWriter(ShowerAxis const& axis,
-                    GrammageType dX = 10_g / square(1_cm), // profile binning
-                    unsigned int const nBins = 200,        // number of bins
-                    GrammageType dX_threshold = 0.0001_g /
-                                                square(1_cm)); // ignore too short tracks
+  public:
+    /**
+     * Construct a new writer.
+     */
+    EnergyLossWriter(ShowerAxis const& axis,
+                     GrammageType dX = 10_g / square(1_cm), // profile binning
+                     unsigned int const nBins = 200,        // number of bins
+                     GrammageType dX_threshold = 0.0001_g /
+                                                 square(1_cm)); // ignore too short tracks
 
-   void startOfLibrary(boost::filesystem::path const& directory) final override;
+    void startOfLibrary(boost::filesystem::path const& directory) final override;
 
-   void startOfShower(unsigned int const showerId) final override;
+    void startOfShower(unsigned int const showerId) final override;
 
-   void endOfShower(unsigned int const showerId) final override;
+    void endOfShower(unsigned int const showerId) final override;
 
-   void endOfLibrary() final override;
+    void endOfLibrary() final override;
 
-   /**
-    * Add continuous energy loss.
-    */
-   void write(Point const& p0, Point const& p1, Code const PID, HEPEnergyType const dE);
+    /**
+     * Add continuous energy loss.
+     */
+    void write(Point const& p0, Point const& p1, Code const PID, HEPEnergyType const dE);
 
-   /**
-    * Add localized energy loss.
-    */
-   void write(Point const& point, Code const PID, HEPEnergyType const dE);
+    /**
+     * Add localized energy loss.
+     */
+    void write(Point const& point, Code const PID, HEPEnergyType const dE);
 
-   /**
-    * Add binned energy loss.
-    */
-   void write(GrammageType const Xstart, GrammageType const Xend, Code const PID,
-              HEPEnergyType const dE);
+    /**
+     * Add binned energy loss.
+     */
+    void write(GrammageType const Xstart, GrammageType const Xend, Code const PID,
+               HEPEnergyType const dE);
 
-   /**
-    * Get total observed energy loss.
-    *
-    * @return HEPEnergyType The total energy.
-    */
-   HEPEnergyType getEnergyLost() const;
+    /**
+     * Get total observed energy loss.
+     *
+     * @return HEPEnergyType The total energy.
+     */
+    HEPEnergyType getEnergyLost() const;
 
-   /**
-    * Return a summary.
-    */
-   YAML::Node getSummary() const;
+    /**
+     * Return a summary.
+     */
+    YAML::Node getSummary() const;
 
-   /**
-    * Return the configuration of this output.
-    */
-   YAML::Node getConfig() const;
+    /**
+     * Return the configuration of this output.
+     */
+    YAML::Node getConfig() const;
 
- private:
-   ShowerAxis const& showerAxis_; ///< conversion between geometry and grammage
-   GrammageType dX_;              ///< binning of profile.
-   size_t nBins_;                 ///< number of profile bins.
-   GrammageType dX_threshold_;    ///< too short tracks are discarded.
-   std::vector<dEdX_output::Profile> profile_; // longitudinal profile
+  private:
+    ShowerAxis const& showerAxis_; ///< conversion between geometry and grammage
+    GrammageType dX_;              ///< binning of profile.
+    size_t nBins_;                 ///< number of profile bins.
+    GrammageType dX_threshold_;    ///< too short tracks are discarded.
+    std::vector<dEdX_output::Profile> profile_; // longitudinal profile
 
- }; // namespace corsika
+  }; // namespace corsika
 
 } // namespace corsika
 

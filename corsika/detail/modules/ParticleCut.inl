@@ -70,7 +70,8 @@ namespace corsika {
   }
 
   template <typename TOutput>
-  inline bool ParticleCut<TOutput>::isBelowEnergyCut(Code const pid, HEPEnergyType const energyLab) const {
+  inline bool ParticleCut<TOutput>::isBelowEnergyCut(
+      Code const pid, HEPEnergyType const energyLab) const {
     // nuclei
     if (is_nucleus(pid)) {
       // calculate energy per nucleon
@@ -82,14 +83,15 @@ namespace corsika {
   }
 
   template <typename TOutput>
-  inline bool ParticleCut<TOutput>::checkCutParticle(Code const pid, HEPEnergyType const kine_energy, TimeType const timePost) const {
+  inline bool ParticleCut<TOutput>::checkCutParticle(Code const pid,
+                                                     HEPEnergyType const kine_energy,
+                                                     TimeType const timePost) const {
 
     HEPEnergyType const energy = kine_energy + get_mass(pid);
     CORSIKA_LOG_DEBUG(
         "ParticleCut: checking {} ({}), E_kin= {} GeV, E={} GeV, m={} "
         "GeV",
-        pid, get_PDG(pid), kine_energy / 1_GeV, energy / 1_GeV,
-        get_mass(pid) / 1_GeV);
+        pid, get_PDG(pid), kine_energy / 1_GeV, energy / 1_GeV, get_mass(pid) / 1_GeV);
     if (doCutInv_ && is_neutrino(pid)) {
       CORSIKA_LOG_DEBUG("removing inv. particle...");
       return true;
@@ -128,8 +130,11 @@ namespace corsika {
   template <typename TParticle>
   inline ProcessReturn ParticleCut<TOutput>::doContinuous(Step<TParticle>& step,
                                                           bool const) {
-    if (checkCutParticle(step.getParticlePre().getPID(), step.getEkinPost(), step.getTimePost())) {
-      this->write(step.getPositionPost(), step.getParticlePre().getPID(), step.getEkinPost()); // ToDO: should the cut happen at the start of the track? For now, I set it to happen at the start
+    if (checkCutParticle(step.getParticlePre().getPID(), step.getEkinPost(),
+                         step.getTimePost())) {
+      this->write(step.getPositionPost(), step.getParticlePre().getPID(),
+                  step.getEkinPost()); // ToDO: should the cut happen at the start of the
+                                       // track? For now, I set it to happen at the start
       CORSIKA_LOG_TRACE("removing during continuous");
       // signal to upstream code that this particle was deleted
       return ProcessReturn::ParticleAbsorbed;

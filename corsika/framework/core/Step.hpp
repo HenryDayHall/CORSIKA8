@@ -83,14 +83,12 @@ namespace corsika {
       return getParticlePre().getDirection();
     }
 
-    VelocityVector getVelocityVector() const {
-        return getDisplacement() / getDiffT();
-    }
+    VelocityVector getVelocityVector() const { return getDisplacement() / getDiffT(); }
 
     StraightTrajectory getStraightTrack() const {
-        Line const line(getPositionPre(), getVelocityVector());
-        StraightTrajectory track(line, getDiffT());
-        return track;
+      Line const line(getPositionPre(), getVelocityVector());
+      StraightTrajectory track(line, getDiffT());
+      return track;
     }
 
     DirectionVector getDirectionPost() const {

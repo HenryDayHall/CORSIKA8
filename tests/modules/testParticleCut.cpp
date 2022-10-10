@@ -213,10 +213,8 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
       auto particle = stack.addParticle(
           std::make_tuple(proType, Eabove - get_mass(proType),
                           DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
-    Step step(particle, track);
-      if (cut.doContinuous(step) == ProcessReturn::ParticleAbsorbed) {
-        particle.erase();
-      }
+      Step step(particle, track);
+      if (cut.doContinuous(step) == ProcessReturn::ParticleAbsorbed) { particle.erase(); }
     }
 
     CHECK(stack.getEntries() == 9);

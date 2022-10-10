@@ -82,7 +82,8 @@ namespace corsika {
      * @return ProcessReturn
      */
     template <typename TParticle>
-    ProcessReturn doContinuous(Step<TParticle>&,
+    ProcessReturn doContinuous(
+        Step<TParticle>&,
         const bool limitFlag = false); // this is not used for ParticleCut
 
     /**
@@ -108,7 +109,6 @@ namespace corsika {
     YAML::Node getConfig() const override;
 
   private:
-
     bool checkCutParticle(Code const, HEPEnergyType const, TimeType const) const;
 
     bool isBelowEnergyCut(Code const, HEPEnergyType const) const;

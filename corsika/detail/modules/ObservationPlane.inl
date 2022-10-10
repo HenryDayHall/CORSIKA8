@@ -23,7 +23,7 @@ namespace corsika {
   template <typename TTracking, typename TOutput>
   template <typename TParticle>
   inline ProcessReturn ObservationPlane<TTracking, TOutput>::doContinuous(
-          Step<TParticle>& step, bool const stepLimit) {
+      Step<TParticle>& step, bool const stepLimit) {
     /*
        The current step did not yet reach the ObservationPlane, do nothing now and wait:
      */

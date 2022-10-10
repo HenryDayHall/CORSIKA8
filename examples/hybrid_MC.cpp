@@ -124,8 +124,9 @@ public:
     auto const n = plane_.getNormal();
     auto const proj = n.dot(delta);
     if (proj < -1_m) {
-      CORSIKA_LOG_INFO("particle {} failes: proj={}, delta={}, p={}", step.getParticlePre().asString(),
-                       proj, delta, step.getPositionPost());
+      CORSIKA_LOG_INFO("particle {} failes: proj={}, delta={}, p={}",
+                       step.getParticlePre().asString(), proj, delta,
+                       step.getPositionPost());
       throw std::runtime_error("particle below obs level");
     }
     return ProcessReturn::Ok;

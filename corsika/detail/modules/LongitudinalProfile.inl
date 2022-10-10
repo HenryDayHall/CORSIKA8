@@ -29,7 +29,8 @@ namespace corsika {
       Step<TParticle> const& step, bool const) {
 
     auto const pid = step.getParticlePre().getPID();
-    this->write(step.getPositionPre(), step.getPositionPost(), pid, step.getParticlePre().getWeight()); // weight hardcoded so far
+    this->write(step.getPositionPre(), step.getPositionPost(), pid,
+                step.getParticlePre().getWeight()); // weight hardcoded so far
     return ProcessReturn::Ok;
   }
 

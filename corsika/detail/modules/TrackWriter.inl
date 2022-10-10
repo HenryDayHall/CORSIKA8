@@ -20,13 +20,15 @@ namespace corsika {
 
   template <typename TOutput>
   template <typename TParticle>
-  inline ProcessReturn TrackWriter<TOutput>::doContinuous(Step<TParticle> const& step, bool const) {
+  inline ProcessReturn TrackWriter<TOutput>::doContinuous(Step<TParticle> const& step,
+                                                          bool const) {
 
     auto const start = step.getPositionPre().getCoordinates();
     auto const end = step.getPositionPost().getCoordinates();
 
     // write the track to the file
-    TOutput::write(step.getParticlePre().getPID(), step.getEkinPre(), step.getParticlePre().getWeight(), start, step.getTimePre(), end,
+    TOutput::write(step.getParticlePre().getPID(), step.getEkinPre(),
+                   step.getParticlePre().getWeight(), start, step.getTimePre(), end,
                    step.getEkinPost(), step.getTimePost());
 
     return ProcessReturn::Ok;

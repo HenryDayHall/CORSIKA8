@@ -87,18 +87,19 @@ namespace corsika {
       }
       if constexpr (is_continuous_process_v<process1_type>) {
 
-//        static_assert(
-//            has_method_doContinuous_v<TSequence, ProcessReturn, TParticle&, TTrack&> ||
-//                has_method_doContinuous_v<TSequence, ProcessReturn, TParticle&,
-//                                          TTrack const&> ||
-//                has_method_doContinuous_v<TSequence, ProcessReturn, TParticle const&,
-//                                          TTrack const&>,
-//            "TDerived has no method with correct signature \"ProcessReturn "
-//            "doContinuous(TParticle[const]&,TTrack[const]&,bool)\" required for "
-//            "ContinuousProcess<TDerived>. ");
+        //        static_assert(
+        //            has_method_doContinuous_v<TSequence, ProcessReturn, TParticle&,
+        //            TTrack&> ||
+        //                has_method_doContinuous_v<TSequence, ProcessReturn, TParticle&,
+        //                                          TTrack const&> ||
+        //                has_method_doContinuous_v<TSequence, ProcessReturn, TParticle
+        //                const&,
+        //                                          TTrack const&>,
+        //            "TDerived has no method with correct signature \"ProcessReturn "
+        //            "doContinuous(TParticle[const]&,TTrack[const]&,bool)\" required for
+        //            " "ContinuousProcess<TDerived>. ");
 
-        return A_.doContinuous(step,
-                               idLimit == ContinuousProcessIndex(IndexProcess1));
+        return A_.doContinuous(step, idLimit == ContinuousProcessIndex(IndexProcess1));
       }
     } else {
       if constexpr (process2_type::is_process_sequence) {
@@ -107,18 +108,19 @@ namespace corsika {
       if constexpr (is_continuous_process_v<process2_type>) {
 
         // interface checking on USequence
-//        static_assert(
-//            has_method_doContinuous_v<USequence, ProcessReturn, TParticle&, TTrack&> ||
-//                has_method_doContinuous_v<USequence, ProcessReturn, TParticle&,
-//                                          TTrack const&> ||
-//                has_method_doContinuous_v<USequence, ProcessReturn, TParticle const&,
-//                                          TTrack const&>,
-//            "TDerived has no method with correct signature \"ProcessReturn "
-//            "doContinuous(TParticle [const]&,TTrack[const]&,bool)\" required for "
-//            "ContinuousProcess<TDerived>. ");
+        //        static_assert(
+        //            has_method_doContinuous_v<USequence, ProcessReturn, TParticle&,
+        //            TTrack&> ||
+        //                has_method_doContinuous_v<USequence, ProcessReturn, TParticle&,
+        //                                          TTrack const&> ||
+        //                has_method_doContinuous_v<USequence, ProcessReturn, TParticle
+        //                const&,
+        //                                          TTrack const&>,
+        //            "TDerived has no method with correct signature \"ProcessReturn "
+        //            "doContinuous(TParticle [const]&,TTrack[const]&,bool)\" required for
+        //            " "ContinuousProcess<TDerived>. ");
 
-        return B_.doContinuous(step,
-                               idLimit == ContinuousProcessIndex(IndexProcess2));
+        return B_.doContinuous(step, idLimit == ContinuousProcessIndex(IndexProcess2));
       }
     }
     return ProcessReturn::Ok;

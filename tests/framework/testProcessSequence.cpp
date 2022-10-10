@@ -62,7 +62,9 @@ struct DummyData {
   }
   HEPEnergyType getEnergy() const { return 10_GeV; }
   Point getPosition() const { return Point(get_root_CoordinateSystem(), 0_m, 0_m, 0_m); }
-  DirectionVector getDirection() const { return DirectionVector{get_root_CoordinateSystem(), {0, 0, 0} }; }
+  DirectionVector getDirection() const {
+    return DirectionVector{get_root_CoordinateSystem(), {0, 0, 0}};
+  }
 };
 
 // The stack is non-existent for this example
@@ -71,8 +73,12 @@ struct DummyStack {};
 // there is no real trajectory/track
 struct DummyTrajectory {
   TimeType getDuration(int u) const { return 0_s; }
-  Point getPosition(int u) const { return Point(get_root_CoordinateSystem(), 0_m, 0_m, 0_m); }
-  DirectionVector getDirection(int u) const { return DirectionVector{get_root_CoordinateSystem(), {0, 0, 0} }; }
+  Point getPosition(int u) const {
+    return Point(get_root_CoordinateSystem(), 0_m, 0_m, 0_m);
+  }
+  DirectionVector getDirection(int u) const {
+    return DirectionVector{get_root_CoordinateSystem(), {0, 0, 0}};
+  }
 };
 
 // since there is no stack, there is also no view. This is a simplistic dummy object
@@ -113,8 +119,8 @@ public:
     flag_ = flag;
     CORSIKA_LOG_TRACE("ContinuousProcess1::DoContinuous");
     checkCont |= 1;
-    LengthVector displacement_ {get_root_CoordinateSystem(), 1_m, 0_m, 0_m};
-    DirectionVector dU_ {get_root_CoordinateSystem(), {1, 0, 0} };
+    LengthVector displacement_{get_root_CoordinateSystem(), 1_m, 0_m, 0_m};
+    DirectionVector dU_{get_root_CoordinateSystem(), {1, 0, 0}};
     d.add_dt(1_s);
     d.add_displacement(displacement_);
     d.add_dU(dU_);
@@ -140,9 +146,7 @@ class ContinuousProcess2 : public ContinuousProcess<ContinuousProcess2> {
 public:
   ContinuousProcess2(int const v, LengthType const step)
       : step_(step) {
-    CORSIKA_LOG_DEBUG(
-        "globalCount: {}",
-        globalCount);
+    CORSIKA_LOG_DEBUG("globalCount: {}", globalCount);
     globalCount++;
   }
 
@@ -174,9 +178,7 @@ class ContinuousProcess3 : public ContinuousProcess<ContinuousProcess3> {
 public:
   ContinuousProcess3(int const v, LengthType const step)
       : step_(step) {
-    CORSIKA_LOG_DEBUG(
-        "globalCount: {}",
-        globalCount);
+    CORSIKA_LOG_DEBUG("globalCount: {}", globalCount);
     globalCount++;
   }
 
