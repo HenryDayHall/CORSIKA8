@@ -224,8 +224,6 @@ namespace corsika::pythia8 {
                                          FourMomentum const& projectileP4,
                                          FourMomentum const& targetP4) {
 
-    auto projectile = view.getProjectile();
-
     CORSIKA_LOG_DEBUG(
         "Pythia::Interaction: "
         "doInteraction: {} interaction? ",
@@ -242,14 +240,7 @@ namespace corsika::pythia8 {
       throw std::runtime_error("invalid target,projectile,energy combination.");
     }
 
-    // position and time of interaction
-    Point const& pOrig = projectile.getPosition();
-    TimeType const tOrig = projectile.getTime();
-
     CORSIKA_LOG_DEBUG("Interaction: ebeam lab: {} GeV", eProjectileLab / 1_GeV);
-    CORSIKA_LOG_DEBUG("Interaction: position of interaction: ", pOrig.getCoordinates());
-    CORSIKA_LOG_DEBUG("Interaction: time: {}", tOrig);
-
     CORSIKA_LOG_DEBUG(
         "Interaction: "
         " doInteraction: E(GeV): {}"
@@ -426,7 +417,7 @@ namespace corsika::pythia8 {
 
       // add to corsika stack
       auto pnew =
-          projectile.addSecondary(std::make_tuple(pyId, Ekin, pyPlab.normalized()));
+          view.addSecondary(std::make_tuple(pyId, Ekin, pyPlab.normalized()));
 
       Plab_final += pnew.getMomentum();
       Elab_final += pnew.getEnergy();
