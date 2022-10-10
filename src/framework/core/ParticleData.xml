@@ -4050,12 +4050,12 @@
  <channel onMode="1" bRatio="0.0320000" meMode="22" products="-413 -311 4 3303"/> 
  <channel onMode="1" bRatio="0.0770000" meMode="42" products="4122 -2203 3303"/> 
 </particle> 
-<!--
+ 
 <particle id="5334" name="Omega*_b-" antiName="Omega*_bbar+" spinType="4" chargeType="-3" colType="0" 
-          m0="6.13000"> 
+          m0="6.13000" tau0="1.0e-10"> <!-- MR: no lifetime/width given in original file -->
  <channel onMode="1" bRatio="1.0000000" products="5332 22"/> 
 </particle> 
--->
+ 
 <particle id="5342" name="Omega_bc0" antiName="Omega_bcbar0" spinType="2" chargeType="0" colType="0" 
           m0="7.19099" tau0="3.64000e-01"> 
  <channel onMode="1" bRatio="0.1050000" meMode="22" products="-12 11 4 81"/> 
