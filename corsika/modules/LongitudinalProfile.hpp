@@ -11,6 +11,7 @@
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/Step.hpp>
 
 #include <corsika/modules/writers/LongitudinalProfileWriterParquet.hpp>
 
@@ -43,10 +44,8 @@ namespace corsika {
     template <typename... TArgs>
     LongitudinalProfile(TArgs&&... args);
 
-    template <typename TParticle, typename TTrack>
-    ProcessReturn doContinuous(
-        TParticle const&, TTrack const&,
-        bool const flagLimit = false); // not needed for LongitudinalProfile
+    template <typename TParticle>
+    ProcessReturn doContinuous(Step<TParticle> const&, bool);
 
     template <typename TParticle, typename TTrack>
     LengthType getMaxStepLength(TParticle const&, TTrack const&) {

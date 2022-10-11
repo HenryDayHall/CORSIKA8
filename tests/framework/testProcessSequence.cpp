@@ -13,6 +13,7 @@
 #include <corsika/framework/process/ContinuousProcessStepLength.hpp>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/Step.hpp>
 
 #include <corsika/framework/utility/COMBoost.hpp>
 
@@ -60,13 +61,25 @@ struct DummyData {
     return MomentumVector{get_root_CoordinateSystem(), 0_eV, 0_eV, 0_eV};
   }
   HEPEnergyType getEnergy() const { return 10_GeV; }
+  Point getPosition() const { return Point(get_root_CoordinateSystem(), 0_m, 0_m, 0_m); }
+  DirectionVector getDirection() const {
+    return DirectionVector{get_root_CoordinateSystem(), {0, 0, 0}};
+  }
 };
 
 // The stack is non-existent for this example
 struct DummyStack {};
 
 // there is no real trajectory/track
-struct DummyTrajectory {};
+struct DummyTrajectory {
+  TimeType getDuration(int u) const { return 0_s; }
+  Point getPosition(int u) const {
+    return Point(get_root_CoordinateSystem(), 0_m, 0_m, 0_m);
+  }
+  DirectionVector getDirection(int u) const {
+    return DirectionVector{get_root_CoordinateSystem(), {0, 0, 0}};
+  }
+};
 
 // since there is no stack, there is also no view. This is a simplistic dummy object
 // sufficient here.
@@ -101,12 +114,17 @@ public:
 
   void setStep(LengthType const v) { step_ = v; }
 
-  template <typename D, typename T>
-  ProcessReturn doContinuous(D& d, T&, bool flag) const {
+  template <typename D>
+  ProcessReturn doContinuous(Step<D>& d, bool flag) const {
     flag_ = flag;
     CORSIKA_LOG_TRACE("ContinuousProcess1::DoContinuous");
     checkCont |= 1;
-    for (int i = 0; i < nData; ++i) d.data_[i] += 0.933;
+    LengthVector displacement_{get_root_CoordinateSystem(), 1_m, 0_m, 0_m};
+    DirectionVector dU_{get_root_CoordinateSystem(), {1, 0, 0}};
+    d.add_dt(1_s);
+    d.add_displacement(displacement_);
+    d.add_dU(dU_);
+    d.add_dEkin(1_eV);
     return ProcessReturn::Ok;
   }
 
@@ -127,23 +145,19 @@ private:
 class ContinuousProcess2 : public ContinuousProcess<ContinuousProcess2> {
 public:
   ContinuousProcess2(int const v, LengthType const step)
-      : v_(v)
-      , step_(step) {
-    CORSIKA_LOG_DEBUG(
-        "globalCount: {}"
-        ", v_: {}",
-        globalCount, v_);
+      : step_(step) {
+    CORSIKA_LOG_DEBUG("globalCount: {}", globalCount);
     globalCount++;
   }
 
   void setStep(LengthType const v) { step_ = v; }
 
-  template <typename D, typename T>
-  ProcessReturn doContinuous(D& d, T&, bool const flag) const {
+  template <typename D>
+  ProcessReturn doContinuous(Step<D>& d, bool const flag) const {
     flag_ = flag;
     CORSIKA_LOG_DEBUG("ContinuousProcess2::DoContinuous");
     checkCont |= 2;
-    for (int i = 0; i < nData; ++i) d.data_[i] += 0.111;
+    d.add_dt(10_s);
     return ProcessReturn::Ok;
   }
 
@@ -156,7 +170,6 @@ public:
   void resetFlag() { flag_ = false; }
 
 private:
-  int v_ = 0;
   LengthType step_ = 0_m;
   mutable bool flag_ = false;
 };
@@ -164,23 +177,19 @@ private:
 class ContinuousProcess3 : public ContinuousProcess<ContinuousProcess3> {
 public:
   ContinuousProcess3(int const v, LengthType const step)
-      : v_(v)
-      , step_(step) {
-    CORSIKA_LOG_DEBUG(
-        "globalCount: {}"
-        ", v_: {} ",
-        globalCount, v_);
+      : step_(step) {
+    CORSIKA_LOG_DEBUG("globalCount: {}", globalCount);
     globalCount++;
   }
 
   void setStep(LengthType const v) { step_ = v; }
 
-  template <typename D, typename T>
-  ProcessReturn doContinuous(D& d, T&, bool const flag) const {
+  template <typename D>
+  ProcessReturn doContinuous(Step<D>& d, bool const flag) const {
     flag_ = flag;
     CORSIKA_LOG_DEBUG("ContinuousProcess3::DoContinuous");
     checkCont |= 4;
-    for (int i = 0; i < nData; ++i) d.data_[i] += 0.333;
+    for (int i = 0; i < nData; ++i) d.add_dEkin(1_eV);
     return ProcessReturn::Ok;
   }
 
@@ -193,7 +202,6 @@ public:
   void resetFlag() { flag_ = false; }
 
 private:
-  int v_ = 0;
   LengthType step_ = 0_m;
   mutable bool flag_ = false;
 };
@@ -295,11 +303,11 @@ public:
     globalCount++;
   }
 
-  template <typename D, typename T>
-  ProcessReturn doContinuous(D& d, T&, bool const) const {
+  template <typename D>
+  ProcessReturn doContinuous(Step<D>& d, bool const) const {
     CORSIKA_LOG_DEBUG("Base::doContinuous");
     checkCont |= 8;
-    for (int i = 0; i < nData; ++i) { d.data_[i] /= 1.2; }
+    for (int i = 0; i < nData; ++i) { d.add_dEkin(1_eV); }
     return ProcessReturn::Ok;
   }
   template <typename TView>
@@ -476,7 +484,7 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     globalCount = 0;
   }
 
-  SECTION("ContinousProcess") {
+  SECTION("ContinuousProcess") {
     globalCount = 0;
     ContinuousProcess1 cp1(0, 1_m);   // += 0.933
     ContinuousProcess2 cp2(1, 1.1_m); // += 0.111
@@ -490,13 +498,14 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
 
     DummyData particle;
     DummyTrajectory track;
+    Step step(particle, track);
 
     cp1.resetFlag();
     cp2.resetFlag();
 
     ContinuousProcessStepLength const step1 = sequence2.getMaxStepLength(particle, track);
     CHECK(LengthType(step1) == 1_m);
-    sequence2.doContinuous(particle, track, step1);
+    sequence2.doContinuous(step, step1);
     CHECK(cp1.getFlag());
     CHECK_FALSE(cp2.getFlag());
     CORSIKA_LOG_INFO("step1, l={}, i={}", LengthType(step1),
@@ -509,7 +518,7 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     ContinuousProcessStepLength const step2 = sequence2.getMaxStepLength(particle, track);
     CHECK(LengthType(step2) == 1.1_m);
     CHECK(ContinuousProcessIndex(step1) != ContinuousProcessIndex(step2));
-    sequence2.doContinuous(particle, track, step2);
+    sequence2.doContinuous(step, step2);
     CHECK_FALSE(cp1.getFlag());
     CHECK(cp2.getFlag());
     CORSIKA_LOG_INFO("step2, l={}, i={}", LengthType(step2),
@@ -519,9 +528,6 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     globalCount = 0;
     CORSIKA_LOG_DEBUG("-->docont");
 
-    // validation data
-    double test_data[nData] = {0};
-
     // reset
     particle = DummyData();
     track = DummyTrajectory();
@@ -529,13 +535,16 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     int const nLoop = 5;
     CORSIKA_LOG_DEBUG("Running loop with n={}", nLoop);
     for (int iLoop = 0; iLoop < nLoop; ++iLoop) {
-      for (int i = 0; i < nData; ++i) { test_data[i] += 0.933 + 0.111; }
-      sequence2.doContinuous(particle, track, ContinuousProcessIndex(1));
+      sequence2.doContinuous(step, ContinuousProcessIndex(1));
     }
-    for (int i = 0; i < nData; i++) {
-      CORSIKA_LOG_DEBUG("data_[{}]={}", i, particle.data_[i]);
-      CHECK(particle.data_[i] == Approx(test_data[i]).margin(1e-9));
-    }
+    CHECK(step.getDiffT() / 1_s == Approx(77));
+    CHECK(step.getDiffEkin() / 1_eV == Approx(7));
+    CHECK(step.getDisplacement().getX(get_root_CoordinateSystem()) / 1_m == Approx(7));
+    CHECK(step.getDisplacement().getY(get_root_CoordinateSystem()) / 1_m == Approx(0));
+    CHECK(step.getDisplacement().getZ(get_root_CoordinateSystem()) / 1_m == Approx(0));
+    CHECK(step.getDiffDirection().getX(get_root_CoordinateSystem()) == Approx(7));
+    CHECK(step.getDiffDirection().getY(get_root_CoordinateSystem()) == Approx(0));
+    CHECK(step.getDiffDirection().getZ(get_root_CoordinateSystem()) == Approx(0));
     CORSIKA_LOG_DEBUG("done");
   }
 
@@ -676,13 +685,14 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     DummyData particle;
     DummyTrajectory track;
     DummyView view(particle);
+    Step step(particle, track);
 
     checkDecay = 0;
     checkInteract = 0;
     checkSec = 0;
     checkCont = 0;
     particle.data_[0] = 100; // data positive --> sequence1
-    sequence3.doContinuous(particle, track, ContinuousProcessIndex(1));
+    sequence3.doContinuous(step, ContinuousProcessIndex(1));
     CHECK(checkInteract == 0);
     CHECK(checkDecay == 0);
     CHECK(checkCont == 0b011);
@@ -693,7 +703,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkSec = 0;
     checkCont = 0;
     particle.data_[0] = -100; // data negative  --> sequence2
-    sequence3.doContinuous(particle, track, ContinuousProcessIndex(1));
+    sequence3.doContinuous(step, ContinuousProcessIndex(1));
     CHECK(checkInteract == 0);
     CHECK(checkDecay == 0);
     CHECK(checkCont == 0b101);
@@ -778,7 +788,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
       CHECK(checkInteract == 0);
       CHECK(checkDecay == 0);
 
-      // for a small cx_select selection must be sucessful
+      // for a small cx_select selection must be successful
       cx_select = 28_mb; // -> Process3
       checkInteract = 0;
       particle.data_[0] = -100; // data negative --> sequence2
@@ -877,6 +887,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
 
     DummyData particle;
     DummyTrajectory track;
+    Step step(particle, track);
 
     particle.data_[0] =
         100; // data positive, selects particular branch on SwitchProcessSequence
@@ -891,7 +902,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
 
     ContinuousProcessStepLength const step1 = sequence3.getMaxStepLength(particle, track);
     CHECK(LengthType(step1) == 10_m);
-    sequence3.doContinuous(particle, track, step1);
+    sequence3.doContinuous(step, step1);
     CHECK(cp1.getFlag());
     CHECK_FALSE(cp2.getFlag());
     CHECK_FALSE(cp3.getFlag());
@@ -911,7 +922,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
 
     ContinuousProcessStepLength const step2 = sequence3.getMaxStepLength(particle, track);
     CHECK(LengthType(step2) == 15_m);
-    sequence3.doContinuous(particle, track, step2);
+    sequence3.doContinuous(step, step2);
     CHECK_FALSE(cp1.getFlag());
     CHECK(cp2.getFlag());
     CHECK_FALSE(cp3.getFlag());
@@ -932,7 +943,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
 
     ContinuousProcessStepLength const step3 = sequence3.getMaxStepLength(particle, track);
     CHECK(LengthType(step3) == 11_m);
-    sequence3.doContinuous(particle, track, step3);
+    sequence3.doContinuous(step, step3);
     CHECK(cp1.getFlag());
     CHECK_FALSE(cp2.getFlag());
     CHECK_FALSE(cp3.getFlag());
@@ -953,7 +964,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
 
     ContinuousProcessStepLength const step4 = sequence3.getMaxStepLength(particle, track);
     CHECK(LengthType(step4) == 2_m);
-    sequence3.doContinuous(particle, track, step4);
+    sequence3.doContinuous(step, step4);
     CHECK_FALSE(cp1.getFlag());
     CHECK_FALSE(cp2.getFlag());
     CHECK(cp3.getFlag());

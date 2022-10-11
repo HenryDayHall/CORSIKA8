@@ -13,6 +13,7 @@
 #include <corsika/framework/process/ContinuousProcess.hpp>
 #include <corsika/modules/writers/ParticleWriterParquet.hpp>
 #include <corsika/modules/writers/WriterOff.hpp>
+#include <corsika/framework/core/Step.hpp>
 
 namespace corsika {
 
@@ -55,9 +56,8 @@ namespace corsika {
 
     ~ObservationPlane() {}
 
-    template <typename TParticle, typename TTrajectory>
-    ProcessReturn doContinuous(TParticle& vParticle, TTrajectory& vTrajectory,
-                               bool const stepLimit);
+    template <typename TParticle>
+    ProcessReturn doContinuous(Step<TParticle>&, bool const stepLimit);
 
     template <typename TParticle, typename TTrajectory>
     LengthType getMaxStepLength(TParticle const&, TTrajectory const& vTrajectory);

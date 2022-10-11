@@ -135,8 +135,8 @@ namespace corsika {
                                      typename TParticle::node_type const& from,
                                      typename TParticle::node_type const& to);
 
-    template <typename TParticle, typename TTrack>
-    ProcessReturn doContinuous(TParticle& particle, TTrack& vT,
+    template <typename TParticle>
+    ProcessReturn doContinuous(Step<TParticle>& particle,
                                ContinuousProcessIndex const limitId);
 
     template <typename TSecondaries>

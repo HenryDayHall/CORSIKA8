@@ -23,6 +23,7 @@
 #include <corsika/framework/core/Logging.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/Cascade.hpp>
+#include <corsika/framework/core/Step.hpp>
 #include <corsika/framework/core/EnergyMomentumOperations.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 
@@ -117,14 +118,15 @@ public:
    * @param particle
    * @return ProcessReturn
    */
-  template <typename TParticle, typename TTrack>
-  ProcessReturn doContinuous(TParticle const& particle, TTrack const&, bool const) {
-    auto const delta = particle.getPosition() - plane_.getCenter();
+  template <typename TParticle>
+  ProcessReturn doContinuous(Step<TParticle> const& step, bool const) {
+    auto const delta = step.getParticlePre().getPosition() - plane_.getCenter();
     auto const n = plane_.getNormal();
     auto const proj = n.dot(delta);
     if (proj < -1_m) {
-      CORSIKA_LOG_INFO("particle {} failes: proj={}, delta={}, p={}", particle.asString(),
-                       proj, delta, particle.getPosition());
+      CORSIKA_LOG_INFO("particle {} failes: proj={}, delta={}, p={}",
+                       step.getParticlePre().asString(), proj, delta,
+                       step.getPositionPost());
       throw std::runtime_error("particle below obs level");
     }
     return ProcessReturn::Ok;

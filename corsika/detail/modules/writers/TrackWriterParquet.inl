@@ -23,7 +23,7 @@ namespace corsika {
     // build the schema
     output_.addField("pdg", parquet::Repetition::REQUIRED, parquet::Type::INT32,
                      parquet::ConvertedType::INT_32);
-    output_.addField("energy", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+    output_.addField("start_energy", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
     output_.addField("weight", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
@@ -41,6 +41,8 @@ namespace corsika {
                      parquet::ConvertedType::NONE);
     output_.addField("end_z", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
+    output_.addField("end_energy", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                     parquet::ConvertedType::NONE);
     output_.addField("end_t", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
 
@@ -57,29 +59,31 @@ namespace corsika {
 
   inline void TrackWriterParquet::endOfLibrary() { output_.closeStreamer(); }
 
-  inline void TrackWriterParquet::write(Code const pid, HEPEnergyType const energy,
+  inline void TrackWriterParquet::write(Code const pid, HEPEnergyType const KinenergyPre,
                                         double const weight,
                                         QuantityVector<length_d> const& start,
                                         TimeType const t_start,
                                         QuantityVector<length_d> const& end,
+                                        HEPEnergyType const KinenergyPost,
                                         TimeType const t_end) {
 
     // write the next row - we must write `shower_` first.
     // clang-format off
-    *(output_.getWriter())
-        << showerId_
-        << static_cast<int>(get_PDG(pid))
-        << static_cast<float>(energy / 1_GeV)
-        << static_cast<float>(weight)
-        << static_cast<float>(start[0] / 1_m)
-        << static_cast<float>(start[1] / 1_m)
-        << static_cast<float>(start[2] / 1_m)
-        << static_cast<float>(t_start / 1_ns)
-        << static_cast<float>(end[0] / 1_m)
-        << static_cast<float>(end[1] / 1_m)
-        << static_cast<float>(end[2] / 1_m)
-        << static_cast<float>(t_end / 1_ns)
-        << parquet::EndRow;
+   *(output_.getWriter())
+       << showerId_
+       << static_cast<int>(get_PDG(pid))
+       << static_cast<float>(KinenergyPre / 1_GeV)
+       << static_cast<float>(weight)
+       << static_cast<float>(start[0] / 1_m)
+       << static_cast<float>(start[1] / 1_m)
+       << static_cast<float>(start[2] / 1_m)
+       << static_cast<float>(t_start / 1_ns)
+       << static_cast<float>(end[0] / 1_m)
+       << static_cast<float>(end[1] / 1_m)
+       << static_cast<float>(end[2] / 1_m)
+       << static_cast<float>(KinenergyPost / 1_GeV)
+       << static_cast<float>(t_end / 1_ns)
+       << parquet::EndRow;
     // clang-format on
   }
 

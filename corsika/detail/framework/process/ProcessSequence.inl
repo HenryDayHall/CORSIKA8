@@ -21,6 +21,7 @@
 #include <corsika/framework/process/SecondariesProcess.hpp>
 #include <corsika/framework/process/StackProcess.hpp>
 #include <corsika/framework/process/CascadeEquationsProcess.hpp>
+#include <corsika/framework/core/Step.hpp>
 
 #include <cmath>
 #include <limits>
@@ -95,10 +96,10 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
-  template <typename TParticle, typename TTrack>
+  template <typename TParticle>
   inline ProcessReturn
   ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1, IndexProcess2>::
-      doContinuous(TParticle& particle, TTrack& vT,
+      doContinuous(Step<TParticle>& step,
                    [[maybe_unused]] ContinuousProcessIndex const limitId) {
     ProcessReturn ret = ProcessReturn::Ok;
 
@@ -106,44 +107,42 @@ namespace corsika {
                                                  // errors if process1_type is invalid
       if constexpr (process1_type::is_process_sequence) {
 
-        ret |= A_.doContinuous(particle, vT, limitId);
+        ret |= A_.doContinuous(step, limitId);
       } else if constexpr (is_continuous_process_v<process1_type>) {
 
         // interface checking on TProcess1
-        static_assert(
-            has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle&, TTrack&> ||
-                has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle&,
-                                          TTrack const&> ||
-                has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle const&,
-                                          TTrack const&>,
-            "TDerived has no method with correct signature \"ProcessReturn "
-            "doContinuous(TParticle [const]&,TTrack [const]&,bool)\" required for "
-            "ContinuousProcess<TDerived>. ");
+        //~ static_assert(
+        //~ has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle&, TTrack&> ||
+        //~ has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle&,
+        //~ TTrack const&> ||
+        //~ has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle const&,
+        //~ TTrack const&>,
+        //~ "TDerived has no method with correct signature \"ProcessReturn "
+        //~ "doContinuous(TParticle [const]&,TTrack [const]&,bool)\" required for "
+        //~ "ContinuousProcess<TDerived>. ");
 
-        ret |= A_.doContinuous(particle, vT,
-                               limitId == ContinuousProcessIndex(IndexProcess1));
+        ret |= A_.doContinuous(step, limitId == ContinuousProcessIndex(IndexProcess1));
       }
     }
 
     if constexpr (is_process_v<process2_type>) { // to protect from further compiler
                                                  // errors if process2_type is invalid
       if constexpr (process2_type::is_process_sequence) {
-        ret |= B_.doContinuous(particle, vT, limitId);
+        ret |= B_.doContinuous(step, limitId);
       } else if constexpr (is_continuous_process_v<process2_type>) {
 
         // interface checking on TProcess2
-        static_assert(
-            has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle&, TTrack&> ||
-                has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle&,
-                                          TTrack const&> ||
-                has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle const&,
-                                          TTrack const&>,
-            "TDerived has no method with correct signature \"ProcessReturn "
-            "doContinuous(TParticle [const]&,TTrack [const]&,bool)\" required for "
-            "ContinuousProcess<TDerived>. ");
+        //~ static_assert(
+        //~ has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle&, TTrack&> ||
+        //~ has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle&,
+        //~ TTrack const&> ||
+        //~ has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle const&,
+        //~ TTrack const&>,
+        //~ "TDerived has no method with correct signature \"ProcessReturn "
+        //~ "doContinuous(TParticle [const]&,TTrack [const]&,bool)\" required for "
+        //~ "ContinuousProcess<TDerived>. ");
 
-        ret |= B_.doContinuous(particle, vT,
-                               limitId == ContinuousProcessIndex(IndexProcess2));
+        ret |= B_.doContinuous(step, limitId == ContinuousProcessIndex(IndexProcess2));
       }
     }
 

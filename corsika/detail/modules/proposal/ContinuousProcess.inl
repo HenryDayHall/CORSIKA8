@@ -57,20 +57,21 @@ namespace corsika::proposal {
 
   template <typename TOutput>
   template <typename TParticle>
-  inline void ContinuousProcess<TOutput>::scatter(TParticle& particle,
+  inline void ContinuousProcess<TOutput>::scatter(Step<TParticle>& step,
                                                   HEPEnergyType const& loss,
                                                   GrammageType const& grammage) {
 
     // get or build corresponding calculators
-    auto c = getCalculator(particle, calc);
+    auto c = getCalculator(step.getParticlePre(), calc);
 
     // Cast corsika vector to proposal vector
-    auto particle_dir = particle.getDirection();
+    auto particle_dir = step.getDirectionPre();
     auto d = particle_dir.getComponents();
     auto direction = PROPOSAL::Cartesian3D(d.getX().magnitude(), d.getY().magnitude(),
                                            d.getZ().magnitude());
 
-    auto E_f = particle.getEnergy() - loss;
+    auto E_i_total = step.getEkinPre() + step.getParticlePre().getMass();
+    auto E_f_total = E_i_total - loss;
 
     // draw random numbers required for scattering process
     std::uniform_real_distribution<double> distr(0., 1.);
@@ -79,43 +80,48 @@ namespace corsika::proposal {
 
     // calculate deflection based on particle energy, loss
     auto deflection = (c->second).scatter->CalculateMultipleScattering(
-        grammage / 1_g * square(1_cm), particle.getEnergy() / 1_MeV, E_f / 1_MeV, rnd);
+        grammage / 1_g * square(1_cm), E_i_total / 1_MeV, E_f_total / 1_MeV, rnd);
 
     [[maybe_unused]] auto [unused1, final_direction] =
         PROPOSAL::multiple_scattering::ScatterInitialDirection(direction, deflection);
 
     // update particle direction after continuous loss caused by multiple
     // scattering
-    particle.setDirection(
-        {particle_dir.getCoordinateSystem(),
-         {final_direction.GetX(), final_direction.GetY(), final_direction.GetZ()}});
+    DirectionVector dU_{
+        particle_dir.getCoordinateSystem(),
+        {final_direction.GetX(), final_direction.GetY(), final_direction.GetZ()}};
+    DirectionVector diff_dir_ = dU_ - particle_dir;
+    step.add_dU(diff_dir_);
   }
 
   template <typename TOutput>
-  template <typename TParticle, typename TTrajectory>
-  inline ProcessReturn ContinuousProcess<TOutput>::doContinuous(TParticle& vP,
-                                                                TTrajectory const& track,
+  template <typename TParticle>
+  inline ProcessReturn ContinuousProcess<TOutput>::doContinuous(Step<TParticle>& step,
                                                                 bool const) {
-    if (!canInteract(vP.getPID())) return ProcessReturn::Ok;
-    if (track.getLength() == 0_m) return ProcessReturn::Ok;
+    if (!canInteract(step.getParticlePre().getPID())) return ProcessReturn::Ok;
+    if (step.getDisplacement().getSquaredNorm() == static_pow<2>(0_m))
+      return ProcessReturn::Ok;
 
     // calculate passed grammage
-    auto dX = vP.getNode()->getModelProperties().getIntegratedGrammage(track);
+    auto dX = step.getParticlePre().getNode()->getModelProperties().getIntegratedGrammage(
+        step.getStraightTrack());
 
     // get or build corresponding track integral calculator and solve the
     // integral
-    auto c = getCalculator(vP, calc);
-    auto final_energy = (c->second).disp->UpperLimitTrackIntegral(
-                            vP.getEnergy() / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
-                        1_MeV;
-    auto dE = vP.getEnergy() - final_energy;
+    auto c = getCalculator(step.getParticlePre(), calc);
+    auto E_i_total = (step.getEkinPre() + step.getParticlePre().getMass());
+    auto E_f_total = (c->second).disp->UpperLimitTrackIntegral(
+                         E_i_total * (1 / 1_MeV), dX * ((1 / 1_g) * 1_cm * 1_cm)) *
+                     1_MeV;
+    auto dE = E_i_total - E_f_total;
 
     // if the particle has a charge take multiple scattering into account
-    if (vP.getChargeNumber() != 0) scatter(vP, dE, dX);
-    vP.setEnergy(final_energy); // on the stack, this is just kinetic energy, E-m
+    if (step.getParticlePre().getChargeNumber() != 0) scatter(step, dE, dX);
+    step.add_dEkin(-dE); // on the stack, this is just kinetic energy, E-m
 
     // also send to output
-    TOutput::write(track, vP.getPID(), dE);
+    TOutput::write(step.getPositionPre(), step.getPositionPost(),
+                   step.getParticlePre().getPID(), dE);
 
     return ProcessReturn::Ok;
   }

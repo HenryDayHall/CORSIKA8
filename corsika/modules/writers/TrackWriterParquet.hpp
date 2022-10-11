@@ -52,9 +52,10 @@ namespace corsika {
     /**
      * Write a track to the file.
      */
-    void write(Code const pid, HEPEnergyType const energy, double const weight,
+    void write(Code const pid, HEPEnergyType const KinenergyPre, double const weight,
                QuantityVector<length_d> const& start, TimeType const t_start,
-               QuantityVector<length_d> const& end, TimeType const t_end);
+               QuantityVector<length_d> const& end, HEPEnergyType const KinenergyPost,
+               TimeType const t_end);
 
   private:
     ParquetStreamer output_; ///< The primary output file.

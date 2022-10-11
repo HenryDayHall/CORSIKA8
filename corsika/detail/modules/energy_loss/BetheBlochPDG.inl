@@ -138,9 +138,8 @@ namespace corsika {
   }
 
   template <typename TOutput>
-  template <typename TParticle, typename TTrajectory>
-  inline ProcessReturn BetheBlochPDG<TOutput>::doContinuous(TParticle& particle,
-                                                            TTrajectory const& track,
+  template <typename TParticle>
+  inline ProcessReturn BetheBlochPDG<TOutput>::doContinuous(Step<TParticle>& step,
                                                             bool const) {
 
     // if this step was limiting the CORSIKA stepping, the particle is lost
@@ -152,21 +151,26 @@ namespace corsika {
     }
     */
 
-    if (particle.getChargeNumber() == 0) return ProcessReturn::Ok;
+    if (step.getParticlePre().getChargeNumber() == 0) return ProcessReturn::Ok;
 
     GrammageType const dX =
-        particle.getNode()->getModelProperties().getIntegratedGrammage(track);
-    CORSIKA_LOG_TRACE("EnergyLoss pid={}, z={}, dX={} g/cm2", particle.getPID(),
-                      particle.getChargeNumber(), dX / 1_g * square(1_cm));
-    HEPEnergyType const dE = getTotalEnergyLoss(particle, dX);
-    [[maybe_unused]] const auto Ekin = particle.getKineticEnergy();
+        step.getParticlePre().getNode()->getModelProperties().getIntegratedGrammage(
+            step.getStraightTrack());
+    CORSIKA_LOG_TRACE("EnergyLoss pid={}, z={}, dX={} g/cm2",
+                      step.getParticlePre().getPID(),
+                      step.getParticlePre().getChargeNumber(), dX / 1_g * square(1_cm));
+    HEPEnergyType const dE = getTotalEnergyLoss(step.getParticlePre(), dX);
+    //    if (dE > HEPEnergyType::zero())
+    //      dE = -dE;
+    [[maybe_unused]] const auto Ekin = step.getEkinPre();
     auto EkinNew = Ekin + dE;
     CORSIKA_LOG_TRACE("EnergyLoss  dE={} MeV, Ekin={} GeV, EkinNew={} GeV", dE / 1_MeV,
                       Ekin / 1_GeV, EkinNew / 1_GeV);
-    particle.setKineticEnergy(EkinNew);
+    step.add_dEkin(dE);
 
     // also send to output
-    TOutput::write(track, particle.getPID(), -dE);
+    TOutput::write(step.getPositionPre(), step.getPositionPost(),
+                   step.getParticlePre().getPID(), -dE);
     return ProcessReturn::Ok;
   }
 

@@ -57,14 +57,6 @@ namespace corsika {
       auto getTrack(TParticle const& particle);
 
       /**
-       * Performs one leap-frog step consistent of two halve-steps with steplength/2
-       * Due to the nature of the algorithm the second halve step is slightly longer than
-       * the first halve step.
-       */
-      template <typename TParticle>
-      static auto makeStep(TParticle const& particle, LengthType const steplength);
-
-      /**
        *  find intersection of Sphere with Track
        *
        * Returns intersection of particle assuming a curved leap-frog step, with a sphere.

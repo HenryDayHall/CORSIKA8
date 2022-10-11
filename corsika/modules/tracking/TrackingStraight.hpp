@@ -37,12 +37,6 @@ namespace corsika::tracking_line {
     using Intersect<Tracking>::nextIntersect;
 
   public:
-    /**
-     * Performs one straight step of length steplength.
-     */
-    template <typename TParticle>
-    static auto makeStep(TParticle const& particle, LengthType const steplength);
-
     //! Determine track of particle
     template <typename TParticle>
     auto getTrack(TParticle const& particle);

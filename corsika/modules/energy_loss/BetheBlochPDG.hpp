@@ -12,6 +12,7 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
+#include <corsika/framework/core/Step.hpp>
 
 #include <corsika/modules/writers/WriterOff.hpp>
 
@@ -52,9 +53,8 @@ namespace corsika {
      * @param limitFlag flag to identify, if BetheBlochPDG::getMaxStepLength is the
      *        globally limiting factor (or not)
      clang-format-on **/
-    template <typename TParticle, typename TTrajectory>
-    ProcessReturn doContinuous(TParticle& particle, TTrajectory const& track,
-                               bool const limitFlag);
+    template <typename TParticle>
+    ProcessReturn doContinuous(Step<TParticle>& step, bool const limitFlag);
 
     template <typename TParticle, typename TTrajectory>
     LengthType getMaxStepLength(TParticle const&, TTrajectory const&) const;

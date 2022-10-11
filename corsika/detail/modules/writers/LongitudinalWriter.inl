@@ -66,11 +66,10 @@ namespace corsika {
   }
 
   template <typename TOutput>
-  template <typename TTrack>
-  inline void LongitudinalWriter<TOutput>::write(TTrack const& track, Code const pid,
-                                                 double const weight) {
-    GrammageType const grammageStart = showerAxis_.getProjectedX(track.getPosition(0));
-    GrammageType const grammageEnd = showerAxis_.getProjectedX(track.getPosition(1));
+  inline void LongitudinalWriter<TOutput>::write(Point const& p0, Point const& p1,
+                                                 Code const pid, double const weight) {
+    GrammageType const grammageStart = showerAxis_.getProjectedX(p0);
+    GrammageType const grammageEnd = showerAxis_.getProjectedX(p1);
 
     // Note: particle may go also "upward", thus, grammageEnd<grammageStart
     size_t const binStart = std::ceil(grammageStart / dX_);

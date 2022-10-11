@@ -29,38 +29,6 @@ namespace corsika {
   namespace tracking_leapfrog_curved {
 
     template <typename TParticle>
-    inline auto Tracking::makeStep(TParticle const& particle, LengthType steplength) {
-      if (particle.getMomentum().getNorm() == 0_GeV) {
-        return std::make_tuple(particle.getPosition(), particle.getMomentum() / 1_GeV,
-                               double(0) * 1_m);
-      } // charge of the particle
-      ElectricChargeType const charge = particle.getCharge();
-      auto const* currentLogicalVolumeNode = particle.getNode();
-      MagneticFieldVector const& magneticfield =
-          currentLogicalVolumeNode->getModelProperties().getMagneticField(
-              particle.getPosition());
-      VelocityVector velocity = particle.getVelocity();
-
-      auto const p_norm =
-          constants::c * convert_HEP_to_SI<MassType::dimension_type>(
-                             particle.getMomentum().getNorm()); // kg *m /s
-      // k = q/|p|
-      decltype(1 / (tesla * meter)) const k =
-          charge / p_norm; // * initialVelocity.getNorm();
-
-      DirectionVector direction = velocity.normalized();
-      auto position = particle.getPosition(); // First Movement
-      // assuming magnetic field does not change during movement
-      position =
-          position + direction * steplength / 2; // Change of direction by magnetic field
-      direction =
-          direction + direction.cross(magneticfield) * steplength * k; // Second Movement
-      position = position + direction * steplength / 2;
-      auto const steplength_true = steplength * (1 + direction.getNorm()) / 2;
-      return std::make_tuple(position, direction.normalized(), steplength_true);
-    }
-
-    template <typename TParticle>
     inline auto Tracking::getTrack(TParticle const& particle) {
       VelocityVector const initialVelocity = particle.getVelocity();
 

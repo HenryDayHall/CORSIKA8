@@ -25,7 +25,7 @@
 #include <corsika/framework/process/SecondariesProcess.hpp>
 #include <corsika/framework/process/StackProcess.hpp>
 #include <corsika/framework/process/NullModel.hpp>
-
+#include <corsika/framework/core/Step.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
 
@@ -201,8 +201,8 @@ namespace corsika {
                                      typename TParticle::node_type const& from,
                                      typename TParticle::node_type const& to);
 
-    template <typename TParticle, typename TTrack>
-    ProcessReturn doContinuous(TParticle& particle, TTrack& vT,
+    template <typename TParticle>
+    ProcessReturn doContinuous(Step<TParticle>& step,
                                ContinuousProcessIndex const limitID);
 
     /**

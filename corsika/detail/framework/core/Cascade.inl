@@ -9,6 +9,7 @@
 #pragma once
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/Step.hpp>
 
 #include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/process/ContinuousProcessStepLength.hpp>
@@ -115,21 +116,21 @@ namespace corsika {
     FourMomentum const projectileP4{Elab, particle.getMomentum()};
 
     // determine combined full inelastic cross section of the particles in the material
+    auto const targetMomentum = MomentumVector{
+        particle.getMomentum().getCoordinateSystem(), {0_GeV, 0_GeV, 0_GeV}};
 
-    CrossSectionType const total_cx =
-        composition.getWeightedSum([=](Code const targetId) -> CrossSectionType {
-          FourMomentum const targetP4(
-              get_mass(targetId),
-              MomentumVector(particle.getMomentum().getCoordinateSystem(),
-                             {0_GeV, 0_GeV, 0_GeV}));
-          return sequence_.getCrossSection(particle, targetId, targetP4);
-        });
+    auto const xs_function = [&](Code const targetId) -> CrossSectionType {
+      FourMomentum const targetP4{get_mass(targetId), targetMomentum};
+      return sequence_.getCrossSection(particle, targetId, targetP4);
+    };
+
+    CrossSectionType const total_cx_pre = composition.getWeightedSum(xs_function);
 
     if (forceInteraction_) {
       CORSIKA_LOG_TRACE("forced interaction!");
       forceInteraction_ = false; // just one (first) interaction
       stack_view_type secondaries(particle);
-      interaction(secondaries, projectileP4, composition, total_cx);
+      interaction(secondaries, projectileP4, composition, total_cx_pre);
       sequence_.doSecondaries(secondaries);
       particle.erase(); // primary particle is done
       return;
@@ -137,10 +138,10 @@ namespace corsika {
 
     // calculate interaction length in medium
     GrammageType const total_lambda =
-        (composition.getAverageMassNumber() * constants::u) / total_cx;
+        (composition.getAverageMassNumber() * constants::u) / total_cx_pre;
 
     // sample random exponential step length in grammage
-    ExponentialDistribution expDist(total_lambda);
+    ExponentialDistribution expDist{total_lambda};
     GrammageType const next_interact = expDist(rng_);
 
     CORSIKA_LOG_DEBUG("total_lambda={} g/cm2, next_interact={} g/cm2",
@@ -148,31 +149,31 @@ namespace corsika {
                       double(next_interact / 1_g * 1_cm * 1_cm));
 
     // determine combined total inverse decay time
-    InverseTimeType const total_inv_lifetime = sequence_.getInverseLifetime(particle);
+    InverseTimeType const total_inv_lifetime_pre = sequence_.getInverseLifetime(particle);
 
     // sample random exponential decay time
-    ExponentialDistribution expDistDecay(1 / total_inv_lifetime);
+    ExponentialDistribution expDistDecay(1 / total_inv_lifetime_pre);
     TimeType const next_decay = expDistDecay(rng_);
 
     CORSIKA_LOG_DEBUG("total_lifetime={} ns, next_decay={} ns",
-                      (1 / total_inv_lifetime) / 1_ns, next_decay / 1_ns);
+                      (1 / total_inv_lifetime_pre) / 1_ns, next_decay / 1_ns);
 
     // convert next_decay from time to length [m]
     LengthType const distance_decay = next_decay * particle.getMomentum().getNorm() /
                                       particle.getEnergy() * constants::c;
 
     // determine geometric tracking
-    auto [step, nextVol] = tracking_.getTrack(particle);
-    auto geomMaxLength = step.getLength(1);
+    auto [track, nextVol] = tracking_.getTrack(particle);
+    auto geomMaxLength = track.getLength(1);
 
     // convert next_step from grammage to length
     LengthType const distance_interact =
-        currentLogicalNode->getModelProperties().getArclengthFromGrammage(step,
+        currentLogicalNode->getModelProperties().getArclengthFromGrammage(track,
                                                                           next_interact);
 
     // determine the maximum geometric step length
     ContinuousProcessStepLength const continuousMaxStep =
-        sequence_.getMaxStepLength(particle, step);
+        sequence_.getMaxStepLength(particle, track);
     LengthType const continuous_max_dist = continuousMaxStep;
 
     // take minimum of geometry, interaction, decay for next step
@@ -180,16 +181,14 @@ namespace corsika {
     LengthType const min_non_continuous = std::min(min_discrete, geomMaxLength);
     LengthType const min_distance = std::min(min_non_continuous, continuous_max_dist);
 
+    bool const isContinuous = continuous_max_dist < min_non_continuous;
+
     // inform ContinuousProcesses (if applicable) that it is responsible for step-limit
     // this would become simpler if we follow the idea of Max to enumerate ALL types of
     // processes. Then non-continuous are included and no further logic is needed to
     // distinguish between continuous and non-continuous limit.
-    ContinuousProcessIndex limitingId;
-    bool const isContinuous = continuous_max_dist < min_non_continuous;
-    if (isContinuous) {
-      limitingId =
-          continuousMaxStep; // the current step IS limited by a known continuous process
-    }
+    auto const limitingId = isContinuous ? continuousMaxStep : ContinuousProcessIndex{};
+    // // the current step IS limited by a known continuous process
 
     CORSIKA_LOG_DEBUG(
         "transport particle by : {} m "
@@ -202,11 +201,12 @@ namespace corsika {
 
     // move particle along the trajectory to new position
     // also update momentum/direction/time
-    step.setLength(min_distance);
+    track.setLength(min_distance);
+
+    Step step{particle, track};
 
     // apply all continuous processes on particle + track
-    if (sequence_.doContinuous(particle, step, limitingId) ==
-        ProcessReturn::ParticleAbsorbed) {
+    if (sequence_.doContinuous(step, limitingId) == ProcessReturn::ParticleAbsorbed) {
       CORSIKA_LOG_DEBUG("Cascade: delete absorbed particle PID={} E={} GeV",
                         particle.getPID(), particle.getEnergy() / 1_GeV);
       if (particle.isErased()) {
@@ -218,9 +218,10 @@ namespace corsika {
       }
       return; // particle is gone -> return
     }
-    particle.setTime(particle.getTime() + step.getDuration());
-    particle.setPosition(step.getPosition(1));
-    particle.setDirection(step.getDirection(1));
+    particle.setTime(step.getTimePost());
+    particle.setPosition(step.getPositionPost());
+    particle.setDirection(step.getDirectionPost());
+    particle.setKineticEnergy(step.getEkinPost());
 
     if (isContinuous) {
       return; // there is nothing further, step is finished
@@ -284,7 +285,7 @@ namespace corsika {
     // secondaries, b) the projectile particle deleted (or
     // changed)
 
-    stack_view_type secondaries(particle);
+    stack_view_type secondaries{particle};
 
     /*
       Create SecondaryView object on Stack. The data container
@@ -295,12 +296,18 @@ namespace corsika {
       important to use projectile/view (and not particle) for Interaction,
       and Decay!
     */
+
+    FourMomentum const projectileP4Post{particle.getEnergy(), particle.getMomentum()};
+
     if (distance_interact < distance_decay) {
-      interaction(secondaries, projectileP4, composition, total_cx);
+      CrossSectionType const total_cx_post = composition.getWeightedSum(xs_function);
+      interaction(secondaries, projectileP4Post, composition, total_cx_post);
     } else {
       [[maybe_unused]] auto projectile = secondaries.getProjectile();
 
-      if (decay(secondaries, total_inv_lifetime) == ProcessReturn::Decayed) {
+      InverseTimeType const total_inv_lifetime_post =
+          sequence_.getInverseLifetime(particle);
+      if (decay(secondaries, total_inv_lifetime_post) == ProcessReturn::Decayed) {
         if (secondaries.getSize() == 1 &&
             projectile.getPID() == secondaries.getNextParticle().getPID()) {
           throw std::runtime_error(fmt::format("Particle {} decays into itself!",
