@@ -240,6 +240,7 @@ build_test_example-clang-14:
   script:
     - mkdir -p build
     - cd build
+    - ../conan-install.sh
     - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Release -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
     - set -o pipefail
@@ -303,6 +304,7 @@ coverage:
   script:
     - mkdir -p build
     - cd build
+    - ../conan-install.sh
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
     - ctest -j4 
@@ -343,6 +345,7 @@ sanity:
   script:
     - mkdir -p build
     - cd build
+    - ../conan-install.sh
     - cmake .. -DWITH_CORSIKA_SANITIZERS_ENABLED=ON -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
   rules:
