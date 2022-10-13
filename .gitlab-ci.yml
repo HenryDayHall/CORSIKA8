@@ -39,7 +39,7 @@ stages:
 
 ##########################################################
 check-copyrights:
-  image: corsika/devel:u-18.04
+  image: corsika/devel:u-22.04
   stage: quality
   tags:
     - corsika
@@ -90,6 +90,7 @@ check-clang-format:
   script:
     - mkdir -p build
     - cd build
+    - ../conan-install.sh
     - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
   rules:
     - if: $CI_MERGE_REQUEST_ID
@@ -102,14 +103,14 @@ check-clang-format:
       - ${CI_PROJECT_DIR}/build/CMakeFiles/CMakeOutput.log
 
 # config for gcc
-config-u-18_04:
+config-u-22_04:
   extends: .config
-  image: corsika/devel:u-18.04
+  image: corsika/devel:u-22.04
 
 # config for clang
-config-clang-8:
+config-clang-14:
   extends: .config
-  image: corsika/devel:clang-8
+  image: corsika/devel:clang-14
 
 
 
@@ -125,6 +126,7 @@ config-clang-8:
   script:
     - mkdir -p build
     - cd build
+    - ../conan-install.sh
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
     - set -o pipefail
@@ -145,19 +147,19 @@ config-clang-8:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
 
 # build_test for gcc
-build_test-u-18_04:
+build_test-u-22_04:
   extends: .build_test
-  image: corsika/devel:u-18.04
+  image: corsika/devel:u-22.04
   needs:
-    - job: config-u-18_04
+    - job: config-u-22_04
       artifacts: false
 
 # build_test for clang
-build_test-clang-8:
+build_test-clang-14:
   extends: .build_test
-  image: corsika/devel:clang-8
+  image: corsika/devel:clang-14
   needs:
-    - job: config-clang-8
+    - job: config-clang-14
       artifacts: false
 
 
@@ -175,6 +177,7 @@ build_test-clang-8:
   script:
     - mkdir -p build
     - cd build
+    - ../conan-install.sh
     - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- VERBOSE=1 -j4
     - set -o pipefail
@@ -205,20 +208,20 @@ build_test-clang-8:
       - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
 
 # build_test_example for gcc
-build_test_example-u-18_04:
+build_test_example-u-22_04:
   extends: .build_test_example
-  image: corsika/devel:u-18.04
+  image: corsika/devel:u-22.04
   needs:
-    - job: config-u-18_04
+    - job: config-u-22_04
       artifacts: false
 
 
 # build_test_example for clang
-build_test_example-clang-8:
+build_test_example-clang-14:
   extends: .build_test_example
-  image: corsika/devel:clang-8
+  image: corsika/devel:clang-14
   needs:
-    - job: config-clang-8
+    - job: config-clang-14
       artifacts: false
 
 
@@ -237,6 +240,7 @@ build_test_example-clang-8:
   script:
     - mkdir -p build
     - cd build
+    - ../conan-install.sh
     - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Release -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
     - set -o pipefail
@@ -268,19 +272,19 @@ build_test_example-clang-8:
       - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
 
 # release for gcc
-release-full-u-18_04:
+release-full-u-22_04:
   extends: .release
-  image: corsika/devel:u-18.04
+  image: corsika/devel:u-22.04
   needs:
-    - job: config-u-18_04
+    - job: config-u-22_04
       artifacts: false
 
 # release for clang
-release-full-clang-8:
+release-full-clang-14:
   extends: .release
-  image: corsika/devel:clang-8
+  image: corsika/devel:clang-14
   needs:
-    - job: config-clang-8
+    - job: config-clang-14
       artifacts: false
 
 
@@ -290,9 +294,9 @@ release-full-clang-8:
 # the coverage generation should either run when manually requested, OR always on the master
 
 coverage:
-  image: corsika/devel:u-18.04
+  image: corsika/devel:u-22.04
   needs:
-    - job: config-u-18_04
+    - job: config-u-22_04
       artifacts: false
   stage: optional
   tags:
@@ -300,6 +304,7 @@ coverage:
   script:
     - mkdir -p build
     - cd build
+    - ../conan-install.sh
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
     - ctest -j4 
@@ -329,9 +334,9 @@ coverage:
 
 ##########################################################
 sanity:
-  image: corsika/devel:u-18.04
+  image: corsika/devel:u-22.04
   needs:
-    - job: config-u-18_04
+    - job: config-u-22_04
       artifacts: false
 
   stage: optional
@@ -340,6 +345,7 @@ sanity:
   script:
     - mkdir -p build
     - cd build
+    - ../conan-install.sh
     - cmake .. -DWITH_CORSIKA_SANITIZERS_ENABLED=ON -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
   rules:
@@ -375,12 +381,12 @@ sanity:
     - cd ${CI_PROJECT_DIR}  # reset the directory
   coverage: '/^TOTAL\s*\d+\s*\d+\s*(.*\%)/'
 
-# the default Python version Ubuntu 18.04 is Python3.8
+# the default Python version Ubuntu 22.04 is Python3.8
 python-3.8:
   extends: .python
   image: corsika/analysis:python-3.9.5
   needs:
-    - job: build_test_example-u-18_04
+    - job: build_test_example-u-22_04
       artifacts: true
   artifacts:
     when: always
