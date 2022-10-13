@@ -53,7 +53,7 @@ check-copyrights:
 
 ##########################################################
 check-clang-format:
-  image: corsika/devel:clang-14
+  image: corsika/devel:clang-8
   stage: quality
   tags:
     - corsika
