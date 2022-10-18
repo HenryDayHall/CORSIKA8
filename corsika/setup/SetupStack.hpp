@@ -25,7 +25,7 @@ namespace corsika::setup {
    * the version with history
    */
   template <typename TEnvironment>
-  using Stack = typename detail::StackGenerator<TEnvironment>::StackWithWeight;
+  using Stack = typename detail::StackGenerator<TEnvironment>::StackWithHistory;
 
 #else // WITH_HISTORY
 
