@@ -13,8 +13,6 @@
 #include <corsika/framework/process/InteractionCounter.hpp>
 /* clang-format on */
 #include <corsika/framework/core/Cascade.hpp>
-#include <corsika/framework/geometry/Box.hpp>
-#include <corsika/framework/geometry/Cylinder.hpp>
 #include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/process/SwitchProcessSequence.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
