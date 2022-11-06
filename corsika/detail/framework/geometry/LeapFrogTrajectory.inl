@@ -29,8 +29,9 @@ namespace corsika {
   }
 
   inline Point LeapFrogTrajectory::getPosition(double const u) const {
-    Point position = initialPosition_ + initialVelocity_ * timeStep_ * u / 2;
-    VelocityVector velocity =
+    if (u == 0) return initialPosition_;
+    Point const position = initialPosition_ + initialVelocity_ * timeStep_ * u / 2;
+    VelocityVector const velocity =
         initialVelocity_ + initialVelocity_.cross(magneticfield_) * timeStep_ * u * k_;
     return position + velocity * timeStep_ * u / 2;
   }
@@ -40,6 +41,8 @@ namespace corsika {
   }
 
   inline DirectionVector LeapFrogTrajectory::getDirection(double const u) const {
+    if (u == 0) return initialDirection_;
+
     return (initialDirection_ +
             initialDirection_.cross(magneticfield_) * timeStep_ * u * k_)
         .normalized();
