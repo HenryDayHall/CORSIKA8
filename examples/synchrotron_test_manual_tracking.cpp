@@ -162,8 +162,9 @@ int main() {
     auto particle1{stack.addParticle(std::make_tuple(
         particle, calculate_kinetic_energy(plab.getNorm(), get_mass(particle)),
         plab.normalized(), point_1, timeCounter))};
-    coreas.doContinuous(particle1, track, true);
-    zhs.doContinuous(particle1, track, true);
+    Step step(particle1, track);
+    coreas.doContinuous(step, true);
+    zhs.doContinuous(step, true);
     stack.clear();
   }
 
