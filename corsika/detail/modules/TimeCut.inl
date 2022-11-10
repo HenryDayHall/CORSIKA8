@@ -15,11 +15,11 @@ namespace corsika {
   inline TimeCut::TimeCut(const TimeType time)
       : time_(time) {}
 
-  template <typename Particle, typename Track>
-  inline ProcessReturn TimeCut::doContinuous(Particle const& particle, Track const&,
+  template <typename Particle>
+  inline ProcessReturn TimeCut::doContinuous(Step<Particle> const& step,
                                              bool const) {
     CORSIKA_LOG_TRACE("TimeCut::doContinuous");
-    if (particle.getTime() >= time_) {
+    if (step.getTimePost() >= time_) {
       CORSIKA_LOG_TRACE("stopping continuous process");
       return ProcessReturn::ParticleAbsorbed;
     }
