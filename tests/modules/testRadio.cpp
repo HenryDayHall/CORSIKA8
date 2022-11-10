@@ -148,8 +148,9 @@ TEST_CASE("Radio", "[processes]") {
                  decltype(StraightPropagator(envCoREAS))>
         coreas(detector, envCoREAS);
 
+    Step step(particle1, base);
     // check doContinuous and simulate methods
-    coreas.doContinuous(particle1, base, true);
+    coreas.doContinuous(step, true);
   } // END: SECTION("CoREAS process")
 
   SECTION("ZHS process") {
@@ -252,8 +253,9 @@ TEST_CASE("Radio", "[processes]") {
         decltype(StraightPropagator(envZHS))>
         zhs(detector, envZHS);
 
+    Step step(particle1, base);
     // check doContinuous and simulate methods
-    zhs.doContinuous(particle1, base, true);
+    zhs.doContinuous(step, true);
 
   } // END: SECTION("ZHS process")
 
