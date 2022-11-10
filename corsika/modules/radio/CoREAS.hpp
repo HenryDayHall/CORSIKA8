@@ -45,8 +45,8 @@ namespace corsika {
      * @param track       The current track.
      *
      */
-    template <typename Particle, typename Track>
-    ProcessReturn simulate(Particle const& particle, Track const& track);
+    template <typename Particle>
+    ProcessReturn simulate(Step<Particle> const& step);
 
   private:
     int tinycounter_{0};

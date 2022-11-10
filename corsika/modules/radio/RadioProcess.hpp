@@ -13,6 +13,7 @@
 #include <string>
 #include <corsika/output/BaseOutput.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
+#include <corsika/framework/core/Step.hpp>
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
@@ -66,8 +67,8 @@ namespace corsika {
      * @param particle    The current particle.
      * @param track       The current track.
      */
-    template <typename Particle, typename Track>
-    ProcessReturn doContinuous(Particle const& particle, Track const& track, bool const);
+    template <typename Particle>
+    ProcessReturn doContinuous(Step<Particle> const& step, bool const);
 
     /**
      * Return the maximum step length for this particle and track.

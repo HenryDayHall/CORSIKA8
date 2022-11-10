@@ -31,10 +31,9 @@ namespace corsika {
       , propagator_(args...) {}
 
   template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
-  template <typename Particle, typename Track>
+  template <typename Particle>
   inline ProcessReturn RadioProcess<TAntennaCollection, TRadioImpl,
-                                    TPropagator>::doContinuous(const Particle& particle,
-                                                               const Track& track,
+                                    TPropagator>::doContinuous(const Step<Particle>& step,
                                                                const bool) {
     // we want the following particles:
     // Code::Electron & Code::Positron & Code::Gamma
@@ -44,10 +43,10 @@ namespace corsika {
     // important for controlling the runtime of radio (by ignoring particles
     // that aren't going to contribute i.e. heavy hadrons)
     // if (valid(particle, track)) {
-    auto const particleID_{particle.getPID()};
+    auto const particleID_{step.getParticlePre().getPID()};
     if ((particleID_ == Code::Electron) || (particleID_ == Code::Positron)) {
       CORSIKA_LOG_DEBUG("Particle for radio calculation: {} ", particleID_);
-      return this->implementation().simulate(particle, track);
+      return this->implementation().simulate(step);
     } else {
       CORSIKA_LOG_DEBUG("Particle {} is irrelevant for radio", particleID_);
       return ProcessReturn::Ok;

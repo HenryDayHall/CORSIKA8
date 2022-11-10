@@ -13,15 +13,14 @@
 namespace corsika {
 
   template <typename TRadioDetector, typename TPropagator>
-  template <typename Particle, typename Track>
+  template <typename Particle>
   inline ProcessReturn CoREAS<TRadioDetector, TPropagator>::simulate(
-      Particle const& particle, Track const& track) {
+      Step<Particle> const& step) {
 
     // get the global simulation time for that track.
-    auto const startTime_{
-        track.getTime(particle, 0)}; // time at the start point of the track hopefully. I
+    auto const startTime_{step.getTimePre()}; // time at the start point of the track. I
                                      // should use something similar to fCoreHitTime (?)
-    auto const endTime_{track.getTime(particle, 1)}; // time at end point of track.
+    auto const endTime_{step.getTimePost()}; // time at end point of track.
     trackcounter_ += 1;
     //      CORSIKA_LOG_DEBUG("Number of total tracks for radio: {} ", trackcounter_);
 
@@ -32,8 +31,8 @@ namespace corsika {
     } else {
 
       // get start and end position of the track
-      Point const startPoint_{track.getPosition(0)};
-      Point const endPoint_{track.getPosition(1)};
+      Point const startPoint_{step.getPositionPre()};
+      Point const endPoint_{step.getPositionPost()};
       // get the coordinate system of the startpoint and hence the track
       auto const cs_ {startPoint_.getCoordinateSystem()};
 
@@ -47,7 +46,7 @@ namespace corsika {
       auto const beta_{currDirection * corrBetaValue};
 
       // get particle charge
-      auto const charge_{get_charge(particle.getPID())};
+      auto const charge_{get_charge(step.getParticlePre().getPID())};
 
       // constants for electric field vector calculation
       auto const constants_{charge_ / (4 * M_PI) / (constants::epsilonZero) /

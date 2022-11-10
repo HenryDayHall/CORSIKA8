@@ -13,25 +13,25 @@
 namespace corsika {
 
   template <typename TRadioDetector, typename TPropagator>
-  template <typename Particle, typename Track>
+  template <typename Particle>
   inline ProcessReturn ZHS<TRadioDetector, TPropagator>::simulate(
-      Particle const& particle, Track const& track) const {
-    auto const startTime{particle.getTime()};
-    auto const endTime{particle.getTime() + track.getDuration()};
+      Step<Particle> const& step) const {
+    auto const startTime{step.getTimePre()};
+    auto const endTime{step.getTimePost()};
 
     if (startTime == endTime) {
       return ProcessReturn::Ok;
     } else {
 
-      auto const startPoint{track.getPosition(0)};
-      auto const endPoint{track.getPosition(1)};
+      auto const startPoint{step.getPositionPre()};
+      auto const endPoint{step.getPositionPost()};
       LengthType const trackLength{(startPoint - endPoint).getNorm()};
 
       auto const betaModule{(endPoint - startPoint).getNorm() /
                             (constants::c * (endTime - startTime))};
       auto const beta{(endPoint - startPoint).normalized() * betaModule};
 
-      auto const charge{get_charge(particle.getPID())};
+      auto const charge{get_charge(step.getParticlePre().getPID())};
 
       // // get "mid" position of the track geometrically
 
@@ -54,14 +54,14 @@ namespace corsika {
           if (fraunhLimit > 1.0) {
             /// code for dividing track and calculating field.
             double const nSubTracks{sqrt(fraunhLimit) + 1};
-            auto const step{(endPoint - startPoint) / nSubTracks};
+            auto const step_{(endPoint - startPoint) / nSubTracks};
             TimeType const timeStep{(endTime - startTime) / nSubTracks};
             // energy should be divided up when it is possible to get the energy at end of
             // track!!!!
             auto point1{startPoint};
             TimeType time1{startTime};
             for (int j{0}; j < nSubTracks; j++) {
-              auto const point2{point1 + step};
+              auto const point2{point1 + step_};
               TimeType const time2{time1 + timeStep};
               auto const newHalfVector{(point1 - point2) / 2.};
               auto const newMidPoint{point2 + newHalfVector};
@@ -144,7 +144,7 @@ namespace corsika {
 
               } // end of loop over newMidPaths
               // update points for next sub track
-              point1 = point1 + step;
+              point1 = point1 + step_;
               time1 = time1 + timeStep;
             }
 
