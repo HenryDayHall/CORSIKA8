@@ -62,6 +62,8 @@ namespace corsika {
     return meter * std::numeric_limits<double>::infinity();
   }
 
+  // this should all be moved at a separate radio output function
+  // LCOV_EXCL_START
   template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
   inline void RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>::startOfLibrary(
       const boost::filesystem::path& directory) {
@@ -121,5 +123,6 @@ namespace corsika {
 
     return config;
   }
+  // LCOV_EXCL_STOP
 
 } // namespace corsika
