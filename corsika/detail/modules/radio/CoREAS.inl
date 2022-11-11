@@ -21,12 +21,9 @@ namespace corsika {
     auto const startTime_{step.getTimePre()}; // time at the start point of the track. I
                                      // should use something similar to fCoreHitTime (?)
     auto const endTime_{step.getTimePost()}; // time at end point of track.
-    trackcounter_ += 1;
-    //      CORSIKA_LOG_DEBUG("Number of total tracks for radio: {} ", trackcounter_);
 
     if (startTime_ == endTime_) {
-      tinycounter_ += 1;
-      //        CORSIKA_LOG_ERROR("Tiny track number: {} ", tinycounter_);
+        CORSIKA_LOG_ERROR("Time at the start and end of the track coincides! - radio");
       return ProcessReturn::Ok;
     } else {
 
@@ -80,6 +77,7 @@ namespace corsika {
             // check if preDoppler has become zero in case of refractive index of unity
             // because of numerical limitations here you might need std::fabs(preDoppler)
             // in the if statement - same with post & mid
+            // LCOV_EXCL_START
             if (preDoppler_ == 0) {
               CORSIKA_LOG_WARN("preDoppler factor numerically zero in COREAS");
               // redo calculation with higher precision
@@ -97,6 +95,7 @@ namespace corsika {
                   indexL_ * (betaX_ * startX_ + betaY_ * startY_ + betaZ_ * startZ_);
               preDoppler_ = doppler;
             }
+            // LCOV_EXCL_STOP
 
             // calculate postDoppler factor
             double postDoppler_{1.0 - paths2[i].refractive_index_source_ *
@@ -104,6 +103,7 @@ namespace corsika {
 
             // check if postDoppler has become zero in case of refractive index of unity
             // because of numerical limitations
+            // LCOV_EXCL_START
             if (postDoppler_ == 0) {
               CORSIKA_LOG_WARN("postDoppler factor numerically zero in CoREAS");
               // redo calculation with higher precision
@@ -120,6 +120,7 @@ namespace corsika {
                   1.0l - indexL_ * (betaX_ * endX_ + betaY_ * endY_ + betaZ_ * endZ_);
               postDoppler_ = doppler;
             }
+            // LCOV_EXCL_STOP
 
             // calculate receive time for startpoint (aka time delay)
             auto startPointReceiveTime_{
@@ -141,10 +142,7 @@ namespace corsika {
             if ((paths1[i].refractive_index_destination_ > 1) &&
                 ((std::fabs(preDoppler_) < approxThreshold_) ||
                  (std::fabs(postDoppler_) < approxThreshold_))) {
-
-              // CORSIKA_LOG_INFO("used ZHS-like approximation in CoREAS");
-              zhscounter_ += 1;
-              // CORSIKA_LOG_INFO("Used ZHS approx: {} out of {} times", zhscounter_, trackcounter_);
+               CORSIKA_LOG_DEBUG("Used ZHS-like approximation in CoREAS - radio");
 
               // clear the existing paths for this particle and track, since we don't need
               // them anymore
@@ -170,6 +168,7 @@ namespace corsika {
                                    path.refractive_index_source_ * beta_.dot(path.emit_)};
 
                 // check if midDoppler has become zero because of numerical limitations
+                // LCOV_EXCL_START
                 if (midDoppler_ == 0) {
                   CORSIKA_LOG_WARN("midDoppler factor numerically zero in COREAS");
                   // redo calculation with higher precision
@@ -186,6 +185,7 @@ namespace corsika {
                       1.0l - indexL_ * (betaX_ * midX_ + betaY_ * midY_ + betaZ_ * midZ_);
                   midDoppler_ = doppler;
                 }
+                // LCOV_EXCL_STOP
 
                 // change the values of the receive unit vectors of start and end
                 ReceiveVectorStart_ = path.receive_;
@@ -371,9 +371,11 @@ namespace corsika {
 
           } // End of loop over both paths to get signal info
         }   // End of try block
+        // LCOV_EXCL_START
         catch (size_t i) {
           CORSIKA_LOG_ERROR("Signal Paths do not have the same size in CoREAS");
         }
+        // LCOV_EXCL_STOP
       } // End of looping over antennas
 
       return ProcessReturn::Ok;

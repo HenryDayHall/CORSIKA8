@@ -48,11 +48,6 @@ namespace corsika {
     template <typename Particle>
     ProcessReturn simulate(Step<Particle> const& step);
 
-  private:
-    int tinycounter_{0};
-    int trackcounter_{0};
-    int zhscounter_{0};
-
     using Base =
         RadioProcess<TRadioDetector, CoREAS<TRadioDetector, TPropagator>, TPropagator>;
     using Base::antennas_;

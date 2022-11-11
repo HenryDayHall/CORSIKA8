@@ -20,6 +20,7 @@ namespace corsika {
     auto const endTime{step.getTimePost()};
 
     if (startTime == endTime) {
+        CORSIKA_LOG_ERROR("Time at the start and end of the track coincides! - radio");
       return ProcessReturn::Ok;
     } else {
 
