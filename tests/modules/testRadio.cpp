@@ -259,6 +259,126 @@ TEST_CASE("Radio", "[processes]") {
 
   } // END: SECTION("ZHS process")
 
+    SECTION("Radio extreme cases") {
+
+        // Environment
+        using EnvironmentInterface =
+                IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+
+        using EnvType = Environment<EnvironmentInterface>;
+        EnvType envRadio;
+        CoordinateSystemPtr const& rootCSRadio = envRadio.getCoordinateSystem();
+        Point const center{rootCSRadio, 0_m, 0_m, 0_m};
+
+        create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
+                envRadio, AtmosphereId::LinsleyUSStd, center, 1.415, Medium::AirDry1Atm,
+                MagneticFieldVector{rootCSRadio, 0_T, 50_uT, 0_T});
+
+        // now create antennas and detectors
+        // the antennas location
+        const auto point1{Point(envRadio.getCoordinateSystem(), 0_m, 0_m, 0_m)};
+
+        // track points
+        Point const point_1(rootCSRadio, {1_m, 1_m, 0_m});
+        Point const point_2(rootCSRadio, {2_km, 1_km, 0_m});
+        Point const point_4(rootCSRadio, {0_m, 1_m, 0_m});
+
+        // create times for the antenna
+        const TimeType start{0_s};
+        const TimeType duration{100_ns};
+        const InverseTimeType sample{1e+12_Hz};
+        const TimeType duration_dummy{2_s};
+        const InverseTimeType sample_dummy{1_Hz};
+
+        // check that I can create an antenna at (1, 2, 3)
+        TimeDomainAntenna ant1("antenna_name", point1, rootCSRadio, start, duration, sample, start);
+        TimeDomainAntenna ant2("dummy", point1, rootCSRadio, start, duration_dummy, sample_dummy, start);
+        // construct a radio detector instance to store our antennas
+        AntennaCollection<TimeDomainAntenna> detector;
+        AntennaCollection<TimeDomainAntenna> detector_dummy;
+        // add the antennas to the detector
+        detector.addAntenna(ant1);
+        detector_dummy.addAntenna(ant2);
+
+        // create a new stack for each trial
+        setup::Stack<EnvType> stack;
+        // create a particle
+        const Code particle{Code::Electron};
+        const Code particle2{Code::Proton};
+
+        const auto pmass{get_mass(particle)};
+        const auto pmass2{get_mass(particle2)};
+        // construct an energy
+        const HEPEnergyType E0{1_TeV};
+        // compute the necessary momentumn
+        const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
+        // and create the momentum vector
+        const auto plab{MomentumVector(rootCSRadio, {P0, 0_GeV, 0_GeV})};
+        // add the particle to the stack
+        auto const particle_stack{stack.addParticle(std::make_tuple(
+                particle, calculate_kinetic_energy(plab.getNorm(), get_mass(particle)),
+                plab.normalized(), point_1, 0_ns))};
+
+        // particle stack with proton
+        auto const particle_stack_proton{stack.addParticle(std::make_tuple(
+                particle2, calculate_kinetic_energy(plab.getNorm(), get_mass(particle2)),
+                plab.normalized(), point_1, 0_ns))};
+
+        // feed radio with a zero length trajectory to trigger the startTime = endTime check.
+        TimeType t0{(point_1 - point_1).getNorm() / (0.999 * constants::c)};
+        VelocityVector v{(point_1 - point_1) / t0};
+        Line l{point_1, v};
+        StraightTrajectory track0{l, t0};
+        Step step0(particle_stack, track0);
+
+        // feed radio with a proton track to check that it skips that track.
+        TimeType tp{(point_2 - point_1).getNorm() / (0.999 * constants::c)};
+        VelocityVector vp{(point_2 - point_1) / tp};
+        Line lp{point_1, vp};
+        StraightTrajectory track_p{lp, tp};
+        Step step_proton(particle_stack_proton, track_p);
+
+        // feed radio with a track that triggers zhs like approx in coreas and fraunhofer limit check for zhs
+        TimeType th{(point_4 - point1).getNorm() / constants::c};
+        VelocityVector vh{(point_4 - point1) / th};
+        Line lh{point1, vh};
+        StraightTrajectory track_h{lh, th};
+        Step step_h(particle_stack, track_h);
+
+        // create radio process instances
+        RadioProcess<decltype(detector),
+                CoREAS<decltype(detector), decltype(SimplePropagator(envRadio))>,
+                decltype(SimplePropagator(envRadio))>
+                coreas(detector, envRadio);
+
+        RadioProcess<decltype(detector),
+                ZHS<decltype(detector), decltype(SimplePropagator(envRadio))>,
+                decltype(SimplePropagator(envRadio))>
+                zhs(detector, envRadio);
+
+        coreas.doContinuous(step0, true);
+        zhs.doContinuous(step0, true);
+        coreas.doContinuous(step_proton, true);
+        zhs.doContinuous(step_proton, true);
+        coreas.doContinuous(step_h, true);
+        zhs.doContinuous(step_h, true);
+
+        // create radio processes with "dummy" antenna to trigger extreme time-binning
+        RadioProcess<decltype(detector_dummy),
+                CoREAS<decltype(detector_dummy), decltype(SimplePropagator(envRadio))>,
+                decltype(SimplePropagator(envRadio))>
+                coreas_dummy(detector_dummy, envRadio);
+
+        RadioProcess<decltype(detector_dummy),
+                ZHS<decltype(detector_dummy), decltype(SimplePropagator(envRadio))>,
+                decltype(SimplePropagator(envRadio))>
+                zhs_dummy(detector_dummy, envRadio);
+
+        coreas_dummy.doContinuous(step_h, true);
+        zhs_dummy.doContinuous(step_h, true);
+
+    } // END: SECTION("Radio extreme cases")
+
 } // END: TEST_CASE("Radio", "[processes]")
 
 TEST_CASE("Antennas") {
@@ -673,7 +793,7 @@ TEST_CASE("Propagators") {
             Approx(0).margin(absMargin));
       CHECK(path.average_refractive_index_ == Approx(0.210275935));
       CHECK(path.refractive_index_source_ == Approx(2));
-      //      CHECK(path.refractive_index_destination_ == Approx(0.0000000041));
+      // CHECK(path.refractive_index_destination_ == Approx(0.0000000041));
       CHECK(path.emit_.getComponents() == vvv1.getComponents());
       CHECK(path.receive_.getComponents() == vvv2.getComponents());
       CHECK(path.R_distance_ == 10_m);
