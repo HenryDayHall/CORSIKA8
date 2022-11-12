@@ -324,13 +324,6 @@ TEST_CASE("Radio", "[processes]") {
                 particle2, calculate_kinetic_energy(plab.getNorm(), get_mass(particle2)),
                 plab.normalized(), point_1, 0_ns))};
 
-        // feed radio with a zero length trajectory to trigger the startTime = endTime check.
-        TimeType t0{(point_1 - point_1).getNorm() / (0.999 * constants::c)};
-        VelocityVector v{(point_1 - point_1) / t0};
-        Line l{point_1, v};
-        StraightTrajectory track0{l, t0};
-        Step step0(particle_stack, track0);
-
         // feed radio with a proton track to check that it skips that track.
         TimeType tp{(point_2 - point_1).getNorm() / (0.999 * constants::c)};
         VelocityVector vp{(point_2 - point_1) / tp};
@@ -356,8 +349,6 @@ TEST_CASE("Radio", "[processes]") {
                 decltype(SimplePropagator(envRadio))>
                 zhs(detector, envRadio);
 
-        coreas.doContinuous(step0, true);
-        zhs.doContinuous(step0, true);
         coreas.doContinuous(step_proton, true);
         zhs.doContinuous(step_proton, true);
         coreas.doContinuous(step_h, true);
