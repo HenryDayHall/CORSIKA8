@@ -189,8 +189,8 @@ int main(int argc, char** argv) {
     Point planeCenter{injectCS, {0_m, 0_m, -(i + 1) * 3_m}};
     obsPlanes.push_back({Plane(planeCenter, upVec), leftVec, false});
   }
-  obsPlanes.push_back({Plane(Point(injectCS, {0_m, 0_m, -50_m}), upVec), leftVec, true});
-  auto& obsPlaneFinal = obsPlanes[nPlane - 1];
+  auto& obsPlaneFinal = obsPlanes.emplace_back(
+      Plane{Point{injectCS, {0_m, 0_m, -50_m}}, upVec}, leftVec, true);
 
   // * longitutional profile
   ShowerAxis const showerAxis{injectorPos, 1.2 * injectorLength * downVec, env};
@@ -223,7 +223,7 @@ int main(int argc, char** argv) {
       make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, sibyll);
 
   // decay process
-  corsika::pythia8::Decay decayPythia; // ? will double initialize be a problem?
+  corsika::pythia8::Decay decayPythia;
   corsika::sibyll::Decay decaySibyll{{
       Code::N1440Plus,
       Code::N1440MinusBar,
