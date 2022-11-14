@@ -16,15 +16,12 @@
 #include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/process/SwitchProcessSequence.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/framework/stack/CombinedStack.hpp>
-#include <corsika/framework/stack/Stack.hpp>
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/IMediumModel.hpp>
 #include <corsika/media/MediumProperties.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/ShowerAxis.hpp>
-#include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
@@ -247,7 +244,6 @@ int main(int argc, char** argv) {
   corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(),
                                            heHadronModelThreshold);
   corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
-  // BetheBlochPDG emContinuous;
 
   // total physics list
   auto physics_sequence =
