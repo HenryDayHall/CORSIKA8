@@ -14,14 +14,13 @@
 
 namespace corsika {
 
-  inline HEPEnergyType constexpr get_kinetic_energy_propagation_threshold(
-      Code const code) {
+  inline HEPEnergyType get_kinetic_energy_propagation_threshold(Code const code) {
     if (is_nucleus(code)) return particle::detail::threshold_nuclei;
     return particle::detail::propagation_thresholds[static_cast<CodeIntType>(code)];
   }
 
-  inline void constexpr set_kinetic_energy_propagation_threshold(
-      Code const code, HEPEnergyType const val) {
+  inline void set_kinetic_energy_propagation_threshold(Code const code,
+                                                       HEPEnergyType const val) {
     if (is_nucleus(code))
       particle::detail::threshold_nuclei = val;
     else
@@ -33,12 +32,11 @@ namespace corsika {
     return particle::detail::masses[static_cast<CodeIntType>(code)];
   }
 
-  inline HEPEnergyType constexpr get_energy_production_threshold(Code const p) {
+  inline HEPEnergyType get_energy_production_threshold(Code const p) {
     return particle::detail::production_thresholds[static_cast<CodeIntType>(p)];
   }
 
-  inline void constexpr set_energy_production_threshold(Code const p,
-                                                        HEPEnergyType const val) {
+  inline void set_energy_production_threshold(Code const p, HEPEnergyType const val) {
     particle::detail::production_thresholds[static_cast<CodeIntType>(p)] = val;
   }
 
