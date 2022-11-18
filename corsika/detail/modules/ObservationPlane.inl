@@ -77,7 +77,7 @@ namespace corsika {
 
     TimeType const timeOfIntersection = intersection.getEntry();
     CORSIKA_LOG_TRACE("timeOfIntersection={}", timeOfIntersection);
-    if (timeOfIntersection < TimeType::zero()) {
+    if (timeOfIntersection <= TimeType::zero()) {
       return std::numeric_limits<double>::infinity() * 1_m;
     }
     if (timeOfIntersection > trajectory.getDuration()) {
