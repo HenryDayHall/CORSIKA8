@@ -92,11 +92,11 @@ int main(int argc, char** argv) {
       ->excludes(opt_A)
       ->excludes(opt_Z)
       ->group("Primary");
-  app.add_option("--e0", "Minimum energy [GeV]")
-      ->check(CLI::Range(50.0, 1e8))
-      ->default_val(1e5)
+  app.add_option("-E,--energy", "Primary energy in GeV")
+      ->required()
+      ->check(CLI::PositiveNumber)
       ->group("Primary");
-  app.add_option("--eCut", "Cut energy [GeV]")->default_val(1.);
+  app.add_option("--eCut", "Cut energy in GeV")->default_val(1.);
   app.add_option("-N,--nevent", n_event, "The number of events/showers to run.")
       ->default_val(1)
       ->check(CLI::PositiveNumber);
@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
       primaryType = get_nucleus_code(A, Z);
   }
 
-  e0 = app["--e0"]->as<double>() * 1_GeV;
+  e0 = app["-E"]->as<double>() * 1_GeV;
   eCut = app["--eCut"]->as<double>() * 1_GeV;
   std::string_view const loglevel = app["-v"]->as<std::string_view>();
   if (loglevel == "warn") {
@@ -162,12 +162,14 @@ int main(int argc, char** argv) {
     Point const center{rootCS, 0_m, 0_m, 0_m};
     auto sphere = std::make_unique<Sphere>(center, 100_m);
     auto node = std::make_unique<VolumeTreeNode<IMediumType>>(std::move(sphere));
+    // Hydrogen is not supported by UrQMD yet. See #456
     auto comp = NuclearComposition({{Code::Oxygen}, {1.0}});
+    // density of sea water
     auto density = 1.02_g / (1_cm * 1_cm * 1_cm);
-    auto earth_medium =
+    auto water_medium =
         std::make_shared<MediumPropertyModel<HomogeneousMedium<IMediumType>>>(
-            Medium::StandardRock, density, comp);
-    node->setModelProperties(earth_medium);
+            Medium::WaterLiquid, density, comp);
+    node->setModelProperties(water_medium);
     universe->addChild(std::move(node));
   }
 
@@ -199,14 +201,13 @@ int main(int argc, char** argv) {
 
   // * physical process list
   // particle production threshold
-  HEPEnergyType const emcut = eCut;
-  HEPEnergyType const hadcut = eCut;
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, dEdX);
+  HEPEnergyType const emCut = eCut;
+  HEPEnergyType const hadCut = eCut;
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(emCut, emCut, hadCut, hadCut, true, dEdX);
 
   // hadronic interactions
   HEPEnergyType heHadronModelThreshold = 63.1_GeV;
   corsika::sibyll::Interaction sibyll(env);
-  // UrQMD not support our nucleon yet. See #456
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted(urqmd);
   struct EnergySwitch {
