@@ -19,8 +19,8 @@ struct DummyRNG {
   double v_;
   DummyRNG(double v)
       : v_(v) {}
-  int max() const { return 10; }
-  int min() const { return 0; }
+  static constexpr int max() { return 10; }
+  static constexpr int min() { return 0; }
   double operator()() const { return v_; }
 };
 

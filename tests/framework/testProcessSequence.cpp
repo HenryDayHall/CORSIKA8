@@ -37,8 +37,8 @@ using namespace corsika;
 using namespace std;
 
 struct DummyRNG {
-  int max() const { return 10; }
-  int min() const { return 0; }
+  static constexpr int max() { return 10; }
+  static constexpr int min() { return 0; }
   double operator()() const { return 0.5; }
 };
 
