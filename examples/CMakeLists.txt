@@ -64,5 +64,8 @@ CORSIKA_REGISTER_EXAMPLE (corsika RUN_OPTIONS --energy=100 --zenith=10 --nevent=
 add_executable (mars mars.cpp)
 target_link_libraries (mars CORSIKA8::CORSIKA8)
 
+add_executable (water water.cpp)
+target_link_libraries (water CORSIKA8::CORSIKA8)
+
 add_executable (environment environment.cpp)
 target_link_libraries (environment CORSIKA8::CORSIKA8)
