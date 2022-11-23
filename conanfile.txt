@@ -6,7 +6,7 @@ boost/1.76.0
 zlib/1.2.11
 proposal/7.4.2
 yaml-cpp/0.7.0
-arrow/2.0.0
+arrow/8.0.1
 cli11/1.9.1
 
 [build_requires]
