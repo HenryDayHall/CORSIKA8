@@ -57,6 +57,8 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     CHECK(1_mol / 1_amol == Approx(1e18));
     CHECK(1_K / 1_zK == Approx(1e21));
     CHECK(1_K / 1_yK == Approx(1e24));
+    CHECK(1_V / 1_rV == Approx(1e27));
+    CHECK(1_V / 1_qV == Approx(1e30));
     CHECK(1_b / 1_mb == Approx(1e3));
 
     CHECK(1_A / 1_hA == Approx(1e-2));
@@ -68,6 +70,8 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     CHECK(1_A / 1_EA == Approx(1e-18));
     CHECK(1_K / 1_ZK == Approx(1e-21));
     CHECK(1_mol / 1_Ymol == Approx(1e-24));
+    CHECK(1_V / 1_RV == Approx(1e-27));
+    CHECK(1_V / 1_QV == Approx(1e-30));
 
     CHECK(std::min(1_A, 2_A) == 1_A);
   }
