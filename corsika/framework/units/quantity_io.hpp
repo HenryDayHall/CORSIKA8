@@ -82,7 +82,7 @@ inline Rep prefix( std::string const prefix_ )
         { "d", deci  },
         { "c", centi },
         { "r", ronto },
-        { "q", quocto },
+        { "q", quecto },
         { "R", ronna },
         { "Q", quetta },
     };
