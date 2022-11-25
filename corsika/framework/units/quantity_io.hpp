@@ -81,6 +81,10 @@ inline Rep prefix( std::string const prefix_ )
         { "da", deka },
         { "d", deci  },
         { "c", centi },
+        { "r", ronto },
+        { "q", quocto },
+        { "R", ronna },
+        { "Q", quetta },
     };
 
     auto pos = table.find( prefix_ );
