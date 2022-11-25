@@ -18,13 +18,14 @@ namespace corsika {
       Step<Particle> const& step) {
 
     // get the global simulation time for that track.
-    auto const startTime_{step.getTimePre()}; // time at the start point of the track. I
-                                     // should use something similar to fCoreHitTime (?)
+    auto const startTime_{
+        step.getTimePre()}; // time at the start point of the track. I
+                            // should use something similar to fCoreHitTime (?)
     auto const endTime_{step.getTimePost()}; // time at end point of track.
 
-      // LCOV_EXCL_START
+    // LCOV_EXCL_START
     if (startTime_ == endTime_) {
-        CORSIKA_LOG_ERROR("Time at the start and end of the track coincides! - radio");
+      CORSIKA_LOG_ERROR("Time at the start and end of the track coincides! - radio");
       return ProcessReturn::Ok;
       // LCOV_EXCL_STOP
     } else {
@@ -33,7 +34,7 @@ namespace corsika {
       Point const startPoint_{step.getPositionPre()};
       Point const endPoint_{step.getPositionPost()};
       // get the coordinate system of the startpoint and hence the track
-      auto const cs_ {startPoint_.getCoordinateSystem()};
+      auto const cs_{startPoint_.getCoordinateSystem()};
 
       auto const currDirection{(endPoint_ - startPoint_).normalized()};
       // calculate the track length
@@ -41,7 +42,7 @@ namespace corsika {
 
       // beta is velocity / speed of light. Start & end should be the same in endpoints!
       auto const corrBetaValue{(endPoint_ - startPoint_).getNorm() /
-                         (constants::c * (endTime_ - startTime_))};
+                               (constants::c * (endTime_ - startTime_))};
       auto const beta_{currDirection * corrBetaValue};
 
       // get particle charge
@@ -144,7 +145,7 @@ namespace corsika {
             if ((paths1[i].refractive_index_destination_ > 1) &&
                 ((std::fabs(preDoppler_) < approxThreshold_) ||
                  (std::fabs(postDoppler_) < approxThreshold_))) {
-               CORSIKA_LOG_DEBUG("Used ZHS-like approximation in CoREAS - radio");
+              CORSIKA_LOG_DEBUG("Used ZHS-like approximation in CoREAS - radio");
 
               // clear the existing paths for this particle and track, since we don't need
               // them anymore

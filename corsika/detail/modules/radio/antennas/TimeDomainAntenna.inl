@@ -27,7 +27,7 @@ namespace corsika {
       , waveformEX_(num_bins_, 0)
       , waveformEY_(num_bins_, 0)
       , waveformEZ_(num_bins_, 0)
-      , time_axis_(createTimeAxis()) {};
+      , time_axis_(createTimeAxis()){};
 
   inline void TimeDomainAntenna::receive(const TimeType time,
                                          const Vector<dimensionless_d>& receive_vector,
@@ -46,7 +46,8 @@ namespace corsika {
       waveformEX_.at(timebin_) += (Electric_field_components.getX() * (1_m / 1_V));
       waveformEY_.at(timebin_) += (Electric_field_components.getY() * (1_m / 1_V));
       waveformEZ_.at(timebin_) += (Electric_field_components.getZ() * (1_m / 1_V));
-      // TODO: Check how they are stored in memory, row-wise or column-wise? Probably use a 3D object
+      // TODO: Check how they are stored in memory, row-wise or column-wise? Probably use
+      // a 3D object
     }
   }
 
@@ -64,10 +65,14 @@ namespace corsika {
 
       // store the x,y,z electric field components.
       auto const& Vector_potential_components{vectorP.getComponents(coordinateSystem_)};
-      waveformEX_.at(timebin_) += (Vector_potential_components.getX() * (1_m / (1_V * 1_s)));
-      waveformEY_.at(timebin_) += (Vector_potential_components.getY() * (1_m / (1_V * 1_s)));
-      waveformEZ_.at(timebin_) += (Vector_potential_components.getZ() * (1_m / (1_V * 1_s)));
-      // TODO: Check how they are stored in memory, row-wise or column-wise? Probably use a 3D object
+      waveformEX_.at(timebin_) +=
+          (Vector_potential_components.getX() * (1_m / (1_V * 1_s)));
+      waveformEY_.at(timebin_) +=
+          (Vector_potential_components.getY() * (1_m / (1_V * 1_s)));
+      waveformEZ_.at(timebin_) +=
+          (Vector_potential_components.getZ() * (1_m / (1_V * 1_s)));
+      // TODO: Check how they are stored in memory, row-wise or column-wise? Probably use
+      // a 3D object
     }
   }
 
@@ -97,7 +102,9 @@ namespace corsika {
 
   inline auto const& TimeDomainAntenna::getAxis() const { return time_axis_; }
 
-  inline InverseTimeType const& TimeDomainAntenna::getSampleRate() const { return sample_rate_; }
+  inline InverseTimeType const& TimeDomainAntenna::getSampleRate() const {
+    return sample_rate_;
+  }
 
   inline TimeType const& TimeDomainAntenna::getStartTime() const { return start_time_; }
 

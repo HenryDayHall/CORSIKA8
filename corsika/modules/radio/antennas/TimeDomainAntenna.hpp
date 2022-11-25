@@ -19,16 +19,16 @@ namespace corsika {
    */
   class TimeDomainAntenna : public Antenna<TimeDomainAntenna> {
 
-
-    TimeType const start_time_;                  ///< The start time of this waveform.
-    TimeType const duration_;                    ///< The duration of this waveform.
-    InverseTimeType const sample_rate_;          ///< The sampling rate of this antenna.
-    int const num_bins_;                         ///< The number of bins used.
-    std::vector<double> waveformEX_;             ///< EX polarization.
-    std::vector<double> waveformEY_;             ///< EY polarization.
-    std::vector<double> waveformEZ_;             ///< EZ polarization.
-    TimeType const ground_hit_time_;             ///< The time the primary particle hits the ground.
-    std::vector<long double> const time_axis_;   ///< The time axis corresponding to the electric field.
+    TimeType const start_time_;         ///< The start time of this waveform.
+    TimeType const duration_;           ///< The duration of this waveform.
+    InverseTimeType const sample_rate_; ///< The sampling rate of this antenna.
+    int const num_bins_;                ///< The number of bins used.
+    std::vector<double> waveformEX_;    ///< EX polarization.
+    std::vector<double> waveformEY_;    ///< EY polarization.
+    std::vector<double> waveformEZ_;    ///< EZ polarization.
+    TimeType const ground_hit_time_; ///< The time the primary particle hits the ground.
+    std::vector<long double> const
+        time_axis_; ///< The time axis corresponding to the electric field.
 
   public:
     // import the methods from the antenna
@@ -48,12 +48,13 @@ namespace corsika {
      * @param start_time         The starting time of this waveform.
      * @param duration           The duration of this waveform.
      * @param sample_rate        The sample rate of this waveform.
-     * @param ground_hit_time    The time the primary particle hits the ground on a straight vertical line.
+     * @param ground_hit_time    The time the primary particle hits the ground on a
+     * straight vertical line.
      *
      */
-    TimeDomainAntenna(std::string const& name, Point const& location, CoordinateSystemPtr coordinateSystem,
-                      TimeType const& start_time, TimeType const& duration,
-                      InverseTimeType const& sample_rate,
+    TimeDomainAntenna(std::string const& name, Point const& location,
+                      CoordinateSystemPtr coordinateSystem, TimeType const& start_time,
+                      TimeType const& duration, InverseTimeType const& sample_rate,
                       TimeType const ground_hit_time);
 
     /**

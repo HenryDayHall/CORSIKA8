@@ -25,8 +25,8 @@ namespace corsika {
   class Antenna {
 
   protected:
-    std::string const name_;    ///< The name/identifier of this antenna.
-    Point const location_;      ///< The location of this antenna.
+    std::string const name_;                     ///< The name/identifier of this antenna.
+    Point const location_;                       ///< The location of this antenna.
     CoordinateSystemPtr const coordinateSystem_; ///< The coordinate system of the antenna
     std::string filename_ = ""; ///< The filename for the output file for this antenna.
 
@@ -40,7 +40,8 @@ namespace corsika {
      * @param location    The location of this antenna.
      *
      */
-    Antenna(std::string const& name, Point const& location, CoordinateSystemPtr const& coordinateSystem);
+    Antenna(std::string const& name, Point const& location,
+            CoordinateSystemPtr const& coordinateSystem);
 
     /**
      * Receive a signal at this antenna.

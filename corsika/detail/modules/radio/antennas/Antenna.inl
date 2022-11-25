@@ -12,10 +12,11 @@
 namespace corsika {
 
   template <typename TAntennaImpl>
-  inline Antenna<TAntennaImpl>::Antenna(std::string const& name, Point const& location, CoordinateSystemPtr const& coordinateSystem)
+  inline Antenna<TAntennaImpl>::Antenna(std::string const& name, Point const& location,
+                                        CoordinateSystemPtr const& coordinateSystem)
       : name_(name)
       , location_(location)
-      , coordinateSystem_(coordinateSystem) {};
+      , coordinateSystem_(coordinateSystem){};
 
   template <typename TAntennaImpl>
   inline Point const& Antenna<TAntennaImpl>::getLocation() const {
@@ -97,9 +98,12 @@ namespace corsika {
     } else {
       // cnpy needs a vector for the shape
       // and write this event to the .npz archive
-      cnpy::npz_save(filename_, std::to_string(event) + "X", dataX.data(), {dataX.size()}, "a");
-      cnpy::npz_save(filename_, std::to_string(event) + "Y", dataY.data(), {dataY.size()}, "a");
-      cnpy::npz_save(filename_, std::to_string(event) + "Z", dataZ.data(), {dataZ.size()}, "a");
+      cnpy::npz_save(filename_, std::to_string(event) + "X", dataX.data(), {dataX.size()},
+                     "a");
+      cnpy::npz_save(filename_, std::to_string(event) + "Y", dataY.data(), {dataY.size()},
+                     "a");
+      cnpy::npz_save(filename_, std::to_string(event) + "Z", dataZ.data(), {dataZ.size()},
+                     "a");
     }
   }
 

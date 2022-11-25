@@ -27,7 +27,8 @@ namespace corsika {
     TimeCut(TimeType const time);
 
     template <typename Particle>
-    ProcessReturn doContinuous(Step<Particle> const& step,
+    ProcessReturn doContinuous(
+        Step<Particle> const& step,
         const bool limitFlag = false); // this is not used for TimeCut
     template <typename Particle, typename Track>
     LengthType getMaxStepLength(Particle const&, Track const&) {

@@ -25,14 +25,14 @@ namespace corsika {
     double const average_refractive_index_; ///< The average refractive index.
     double const refractive_index_source_;  ///< The refractive index at the source.
     double const
-        refractive_index_destination_;      ///< The refractive index at the destination point.
+        refractive_index_destination_; ///< The refractive index at the destination point.
     Vector<dimensionless_d> const emit_;    ///< The (unit-length) emission vector.
     Vector<dimensionless_d> const receive_; ///< The (unit-length) receive vector.
     std::deque<Point> const
-        points_;                            ///< A collection of points that make up the geometrical path.
+        points_; ///< A collection of points that make up the geometrical path.
     LengthType const
-        R_distance_;                        ///< The distance from the point of emission to an observer. TODO:
-                                            ///< optical path, not geometrical! (probably)
+        R_distance_; ///< The distance from the point of emission to an observer. TODO:
+                     ///< optical path, not geometrical! (probably)
 
     /**
      * Create a new SignalPath instance.
@@ -40,8 +40,9 @@ namespace corsika {
     SignalPath(TimeType const propagation_time, double const average_refractive_index,
                double const refractive_index_source,
                double const refractive_index_destination,
-               Vector<dimensionless_d> const& emit, Vector<dimensionless_d> const& receive,
-               LengthType const R_distance, std::deque<Point> const& points);
+               Vector<dimensionless_d> const& emit,
+               Vector<dimensionless_d> const& receive, LengthType const R_distance,
+               std::deque<Point> const& points);
 
   }; // END: class SignalPath final
 

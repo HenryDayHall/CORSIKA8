@@ -259,245 +259,248 @@ TEST_CASE("Radio", "[processes]") {
 
   } // END: SECTION("ZHS process")
 
-    SECTION("Radio extreme cases") {
+  SECTION("Radio extreme cases") {
 
-        // Environment
-        using EnvironmentInterface =
-                IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+    // Environment
+    using EnvironmentInterface =
+        IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
 
-        using EnvType = Environment<EnvironmentInterface>;
-        EnvType envRadio;
-        CoordinateSystemPtr const& rootCSRadio = envRadio.getCoordinateSystem();
-        Point const center{rootCSRadio, 0_m, 0_m, 0_m};
+    using EnvType = Environment<EnvironmentInterface>;
+    EnvType envRadio;
+    CoordinateSystemPtr const& rootCSRadio = envRadio.getCoordinateSystem();
+    Point const center{rootCSRadio, 0_m, 0_m, 0_m};
 
-        create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-                envRadio, AtmosphereId::LinsleyUSStd, center, 1.415, Medium::AirDry1Atm,
-                MagneticFieldVector{rootCSRadio, 0_T, 50_uT, 0_T});
+    create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
+        envRadio, AtmosphereId::LinsleyUSStd, center, 1.415, Medium::AirDry1Atm,
+        MagneticFieldVector{rootCSRadio, 0_T, 50_uT, 0_T});
 
-        // now create antennas and detectors
-        // the antennas location
-        const auto point1{Point(envRadio.getCoordinateSystem(), 0_m, 0_m, 0_m)};
+    // now create antennas and detectors
+    // the antennas location
+    const auto point1{Point(envRadio.getCoordinateSystem(), 0_m, 0_m, 0_m)};
 
-        // track points
-        Point const point_1(rootCSRadio, {1_m, 1_m, 0_m});
-        Point const point_2(rootCSRadio, {2_km, 1_km, 0_m});
-        Point const point_4(rootCSRadio, {0_m, 1_m, 0_m});
+    // track points
+    Point const point_1(rootCSRadio, {1_m, 1_m, 0_m});
+    Point const point_2(rootCSRadio, {2_km, 1_km, 0_m});
+    Point const point_4(rootCSRadio, {0_m, 1_m, 0_m});
 
-        // create times for the antenna
-        const TimeType start{0_s};
-        const TimeType duration{100_ns};
-        const InverseTimeType sample{1e+12_Hz};
-        const TimeType duration_dummy{2_s};
-        const InverseTimeType sample_dummy{1_Hz};
+    // create times for the antenna
+    const TimeType start{0_s};
+    const TimeType duration{100_ns};
+    const InverseTimeType sample{1e+12_Hz};
+    const TimeType duration_dummy{2_s};
+    const InverseTimeType sample_dummy{1_Hz};
 
-        // check that I can create an antenna at (1, 2, 3)
-        TimeDomainAntenna ant1("antenna_name", point1, rootCSRadio, start, duration, sample, start);
-        TimeDomainAntenna ant2("dummy", point1, rootCSRadio, start, duration_dummy, sample_dummy, start);
-        // construct a radio detector instance to store our antennas
-        AntennaCollection<TimeDomainAntenna> detector;
-        AntennaCollection<TimeDomainAntenna> detector_dummy;
-        // add the antennas to the detector
-        detector.addAntenna(ant1);
-        detector_dummy.addAntenna(ant2);
+    // check that I can create an antenna at (1, 2, 3)
+    TimeDomainAntenna ant1("antenna_name", point1, rootCSRadio, start, duration, sample,
+                           start);
+    TimeDomainAntenna ant2("dummy", point1, rootCSRadio, start, duration_dummy,
+                           sample_dummy, start);
+    // construct a radio detector instance to store our antennas
+    AntennaCollection<TimeDomainAntenna> detector;
+    AntennaCollection<TimeDomainAntenna> detector_dummy;
+    // add the antennas to the detector
+    detector.addAntenna(ant1);
+    detector_dummy.addAntenna(ant2);
 
-        // create a new stack for each trial
-        setup::Stack<EnvType> stack;
-        // create a particle
-        const Code particle{Code::Electron};
-        const Code particle2{Code::Proton};
+    // create a new stack for each trial
+    setup::Stack<EnvType> stack;
+    // create a particle
+    const Code particle{Code::Electron};
+    const Code particle2{Code::Proton};
 
-        const auto pmass{get_mass(particle)};
-        const auto pmass2{get_mass(particle2)};
-        // construct an energy
-        const HEPEnergyType E0{1_TeV};
-        // compute the necessary momentumn
-        const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
-        // and create the momentum vector
-        const auto plab{MomentumVector(rootCSRadio, {P0, 0_GeV, 0_GeV})};
-        // add the particle to the stack
-        auto const particle_stack{stack.addParticle(std::make_tuple(
-                particle, calculate_kinetic_energy(plab.getNorm(), get_mass(particle)),
-                plab.normalized(), point_1, 0_ns))};
+    const auto pmass{get_mass(particle)};
+    const auto pmass2{get_mass(particle2)};
+    // construct an energy
+    const HEPEnergyType E0{1_TeV};
+    // compute the necessary momentumn
+    const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
+    // and create the momentum vector
+    const auto plab{MomentumVector(rootCSRadio, {P0, 0_GeV, 0_GeV})};
+    // add the particle to the stack
+    auto const particle_stack{stack.addParticle(std::make_tuple(
+        particle, calculate_kinetic_energy(plab.getNorm(), get_mass(particle)),
+        plab.normalized(), point_1, 0_ns))};
 
-        // particle stack with proton
-        auto const particle_stack_proton{stack.addParticle(std::make_tuple(
-                particle2, calculate_kinetic_energy(plab.getNorm(), get_mass(particle2)),
-                plab.normalized(), point_1, 0_ns))};
+    // particle stack with proton
+    auto const particle_stack_proton{stack.addParticle(std::make_tuple(
+        particle2, calculate_kinetic_energy(plab.getNorm(), get_mass(particle2)),
+        plab.normalized(), point_1, 0_ns))};
 
-        // feed radio with a proton track to check that it skips that track.
-        TimeType tp{(point_2 - point_1).getNorm() / (0.999 * constants::c)};
-        VelocityVector vp{(point_2 - point_1) / tp};
-        Line lp{point_1, vp};
-        StraightTrajectory track_p{lp, tp};
-        Step step_proton(particle_stack_proton, track_p);
+    // feed radio with a proton track to check that it skips that track.
+    TimeType tp{(point_2 - point_1).getNorm() / (0.999 * constants::c)};
+    VelocityVector vp{(point_2 - point_1) / tp};
+    Line lp{point_1, vp};
+    StraightTrajectory track_p{lp, tp};
+    Step step_proton(particle_stack_proton, track_p);
 
-        // feed radio with a track that triggers zhs like approx in coreas and fraunhofer limit check for zhs
-        TimeType th{(point_4 - point1).getNorm() / constants::c};
-        VelocityVector vh{(point_4 - point1) / th};
-        Line lh{point1, vh};
-        StraightTrajectory track_h{lh, th};
-        Step step_h(particle_stack, track_h);
+    // feed radio with a track that triggers zhs like approx in coreas and fraunhofer
+    // limit check for zhs
+    TimeType th{(point_4 - point1).getNorm() / constants::c};
+    VelocityVector vh{(point_4 - point1) / th};
+    Line lh{point1, vh};
+    StraightTrajectory track_h{lh, th};
+    Step step_h(particle_stack, track_h);
 
-        // create radio process instances
-        RadioProcess<decltype(detector),
-                CoREAS<decltype(detector), decltype(SimplePropagator(envRadio))>,
-                decltype(SimplePropagator(envRadio))>
-                coreas(detector, envRadio);
+    // create radio process instances
+    RadioProcess<decltype(detector),
+                 CoREAS<decltype(detector), decltype(SimplePropagator(envRadio))>,
+                 decltype(SimplePropagator(envRadio))>
+        coreas(detector, envRadio);
 
-        RadioProcess<decltype(detector),
-                ZHS<decltype(detector), decltype(SimplePropagator(envRadio))>,
-                decltype(SimplePropagator(envRadio))>
-                zhs(detector, envRadio);
+    RadioProcess<decltype(detector),
+                 ZHS<decltype(detector), decltype(SimplePropagator(envRadio))>,
+                 decltype(SimplePropagator(envRadio))>
+        zhs(detector, envRadio);
 
-        coreas.doContinuous(step_proton, true);
-        zhs.doContinuous(step_proton, true);
-        coreas.doContinuous(step_h, true);
-        zhs.doContinuous(step_h, true);
+    coreas.doContinuous(step_proton, true);
+    zhs.doContinuous(step_proton, true);
+    coreas.doContinuous(step_h, true);
+    zhs.doContinuous(step_h, true);
 
-        // create radio processes with "dummy" antenna to trigger extreme time-binning
-        RadioProcess<decltype(detector_dummy),
-                CoREAS<decltype(detector_dummy), decltype(SimplePropagator(envRadio))>,
-                decltype(SimplePropagator(envRadio))>
-                coreas_dummy(detector_dummy, envRadio);
+    // create radio processes with "dummy" antenna to trigger extreme time-binning
+    RadioProcess<decltype(detector_dummy),
+                 CoREAS<decltype(detector_dummy), decltype(SimplePropagator(envRadio))>,
+                 decltype(SimplePropagator(envRadio))>
+        coreas_dummy(detector_dummy, envRadio);
 
-        RadioProcess<decltype(detector_dummy),
-                ZHS<decltype(detector_dummy), decltype(SimplePropagator(envRadio))>,
-                decltype(SimplePropagator(envRadio))>
-                zhs_dummy(detector_dummy, envRadio);
+    RadioProcess<decltype(detector_dummy),
+                 ZHS<decltype(detector_dummy), decltype(SimplePropagator(envRadio))>,
+                 decltype(SimplePropagator(envRadio))>
+        zhs_dummy(detector_dummy, envRadio);
 
-        coreas_dummy.doContinuous(step_h, true);
-        zhs_dummy.doContinuous(step_h, true);
+    coreas_dummy.doContinuous(step_h, true);
+    zhs_dummy.doContinuous(step_h, true);
 
-    } // END: SECTION("Radio extreme cases")
+  } // END: SECTION("Radio extreme cases")
 
 } // END: TEST_CASE("Radio", "[processes]")
 
 TEST_CASE("Antennas") {
 
-    SECTION("TimeDomainAntenna") {
+  SECTION("TimeDomainAntenna") {
 
-        // create an environment so we can get a coordinate system
-        using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
-        EnvType env6;
+    // create an environment so we can get a coordinate system
+    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+    EnvType env6;
 
-        using UniRIndex =
+    using UniRIndex =
         UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
 
-        // the antenna location
-        const auto point1{Point(env6.getCoordinateSystem(), 1_m, 2_m, 3_m)};
-        const auto point2{Point(env6.getCoordinateSystem(), 4_m, 5_m, 6_m)};
+    // the antenna location
+    const auto point1{Point(env6.getCoordinateSystem(), 1_m, 2_m, 3_m)};
+    const auto point2{Point(env6.getCoordinateSystem(), 4_m, 5_m, 6_m)};
 
-        // get a coordinate system
-        const CoordinateSystemPtr rootCS6 = env6.getCoordinateSystem();
+    // get a coordinate system
+    const CoordinateSystemPtr rootCS6 = env6.getCoordinateSystem();
 
-        auto Medium6 = EnvType::createNode<Sphere>(
-                Point{rootCS6, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+    auto Medium6 = EnvType::createNode<Sphere>(
+        Point{rootCS6, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-        auto const props6 = Medium6->setModelProperties<UniRIndex>(
-                1, 1_kg / (1_m * 1_m * 1_m), NuclearComposition({Code::Nitrogen}, {1.}));
+    auto const props6 = Medium6->setModelProperties<UniRIndex>(
+        1, 1_kg / (1_m * 1_m * 1_m), NuclearComposition({Code::Nitrogen}, {1.}));
 
-        env6.getUniverse()->addChild(std::move(Medium6));
+    env6.getUniverse()->addChild(std::move(Medium6));
 
-        // create times for the antenna
-        const TimeType t1{10_s};
-        const TimeType t2{10_s};
-        const InverseTimeType t3{1 / 1_s};
-        const TimeType t4{11_s};
+    // create times for the antenna
+    const TimeType t1{10_s};
+    const TimeType t2{10_s};
+    const InverseTimeType t3{1 / 1_s};
+    const TimeType t4{11_s};
 
-        // check that I can create an antenna at (1, 2, 3)
-        TimeDomainAntenna ant1("antenna_name", point1, rootCS6, t1, t2, t3, t1);
-        TimeDomainAntenna ant2("antenna_name2", point2, rootCS6, t4, t2, t3, t4);
+    // check that I can create an antenna at (1, 2, 3)
+    TimeDomainAntenna ant1("antenna_name", point1, rootCS6, t1, t2, t3, t1);
+    TimeDomainAntenna ant2("antenna_name2", point2, rootCS6, t4, t2, t3, t4);
 
-        // assert that the antenna name is correct
-        REQUIRE(ant1.getName() == "antenna_name");
-        REQUIRE(ant2.getName() == "antenna_name2");
+    // assert that the antenna name is correct
+    REQUIRE(ant1.getName() == "antenna_name");
+    REQUIRE(ant2.getName() == "antenna_name2");
 
-        // and check that the antenna is at the right location
-        REQUIRE((ant1.getLocation() - point1).getNorm() < 1e-12 * 1_m);
-        REQUIRE((ant2.getLocation() - point2).getNorm() < 1e-12 * 1_m);
+    // and check that the antenna is at the right location
+    REQUIRE((ant1.getLocation() - point1).getNorm() < 1e-12 * 1_m);
+    REQUIRE((ant2.getLocation() - point2).getNorm() < 1e-12 * 1_m);
 
-        // construct a radio detector instance to store our antennas
-        AntennaCollection<TimeDomainAntenna> detector;
+    // construct a radio detector instance to store our antennas
+    AntennaCollection<TimeDomainAntenna> detector;
 
-        // add this antenna to the process
-        detector.addAntenna(ant1);
-        detector.addAntenna(ant2);
-        CHECK(detector.size() == 2);
+    // add this antenna to the process
+    detector.addAntenna(ant1);
+    detector.addAntenna(ant2);
+    CHECK(detector.size() == 2);
 
-        // get a unit vector
-        Vector<dimensionless_d> v1(rootCS6, {0, 0, 1});
-        Vector<ElectricFieldType::dimension_type> v11(rootCS6,
-                                                      {10_V / 1_m, 10_V / 1_m, 10_V / 1_m});
+    // get a unit vector
+    Vector<dimensionless_d> v1(rootCS6, {0, 0, 1});
+    Vector<ElectricFieldType::dimension_type> v11(rootCS6,
+                                                  {10_V / 1_m, 10_V / 1_m, 10_V / 1_m});
 
-        Vector<dimensionless_d> v2(rootCS6, {0, 1, 0});
-        Vector<ElectricFieldType::dimension_type> v22(rootCS6,
-                                                      {20_V / 1_m, 20_V / 1_m, 20_V / 1_m});
+    Vector<dimensionless_d> v2(rootCS6, {0, 1, 0});
+    Vector<ElectricFieldType::dimension_type> v22(rootCS6,
+                                                  {20_V / 1_m, 20_V / 1_m, 20_V / 1_m});
 
-        // use receive methods
-        ant1.receive(15_s, v1, v11);
-        ant2.receive(16_s, v2, v22);
+    // use receive methods
+    ant1.receive(15_s, v1, v11);
+    ant2.receive(16_s, v2, v22);
 
-        // use getDataX,Y,Z() and getAxis() methods
-        auto Ex = ant1.getWaveformX();
-        CHECK(Ex[5] - 10 == 0);
-        auto tx = ant1.getAxis();
-        CHECK(tx[5] - 5 * 1_s / 1_ns == Approx(0.0));
-        auto Ey = ant1.getWaveformY();
-        CHECK(Ey[5] - 10 == 0);
-        auto Ez = ant1.getWaveformZ();
-        CHECK(Ez[5] - 10 == 0);
-        auto ty = ant1.getAxis();
-        auto tz = ant1.getAxis();
-        CHECK(tx[5] - ty[5] == 0);
-        CHECK(ty[5] - tz[5] == 0);
-        auto Ex2 = ant2.getWaveformX();
-        CHECK(Ex2[5] - 20 == 0);
-        auto Ey2 = ant2.getWaveformY();
-        CHECK(Ey2[5] - 20 == 0);
-        auto Ez2 = ant2.getWaveformZ();
-        CHECK(Ez2[5] - 20 == 0);
+    // use getDataX,Y,Z() and getAxis() methods
+    auto Ex = ant1.getWaveformX();
+    CHECK(Ex[5] - 10 == 0);
+    auto tx = ant1.getAxis();
+    CHECK(tx[5] - 5 * 1_s / 1_ns == Approx(0.0));
+    auto Ey = ant1.getWaveformY();
+    CHECK(Ey[5] - 10 == 0);
+    auto Ez = ant1.getWaveformZ();
+    CHECK(Ez[5] - 10 == 0);
+    auto ty = ant1.getAxis();
+    auto tz = ant1.getAxis();
+    CHECK(tx[5] - ty[5] == 0);
+    CHECK(ty[5] - tz[5] == 0);
+    auto Ex2 = ant2.getWaveformX();
+    CHECK(Ex2[5] - 20 == 0);
+    auto Ey2 = ant2.getWaveformY();
+    CHECK(Ey2[5] - 20 == 0);
+    auto Ez2 = ant2.getWaveformZ();
+    CHECK(Ez2[5] - 20 == 0);
 
-        // the following creates a star-shaped pattern of antennas in the ground
-        AntennaCollection<TimeDomainAntenna> detector__;
-        const auto point11{Point(env6.getCoordinateSystem(), 1000_m, 20_m, 30_m)};
-        const TimeType t2222{1e-6_s};
-        const InverseTimeType t3333{1e+9_Hz};
+    // the following creates a star-shaped pattern of antennas in the ground
+    AntennaCollection<TimeDomainAntenna> detector__;
+    const auto point11{Point(env6.getCoordinateSystem(), 1000_m, 20_m, 30_m)};
+    const TimeType t2222{1e-6_s};
+    const InverseTimeType t3333{1e+9_Hz};
 
-        std::vector<std::string> antenna_names;
-        std::vector<Point> antenna_locations;
-        for (auto radius_ = 100_m; radius_ <= 200_m; radius_ += 100_m) {
-            for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
-                auto phiRad_ = phi_ / 180. * M_PI;
-                auto const point_{Point(env6.getCoordinateSystem(), radius_ * cos(phiRad_),
-                                        radius_ * sin(phiRad_), 0_m)};
-                antenna_locations.push_back(point_);
-                auto time__{(point11 - point_).getNorm() / constants::c};
-                const int rr_ = static_cast<int>(radius_ / 1_m);
-                std::string var_ = "antenna_R=" + std::to_string(rr_) +
-                                   "_m-Phi=" + std::to_string(phi_) + "degrees";
-                antenna_names.push_back(var_);
-                TimeDomainAntenna ant111(var_, point_, rootCS6, time__, t2222, t3333, time__);
-                detector__.addAntenna(ant111);
-            }
-        }
+    std::vector<std::string> antenna_names;
+    std::vector<Point> antenna_locations;
+    for (auto radius_ = 100_m; radius_ <= 200_m; radius_ += 100_m) {
+      for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
+        auto phiRad_ = phi_ / 180. * M_PI;
+        auto const point_{Point(env6.getCoordinateSystem(), radius_ * cos(phiRad_),
+                                radius_ * sin(phiRad_), 0_m)};
+        antenna_locations.push_back(point_);
+        auto time__{(point11 - point_).getNorm() / constants::c};
+        const int rr_ = static_cast<int>(radius_ / 1_m);
+        std::string var_ = "antenna_R=" + std::to_string(rr_) +
+                           "_m-Phi=" + std::to_string(phi_) + "degrees";
+        antenna_names.push_back(var_);
+        TimeDomainAntenna ant111(var_, point_, rootCS6, time__, t2222, t3333, time__);
+        detector__.addAntenna(ant111);
+      }
+    }
 
-        CHECK(detector__.size() == 16);
-        CHECK(detector__.getAntennas().size() == 16);
-        int i = 0;
-        // this prints out the antenna names and locations
-        for (auto const antenna: detector__.getAntennas()) {
-            CHECK(antenna.getName() == antenna_names[i]);
-            CHECK(distance(antenna.getLocation(), antenna_locations[i]) / 1_m == 0);
-            i++;
-        }
+    CHECK(detector__.size() == 16);
+    CHECK(detector__.getAntennas().size() == 16);
+    int i = 0;
+    // this prints out the antenna names and locations
+    for (auto const antenna : detector__.getAntennas()) {
+      CHECK(antenna.getName() == antenna_names[i]);
+      CHECK(distance(antenna.getLocation(), antenna_locations[i]) / 1_m == 0);
+      i++;
+    }
 
-        // Check the .at() method for radio detectors
-        for (size_t i = 0; i <= (detector__.size()-1); i++) {
-          CHECK(detector__.at(i).getName() == antenna_names[i]);
-          CHECK(distance(detector__.at(i).getLocation(), antenna_locations[i]) / 1_m == 0);
-        }
+    // Check the .at() method for radio detectors
+    for (size_t i = 0; i <= (detector__.size() - 1); i++) {
+      CHECK(detector__.at(i).getName() == antenna_names[i]);
+      CHECK(distance(detector__.at(i).getLocation(), antenna_locations[i]) / 1_m == 0);
+    }
 
-    } // END: SECTION("TimeDomainAntenna")
+  } // END: SECTION("TimeDomainAntenna")
 
 } // END: TEST_CASE("Antennas")
 

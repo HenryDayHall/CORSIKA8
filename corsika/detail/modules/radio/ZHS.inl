@@ -19,9 +19,9 @@ namespace corsika {
     auto const startTime{step.getTimePre()};
     auto const endTime{step.getTimePost()};
 
-      // LCOV_EXCL_START
+    // LCOV_EXCL_START
     if (startTime == endTime) {
-        CORSIKA_LOG_ERROR("Time at the start and end of the track coincides! - radio");
+      CORSIKA_LOG_ERROR("Time at the start and end of the track coincides! - radio");
       return ProcessReturn::Ok;
       // LCOV_EXCL_STOP
     } else {
@@ -95,9 +95,11 @@ namespace corsika {
                 } // end if statement for time structure
 
                 double const startBin{std::floor(
-                    (detectionTime1 - antenna.getStartTime()) * antenna.getSampleRate() + 0.5)};
-                double const endBin{std::floor(
-                    (detectionTime2 - antenna.getStartTime()) * antenna.getSampleRate() + 0.5)};
+                    (detectionTime1 - antenna.getStartTime()) * antenna.getSampleRate() +
+                    0.5)};
+                double const endBin{std::floor((detectionTime2 - antenna.getStartTime()) *
+                                                   antenna.getSampleRate() +
+                                               0.5)};
 
                 auto const betaPerp{
                     newMidPaths[k].emit_.cross(beta.cross(newMidPaths[k].emit_))};
@@ -132,9 +134,9 @@ namespace corsika {
                   // intermidiate contributions
                   for (int it{1}; it < numberOfBins; ++it) {
                     Vp = betaPerp * constants / denominator / newMidPaths[k].R_distance_;
-                    antenna.receive(
-                        detectionTime1 + static_cast<double>(it) / antenna.getSampleRate(),
-                        betaPerp, Vp);
+                    antenna.receive(detectionTime1 +
+                                        static_cast<double>(it) / antenna.getSampleRate(),
+                                    betaPerp, Vp);
                   } // end loop over bins in which potential vector is not zero
                   // final contribution// f +0.5 from new antenna rounding
                   f = std::fabs((detectionTime2 - antenna.getStartTime()) *
@@ -173,10 +175,12 @@ namespace corsika {
               sign = -1.;
             } // end if statement for time structure
 
-            double const startBin{std::floor(
-                (detectionTime1 - antenna.getStartTime()) * antenna.getSampleRate() + 0.5)};
-            double const endBin{std::floor(
-                (detectionTime2 - antenna.getStartTime()) * antenna.getSampleRate() + 0.5)};
+            double const startBin{std::floor((detectionTime1 - antenna.getStartTime()) *
+                                                 antenna.getSampleRate() +
+                                             0.5)};
+            double const endBin{std::floor((detectionTime2 - antenna.getStartTime()) *
+                                               antenna.getSampleRate() +
+                                           0.5)};
 
             auto const betaPerp{midPaths[i].emit_.cross(beta.cross(midPaths[i].emit_))};
             double const denominator{1. -

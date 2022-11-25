@@ -16,8 +16,7 @@ namespace corsika {
       : time_(time) {}
 
   template <typename Particle>
-  inline ProcessReturn TimeCut::doContinuous(Step<Particle> const& step,
-                                             bool const) {
+  inline ProcessReturn TimeCut::doContinuous(Step<Particle> const& step, bool const) {
     CORSIKA_LOG_TRACE("TimeCut::doContinuous");
     if (step.getTimePost() >= time_) {
       CORSIKA_LOG_TRACE("stopping continuous process");

@@ -22,12 +22,15 @@ namespace corsika {
   }
 
   template <typename TAntennaImpl>
-  inline TAntennaImpl const& AntennaCollection<TAntennaImpl>::at(std::size_t const i) const {
+  inline TAntennaImpl const& AntennaCollection<TAntennaImpl>::at(
+      std::size_t const i) const {
     return antennas_.at(i);
   }
 
   template <typename TAntennaImpl>
-  inline int AntennaCollection<TAntennaImpl>::size() const { return antennas_.size(); }
+  inline int AntennaCollection<TAntennaImpl>::size() const {
+    return antennas_.size();
+  }
 
   template <typename TAntennaImpl>
   inline std::vector<TAntennaImpl>& AntennaCollection<TAntennaImpl>::getAntennas() {

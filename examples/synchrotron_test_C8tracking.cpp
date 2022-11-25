@@ -76,7 +76,8 @@ int main() {
   OutputManager output("synchrotron_radiation_C8tracking-output");
 
   // set up the environment
-  using EnvironmentInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+  using EnvironmentInterface =
+      IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
   using EnvType = Environment<EnvironmentInterface>;
   EnvType env;
   auto& universe = *(env.getUniverse());
@@ -84,8 +85,8 @@ int main() {
 
   auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
 
-  using MyHomogeneousModel = UniformRefractiveIndex<MediumPropertyModel<
-      UniformMagneticField<HomogeneousMedium<EnvironmentInterface>>>>;
+  using MyHomogeneousModel = UniformRefractiveIndex<
+      MediumPropertyModel<UniformMagneticField<HomogeneousMedium<EnvironmentInterface>>>>;
 
   auto const Bmag{0.0003809_T};
   MagneticFieldVector B{rootCS, 0_T, 0_T, Bmag};

@@ -17,8 +17,8 @@
 namespace corsika {
 
   template <typename TDimension>
-  inline typename QuantityVector<TDimension>::quantity_type
-  QuantityVector<TDimension>::operator[](size_t const index) const {
+  inline typename QuantityVector<TDimension>::quantity_type QuantityVector<TDimension>::
+  operator[](size_t const index) const {
     return quantity_type(phys::units::detail::magnitude_tag, eigenVector_[index]);
   }
 
