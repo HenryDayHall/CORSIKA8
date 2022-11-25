@@ -32,15 +32,26 @@
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/UniformRefractiveIndex.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
 
-#include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/PROPOSAL.hpp>
+
+#include <corsika/modules/radio/RadioProcess.hpp>
+#include <corsika/modules/radio/CoREAS.hpp>
+#include <corsika/modules/radio/ZHS.hpp>
+#include <corsika/modules/radio/antennas/Antenna.hpp>
+#include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
+#include <corsika/modules/radio/detectors/AntennaCollection.hpp>
+#include <corsika/modules/radio/propagators/StraightPropagator.hpp>
+#include <corsika/modules/radio/propagators/SimplePropagator.hpp>
+#include <corsika/modules/radio/propagators/SignalPath.hpp>
+#include <corsika/modules/radio/propagators/RadioPropagator.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -76,41 +87,43 @@ void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().setSeed(seed);
 }
 
-template <typename T>
-using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
+template <typename TInterface>
+using MyExtraEnv =
+    UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
 
 int main(int argc, char** argv) {
 
   logging::set_level(logging::level::warn);
 
-  if (!(argc == 2 || argc == 3)) {
-    std::cerr << "usage: em_shower <energy/GeV> [seed]" << std::endl
-              << "seed = 0 for randomized seed" << std::endl;
+  if (argc != 3) {
+    std::cerr
+        << "usage: radio_em_shower <energy/GeV> <seed> - put seed=0 to use random seed"
+        << std::endl;
     return 1;
   }
-  feenableexcept(FE_INVALID);
-  int seed = 0;
 
-  if (argc >= 3) { seed = std::stoi(std::string(argv[2])); }
+  int seed{static_cast<int>(std::stof(std::string(argv[2])))};
+  std::cout << "Seed: " << seed << std::endl;
+  feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
   registerRandomStreams(seed);
 
   // setup environment, geometry
-  using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+  using EnvironmentInterface =
+      IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
   using EnvType = Environment<EnvironmentInterface>;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
 
-  // build a Linsley US Standard atmosphere into `env`
   create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-      env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
-      MagneticFieldVector{rootCS, 20.4_uT, 0_T, 43.23_uT});
+      env, AtmosphereId::LinsleyUSStd, center, 1.000327, Medium::AirDry1Atm,
+      MagneticFieldVector{rootCS, 50_uT, 0_T, 0_T});
 
   std::unordered_map<Code, HEPEnergyType> energy_resolution = {
-      {Code::Electron, 2_MeV},
-      {Code::Positron, 2_MeV},
-      {Code::Photon, 2_MeV},
+      {Code::Electron, 5_MeV},
+      {Code::Positron, 5_MeV},
+      {Code::Photon, 5_MeV},
   };
   for (auto [pcode, energy] : energy_resolution)
     set_energy_production_threshold(pcode, energy);
@@ -118,7 +131,6 @@ int main(int argc, char** argv) {
   // setup particle stack, and add primary particle
   setup::Stack<EnvType> stack;
   stack.clear();
-
   const Code beamCode = Code::Electron;
   auto const mass = get_mass(beamCode);
   const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[1]));
@@ -137,7 +149,7 @@ int main(int argc, char** argv) {
   cout << "input momentum: " << plab.getComponents() / 1_GeV
        << ", norm = " << plab.getNorm() << endl;
 
-  auto const observationHeight = 0.0_km + constants::EarthRadius::Mean;
+  auto const observationHeight = 1.4_km + constants::EarthRadius::Mean;
   auto const injectionHeight = 112.75_km + constants::EarthRadius::Mean;
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
@@ -158,17 +170,77 @@ int main(int argc, char** argv) {
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
                               false, 1000};
 
-  OutputManager output("em_shower_outputs");
+  TimeType const groundHitTime{(showerCore - injectionPos).getNorm() / constants::c};
+
+  std::string outname_ = "radio_em_shower_outputs"; // + std::to_string(rr_);
+  OutputManager output(outname_);
+
+  // Radio antennas and relevant information
+  // the antenna time variables
+  const TimeType duration_{1e-6_s};
+  const InverseTimeType sampleRate_{1e+9_Hz};
+
+  // the detector (aka antenna collection) for CoREAS and ZHS
+  AntennaCollection<TimeDomainAntenna> detectorCoREAS;
+  AntennaCollection<TimeDomainAntenna> detectorZHS;
+
+  auto const showerCoreX_{showerCore.getCoordinates().getX()};
+  auto const showerCoreY_{showerCore.getCoordinates().getY()};
+  auto const injectionPosX_{injectionPos.getCoordinates().getX()};
+  auto const injectionPosY_{injectionPos.getCoordinates().getY()};
+  auto const injectionPosZ_{injectionPos.getCoordinates().getZ()};
+  auto const triggerpoint_{Point(rootCS, injectionPosX_, injectionPosY_, injectionPosZ_)};
+  std::cout << "Trigger Point is: " << triggerpoint_ << std::endl;
+
+  // // setup CoREAS antennas - use the for loop for star shape pattern
+  // for (auto radius_1 = 25_m; radius_1 <= 500_m; radius_1 += 25_m) {
+  //   for (auto phi_1 = 0; phi_1 <= 315; phi_1 += 45) {
+  auto radius_1 = 200_m;
+  auto phi_1 = 45;
+  auto phiRad_1 = phi_1 / 180. * M_PI;
+  auto rr_1 = static_cast<int>(radius_1 / 1_m);
+  auto const point_1{Point(rootCS, showerCoreX_ + radius_1 * cos(phiRad_1),
+                           showerCoreY_ + radius_1 * sin(phiRad_1),
+                           constants::EarthRadius::Mean)};
+  std::cout << "Antenna point: " << point_1 << std::endl;
+  auto triggertime_1{(triggerpoint_ - point_1).getNorm() / constants::c};
+  std::string name_1 =
+      "CoREAS_R=" + std::to_string(rr_1) + "_m--Phi=" + std::to_string(phi_1) + "degrees";
+  TimeDomainAntenna antenna_1(name_1, point_1, rootCS, triggertime_1, duration_,
+                              sampleRate_, triggertime_1);
+  detectorCoREAS.addAntenna(antenna_1);
+  //   }
+  // }
+
+  // // setup ZHS antennas - use the for loop for star shape pattern
+  // for (auto radius_ = 25_m; radius_ <= 500_m; radius_ += 25_m) {
+  //   for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
+  auto radius_ = 200_m;
+  auto phi_ = 45;
+  auto phiRad_ = phi_ / 180. * M_PI;
+  auto rr_ = static_cast<int>(radius_ / 1_m);
+  auto const point_{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_),
+                          showerCoreY_ + radius_ * sin(phiRad_),
+                          constants::EarthRadius::Mean)};
+  auto triggertime_{(triggerpoint_ - point_).getNorm() / constants::c};
+  std::string name_ =
+      "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
+  TimeDomainAntenna antenna_(name_, point_, rootCS, triggertime_, duration_, sampleRate_,
+                             triggertime_);
+  detectorZHS.addAntenna(antenna_);
+  //   }
+  // }
+
+  // setup processes, decays and interactions
 
   EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
   // register energy losses as output
   output.add("dEdX", dEdX);
 
-  // setup processes, decays and interactions
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(5_MeV, 5_MeV, 100_GeV, 100_GeV, true, dEdX);
 
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(2_MeV, 2_MeV, 100_GeV, 100_GeV, true, dEdX);
   corsika::sibyll::Interaction sibyll{env};
-  HEPEnergyType heThresholdNN = 60_GeV;
+  HEPEnergyType heThresholdNN = 80_GeV;
   corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(),
                                            heThresholdNN);
   corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
@@ -185,12 +257,32 @@ int main(int argc, char** argv) {
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
+  // initiate CoREAS
+  RadioProcess<decltype(detectorCoREAS),
+               CoREAS<decltype(detectorCoREAS), decltype(SimplePropagator(env))>,
+               decltype(SimplePropagator(env))>
+      coreas(detectorCoREAS, env);
+
+  // register CoREAS with the output manager
+  output.add("CoREAS", coreas);
+
+  // initiate ZHS
+  RadioProcess<decltype(detectorZHS),
+               ZHS<decltype(detectorZHS), decltype(SimplePropagator(env))>,
+               decltype(SimplePropagator(env))>
+      zhs(detectorZHS, env);
+
+  // // register ZHS with the output manager
+  output.add("ZHS", zhs);
+
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane<setup::Tracking, ParticleWriterParquet> observationLevel{
       obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
   output.add("particles", observationLevel);
 
-  auto sequence = make_sequence(emCascade, emContinuous, longprof, cut, observationLevel);
+  // auto sequence = make_sequence(emCascade, emContinuous, longprof, cut, coreas, zhs);
+  auto sequence = make_sequence(emCascade, emContinuous, longprof, cut, coreas, zhs,
+                                observationLevel, tracks);
   // define air shower object, run simulation
   setup::Tracking tracking;
 

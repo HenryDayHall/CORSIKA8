@@ -68,4 +68,20 @@ add_executable (water water.cpp)
 target_link_libraries (water CORSIKA8::CORSIKA8)
 
 add_executable (environment environment.cpp)
+
 target_link_libraries (environment CORSIKA8::CORSIKA8)
+add_executable (synchrotron_test_manual_tracking synchrotron_test_manual_tracking.cpp)
+target_link_libraries (synchrotron_test_manual_tracking CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (synchrotron_test_manual_tracking)
+
+add_executable (synchrotron_test_C8tracking synchrotron_test_C8tracking.cpp)
+target_link_libraries (synchrotron_test_C8tracking CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (synchrotron_test_C8tracking)
+
+add_executable (clover_leaf clover_leaf.cpp)
+target_link_libraries (clover_leaf CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (clover_leaf)
+
+add_executable (radio_em_shower radio_em_shower.cpp)
+target_link_libraries (radio_em_shower CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (radio_em_shower RUN_OPTIONS 10 1121673489)

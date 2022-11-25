@@ -1,0 +1,127 @@
+/*
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+#pragma once
+
+#include <cnpy.hpp>
+#include <boost/filesystem.hpp>
+#include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/core/PhysicalGeometry.hpp>
+
+namespace corsika {
+
+  /**
+   * A common abstract interface for radio antennas.
+   *
+   * All concrete antenna implementations should be of
+   * type Antenna<T> where T is a concrete antenna implementation.
+   *
+   */
+  template <typename TAntennaImpl>
+  class Antenna {
+
+  protected:
+    std::string const name_;                     ///< The name/identifier of this antenna.
+    Point const location_;                       ///< The location of this antenna.
+    CoordinateSystemPtr const coordinateSystem_; ///< The coordinate system of the antenna
+    std::string filename_ = ""; ///< The filename for the output file for this antenna.
+
+  public:
+    using axistype = std::vector<long double>;
+
+    /**
+     * \brief Construct a base antenna instance.
+     *
+     * @param name    A name for this antenna.
+     * @param location    The location of this antenna.
+     *
+     */
+    Antenna(std::string const& name, Point const& location,
+            CoordinateSystemPtr const& coordinateSystem);
+
+    /**
+     * Receive a signal at this antenna.
+     *
+     * This is a general implementation call that must be specialized
+     * for the particular antenna implementation and usage.
+     *
+     */
+    template <typename... TVArgs>
+    void receive(TVArgs&&... args);
+
+    /**
+     * Get the location of this antenna.
+     */
+    Point const& getLocation() const;
+
+    /**
+     * Get the name of this name antenna.
+     *
+     * This is used in producing the output data file.
+     */
+    std::string const& getName() const;
+
+    /**
+     * Reset the antenna before starting a new simulation.
+     */
+    void reset();
+
+    /**
+     * Return a reference to the x-axis labels (i.e. time or frequency).
+     *
+     * This should be an xtensor-convertible type with
+     * a ->data() method that converts to a raw pointer.
+     */
+    axistype getAxis() const;
+
+    /**
+     * Return a reference to the underlying waveform data for X polarization.
+     *
+     * This is used when writing the antenna information to disk
+     * and will be converted to a 32-bit float before writing.
+     */
+    std::vector<double> const& getWaveformX() const;
+
+    /**
+     * Return a reference to the underlying waveform data for Y polarization.
+     *
+     * This is used when writing the antenna information to disk
+     * and will be converted to a 32-bit float before writing.
+     */
+    std::vector<double> const& getWaveformY() const;
+
+    /**
+     * Return a reference to the underlying waveform data for Z polarization.
+     *
+     * This is used when writing the antenna information to disk
+     * and will be converted to a 32-bit float before writing.
+     */
+    std::vector<double> const& getWaveformZ() const;
+
+    /**
+     * Prepare for the start of the library.
+     */
+    void startOfLibrary(boost::filesystem::path const& directory,
+                        std::string const radioImplementation);
+
+    /**
+     * Flush the data from this shower to disk.
+     */
+    void endOfShower(int const event, std::string const& radioImplementation,
+                     double const sampleRate);
+
+  protected:
+    /**
+     * Get a reference to the underlying radio implementation.
+     */
+    TAntennaImpl& implementation();
+
+  }; // END: class Antenna final
+
+} // namespace corsika
+
+#include <corsika/detail/modules/radio/antennas/Antenna.inl>
