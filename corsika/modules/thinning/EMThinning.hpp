@@ -17,17 +17,26 @@ namespace corsika {
  
 class EMThinning : public SecondariesProcess<EMThinning> {
 public:
-    
+	/**
+	 * Construct a new EMThinning process.
+	 * 
+	 * @param threshold: thinning applied below this energy
+	 * @param maxWeight: maximum allowed weight
+	 */
+    EMThinning(HEPEnergyType threshold, double maxWeight);
 
 
     /**
-     * Apply thinning to secondaries.
+     * Apply thinning to secondaries. Only EM primaries with two EM secondaries are considered.
      *
      * @tparam TStackView
      */
     template <typename TStackView>
     void doSecondaries(TStackView&);
 
+private:
+	HEPEnergyType const threshold_;
+	double const maxWeight_;
 };
 }
 
