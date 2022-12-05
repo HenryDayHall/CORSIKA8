@@ -8,36 +8,41 @@
 
 #pragma once
 
+#include <random>
+
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/process/SecondariesProcess.hpp>
 
 namespace corsika {
 
-//! This process implements thinning for EM splitting processes (1 -> 2)
- 
-class EMThinning : public SecondariesProcess<EMThinning> {
-public:
-	/**
-	 * Construct a new EMThinning process.
-	 * 
-	 * @param threshold: thinning applied below this energy
-	 * @param maxWeight: maximum allowed weight
-	 */
+  //! This process implements thinning for EM splitting processes (1 -> 2)
+
+  class EMThinning : public SecondariesProcess<EMThinning> {
+  public:
+    /**
+     * Construct a new EMThinning process.
+     *
+     * @param threshold: thinning applied below this energy
+     * @param maxWeight: maximum allowed weight
+     */
     EMThinning(HEPEnergyType threshold, double maxWeight);
 
-
     /**
-     * Apply thinning to secondaries. Only EM primaries with two EM secondaries are considered.
+     * Apply thinning to secondaries. Only EM primaries with two EM secondaries are
+     * considered.
      *
      * @tparam TStackView
      */
     template <typename TStackView>
     void doSecondaries(TStackView&);
 
-private:
-	HEPEnergyType const threshold_;
-	double const maxWeight_;
-};
-}
+  private:
+    default_prng_type& rng_ = RNGManager<>::getInstance().getRandomStream("thinning");
+    std::uniform_real_distribution<double> uniform_{};
+    HEPEnergyType const threshold_;
+    double const maxWeight_;
+  };
+} // namespace corsika
 
-#include <corsika/detail/process/thinning/EMThinning.inl>
+#include <corsika/detail/modules/thinning/EMThinning.inl>

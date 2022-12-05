@@ -13,17 +13,69 @@
 
 namespace corsika {
 
-EMThinning::EMThinning(HEPEnergyType threshold, double maxWeight) : threshold_{threshold}, maxWeight_{maxWeight} {}
+  EMThinning::EMThinning(HEPEnergyType threshold, double maxWeight)
+      : threshold_{threshold}
+      , maxWeight_{maxWeight} {}
 
-template <typename TStackView>
-    void EMThinning::doSecondaries(TStackView& view) {
-    if (view.size() != 2) return;
+  template <typename TStackView>
+  void EMThinning::doSecondaries(TStackView& view) {
+    if (view.getSize() != 2) return;
+
+    auto projectile = view.getProjectile();
+    if (!is_em(projectile.getPID())) return;
+
+    double const parentWeight = projectile.getWeight();
+    if (parentWeight >= maxWeight_) { return; }
+
     auto particle1 = view.begin();
-    auto particle2 = std::next(particle1);
+    auto particle2 = ++(view.begin());
 
-    if (.getCode())
-	corsika::HEPEnergyType const E0 = 
-    
-}
+    // skip non-EM interactions
+    if (!is_em(particle1.getPID()) || !is_em(particle2.getPID())) { return; }
 
-}
+    /* skip high-energy interactions
+     * We consider only the primary energy. A more sophisticated algorithm might
+     * sort out above-threshold secondaries and apply thinning only on the subset of
+     * those below the threshold.
+     */
+    if (projectile.getEnergy() > threshold_) { return; }
+
+    corsika::HEPEnergyType const Esum = particle1.getEnergy() + particle2.getEnergy();
+
+    double const p1 = particle1.getEnergy() / Esum;
+    double const p2 = particle2.getEnergy() / Esum;
+
+    double const w1 = parentWeight / p1;
+    double const w2 = parentWeight / p2;
+
+    if (w1 <= maxWeight_ && w2 <= maxWeight_) { // apply Hillas thinning
+      if (uniform_(rng_) <= p1) {               // keep 1st with probability p1
+        particle2.setWeight(0);
+        particle1.setWeight(w1);
+      } else { // keep 2nd
+        particle1.setWeight(0);
+        particle2.setWeight(w2);
+      }
+    } else { // weight limitation kicks in, do statistical thinning
+      double const w1prime = std::min(w1, maxWeight_);
+      double const w2prime = std::min(w2, maxWeight_);
+
+      if (uniform_(rng_) * w1prime <= parentWeight) { // keep 1st
+        particle1.setWeight(w1prime);
+      } else {
+        particle1.setWeight(0);
+      }
+      if (uniform_(rng_) * w2prime <= parentWeight) { // keep 2nd
+        particle2.setWeight(w2prime);
+      } else {
+        particle2.setWeight(0);
+      }
+    }
+
+    // TODO: skip this for multithinning
+    for (auto& p : view) {
+      if (auto const w = p.getWeight(); w == 0) { p.erase(); }
+    }
+  }
+
+} // namespace corsika
