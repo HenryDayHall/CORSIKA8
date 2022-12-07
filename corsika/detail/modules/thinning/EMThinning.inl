@@ -45,33 +45,38 @@ namespace corsika {
     double const p1 = particle1.getEnergy() / Esum;
     double const p2 = particle2.getEnergy() / Esum;
 
+    // weight factors
     double const w1 = parentWeight / p1;
     double const w2 = parentWeight / p2;
 
-    if (w1 <= maxWeight_ && w2 <= maxWeight_) { // apply Hillas thinning
-      if (uniform_(rng_) <= p1) {               // keep 1st with probability p1
+    // max. allowed weight factor
+    double const maxWeightFactor = maxWeight_ / parentWeight;
+
+    if (w1 <= maxWeightFactor && w2 <= maxWeightFactor) { // apply Hillas thinning
+      if (uniform_(rng_) <= p1) {                         // keep 1st with probability p1
         particle2.setWeight(0);
-        particle1.setWeight(w1);
+        particle1.setWeight(w1 * parentWeight);
       } else { // keep 2nd
         particle1.setWeight(0);
-        particle2.setWeight(w2);
+        particle2.setWeight(w2 * parentWeight);
       }
     } else { // weight limitation kicks in, do statistical thinning
-      double const w1prime = std::min(w1, maxWeight_);
-      double const w2prime = std::min(w2, maxWeight_);
+      double const w1prime = std::min(w1, maxWeightFactor);
+      double const w2prime = std::min(w2, maxWeightFactor);
 
       if (uniform_(rng_) * w1prime <= parentWeight) { // keep 1st
-        particle1.setWeight(w1prime);
+        particle1.setWeight(w1prime * parentWeight);
       } else {
         particle1.setWeight(0);
       }
       if (uniform_(rng_) * w2prime <= parentWeight) { // keep 2nd
-        particle2.setWeight(w2prime);
+        particle2.setWeight(w2prime * parentWeight);
       } else {
         particle2.setWeight(0);
       }
     }
 
+    // erase discared particles
     // TODO: skip this for multithinning
     for (auto& p : view) {
       if (auto const w = p.getWeight(); w == 0) { p.erase(); }
