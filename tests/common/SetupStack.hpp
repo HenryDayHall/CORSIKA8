@@ -31,7 +31,7 @@ namespace corsika::test {
   /*
    * the version without history
    */
-  using Stack = detail::StackWithGeometry;
+  using Stack = detail::StackWithWeight;
 
 #endif
 

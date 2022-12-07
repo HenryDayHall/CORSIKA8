@@ -48,17 +48,30 @@ namespace corsika {
                       node::GeometryData<DummyEnvironment>, StackWithGeometryInterface,
                       DefaultSecondaryProducer>;
 
+    template <typename TStackIter>
+    using SetupWeightDataInterface =
+        typename weights::MakeWeightDataInterface<TStackIter>::type;
+
+    template <typename TStackIter>
+    using StackWithWeightInterface =
+        CombinedParticleInterface<StackWithGeometry::pi_type, SetupWeightDataInterface,
+                                  TStackIter>;
+
+    using StackWithWeight =
+        CombinedStack<typename StackWithGeometry::stack_data_type, weights::WeightData,
+                      StackWithWeightInterface, DefaultSecondaryProducer>;
+
     // ------------------------------------------
     // Add [optional] history data to stack, too:
 
     // combine dummy stack with geometry information for tracking
     template <typename TStackIter>
     using StackWithHistoryInterface =
-        CombinedParticleInterface<StackWithGeometry::pi_type,
+        CombinedParticleInterface<StackWithWeight::pi_type,
                                   history::HistoryEventDataInterface, TStackIter>;
 
     using StackWithHistory =
-        CombinedStack<typename StackWithGeometry::stack_data_type,
+        CombinedStack<typename StackWithWeight::stack_data_type,
                       history::HistoryEventData, StackWithHistoryInterface,
                       history::HistorySecondaryProducer>;
 
