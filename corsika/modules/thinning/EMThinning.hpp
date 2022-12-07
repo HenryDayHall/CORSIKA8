@@ -16,7 +16,9 @@
 
 namespace corsika {
 
-  //! This process implements thinning for EM splitting processes (1 -> 2)
+  /**
+   * This process implements thinning for EM splitting processes (1 -> 2).
+   */
 
   class EMThinning : public SecondariesProcess<EMThinning> {
   public:
@@ -32,7 +34,13 @@ namespace corsika {
      * Apply thinning to secondaries. Only EM primaries with two EM secondaries are
      * considered.
      *
-     * @tparam TStackView
+     * If the maximum weight is still out of reach, Hillas thinning is applied (i.e.
+     * one of the two secondaries is kept, the other one discarded). If the acceptance
+     * probabilities would lead to a weight factor exceeding the maximum weight, we resort
+     * to statistical thinning (i.e. the secondaries are kept/discared randomly each on is
+     * own). In that case, acceptance probabilities can be assigned without constraints
+     * (sum does not need to be 1) and we increase the acceptance probability such that
+     * the maximum weight is not exceeded.
      */
     template <typename TStackView>
     void doSecondaries(TStackView&);
