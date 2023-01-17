@@ -12,6 +12,7 @@
 #include <corsika/framework/core/EnergyMomentumOperations.hpp>
 
 #include <tuple>
+#include <random>
 
 namespace corsika::proposal {
 
@@ -89,8 +90,16 @@ namespace corsika::proposal {
       CORSIKA_LOGGER_TRACE(logger_,
                            "LE photo-hadronic interaction! implemented via SOPHIA "
                            "assuming a single nucleon as target");
-      // as LE model we only have SOPHIA which only handles photon-nucleon interactions
-      if (!leHadronicInteraction_.isValid(Code::Photon, Code::Proton, sqrtSNN)) {
+      // sample nucleon from nucleus A,Z
+      double const fProtons = get_nucleus_Z(targetId) / get_nucleus_A(targetId);
+      double const fNeutrons = 1. - fProtons;
+      std::discrete_distribution<int> nucleonChannelDist{fProtons, fNeutrons};
+      static corsika::default_prng_type& rng =
+          corsika::RNGManager<>::getInstance().getRandomStream("proposal");
+      Code const nucleonId = (nucleonChannelDist(rng) ? Code::Proton : Code::Neutron);
+      CORSIKA_LOGGER_DEBUG(logger_, "selected {} as target nucleon", nucleonId);
+
+      if (!leHadronicInteraction_.isValid(Code::Photon, nucleonId, sqrtSNN)) {
         CORSIKA_LOGGER_WARN(
             logger_,
             "LE interaction model cannot handle configuration in photo-hadronic "
@@ -101,7 +110,7 @@ namespace corsika::proposal {
             sqrtSNN / 1_GeV);
         return ProcessReturn::Ok;
       }
-      leHadronicInteraction_.doInteraction(photon_secondaries, Code::Photon, Code::Proton,
+      leHadronicInteraction_.doInteraction(photon_secondaries, Code::Photon, nucleonId,
                                            photonP4, targetP4 / get_nucleus_A(targetId));
     }
     for (const auto& pSec : photon_secondaries) {
