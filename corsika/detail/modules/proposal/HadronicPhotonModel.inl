@@ -91,13 +91,15 @@ namespace corsika::proposal {
                            "LE photo-hadronic interaction! implemented via SOPHIA "
                            "assuming a single nucleon as target");
       // sample nucleon from nucleus A,Z
-      double const fProtons = get_nucleus_Z(targetId) / get_nucleus_A(targetId);
+      double const fProtons = get_nucleus_Z(targetId) / double(get_nucleus_A(targetId));
       double const fNeutrons = 1. - fProtons;
       std::discrete_distribution<int> nucleonChannelDist{fProtons, fNeutrons};
-      static corsika::default_prng_type& rng =
+      corsika::default_prng_type& rng =
           corsika::RNGManager<>::getInstance().getRandomStream("proposal");
-      Code const nucleonId = (nucleonChannelDist(rng) ? Code::Proton : Code::Neutron);
-      CORSIKA_LOGGER_DEBUG(logger_, "selected {} as target nucleon", nucleonId);
+      Code const nucleonId = (nucleonChannelDist(rng) ? Code::Neutron : Code::Proton);
+      CORSIKA_LOGGER_DEBUG(logger_,
+                           "selected {} as target nucleon (f_proton, f_neutron)={},{}",
+                           nucleonId, fProtons, fNeutrons);
 
       if (!leHadronicInteraction_.isValid(Code::Photon, nucleonId, sqrtSNN)) {
         CORSIKA_LOGGER_WARN(
