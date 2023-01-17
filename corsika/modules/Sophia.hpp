@@ -13,4 +13,3 @@
 #include <corsika/modules/sophia/InteractionModel.hpp>
 
 #include <corsika/framework/process/InteractionProcess.hpp>
-
