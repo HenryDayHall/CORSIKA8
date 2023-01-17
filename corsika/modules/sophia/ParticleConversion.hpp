@@ -20,17 +20,6 @@ namespace corsika::sophia {
   enum class SophiaCode : int8_t;
   using SophiaCodeIntType = std::underlying_type<SophiaCode>::type;
 
-  // /**
-  //    These are the possible projectile for which Sibyll knows the cross section
-  //  */
-  // enum class SibyllXSClass : int8_t {
-  //   CannotInteract = 0,
-  //   Baryon = 1,
-  //   Pion = 2,
-  //   Kaon = 3,
-  // };
-  // using SophiaXSClassIntType = std::underlying_type<SophiaXSClass>::type;
-
 #include <corsika/modules/sophia/Generated.inc>
 
   SophiaCode constexpr convertToSophia(Code const pCode) {
@@ -51,13 +40,6 @@ namespace corsika::sophia {
   int constexpr convertToSophiaRaw(Code const code) {
     return static_cast<int>(convertToSophia(code));
   }
-
-  // int constexpr getSophiaXSCode(Code const code) {
-  //   if (is_nucleus(code))
-  //     return static_cast<SophiaXSClassIntType>(SophiaXSClass::CannotInteract);
-  //   return static_cast<SophiaXSClassIntType>(
-  //       corsika2sophiaXStype[static_cast<CodeIntType>(code)]);
-  // }
 
   bool constexpr canInteract(Code const pCode) {
     return (pCode == Code::Photon ? true : false);

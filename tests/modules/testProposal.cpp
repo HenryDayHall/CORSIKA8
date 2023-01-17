@@ -100,7 +100,6 @@ TEST_CASE("ProposalInterface", "modules") {
     // finish successfully
     CHECK(emModel.doHadronicPhotonInteraction(view, cs, P4, Code::Oxygen) ==
           ProcessReturn::Ok);
-    // no LE interactions
     CHECK(stack.getEntries() == 6);
     CORSIKA_LOG_INFO("Number of particles produced in hadronic photon interaction: {}",
                      stack.getEntries() - 1);

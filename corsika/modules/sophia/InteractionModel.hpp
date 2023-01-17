@@ -42,8 +42,8 @@ namespace corsika::sophia {
     /**
      * @brief evaluated validity of collision system.
      *
-     * SOPHIA only accepts nucleons as targets, or protons aka Hydrogen or
-     * neutrons (p,n == nucleon).
+     * SOPHIA only accepts nucleons as targets, that is protons (Hydrogen) or
+     * neutrons.
      */
     bool constexpr isValid(Code const projectileId, Code const targetId,
                            HEPEnergyType const sqrtSnn) const;

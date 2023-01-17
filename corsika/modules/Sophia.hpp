@@ -14,25 +14,3 @@
 
 #include <corsika/framework/process/InteractionProcess.hpp>
 
-/**
- * @file Sophia.hpp
- *
- * Includes all the parts of the Sophia model. Defines the InteractionProcess<TModel>
- * classes needed for the ProcessSequence.
- */
-
-namespace corsika::sophia {
-  /**
-   * @brief sophia::Interaction is the process for ProcessSequence.
-   *
-   * The sophia::InteractionModel is wrapped as an InteractionProcess here in order
-   * to provide all the functions for ProcessSequence.
-   */
-  // struct Interaction : public InteractionModel, public InteractionProcess<Interaction>
-  // {
-  //   template <typename TEnvironment>
-  //   Interaction(TEnvironment const& env)
-  //       : InteractionModel{env} {}
-  // };
-
-} // namespace corsika::sophia
