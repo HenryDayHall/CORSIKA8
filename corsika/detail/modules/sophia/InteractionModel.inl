@@ -25,7 +25,7 @@ namespace corsika::sophia {
       : sophia_listing_(false) {
     // set all particles stable in SOPHIA
     for (int i = 0; i < 49; ++i) so_csydec_.idb[i] = -abs(so_csydec_.idb[i]);
-  };
+  }
 
   inline InteractionModel::~InteractionModel() {
     CORSIKA_LOG_DEBUG("Sophia::Model n={}", count_);
