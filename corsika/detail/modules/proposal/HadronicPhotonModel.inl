@@ -97,6 +97,9 @@ namespace corsika::proposal {
       corsika::default_prng_type& rng =
           corsika::RNGManager<>::getInstance().getRandomStream("proposal");
       Code const nucleonId = (nucleonChannelDist(rng) ? Code::Neutron : Code::Proton);
+      // target passed to SOPHIA needs to be exactly on-shell!
+      FourMomentum const nucleonP4(get_mass(nucleonId),
+                                   MomentumVector(labCS, {0_GeV, 0_GeV, 0_GeV}));
       CORSIKA_LOGGER_DEBUG(logger_,
                            "selected {} as target nucleon (f_proton, f_neutron)={},{}",
                            nucleonId, fProtons, fNeutrons);
@@ -113,7 +116,7 @@ namespace corsika::proposal {
         return ProcessReturn::Ok;
       }
       leHadronicInteraction_.doInteraction(photon_secondaries, Code::Photon, nucleonId,
-                                           photonP4, targetP4 / get_nucleus_A(targetId));
+                                           photonP4, nucleonP4);
     }
     for (const auto& pSec : photon_secondaries) {
       auto const p3lab = pSec.getMomentum();
