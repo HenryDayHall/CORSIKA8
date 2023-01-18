@@ -62,11 +62,6 @@ TEST_CASE("Sophia", "modules") {
     CHECK_FALSE(corsika::sophia::canInteract(Code::Helium));
   }
 
-  // SECTION("cross-section type") {
-  //   CHECK(corsika::sophia::getSophiaXSCode(Code::Proton) == 1);
-  //   CHECK(corsika::sophia::getSophiaXSCode(Code::Electron) == 0);
-  // }
-
   SECTION("sophia mass") {
     CHECK_FALSE(corsika::sophia::getSophiaMass(Code::Electron) == 0_GeV);
     // Nucleus not a particle

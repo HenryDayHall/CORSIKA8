@@ -70,16 +70,13 @@ namespace corsika::sophia {
       throw std::runtime_error("SOPHIA: Invalid target/projectile/energy combination");
     }
 
-    auto const nucleonId = (projectileId == Code::Photon ? targetId : projectileId);
-    auto const nucleonP4 = (projectileId == Code::Photon ? targetP4 : projectileP4);
-    auto const photonP4 = (projectileId == Code::Photon ? projectileP4 : targetP4);
     COMBoost const boost(projectileP4, targetP4);
 
-    int nucleonSophiaCode = convertToSophiaRaw(nucleonId); // either proton or neutron
+    int nucleonSophiaCode = convertToSophiaRaw(targetId); // either proton or neutron
     // initialize resonance spectrum
     initial_(nucleonSophiaCode);
-    double Enucleon = nucleonP4.getTimeLikeComponent() / 1_GeV;
-    double Ephoton = photonP4.getTimeLikeComponent() / 1_GeV;
+    double Enucleon = targetP4.getTimeLikeComponent() / 1_GeV;
+    double Ephoton = projectileP4.getTimeLikeComponent() / 1_GeV;
     double theta = 0.0; // set nucleon at rest in collision
     int Imode = -1;     // overwritten inside SOPHIA
     CORSIKA_LOGGER_DEBUG(logger_,
@@ -96,7 +93,7 @@ namespace corsika::sophia {
 
     auto const& originalCS = boost.getOriginalCS();
     // SOPHIA has photon along -z  and nucleon along +z (GZK calc..)
-    COMBoost const boostInternal(nucleonP4, photonP4);
+    COMBoost const boostInternal(targetP4, projectileP4);
     auto const& csPrime = boost.getRotatedCS();
     CoordinateSystemPtr csPrimePrime =
         make_rotation(csPrime, QuantityVector<length_d>{1_m, 0_m, 0_m}, M_PI);
