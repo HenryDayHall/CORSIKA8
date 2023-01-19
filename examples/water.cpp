@@ -32,6 +32,7 @@
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Random.hpp>
 #include <corsika/modules/Sibyll.hpp>
+#include <corsika/modules/Sophia.hpp>
 #include <corsika/modules/UrQMD.hpp>
 #include <corsika/modules/tracking/TrackingStraight.hpp>
 
@@ -58,6 +59,7 @@ void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
+  RNGManager<>::getInstance().registerRandomStream("sophia");
   RNGManager<>::getInstance().registerRandomStream("epos");
   RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("urqmd");
@@ -241,9 +243,11 @@ int main(int argc, char** argv) {
   }};
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
+  corsika::sophia::InteractionModel sophia;
+
   // EM process
-  corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(),
-                                           heHadronModelThreshold);
+  corsika::proposal::Interaction emCascade(
+      env, sophia, sibyll.getHadronInteractionModel(), heHadronModelThreshold);
   corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
 
   // total physics list
