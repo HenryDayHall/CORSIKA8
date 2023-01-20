@@ -118,6 +118,7 @@ TEST_CASE("SophiaInterface", "modules") {
     FourMomentum const aP4(100_GeV, {cs, 99_GeV, 0_GeV, 0_GeV});
     FourMomentum const bP4(1_GeV, {cs, 0_GeV, 0_GeV, 0_GeV});
     CHECK(0_mb == model.getCrossSection(Code::Photon, Code::Proton, aP4, bP4));
+    CHECK_THROWS(model.doInteraction(view, Code::Electron, Code::Proton, aP4, bP4));
   }
 
   SECTION("InteractionInterface - interaction") {
