@@ -13,7 +13,7 @@
 #include <corsika/framework/process/InteractionProcess.hpp>
 
 /**
- * @file Sibyll.hpp
+ * @file Epos.hpp
  *
  * Includes all the parts of the EPOS model. Defines the InteractionProcess<TModel>
  * classes needed for the ProcessSequence.
