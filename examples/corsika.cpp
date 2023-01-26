@@ -324,8 +324,7 @@ int main(int argc, char** argv) {
                                            heHadronModelThreshold);
   // NOT available for PROPOSAL due to interface trouble:
   // InteractionCounter emCascadeCounted(emCascade);
-  // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env);
-  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
+  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
 
   LongitudinalWriter profile{showerAxis, 200, 10_g / square(1_cm)};
   output.add("profile", profile);

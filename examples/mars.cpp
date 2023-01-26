@@ -359,8 +359,8 @@ int main(int argc, char** argv) {
   // NOT possible right now, due to interface difference for PROPOSAL:
   //  InteractionCounter emCascadeCounted(emCascade);
   // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>>
-  // emContinuous(env,dEdX);
-  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
+  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
+  //BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
   LongitudinalWriter longprof{showerAxis};
   output.add("profile", longprof);
