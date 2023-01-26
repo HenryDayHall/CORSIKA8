@@ -360,7 +360,7 @@ int main(int argc, char** argv) {
   //  InteractionCounter emCascadeCounted(emCascade);
   // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>>
   corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
-  //BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
+  // BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
   LongitudinalWriter longprof{showerAxis};
   output.add("profile", longprof);
