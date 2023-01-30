@@ -13,8 +13,8 @@
 #   General Public License for more details.                 
 #
 #   You should have received a copy of the GNU General Public License
-#   along with this program;  if not, write to the Free Software
-#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+#   along with this program;  if not, see
+#   <http://www.gnu.org/licenses/>.
 #
 #
 # gendesc
@@ -44,8 +44,8 @@ use Cwd qw/abs_path/;
 
 # Constants
 our $tool_dir		= abs_path(dirname($0));
-our $lcov_version	= "LCOV version 1.14";
-our $lcov_url		= "http://ltp.sourceforge.net/coverage/lcov.php";
+our $lcov_version	= 'LCOV version '.`"$tool_dir"/get_version.sh --full`;
+our $lcov_url		= "https://github.com/linux-test-project/lcov";
 our $tool_name		= basename($0);
 
 

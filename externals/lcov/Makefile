@@ -9,6 +9,7 @@
 #                and RELEASE variables below - both version and date strings
 #                will be updated in all necessary files.
 #   - clean:     remove all generated files
+#   - release:   finalize release and create git tag for specified VERSION
 #
 
 VERSION := $(shell bin/get_version.sh --version)
@@ -37,13 +38,14 @@ info:
 	@echo "  install   : install binaries and man pages in DESTDIR (default /)"
 	@echo "  uninstall : delete binaries and man pages from DESTDIR (default /)"
 	@echo "  dist      : create packages (RPM, tarball) ready for distribution"
-	@echo "  test      : perform self-tests"
+	@echo "  check     : perform self-tests"
+	@echo "  release   : finalize release and create git tag for specified VERSION"
 
 clean:
 	rm -f lcov-*.tar.gz
 	rm -f lcov-*.rpm
 	make -C example clean
-	make -C test -s clean
+	make -C tests -s clean
 
 install:
 	bin/install.sh bin/lcov $(DESTDIR)$(BIN_DIR)/lcov -m 755
@@ -95,7 +97,8 @@ lcov-$(VERSION).tar.gz: $(FILES)
 	bin/updateversion.pl $(TMP_DIR)/lcov-$(VERSION) $(VERSION) $(RELEASE) $(FULL)
 	bin/get_changes.sh > $(TMP_DIR)/lcov-$(VERSION)/CHANGES
 	cd $(TMP_DIR) ; \
-	tar cfz $(TMP_DIR)/lcov-$(VERSION).tar.gz lcov-$(VERSION)
+	tar cfz $(TMP_DIR)/lcov-$(VERSION).tar.gz lcov-$(VERSION) \
+	    --owner root --group root
 	mv $(TMP_DIR)/lcov-$(VERSION).tar.gz .
 	rm -rf $(TMP_DIR)
 
@@ -112,11 +115,33 @@ rpms: lcov-$(VERSION).tar.gz
 	cd $(TMP_DIR)/BUILD ; \
 	tar xfz $(TMP_DIR)/SOURCES/lcov-$(VERSION).tar.gz \
 		lcov-$(VERSION)/rpm/lcov.spec
-	rpmbuild --define '_topdir $(TMP_DIR)' \
+	rpmbuild --define '_topdir $(TMP_DIR)' --define '_buildhost localhost' \
+		 --undefine vendor --undefine packager \
 		 -ba $(TMP_DIR)/BUILD/lcov-$(VERSION)/rpm/lcov.spec
 	mv $(TMP_DIR)/RPMS/noarch/lcov-$(VERSION)-$(RELEASE).noarch.rpm .
 	mv $(TMP_DIR)/SRPMS/lcov-$(VERSION)-$(RELEASE).src.rpm .
 	rm -rf $(TMP_DIR)
 
-test:
-	@make -C test -s all
+test: check
+
+check:
+	@make -s -C tests check
+
+release:
+	@if [ "$(origin VERSION)" != "command line" ] ; then echo "Please specify new version number, e.g. VERSION=1.16" >&2 ; exit 1 ; fi
+	@if [ -n "$$(git status --porcelain 2>&1)" ] ; then echo "The repository contains uncommited changes" >&2 ; exit 1 ; fi
+	@if [ -n "$$(git tag -l v$(VERSION))" ] ; then echo "A tag for the specified version already exists (v$(VERSION))" >&2 ; exit 1 ; fi
+	@echo "Preparing release tag for version $(VERSION)"
+	git checkout master
+	bin/copy_dates.sh . .
+	for FILE in README man/* rpm/* ; do \
+		bin/updateversion.pl "$$FILE" $(VERSION) 1 $(VERSION) ; \
+	done
+	git commit -a -s -m "lcov: Finalize release $(VERSION)"
+	git tag v$(VERSION) -m "LCOV version $(VERSION)"
+	@echo "**********************************************"
+	@echo "Release tag v$(VERSION) successfully created"
+	@echo "Next steps:"
+	@echo " - Review resulting commit and tag"
+	@echo " - Publish with: git push origin master v$(VERSION)"
+	@echo "**********************************************"
