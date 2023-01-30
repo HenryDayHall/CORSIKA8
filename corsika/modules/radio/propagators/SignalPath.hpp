@@ -18,7 +18,7 @@ namespace corsika {
    *
    * This is basically a container class
    */
-  struct SignalPath final : private Path {
+  struct SignalPath final : public Path {
 
     // TODO: discuss if we need average refractivity or average refractive index
     TimeType const propagation_time_;       ///< The total propagation time.
@@ -28,8 +28,6 @@ namespace corsika {
         refractive_index_destination_; ///< The refractive index at the destination point.
     Vector<dimensionless_d> const emit_;    ///< The (unit-length) emission vector.
     Vector<dimensionless_d> const receive_; ///< The (unit-length) receive vector.
-    std::deque<Point> const
-        points_; ///< A collection of points that make up the geometrical path.
     LengthType const
         R_distance_; ///< The distance from the point of emission to an observer. TODO:
                      ///< optical path, not geometrical! (probably)
