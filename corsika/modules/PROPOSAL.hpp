@@ -13,12 +13,15 @@
 
 namespace corsika::proposal {
 
-  template <typename THadronicModel>
-  class Interaction : public InteractionModel<THadronicModel>,
-                      public InteractionProcess<Interaction<THadronicModel>> {
+  template <typename THadronicLEModel, typename THadronicHEModel>
+  class Interaction
+      : public InteractionModel<THadronicLEModel, THadronicHEModel>,
+        public InteractionProcess<Interaction<THadronicLEModel, THadronicHEModel>> {
   public:
     template <typename TEnvironment>
-    Interaction(TEnvironment const& env, THadronicModel& model, HEPEnergyType const& thr)
-        : InteractionModel<THadronicModel>(env, model, thr) {}
+    Interaction(TEnvironment const& env, THadronicLEModel& modelLE,
+                THadronicHEModel& modelHE, HEPEnergyType const& thr)
+        : InteractionModel<THadronicLEModel, THadronicHEModel>(env, modelLE, modelHE,
+                                                               thr) {}
   };
 } // namespace corsika::proposal

@@ -33,9 +33,10 @@ namespace corsika::proposal {
   //! @tparam THadronicModel
   //!
 
-  template <class THadronicModel>
-  class InteractionModel : public ProposalProcessBase,
-                           public HadronicPhotonModel<THadronicModel> {
+  template <class THadronicLEModel, class THadronicHEModel>
+  class InteractionModel
+      : public ProposalProcessBase,
+        public HadronicPhotonModel<THadronicLEModel, THadronicHEModel> {
 
     enum { eSECONDARIES, eINTERACTION };
     using calculator_t = std::tuple<std::unique_ptr<PROPOSAL::SecondariesCalculator>,
@@ -57,7 +58,8 @@ namespace corsika::proposal {
     //! compositions and stochastic description limited by the particle cut.
     //!
     template <typename TEnvironment>
-    InteractionModel(TEnvironment const& env, THadronicModel&, HEPEnergyType const&);
+    InteractionModel(TEnvironment const& env, THadronicLEModel&, THadronicHEModel&,
+                     HEPEnergyType const&);
 
     //!
     //! Calculate the rates for the different targets and interactions. Sample a

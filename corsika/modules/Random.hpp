@@ -17,6 +17,7 @@
   link this togehter, it will fail.
  */
 #include <corsika/modules/sibyll/Random.hpp>
+#include <corsika/modules/sophia/Random.hpp>
 #include <corsika/modules/epos/Random.hpp>
 #include <corsika/modules/urqmd/Random.hpp>
 #include <corsika/modules/qgsjetII/Random.hpp>
