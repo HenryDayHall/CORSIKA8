@@ -40,6 +40,7 @@
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/Sibyll.hpp>
+#include <corsika/modules/Sophia.hpp>
 #include <corsika/modules/PROPOSAL.hpp>
 
 #include <corsika/modules/radio/RadioProcess.hpp>
@@ -78,6 +79,7 @@ using namespace std;
 void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("proposal");
+  RNGManager<>::getInstance().registerRandomStream("sophia");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
   if (seed == 0) {
     std::random_device rd;
@@ -239,10 +241,12 @@ int main(int argc, char** argv) {
 
   ParticleCut<SubWriter<decltype(dEdX)>> cut(5_MeV, 5_MeV, 100_GeV, 100_GeV, true, dEdX);
 
+  corsika::sophia::InteractionModel sophia;
+
   corsika::sibyll::Interaction sibyll{env};
   HEPEnergyType heThresholdNN = 80_GeV;
-  corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(),
-                                           heThresholdNN);
+  corsika::proposal::Interaction emCascade(
+      env, sophia, sibyll.getHadronInteractionModel(), heThresholdNN);
   corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuous(env, dEdX);
   //  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 

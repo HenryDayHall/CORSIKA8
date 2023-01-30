@@ -12,6 +12,7 @@
 #include <SetupTestStack.hpp>
 #include <catch2/catch.hpp>
 #include <tuple>
+#include "corsika/framework/core/PhysicalUnits.hpp"
 
 using namespace corsika;
 using namespace corsika::proposal;
@@ -26,7 +27,8 @@ using DummyEnvironment = Environment<DummyEnvironmentInterface>;
 
 class DummyHadronicModel {
 public:
-  DummyHadronicModel(){};
+  DummyHadronicModel(HEPEnergyType thr)
+      : threshold_(thr){};
 
   template <typename TSecondaryView>
   void doInteraction(TSecondaryView& view, Code const, Code const,
@@ -42,8 +44,11 @@ public:
     }
   }
   bool constexpr isValid(Code const, Code const, HEPEnergyType const sqrsNN) const {
-    return (sqrsNN >= 10_GeV);
+    return (sqrsNN >= threshold_);
   };
+
+private:
+  HEPEnergyType threshold_;
 };
 
 TEST_CASE("ProposalInterface", "modules") {
@@ -61,14 +66,18 @@ TEST_CASE("ProposalInterface", "modules") {
   RNGManager<>::getInstance().registerRandomStream("proposal");
 
   SECTION("InteractionInterface - hadronic photon model threshold") {
-    DummyHadronicModel hadModel;
-    HEPEnergyType heThresholdLab1 = 10_GeV;
-    CHECK_THROWS(corsika::proposal::InteractionModel(*env, hadModel, heThresholdLab1));
+    DummyHadronicModel hadModelLE(100_MeV);
+    DummyHadronicModel hadModelHE(10_GeV);
+    HEPEnergyType heThresholdLab1 = 12_GeV;
+    CHECK_THROWS(corsika::proposal::InteractionModel(*env, hadModelLE, hadModelHE,
+                                                     heThresholdLab1));
   }
 
-  DummyHadronicModel hadModel;
+  DummyHadronicModel hadModelLE(100_MeV);
+  DummyHadronicModel hadModelHE(10_GeV);
   HEPEnergyType heThresholdLab = 80_GeV;
-  corsika::proposal::InteractionModel emModel(*env, hadModel, heThresholdLab);
+  corsika::proposal::InteractionModel emModel(*env, hadModelLE, hadModelHE,
+                                              heThresholdLab);
 
   SECTION("InteractionInterface - cross section") {
     auto& stack = *stackPtr;
@@ -91,8 +100,7 @@ TEST_CASE("ProposalInterface", "modules") {
     // finish successfully
     CHECK(emModel.doHadronicPhotonInteraction(view, cs, P4, Code::Oxygen) ==
           ProcessReturn::Ok);
-    // no LE interactions
-    CHECK(stack.getEntries() == 1);
+    CHECK(stack.getEntries() == 6);
     CORSIKA_LOG_INFO("Number of particles produced in hadronic photon interaction: {}",
                      stack.getEntries() - 1);
   }
