@@ -39,18 +39,16 @@ namespace corsika {
   }
 
   inline void Path::removeFromEnd() {
-    int const dequesize = points_.size();
-    if (dequesize == 0) {
-      length_ = LengthType::zero();
-      return;
-    }
-    if (dequesize == 1) {
-      length_ = LengthType::zero();
-      return;
-    }
-
-    length_ -= distance(points_.back(), points_[dequesize - 2]);
+    auto lastpoint_ = points_.back();
     points_.pop_back();
+    int dequesize_ = points_.size();
+    if (dequesize_ == 0 || dequesize_ == 1) {
+      length_ = LengthType::zero();
+    } else if (dequesize_ == 2) {
+      length_ = (points_.back() - points_.front()).getNorm();
+    } else {
+      length_ -= (lastpoint_ - points_.back()).getNorm();
+    }
   }
 
   inline LengthType Path::getLength() const { return length_; }
@@ -63,11 +61,13 @@ namespace corsika {
     return points_.at(index);
   }
 
-  inline Path::iterator Path::begin() { return points_.begin(); }
   inline Path::const_iterator Path::begin() const { return points_.cbegin(); }
 
-  inline Path::iterator Path::end() { return points_.end(); }
   inline Path::const_iterator Path::end() const { return points_.cend(); }
+
+  inline Path::iterator Path::begin() { return points_.begin(); }
+
+  inline Path::iterator Path::end() { return points_.end(); }
 
   inline int Path::getNSegments() const { return points_.size() - 1; }
 

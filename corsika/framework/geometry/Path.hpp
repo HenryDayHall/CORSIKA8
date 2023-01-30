@@ -20,6 +20,8 @@ namespace corsika {
    * points using N >= 1 straight-line segments.
    */
   class Path {
+
+  protected:
     std::deque<Point> points_;               ///< The points that make up this path.
     LengthType length_ = LengthType::zero(); ///< The length of the path.
 
@@ -65,18 +67,26 @@ namespace corsika {
     /**
      * Get a specific point of the path.
      */
-    inline Point const& getPoint(std::size_t index) const;
+    inline Point const& getPoint(std::size_t const index) const;
 
     /**
      * Return an iterator to the start of the Path.
      */
     inline const_iterator begin() const;
-    inline iterator begin();
 
     /**
      * Return an iterator to the end of the Path.
      */
     inline const_iterator end() const;
+
+    /**
+     * Return an iterator to the start of the Path.
+     */
+    inline iterator begin();
+
+    /**
+     * Return an iterator to the end of the Path.
+     */
     inline iterator end();
 
     /**
