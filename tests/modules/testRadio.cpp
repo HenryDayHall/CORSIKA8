@@ -536,18 +536,18 @@ TEST_CASE("Propagators") {
     env.getUniverse()->addChild(std::move(Medium));
 
     // get some points
-    Point p0(rootCS, {0_m, 0_m, 0_m});
-    Point p10(rootCS, {0_m, 0_m, 10_m});
+    Point const p0(rootCS, {0_m, 0_m, 0_m});
+    Point const p10(rootCS, {0_m, 0_m, 10_m});
 
     // get a unit vector
-    Vector<dimensionless_d> v1(rootCS, {0, 0, 1});
-    Vector<dimensionless_d> v2(rootCS, {0, 0, -1});
+    Vector<dimensionless_d> const v1(rootCS, {0, 0, 1});
+    Vector<dimensionless_d> const v2(rootCS, {0, 0, -1});
 
     // get a geometrical path of points
-    Path P1({p0, p10});
+    Path const P1({p0, p10});
 
     // construct a Straight Propagator given the uniform refractive index environment
-    SimplePropagator SP(env);
+    SimplePropagator const SP(env);
 
     // store the outcome of the Propagate method to paths_
     auto const paths_ = SP.propagate(p0, p10, 1_m);
@@ -563,8 +563,9 @@ TEST_CASE("Propagators") {
       CHECK(path.emit_.getComponents() == v1.getComponents());
       CHECK(path.receive_.getComponents() == v2.getComponents());
       CHECK(path.R_distance_ == 10_m);
-      CHECK(std::equal(P1.begin(), P1.end(), Path(path.points_).begin(),
-                       [](Point a, Point b) { return (a - b).getNorm() / 1_m < 1e-5; }));
+      CHECK(std::equal(
+          P1.begin(), P1.end(), path.begin(),
+          [](Point const& a, Point const& b) { return (a - b).getNorm() / 1_m < 1e-5; }));
     }
 
   } // END: SECTION("Simple Propagator w/ Uniform Refractive Index")
@@ -600,28 +601,28 @@ TEST_CASE("Propagators") {
     env.getUniverse()->addChild(std::move(Medium));
 
     // get some points
-    Point p0(rootCS, {0_m, 0_m, 0_m});
-    Point p1(rootCS, {0_m, 0_m, 1_m});
-    Point p2(rootCS, {0_m, 0_m, 2_m});
-    Point p3(rootCS, {0_m, 0_m, 3_m});
-    Point p4(rootCS, {0_m, 0_m, 4_m});
-    Point p5(rootCS, {0_m, 0_m, 5_m});
-    Point p6(rootCS, {0_m, 0_m, 6_m});
-    Point p7(rootCS, {0_m, 0_m, 7_m});
-    Point p8(rootCS, {0_m, 0_m, 8_m});
-    Point p9(rootCS, {0_m, 0_m, 9_m});
-    Point p10(rootCS, {0_m, 0_m, 10_m});
-    Point p30(rootCS, {0_m, 0_m, 30000_m});
+    Point const p0(rootCS, {0_m, 0_m, 0_m});
+    Point const p1(rootCS, {0_m, 0_m, 1_m});
+    Point const p2(rootCS, {0_m, 0_m, 2_m});
+    Point const p3(rootCS, {0_m, 0_m, 3_m});
+    Point const p4(rootCS, {0_m, 0_m, 4_m});
+    Point const p5(rootCS, {0_m, 0_m, 5_m});
+    Point const p6(rootCS, {0_m, 0_m, 6_m});
+    Point const p7(rootCS, {0_m, 0_m, 7_m});
+    Point const p8(rootCS, {0_m, 0_m, 8_m});
+    Point const p9(rootCS, {0_m, 0_m, 9_m});
+    Point const p10(rootCS, {0_m, 0_m, 10_m});
+    Point const p30(rootCS, {0_m, 0_m, 30000_m});
 
     // get a unit vector
-    Vector<dimensionless_d> v1(rootCS, {0, 0, 1});
-    Vector<dimensionless_d> v2(rootCS, {0, 0, -1});
+    Vector<dimensionless_d> const v1(rootCS, {0, 0, 1});
+    Vector<dimensionless_d> const v2(rootCS, {0, 0, -1});
 
     // get a geometrical path of points
-    Path P1({p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10});
+    Path const P1({p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10});
 
     // construct a Straight Propagator given the uniform refractive index environment
-    StraightPropagator SP(env);
+    StraightPropagator const SP(env);
 
     // store the outcome of the Propagate method to paths_
     auto const paths_ = SP.propagate(p0, p10, 1_m);
@@ -637,8 +638,9 @@ TEST_CASE("Propagators") {
       CHECK(path.emit_.getComponents() == v1.getComponents());
       CHECK(path.receive_.getComponents() == v2.getComponents());
       CHECK(path.R_distance_ == 10_m);
-      CHECK(std::equal(P1.begin(), P1.end(), Path(path.points_).begin(),
-                       [](Point a, Point b) { return (a - b).getNorm() / 1_m < 1e-5; }));
+      CHECK(std::equal(
+          P1.begin(), P1.end(), path.begin(),
+          [](Point const& a, Point const& b) { return (a - b).getNorm() / 1_m < 1e-5; }));
     }
 
     // get another path to different points
@@ -698,27 +700,27 @@ TEST_CASE("Propagators") {
     env1.getUniverse()->addChild(std::move(Medium1));
 
     // get some points
-    Point pp0(rootCS1, {0_m, 0_m, 0_m});
-    Point pp1(rootCS1, {0_m, 0_m, 1_m});
-    Point pp2(rootCS1, {0_m, 0_m, 2_m});
-    Point pp3(rootCS1, {0_m, 0_m, 3_m});
-    Point pp4(rootCS1, {0_m, 0_m, 4_m});
-    Point pp5(rootCS1, {0_m, 0_m, 5_m});
-    Point pp6(rootCS1, {0_m, 0_m, 6_m});
-    Point pp7(rootCS1, {0_m, 0_m, 7_m});
-    Point pp8(rootCS1, {0_m, 0_m, 8_m});
-    Point pp9(rootCS1, {0_m, 0_m, 9_m});
-    Point pp10(rootCS1, {0_m, 0_m, 10_m});
+    Point const pp0(rootCS1, {0_m, 0_m, 0_m});
+    Point const pp1(rootCS1, {0_m, 0_m, 1_m});
+    Point const pp2(rootCS1, {0_m, 0_m, 2_m});
+    Point const pp3(rootCS1, {0_m, 0_m, 3_m});
+    Point const pp4(rootCS1, {0_m, 0_m, 4_m});
+    Point const pp5(rootCS1, {0_m, 0_m, 5_m});
+    Point const pp6(rootCS1, {0_m, 0_m, 6_m});
+    Point const pp7(rootCS1, {0_m, 0_m, 7_m});
+    Point const pp8(rootCS1, {0_m, 0_m, 8_m});
+    Point const pp9(rootCS1, {0_m, 0_m, 9_m});
+    Point const pp10(rootCS1, {0_m, 0_m, 10_m});
 
     // get a unit vector
     Vector<dimensionless_d> vv1(rootCS1, {0, 0, 1});
     Vector<dimensionless_d> vv2(rootCS1, {0, 0, -1});
 
     // get a geometrical path of points
-    Path PP1({pp0, pp1, pp2, pp3, pp4, pp5, pp6, pp7, pp8, pp9, pp10});
+    Path const PP1({pp0, pp1, pp2, pp3, pp4, pp5, pp6, pp7, pp8, pp9, pp10});
 
     // construct a Straight Propagator given the exponential refractive index environment
-    StraightPropagator SP1(env1);
+    StraightPropagator const SP1(env1);
 
     // store the outcome of Propagate method to paths1_
     auto const paths1_ = SP1.propagate(pp0, pp10, 1_m);
@@ -734,8 +736,9 @@ TEST_CASE("Propagators") {
       CHECK(path.emit_.getComponents() == vv1.getComponents());
       CHECK(path.receive_.getComponents() == vv2.getComponents());
       CHECK(path.R_distance_ == 10_m);
-      CHECK(std::equal(PP1.begin(), PP1.end(), Path(path.points_).begin(),
-                       [](Point a, Point b) { return (a - b).getNorm() / 1_m < 1e-5; }));
+      CHECK(std::equal(
+          PP1.begin(), PP1.end(), path.begin(),
+          [](Point const& a, Point const& b) { return (a - b).getNorm() / 1_m < 1e-5; }));
     }
 
     CHECK(paths1_.size() == 1);
@@ -767,15 +770,15 @@ TEST_CASE("Propagators") {
     env2.getUniverse()->addChild(std::move(Medium2));
 
     // get some points
-    Point ppp0(rootCS2, {0_m, 0_m, 0_m});
-    Point ppp10(rootCS2, {0_m, 0_m, 10_m});
+    Point const ppp0(rootCS2, {0_m, 0_m, 0_m});
+    Point const ppp10(rootCS2, {0_m, 0_m, 10_m});
 
     // get a unit vector
-    Vector<dimensionless_d> vvv1(rootCS2, {0, 0, 1});
-    Vector<dimensionless_d> vvv2(rootCS2, {0, 0, -1});
+    Vector<dimensionless_d> const vvv1(rootCS2, {0, 0, 1});
+    Vector<dimensionless_d> const vvv2(rootCS2, {0, 0, -1});
 
     // construct a Straight Propagator given the exponential refractive index environment
-    StraightPropagator SP2(env2);
+    StraightPropagator const SP2(env2);
 
     // store the outcome of Propagate method to paths1_
     auto const paths2_ = SP2.propagate(ppp0, ppp10, 1_m);

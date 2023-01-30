@@ -9,6 +9,8 @@
 #pragma once
 
 #include <deque>
+
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 
 namespace corsika {
@@ -18,8 +20,14 @@ namespace corsika {
    * points using N >= 1 straight-line segments.
    */
   class Path {
+
+  protected:
     std::deque<Point> points_;               ///< The points that make up this path.
     LengthType length_ = LengthType::zero(); ///< The length of the path.
+
+    using iterator = std::deque<Point>::iterator;
+    using const_iterator = std::deque<Point>::const_iterator;
+
   public:
     /**
      * Create a Path with a given starting Point.
@@ -49,27 +57,37 @@ namespace corsika {
     /**
      * Get the starting point of the path.
      */
-    inline Point getStart() const;
+    inline Point const& getStart() const;
 
     /**
      * Get the end point of the path.
      */
-    inline Point getEnd() const;
+    inline Point const& getEnd() const;
 
     /**
      * Get a specific point of the path.
      */
-    inline Point getPoint(std::size_t const index) const;
+    inline Point const& getPoint(std::size_t const index) const;
 
     /**
      * Return an iterator to the start of the Path.
      */
-    inline auto begin();
+    inline const_iterator begin() const;
 
     /**
      * Return an iterator to the end of the Path.
      */
-    inline auto end();
+    inline const_iterator end() const;
+
+    /**
+     * Return an iterator to the start of the Path.
+     */
+    inline iterator begin();
+
+    /**
+     * Return an iterator to the end of the Path.
+     */
+    inline iterator end();
 
     /**
      * Get the number of steps in the path.
