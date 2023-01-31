@@ -763,6 +763,8 @@ namespace phys {
 
     // The standard SI prefixes.
 
+    constexpr long double quetta = 1e+30L;
+    constexpr long double ronna = 1e+27L;
     constexpr long double yotta = 1e+24L;
     constexpr long double zetta = 1e+21L;
     constexpr long double exa = 1e+18L;
@@ -783,6 +785,8 @@ namespace phys {
     constexpr long double atto = 1e-18L;
     constexpr long double zepto = 1e-21L;
     constexpr long double yocto = 1e-24L;
+    constexpr long double ronto = 1e-27L;
+    constexpr long double quecto = 1e-30L;
 
     // Binary prefixes, pending adoption.
 
@@ -938,6 +942,8 @@ namespace phys {
   }
 
 #define QUANTITY_DEFINE_SCALING_LITERALS(pfx, dim, fact)    \
+  QUANTITY_DEFINE_SCALING_LITERAL(Q##pfx, dim, fact* quetta) \
+  QUANTITY_DEFINE_SCALING_LITERAL(R##pfx, dim, fact* ronna) \
   QUANTITY_DEFINE_SCALING_LITERAL(Y##pfx, dim, fact* yotta) \
   QUANTITY_DEFINE_SCALING_LITERAL(Z##pfx, dim, fact* zetta) \
   QUANTITY_DEFINE_SCALING_LITERAL(E##pfx, dim, fact* exa)   \
@@ -958,7 +964,9 @@ namespace phys {
   QUANTITY_DEFINE_SCALING_LITERAL(f##pfx, dim, fact* femto) \
   QUANTITY_DEFINE_SCALING_LITERAL(a##pfx, dim, fact* atto)  \
   QUANTITY_DEFINE_SCALING_LITERAL(z##pfx, dim, fact* zepto) \
-  QUANTITY_DEFINE_SCALING_LITERAL(y##pfx, dim, fact* yocto)
+  QUANTITY_DEFINE_SCALING_LITERAL(y##pfx, dim, fact* yocto) \
+  QUANTITY_DEFINE_SCALING_LITERAL(r##pfx, dim, fact* ronto) \
+  QUANTITY_DEFINE_SCALING_LITERAL(q##pfx, dim, fact* quecto)
 
 #define QUANTITY_DEFINE_LITERALS(pfx, dim) QUANTITY_DEFINE_SCALING_LITERALS(pfx, dim, 1)
 
