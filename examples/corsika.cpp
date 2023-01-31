@@ -330,7 +330,8 @@ int main(int argc, char** argv) {
       env, sophia, sibyll.getHadronInteractionModel(), heHadronModelThreshold);
 
   // use BetheBlochPDG for hadronic continuous losses, and proposal otherwise
-  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuousProposal(env, dEdX);
+  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuousProposal(
+      env, dEdX);
   BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuousBethe{dEdX};
   struct EMHadronSwitch {
     EMHadronSwitch() = default;
