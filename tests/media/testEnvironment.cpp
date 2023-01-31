@@ -107,12 +107,12 @@ TEST_CASE("FlatExponential") {
         std::vector<Code>{Code::Proton});
 
   SECTION("horizontal") {
-    //Check that not moving along axis does not change density
+    // Check that not moving along axis does not change density
     CHECK(medium.getMassDensity(Point(gCS, 1_m, 0_m, 0_m)) == rho0);
     CHECK(medium.getMassDensity(Point(gCS, 1_m, 0_m, 0_m)) == rho0);
     CHECK(medium.getMassDensity(Point(gCS, -1_m, 0_m, 0_m)) == rho0);
     CHECK(medium.getMassDensity(Point(gCS, 0_m, 1_m, 0_m)) == rho0);
-    CHECK(medium.getMassDensity(Point(gCS, 0_m,-1_m, 0_m)) == rho0);
+    CHECK(medium.getMassDensity(Point(gCS, 0_m, -1_m, 0_m)) == rho0);
 
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
                                  gCS, {speed, 0_m / second, 0_m / second}));
@@ -125,7 +125,7 @@ TEST_CASE("FlatExponential") {
   }
 
   SECTION("vertical") {
-    //Moving along axis does change density
+    // Moving along axis does change density
     CHECK(medium.getMassDensity(Point(gCS, 0_m, 0_m, 1_m)) > rho0);
     CHECK(medium.getMassDensity(Point(gCS, 0_m, 0_m, -1_m)) < rho0);
 
