@@ -207,7 +207,7 @@ namespace corsika {
    * @param code
    * @return std::string_view
    */
-  inline std::string_view get_nucleus_name(Code const code);
+  inline std::string get_nucleus_name(Code const code);
 
   /**
    * @brief convert PDG code to CORSIKA 8 internal code.
