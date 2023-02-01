@@ -258,6 +258,7 @@ add_subdirectory (modules/qgsjetII)
 add_subdirectory (modules/urqmd)
 add_subdirectory (modules/conex)
 add_subdirectory (modules/epos)
+add_subdirectory (modules/fluka)
 
 #+++++++++++++++++++++++++++++++
 # unit testing
