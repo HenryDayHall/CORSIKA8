@@ -72,11 +72,11 @@ struct DummyStack {};
 
 // there is no real trajectory/track
 struct DummyTrajectory {
-  TimeType getDuration(int u) const { return 0_s; }
-  Point getPosition(int u) const {
+  TimeType getDuration([[maybe_unused]] int u) const { return 0_s; }
+  Point getPosition([[maybe_unused]] int u) const {
     return Point(get_root_CoordinateSystem(), 0_m, 0_m, 0_m);
   }
-  DirectionVector getDirection(int u) const {
+  DirectionVector getDirection([[maybe_unused]] int u) const {
     return DirectionVector{get_root_CoordinateSystem(), {0, 0, 0}};
   }
 };
@@ -144,7 +144,7 @@ private:
 
 class ContinuousProcess2 : public ContinuousProcess<ContinuousProcess2> {
 public:
-  ContinuousProcess2(int const v, LengthType const step)
+  ContinuousProcess2([[maybe_unused]] int const v, LengthType const step)
       : step_(step) {
     CORSIKA_LOG_DEBUG("globalCount: {}", globalCount);
     globalCount++;
@@ -176,7 +176,7 @@ private:
 
 class ContinuousProcess3 : public ContinuousProcess<ContinuousProcess3> {
 public:
-  ContinuousProcess3(int const v, LengthType const step)
+  ContinuousProcess3([[maybe_unused]] int const v, LengthType const step)
       : step_(step) {
     CORSIKA_LOG_DEBUG("globalCount: {}", globalCount);
     globalCount++;
