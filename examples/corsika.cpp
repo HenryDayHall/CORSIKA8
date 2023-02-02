@@ -325,13 +325,20 @@ int main(int argc, char** argv) {
   // energy threshold for high energy hadronic model. Affects LE/HE switch for
   // hadron interactions and the hadronic photon model in proposal
   HEPEnergyType heHadronModelThreshold = 63.1_GeV;
+
   corsika::proposal::Interaction emCascade(
       env, sophia, sibyll.getHadronInteractionModel(), heHadronModelThreshold);
-  // NOT available for PROPOSAL due to interface trouble:
-  // InteractionCounter emCascadeCounted(emCascade);
-  // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>>
-  // emContinuous(env);
-  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
+
+  // use BetheBlochPDG for hadronic continuous losses, and proposal otherwise
+  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuousProposal(
+      env, dEdX);
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuousBethe{dEdX};
+  struct EMHadronSwitch {
+    EMHadronSwitch() = default;
+    bool operator()(const Particle& p) const { return is_hadron(p.getPID()); }
+  };
+  auto emContinuous =
+      make_select(EMHadronSwitch(), emContinuousBethe, emContinuousProposal);
 
   LongitudinalWriter profile{showerAxis, 200, 10_g / square(1_cm)};
   output.add("profile", profile);
