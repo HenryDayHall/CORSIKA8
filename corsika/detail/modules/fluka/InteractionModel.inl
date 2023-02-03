@@ -23,6 +23,7 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <FLUKA.hpp>
+#include <ParticleConversion.hpp>
 
 namespace corsika::fluka {
   template <typename TEnvironment>
@@ -32,11 +33,8 @@ namespace corsika::fluka {
       }
     }
     
-  inline bool InteractionModel::isValid(Code projectileID, Code targetID /*, HEPEnergyType sqrtS*/) {
-      static std::array<Code> constexpr validProjectiles{Code::Proton, Code::AntiProton, Code::Neutron, Code::AntiNeutron,
-          Code::PiPlus, Code::PiMinus, Code::KPlus, Code::KMinus, Code::K0Long, Code::K0Short}
-          
-      if (std::find(validProjectiles.cbegin(), validProjectiles.cend(), projectileID) == validProjectiles.cend()) {
+  inline bool InteractionModel::isValid(Code projectileID, Code targetID, HEPEnergyType /*sqrtS*/) const {
+      if (fluka::canInteract(projectileID)) {
           // invalid projectile
         return false;
       }
@@ -47,10 +45,11 @@ namespace corsika::fluka {
       }
         
       // TODO: check validity range of sqrtS
+      return true;
   }
   
   inline int InteractionModel::getMaterialIndex(Code targetID) const {
-    if (auto it = std::find(materials_.cbegin(), materials_.cend(), [=targetID](std::pair<Code, int>& p) {return p.first == targetID;});
+    if (auto it = std::find(materials_.cbegin(), materials_.cend(), [=](std::pair<Code, int> const& p) {return p.first == targetID;});
         it == materials_.cend()) {
         return -1;
     } else {
@@ -61,12 +60,12 @@ namespace corsika::fluka {
   inline CrossSectionType InteractionModel::getCrossSection(
       Code const projectileId, Code const targetId, FourMomentum const& projectileP4,
       FourMomentum const& targetP4) const {
-          
-    if (!isValid(projectileId, targetId)) { return CrossSectionType::zero(); }
+    HEPEnergyType const sqrtS = (projectileP4 + targetP4).getNorm();
+    if (!isValid(projectileId, targetId, sqrtS)) { return CrossSectionType::zero(); }
     
-    COMBoost const targetRestBoost{projecileP4.getSpaceLikeComponents(), get_mass(targetId)};
-    FourMomentum const projectileLab4mom = targetRestBoost.toCOM(projectileP4);
-    projec
+    COMBoost const targetRestBoost{projectileP4.getSpaceLikeComponents(), get_mass(targetId)};
+    FourMomentum const projectileLab4mom = targetRestBoost.toCoM(projectileP4);
+    //~ projec
     
     int const iflxyz = 1;
     
