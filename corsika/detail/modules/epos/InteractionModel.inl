@@ -34,8 +34,8 @@ namespace corsika::epos {
         data_path_ = (std::string(corsika_data("EPOS").c_str()) + "/").c_str();
       }
       initialize();
+      setParticlesStable();
     }
-    setParticlesStable();
   }
 
   inline void InteractionModel::setParticlesStable() const {
@@ -45,15 +45,30 @@ namespace corsika::epos {
       if (!is_hadron(p)) continue;
       int const eid = convertToEposRaw(p);
       if (eid != 0) {
-        ::epos::nodcy_.nrnody = ::epos::nodcy_.nrnody + 1;
-        ::epos::nodcy_.nody[::epos::nodcy_.nrnody - 1] = eid;
+        // LCOV_EXCL_START
+        // this is only a safeguard against messing up the epos internals by initializing
+        // more than once.
+        unsigned int const n_particles_stable_epos =
+            ::epos::nodcy_.nrnody; // avoid waring -Wsign-compare
+        if (n_particles_stable_epos < ::epos::mxnody) {
+          CORSIKA_LOGGER_TRACE(logger_, "setting {} with EposId={} stable inside EPOS.",
+                               p, eid);
+          ::epos::nodcy_.nrnody = ::epos::nodcy_.nrnody + 1;
+          ::epos::nodcy_.nody[::epos::nodcy_.nrnody - 1] = eid;
+        } else {
+          CORSIKA_LOGGER_ERROR(logger_, "List of stable particles too long for Epos!");
+          throw std::runtime_error("Epos initialization error!");
+        }
+        // LCOV_EXCL_STOP
       } else {
-        CORSIKA_LOG_DEBUG(
+        CORSIKA_LOG_TRACE(
             "particle conversion Corsika-->Epos not known for {}. Using {}. Setting "
             "unstable in Epos!",
             p, eid);
       }
     }
+    CORSIKA_LOGGER_DEBUG(logger_, "set {} particles stable inside Epos",
+                         ::epos::nodcy_.nrnody);
   }
 
   inline bool InteractionModel::isValid(Code const projectileId, Code const targetId,

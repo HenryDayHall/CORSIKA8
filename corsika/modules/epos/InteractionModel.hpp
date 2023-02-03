@@ -89,16 +89,18 @@ namespace corsika::epos {
     void doInteraction(TSecondaries&, Code const projectileId, Code const targetId,
                        FourMomentum const& projectileP4, FourMomentum const& targetP4);
 
-    void initialize() const;
     void initializeEventCoM(Code const, int const, int const, Code const, int const,
                             int const, HEPEnergyType const) const;
     void initializeEventLab(Code const, int const, int const, Code const, int const,
                             int const, HEPEnergyType const) const;
     void configureParticles(Code const, int const, int const, Code const, int const,
                             int const) const;
-    void setParticlesStable() const;
 
   private:
+    // initialize and setParticlesStable are private since they can only be called once at
+    // the beginning and are already called in the constructor!
+    void initialize() const;
+    void setParticlesStable() const;
     inline static bool isInitialized_ = false;
 
     std::string data_path_;
