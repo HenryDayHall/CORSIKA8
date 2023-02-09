@@ -1,123 +1,60 @@
-Photon	7
-Electron	4
-Positron	3
-
-MuPlus	10
-MuMinus	11
-Pi0	23
-PiPlus	13	yes
-PiMinus	14	yes
-K0Long	12	yes
-KPlus	15	yes
-KMinus	16	yes
-Neutron	8	yes
+# FLUKA particle code conversion table
+# C8 identifier, FLUKA code, has cross-section/can interact
 Proton	1	yes
 AntiProton	2	yes
-K0Short	19	yes
-# Eta	0
-Lambda0	17	yes
-SigmaPlus	21
-Sigma0	22
-SigmaMinus	20
-Xi0	34
-XiMinus	36
-OmegaMinus	38
-AntiNeutron	9	yes
-Lambda0Bar	18	yes
-SigmaMinusBar	31
-Sigma0Bar	32
-SigmaPlusBar	33
-Xi0Bar	34
-XiPlusBar	37
-OmegaPlusBar	39
-
-# Omega	0
-# Rho0	0
-# RhoPlus	0
-# RhoMinus	0
-# DeltaPlusPlus	0
-# DeltaPlus	0
-# Delta0	0
-# DeltaMinus	0
-# DeltaMinusMinusBar	0
-# DeltaMinusBar	0
-# Delta0Bar	0
-# DeltaPlusBar	0
-# KStar0	0
-# KStarPlus	0
-# KStarMinusBar	0
-# KStar0Bar	0
+Electron	3
+Positron	4
 NuE	5
 NuEBar	6
+Photon	7
+Neutron	8	yes
+AntiNeutron	9	yes
+MuPlus	10
+MuMinus	11
+K0Long	12	yes
+PiPlus	13	yes
+PiMinus	14	yes
+KPlus	15	yes
+KMinus	16	yes
+Lambda0	17	yes
+Lambda0Bar	18	yes
+K0Short	19	yes
+SigmaMinus	20 yes
+SigmaPlus	21  yes
+Sigma0	22  yes
+Pi0	23  yes
+K0 24
+K0Bar 25
 NuMu	27
 NuMuBar	28
-
-D0	16
-DPlus	25
-DMinus	24
-D0Bar	15
-# DSPlus	0
-# DSMinusBar	0
-# EtaC	0
-# DStar0	0
-# DStarPlus	0
-# DStarMinusBar	0
-# DStar0Bar	0
-# DStarSPlus	0
-# DStarsMinusBar	0
-#	0
-# JPsi	0
+SigmaMinusBar	31  yes
+Sigma0Bar	32  yes
+SigmaPlusBar	33  yes
+Xi0	34  yes
+Xi0Bar	35  yes
+XiMinus	36  yes
+XiPlusBar	37  yes
+OmegaMinus	38  yes
+OmegaPlusBar	39  yes
 TauPlus	41
 TauMinus	42
 NuTau	43
 NuTauBar	44
-#	0
-#	0
-LambdaCPlus	17
-XiCPlus	34
-XiC0	36
-SigmaCPlus	21
-SigmaCPlus	22
-SigmaC0	20
-XiPrimeCPlus	34
-XiPrimeC0	36
-OmegaC0	38
-
-LambdaCMinusBar	18
-XiCMinusBar	35
-XiC0Bar	37
-SigmaCMinusMinusBar	31
-SigmaCMinusBar	32
-SigmaC0Bar	33
-XiPrimeCMinusBar	35
-XiPrimeC0Bar	37
-OmegaC0Bar	39
-
-# SigmaStarCPlusPlus	0
-# SigmaStarCPlus	0
-# SigmaStarC0	0
-
-# SigmaStarCBar--	0
-# SigmaStarCMinusBar	0
-# SigmaStarC0Bar	0
-
-# B0	0
-# BPlus	0
-# BMinusBar	0
-# B0Bar	0
-# BS0	0
-# BS0Bar	0
-# BCPlus	0
-# BCMinusBar	0
-# LambdaB0	0
-# SigmaBMinus	0
-# SigmaBPlus	0
-# XiB0	0
-# XiBMinus	0
-# OmegaBMinus	0
-# LambdaB0Bar	0
-# SigmaBPlusBar	0
-# SigmaBMinusBar	0
-# XiB0Bar	0
-# XiBPlusBar	0
-# OmegaBPlusBar	0
+DPlus	45
+DMinus	46
+D0	47
+D0Bar	48
+DsPlus	49
+DsMinus	50
+LambdaCPlus	51
+XiCPlus	52
+XiC0	53
+XiPrimeCPlus	54
+XiPrimeC0	55
+OmegaC0	56
+LambdaCMinusBar	57
+XiCMinusBar	58
+XiC0Bar	59
+XiPrimeCMinusBar	60
+XiPrimeC0Bar	61
+OmegaC0Bar	62
