@@ -86,7 +86,7 @@ namespace corsika {
     //! internal method
     void setBoost(double const coshEta, double const sinhEta);
 
-  private:
+  public:
     Eigen::Matrix2d boost_;
     Eigen::Matrix2d inverseBoost_;
     CoordinateSystemPtr const originalCS_;
