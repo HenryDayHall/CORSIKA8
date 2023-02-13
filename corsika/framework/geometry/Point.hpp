@@ -72,6 +72,7 @@ namespace corsika {
     inline void rebase(CoordinateSystemPtr const& pCS);
 
     inline Point operator+(Vector<length_d> const& pVec) const;
+    inline Point operator-(Vector<length_d> const& pVec) const;
 
     /*!
      * returns the distance Vector between two points

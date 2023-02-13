@@ -67,11 +67,15 @@ namespace corsika {
     return Point(cs, getCoordinates() + pVec.getComponents(cs));
   }
 
+  inline Point Point::operator-(Vector<length_d> const& pVec) const {
+    CoordinateSystemPtr const& cs = BaseVector<length_d>::getCoordinateSystem();
+    return Point(cs, getCoordinates() - pVec.getComponents(cs));
+  }
+
   inline Vector<length_d> Point::operator-(Point const& pB) const {
     CoordinateSystemPtr const& cs = BaseVector<length_d>::getCoordinateSystem();
     return Vector<length_d>(cs, getCoordinates() - pB.getCoordinates(cs));
   }
-
   inline std::ostream& operator<<(std::ostream& os, corsika::Point const& p) {
     auto const& qv = p.getCoordinates();
     os << qv << " (ref:" << fmt::ptr(p.getCoordinateSystem()) << ")";
