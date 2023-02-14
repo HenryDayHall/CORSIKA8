@@ -2430,6 +2430,7 @@ c      p=sqrt(max(0.,egy**2-ampro**2))
         maproj=mapr
         matarg=matg
         engy=egy
+        call Class("pscrse-1")
         if(matg.eq.1.and.mapr.eq.1)then
           if(iqq.eq.1)then !sig ela
             call psfz(1,gz2,0.)
@@ -2479,6 +2480,7 @@ c      p=sqrt(max(0.,egy**2-ampro**2))
         maproj=maprojsave
         matarg=matargsave
         engy=engysave
+        call Class("pscrse-2")
       else
         ye=log10(max(1.,egy/1.5))+1.
         je=min(5,int(ye))
@@ -2597,7 +2599,7 @@ c------------------------------------------------------------------------------
       else
         eposelacrse=pscrse(ek,mapro,matar,1)
       endif
-
+      
       return
       end
 
