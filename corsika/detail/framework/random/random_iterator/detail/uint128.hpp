@@ -391,6 +391,7 @@ namespace random_iterator {
     void _init_dec(const char* s);
     void _init_oct(const char* s);
 
+#if defined(__powerpc64__) || defined(__x86_64__)
     static inline uint128_t mul128(uint128_t const x, uint128_t const y) {
       uint128_t z;
 #ifdef __powerpc64__
@@ -401,6 +402,7 @@ namespace random_iterator {
       z.UPPER += (x.UPPER * y.LOWER) + (x.LOWER * y.UPPER);
       return z;
     }
+#endif
 
 #ifdef __BIG_ENDIAN__
     uint64_t UPPER, LOWER;
