@@ -28,7 +28,7 @@ namespace corsika {
      * @param threshold: thinning applied below this energy
      * @param maxWeight: maximum allowed weight
      */
-    EMThinning(HEPEnergyType threshold, double maxWeight);
+    EMThinning(HEPEnergyType threshold, double maxWeight, bool const eraseParticles=true);
 
     /**
      * Apply thinning to secondaries. Only EM primaries with two EM secondaries are
@@ -50,6 +50,7 @@ namespace corsika {
     std::uniform_real_distribution<double> uniform_{};
     HEPEnergyType const threshold_;
     double const maxWeight_;
+    bool const eraseParticles_;
   };
 } // namespace corsika
 
