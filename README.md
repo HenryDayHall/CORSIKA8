@@ -42,7 +42,7 @@ guidelines](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/MCNE
 
 
 ## Get in contact
-  * Connect to https://gitlab.iap.kit.edu register yourself and join the "Air Shower Physics" group. Write to me (ralf.ulrich@kit.edu) only in case there are problems with that. 
+  * Connect to https://gitlab.iap.kit.edu register yourself and join the "Air Shower Physics" group. Write to one of the steering comittee members (https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/wikis/Steering-Committee) in case there are problems with that. 
   * Connect to corsika-devel@lists.kit.edu (self-register at
     https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in
     touch with the project.
@@ -52,7 +52,7 @@ guidelines](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/MCNE
 
 ## Installation
 
-CORSIKA 8 is tested regularly at least on gcc7.3.0 and clang-8.0.0. 
+CORSIKA 8 is tested regularly at least on gcc11.0.0 and clang-14.0.0. 
 
 ### Prerequisites
 
@@ -135,6 +135,9 @@ must first compile it wrt. to the CORSIKA 8 header-only framework.  This
 can be done best by copying
 e.g. `corsika-install/share/corsika/examples/` to your working place
 (e.g. `corsika-work`). 
+```shell
+cd corsika-work
+```
 
 Next, you need to define the environment variable `corsika_DIR` to point to, either, 
 your build, or your install area. Thus, e.g. 
@@ -142,25 +145,16 @@ your build, or your install area. Thus, e.g.
 export corsika_DIR=<dir where you installed CORSIKA 8 to, or where you build it>
 ```
 
+You also need to define the environment variable `CORSIKA_DATA` to point to your modules/data folder where you cloned the corsika repository. Thus, e.g.
+```shell
+export CORSIKA_DATA=<modules/data dir where you cloned CORSIKA 8 to>
+```
 Then compile your example/application with
 ```shell
-cd corsika-work
 cmake .
 make
 bin/cascade_example 
 ```
-
-Visualize output (needs gnuplot installed): 
-```shell
-bash $corsika_DIR/share/corsika/tools/plot_tracks.sh tracks.dat 
-firefox tracks.dat.gif 
-```
-(note, if you use the corsika_DIR to point to the build area: the script `plot_tracks.sh` is 
-not copied to the build area, it is only part of the source tree at `tools/plot_tracks.sh`)
-
-Or also consider the `vertical_EAS` example in the same directory,
-which can be configured with command line options. 
-Run `bin/vertical_EAS` to get basic help.
 
 
 ### Generating doxygen documentation
