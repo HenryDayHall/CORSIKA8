@@ -13,6 +13,7 @@ set (test_modules_sources
   testSibyll.cpp
   testEpos.cpp
   testRadio.cpp
+  testEMThinning.cpp
   testSophia.cpp
   )
 
