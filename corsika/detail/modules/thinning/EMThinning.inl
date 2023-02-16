@@ -13,10 +13,11 @@
 
 namespace corsika {
 
-  EMThinning::EMThinning(HEPEnergyType threshold, double maxWeight, bool const eraseParticles)
+  EMThinning::EMThinning(HEPEnergyType threshold, double maxWeight,
+                         bool const eraseParticles)
       : threshold_{threshold}
       , maxWeight_{maxWeight}
-      , eraseParticles_ {eraseParticles} {}
+      , eraseParticles_{eraseParticles} {}
 
   template <typename TStackView>
   void EMThinning::doSecondaries(TStackView& view) {
@@ -79,11 +80,11 @@ namespace corsika {
 
     // erase discared particles in case of multithinning
     if (eraseParticles_) {
-                for (auto& p : view) {
-                    if (auto const w = p.getWeight(); w == 0) { p.erase(); }
-                }
-        } else {
-        return;
+      for (auto& p : view) {
+        if (auto const w = p.getWeight(); w == 0) { p.erase(); }
+      }
+    } else {
+      return;
     }
   }
 
