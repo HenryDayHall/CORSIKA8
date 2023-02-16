@@ -348,7 +348,7 @@ namespace corsika {
   inline void Stack<StackData, MParticleInterface, MSecondaryProducer>::swap(
       unsigned int const a, unsigned int const b) {
     data_.swap(a, b);
-    std::swap(deleted_[a], deleted_[b]);
+    std::vector<bool>::swap(deleted_[a], deleted_[b]);
   }
 
   template <typename StackData, template <typename> typename MParticleInterface,
