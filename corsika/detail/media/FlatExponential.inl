@@ -29,7 +29,7 @@ namespace corsika {
   template <typename T>
   inline MassDensityType FlatExponential<T>::getMassDensity(Point const& point) const {
     return BaseExponential<FlatExponential<T>>::getMassDensity(
-        (point - BaseExponential<FlatExponential<T>>::getAnchorPoint()).getNorm());
+        (point - BaseExponential<FlatExponential<T>>::getAnchorPoint()).dot(axis_));
   }
 
   template <typename T>

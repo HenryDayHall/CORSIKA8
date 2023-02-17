@@ -15,17 +15,18 @@
 namespace corsika::proposal {
 
   //! Implements the production of secondary hadrons for the hadronic interaction of real
-  //! and virtual photons. At high energies an external model
-  //! is needed that implements the doInteraction(TSecondaries& view, Code const
-  //! projectile, Code const target,FourMomentum const& projectileP4, FourMomentum const&
-  //! targetP4) routine. Low energy interactions are currently not implemented. The
+  //! and virtual photons for PROPOSAL. The model distinguishes between resonance
+  //! production (LE) and continuum (HE). HE production replaces the photon with a rho0.
+  //! External models are needed that implement the hadronic particle production via the
+  //! doInteraction(TSecondaries& view, Code const projectile, Code const target,
+  //! FourMomentum const& projectileP4, FourMomentum const& targetP4) routine. The
   //! threshold between LE and HE interactions is defined in lab energy.
   //! @tparam THadronicModel
 
-  template <class THadronicModel>
+  template <class THadronicLEModel, class THadronicHEModel>
   class HadronicPhotonModel {
   public:
-    HadronicPhotonModel(THadronicModel&, HEPEnergyType const&);
+    HadronicPhotonModel(THadronicLEModel&, THadronicHEModel&, HEPEnergyType const&);
     //!
     //! Calculate produce the hadronic secondaries in a hadronic photon interaction and
     //! store them on the particle stack.
@@ -36,7 +37,8 @@ namespace corsika::proposal {
 
   private:
     inline static auto logger_{get_logger("corsika_proposal_HadronicPhotonModel")};
-    THadronicModel& heHadronicInteraction_;
+    THadronicLEModel& leHadronicInteraction_;
+    THadronicHEModel& heHadronicInteraction_;
     //! threshold for high energy hadronic interaction model. Lab. energy per nucleon
     HEPEnergyType const heHadronicModelThresholdLabNN_;
   };

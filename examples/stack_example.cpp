@@ -43,7 +43,7 @@ void read(VectorStack& s) {
 
 int main() {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::warn);
 
   CORSIKA_LOG_INFO("stack_example");
   VectorStack s;

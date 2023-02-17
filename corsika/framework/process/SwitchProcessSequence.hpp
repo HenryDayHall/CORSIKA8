@@ -17,12 +17,15 @@
 #include <corsika/framework/process/BoundaryCrossingProcess.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
 #include <corsika/framework/process/ContinuousProcessIndex.hpp>
+#include <corsika/framework/process/ContinuousProcessStepLength.hpp>
 #include <corsika/framework/process/DecayProcess.hpp>
 #include <corsika/framework/process/InteractionProcess.hpp>
 #include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/process/SecondariesProcess.hpp>
 #include <corsika/framework/process/StackProcess.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/Step.hpp>
+#include <corsika/framework/geometry/FourVector.hpp>
 
 #include <cmath>
 #include <limits>

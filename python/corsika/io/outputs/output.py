@@ -114,7 +114,7 @@ class Output(ABC):
         Any:
             The data in its default format.
         """
-        return self.astype()
+        return self.astype()  # type: ignore
 
     @staticmethod
     def load_config(path: str) -> Dict[str, Any]:

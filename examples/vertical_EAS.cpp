@@ -14,47 +14,48 @@
 // to include it first...
 #include <corsika/framework/process/InteractionCounter.hpp>
 /* clang-format on */
-#include <corsika/framework/process/ProcessSequence.hpp>
-#include <corsika/framework/process/SwitchProcessSequence.hpp>
-#include <corsika/framework/process/InteractionCounter.hpp>
+#include <corsika/framework/core/Cascade.hpp>
+#include <corsika/framework/core/EnergyMomentumOperations.hpp>
+#include <corsika/framework/core/Logging.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/geometry/PhysicalGeometry.hpp>
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
-#include <corsika/framework/geometry/PhysicalGeometry.hpp>
-#include <corsika/framework/core/Logging.hpp>
-#include <corsika/framework/core/EnergyMomentumOperations.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/core/Cascade.hpp>
-#include <corsika/framework/utility/SaveBoostHistogram.hpp>
-#include <corsika/framework/utility/CorsikaFenv.hpp>
+#include <corsika/framework/process/InteractionCounter.hpp>
+#include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/process/SwitchProcessSequence.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/utility/CorsikaFenv.hpp>
+#include <corsika/framework/utility/SaveBoostHistogram.hpp>
 
-#include <corsika/output/OutputManager.hpp>
-#include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
 #include <corsika/modules/writers/LongitudinalWriter.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/output/OutputManager.hpp>
 
+#include <corsika/media/CORSIKA7Atmospheres.hpp>
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/GeomagneticModel.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/IMagneticFieldModel.hpp>
-#include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/ShowerAxis.hpp>
-#include <corsika/media/CORSIKA7Atmospheres.hpp>
+#include <corsika/media/UniformMagneticField.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
+#include <corsika/modules/Epos.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
-#include <corsika/modules/StackInspector.hpp>
-#include <corsika/modules/TrackWriter.hpp>
+#include <corsika/modules/PROPOSAL.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Sibyll.hpp>
+#include <corsika/modules/Sophia.hpp>
+#include <corsika/modules/StackInspector.hpp>
+#include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/UrQMD.hpp>
-#include <corsika/modules/Epos.hpp>
-#include <corsika/modules/PROPOSAL.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -85,6 +86,7 @@ using Particle = setup::Stack<EnvType>::particle_type;
 void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
+  // RNGManager<>::getInstance().registerRandomStream("sophia");
   RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("urqmd");
   RNGManager<>::getInstance().registerRandomStream("proposal");
@@ -105,7 +107,7 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::warn);
 
   CORSIKA_LOG_INFO("vertical_EAS");
 
@@ -217,8 +219,8 @@ int main(int argc, char** argv) {
   // construct the continuous energy loss model
   BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
 
-  // construct a particle cut - cuts are set to values close to reality, put higher
-  // values for faster runs
+  // construct a particle cut - cuts are set to values close to reality, put
+  // higher values for faster runs
   ParticleCut<SubWriter<decltype(dEdX)>> cut{2_MeV, 2_MeV, 2_GeV, 300_MeV, true, dEdX};
 
   // setup longitudinal profile
@@ -238,8 +240,10 @@ int main(int argc, char** argv) {
 
   HEPEnergyType heThresholdNN = 60_GeV;
   // PROPOSAL is disabled for this example
-  //  corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(),
-  //  heThresholdNN); corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>>
+  // corsika::sophia::InteractionModel sophia;
+  //  corsika::proposal::Interaction emCascade(env, sophia,
+  //  sibyll.getHadronInteractionModel(), heThresholdNN);
+  //  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>>
   //  emContinuous(env, dEdX);
 
   corsika::pythia8::Decay decayPythia;

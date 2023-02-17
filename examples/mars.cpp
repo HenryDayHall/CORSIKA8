@@ -12,56 +12,57 @@
 // to include it first...
 #include <corsika/framework/process/InteractionCounter.hpp>
 /* clang-format on */
+#include <corsika/framework/geometry/PhysicalGeometry.hpp>
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
-#include <corsika/framework/geometry/PhysicalGeometry.hpp>
 
-#include <corsika/framework/core/Logging.hpp>
-#include <corsika/framework/core/EnergyMomentumOperations.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/Cascade.hpp>
+#include <corsika/framework/core/EnergyMomentumOperations.hpp>
+#include <corsika/framework/core/Logging.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <corsika/framework/utility/SaveBoostHistogram.hpp>
-#include <corsika/framework/utility/CorsikaFenv.hpp>
+#include <corsika/framework/process/InteractionCounter.hpp>
 #include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/process/SwitchProcessSequence.hpp>
-#include <corsika/framework/process/InteractionCounter.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/utility/CorsikaFenv.hpp>
+#include <corsika/framework/utility/SaveBoostHistogram.hpp>
 
-#include <corsika/output/OutputManager.hpp>
-#include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
 #include <corsika/modules/writers/LongitudinalWriter.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/output/OutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/IMagneticFieldModel.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
-#include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/SlidingPlanarExponential.hpp>
+#include <corsika/media/UniformMagneticField.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
-#include <corsika/modules/StackInspector.hpp>
-#include <corsika/modules/TrackWriter.hpp>
+#include <corsika/modules/PROPOSAL.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/Pythia8.hpp>
-#include <corsika/modules/Sibyll.hpp>
-#include <corsika/modules/UrQMD.hpp>
-#include <corsika/modules/PROPOSAL.hpp>
 #include <corsika/modules/QGSJetII.hpp>
+#include <corsika/modules/Sibyll.hpp>
+#include <corsika/modules/Sophia.hpp>
+#include <corsika/modules/StackInspector.hpp>
+#include <corsika/modules/TrackWriter.hpp>
+#include <corsika/modules/UrQMD.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
 #include <CLI/App.hpp>
-#include <CLI/Formatter.hpp>
 #include <CLI/Config.hpp>
+#include <CLI/Formatter.hpp>
 
 #include <iomanip>
 #include <iostream>
@@ -118,6 +119,7 @@ void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
+  RNGManager<>::getInstance().registerRandomStream("sophia");
   RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("urqmd");
   RNGManager<>::getInstance().registerRandomStream("proposal");
@@ -331,13 +333,20 @@ int main(int argc, char** argv) {
   // interactions and the hadronic photon model in proposal
   HEPEnergyType heHadronModelThreshold = 63.1_GeV;
 
-  corsika::proposal::Interaction emCascade(env, sibyll.getHadronInteractionModel(),
-                                           heHadronModelThreshold);
-  // NOT possible right now, due to interface difference for PROPOSAL:
-  //  InteractionCounter emCascadeCounted(emCascade);
-  // corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>>
-  // emContinuous(env,dEdX);
-  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
+  corsika::sophia::InteractionModel sophia;
+  corsika::proposal::Interaction emCascade(
+      env, sophia, sibyll.getHadronInteractionModel(), heHadronModelThreshold);
+
+  // use BetheBlochPDG for hadronic continuous losses, and proposal otherwise
+  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuousProposal(
+      env, dEdX);
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuousBethe{dEdX};
+  struct EMHadronSwitch {
+    EMHadronSwitch() = default;
+    bool operator()(const Particle& p) const { return is_hadron(p.getPID()); }
+  };
+  auto emContinuous =
+      make_select(EMHadronSwitch(), emContinuousBethe, emContinuousProposal);
 
   LongitudinalWriter longprof{showerAxis};
   output.add("profile", longprof);
@@ -374,7 +383,8 @@ int main(int argc, char** argv) {
                     cut, trackWriter, observationLevel, profile);
   /* === END: SETUP PROCESS LIST === */
 
-  // create the cascade object using the default stack and tracking implementation
+  // create the cascade object using the default stack and tracking
+  // implementation
   setup::Tracking tracking;
   setup::Stack<EnvType> stack;
   Cascade EAS(env, tracking, sequence, output, stack);

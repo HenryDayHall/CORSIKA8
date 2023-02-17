@@ -35,6 +35,10 @@ namespace corsika::constants {
   // elementary charge
   constexpr quantity<electric_charge_d> e{Rep(1.6021766208e-19L) * coulomb};
 
+  // vacuum permittivity
+  constexpr quantity<dimensions<-3, -1, 4, 2>> epsilonZero{Rep(8.8541878128e-12L) *
+                                                           farad / meter};
+
   // electronvolt
   // constexpr quantity<hepenergy_d> eV{e / coulomb * joule};
 

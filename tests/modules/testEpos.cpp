@@ -66,8 +66,8 @@ TEST_CASE("EposBasics", "module,process") {
 
   SECTION("cross-section type") {
     CHECK(corsika::epos::getEposXSCode(Code::Electron) == 0);
-    CHECK(corsika::epos::getEposXSCode(Code::K0Long) == 0);
-    CHECK(corsika::epos::getEposXSCode(Code::SigmaPlus) == 0);
+    CHECK(corsika::epos::getEposXSCode(Code::K0Long) == 3);
+    CHECK(corsika::epos::getEposXSCode(Code::SigmaPlus) == 2);
     CHECK(corsika::epos::getEposXSCode(Code::KMinus) == 3);
     CHECK(corsika::epos::getEposXSCode(Code::PiMinus) == 1);
     CHECK(corsika::epos::getEposXSCode(Code::Proton) == 2);
@@ -148,7 +148,8 @@ TEST_CASE("Epos", "modules") {
     CHECK_FALSE(model.isValid(Code::Proton, Code::Electron, 100_GeV));
     CHECK(model.isValid(Code::Proton, Code::Hydrogen, 100_GeV));
     CHECK(model.isValid(Code::Proton, Code::Helium, 100_GeV));
-    CHECK_FALSE(model.isValid(Code::Proton, Code::Iron, 100_GeV));
+    CHECK_FALSE(model.isValid(Code::Proton, Code::Iron, 10_EeV));
+    CHECK_FALSE(model.isValid(Code::Proton, get_nucleus_code(240, 120), 10_EeV));
     CHECK(model.isValid(Code::Proton, Code::Oxygen, 100_GeV));
   }
 
@@ -239,51 +240,53 @@ TEST_CASE("Epos", "modules") {
     CHECK(xs_prod2 / 1_mb == Approx(1076.7).margin(3.1));
   }
 
-  /*
-    SECTION("InteractionInterface - invalid") {
-      Code const pid = Code::Electron;
-      HEPEnergyType const P0 = 10_TeV;
-      auto [stack, viewPtr] = setup::testing::setup_stack(
-          pid, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
-      setup::StackView& view = *viewPtr;
-      CHECK_THROWS(model.doInteraction(
-          view, pid, Code::Oxygen,
-          {sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid))), {cs, P0, 0_GeV,
-    0_GeV}}, {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}}));
-    }
-  */
-  /*
-    SECTION("InteractionInterface - nuclear projectile") {
+  SECTION("InteractionInterface - invalid") {
+    Code const pid = Code::Electron;
+    HEPEnergyType const P0 = 10_TeV;
+    auto [stack, viewPtr] = setup::testing::setup_stack(
+        pid, P0, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
+    test::StackView& view = *viewPtr;
+    CHECK_THROWS(model.doInteraction(
+        view, pid, Code::Oxygen,
+        {sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid))), {cs, P0, 0_GeV, 0_GeV}},
+        {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}}));
+  }
 
-      HEPEnergyType const P0 = 10_TeV;
-      Code const pid = get_nucleus_code(40, 20);
-      auto [stack, viewPtr] = setup::testing::setup_stack(
-          pid, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
-      MomentumVector plab =
-          MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about
-    setupStack setup::StackView& view = *viewPtr;
+  SECTION("InteractionInterface - nuclear projectile") {
 
-      // @todo This is very obscure since it fails for -O2, but for both clang and gcc ???
-      model.doInteraction(view, pid, Code::Oxygen,
-                          {sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid))), plab},
-                          {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
+    HEPEnergyType const P0 = 10_TeV;
+    Code const pid = get_nucleus_code(40, 20);
+    auto [stack, viewPtr] = setup::testing::setup_stack(
+        pid, P0, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
+    MomentumVector plab =
+        MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about
+    test::StackView& view = *viewPtr;
 
-      auto const pSum = sumMomentum(view, cs);
+    // @todo This is very obscure since it fails for -O2, but for both clang and gcc ???
+    model.doInteraction(view, pid, Code::Oxygen,
+                        {sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid))), plab},
+                        {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
 
-      CHECK(pSum.getComponents(cs).getX() / P0 == Approx(1).margin(0.05));
-      CHECK(pSum.getComponents(cs).getY() / 1_GeV ==
-            Approx(0).margin(0.5)); // this is not physics validation
-      CHECK(pSum.getComponents(cs).getZ() / 1_GeV ==
-            Approx(0).margin(0.5)); // this is not physics validation
+    //  simply check if stack is not empty after the event. Energy and momentum
+    //  conservation will be tested elsewhere
+    CHECK(view.getSize() > 0);
 
-      CHECK((pSum - plab).getNorm() / 1_GeV ==
-            Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
-      CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
-      //    [[maybe_unused]] const GrammageType length =
-      //    model.getInteractionLength(particle);
-      //  CHECK(length / 1_g * 1_cm * 1_cm ==
-      //      Approx(30).margin(20)); // this is no physics validation
-    }*/
+    // auto const pSum = sumMomentum(view, cs);
+
+    // CHECK(pSum.getComponents(cs).getX() / P0 == Approx(1).margin(0.05));
+    // CHECK(pSum.getComponents(cs).getY() / 1_GeV ==
+    //       Approx(0).margin(0.5)); // this is not physics validation
+    // CHECK(pSum.getComponents(cs).getZ() / 1_GeV ==
+    //       Approx(0).margin(0.5)); // this is not physics validation
+
+    // CHECK((pSum - plab).getNorm() / 1_GeV ==
+    //       Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
+    // CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
+    //    [[maybe_unused]] const GrammageType length =
+    //    model.getInteractionLength(particle);
+    //  CHECK(length / 1_g * 1_cm * 1_cm ==
+    //      Approx(30).margin(20)); // this is no physics validation
+  }
 
   // SECTION("InteractionInterface")
   {

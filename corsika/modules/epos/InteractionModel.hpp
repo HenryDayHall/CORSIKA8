@@ -89,16 +89,18 @@ namespace corsika::epos {
     void doInteraction(TSecondaries&, Code const projectileId, Code const targetId,
                        FourMomentum const& projectileP4, FourMomentum const& targetP4);
 
-    void initialize() const;
     void initializeEventCoM(Code const, int const, int const, Code const, int const,
                             int const, HEPEnergyType const) const;
     void initializeEventLab(Code const, int const, int const, Code const, int const,
                             int const, HEPEnergyType const) const;
     void configureParticles(Code const, int const, int const, Code const, int const,
                             int const) const;
-    void setParticlesStable() const;
 
   private:
+    // initialize and setParticlesStable are private since they can only be called once at
+    // the beginning and are already called in the constructor!
+    void initialize() const;
+    void setParticlesStable() const;
     inline static bool isInitialized_ = false;
 
     std::string data_path_;
@@ -109,8 +111,7 @@ namespace corsika::epos {
     std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_epos_Interaction");
     HEPEnergyType const minEnergyCoM_ = 6 * 1e9 * electronvolt;
     HEPEnergyType const maxEnergyCoM_ = 2.e6 * 1e9 * electronvolt;
-    static unsigned int constexpr maxTargetMassNumber_ = 20;
-    static unsigned int constexpr minNuclearTargetA_ = 4;
+    static Code constexpr maxNucleus_ = Code::Lead;
   };
 
 } // namespace corsika::epos

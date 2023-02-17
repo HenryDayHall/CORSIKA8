@@ -1,4 +1,4 @@
-.TH lcovrc 5 "LCOV 1.14" 2019\-02\-28 "User Manuals"
+.TH lcovrc 5 "LCOV 1.16" 2022\-06\-02 "User Manuals"
 
 .SH NAME
 lcovrc \- lcov configuration file
@@ -45,6 +45,23 @@ section 'OPTIONS' below.
 # External style sheet file
 .br
 #genhtml_css_file = gcov.css
+.br
+
+# Use 'dark' mode display (light foreground/dark background)
+.br
+# rather than default
+.br
+#genhtml_dark_mode = 1
+.br
+
+# Alternate header text to use at top of each page
+.br
+#genhtml_header = Coverage report for my project
+.br
+
+# Alternate footer text to use at the bottom of each page
+.br
+#genhtml_footer = My footer text
 .br
 
 # Coverage rate limits
@@ -169,6 +186,16 @@ genhtml_desc_html=0
 #genhtml_demangle_cpp=1
 .br
 
+# Name of the tool used for demangling C++ function names
+.br
+#genhtml_demangle_cpp_tool = c++filt
+.br
+
+# Specify extra parameters to be passed to the demangling tool
+.br
+#genhtml_demangle_cpp_params = ""
+.br
+
 # Location of the gcov tool
 .br
 #geninfo_gcov_tool = gcov
@@ -223,6 +250,11 @@ geninfo_compat_libtool = 0
 geninfo_auto_base = 1
 .br
 
+# Use gcov intermediate format? Valid values are 0, 1, auto
+.br
+geninfo_intermediate = auto
+.br
+
 # Directory containing gcov kernel files
 .br
 lcov_gcov_dir = /proc/gcov
@@ -266,6 +298,21 @@ lcov_function_coverage = 1
 .br
 lcov_branch_coverage = 0
 .br
+
+# Ask LCOV to return non-zero exit code if line coverage is
+.br
+# below specified threshold percentage.
+.br
+lcov_fail_under_lines = 97.5
+.br
+
+# Specify JSON module to use, or choose best available if
+.br
+# set to auto
+.br
+lcov_json_module = auto
+.br
+
 .PP
 
 .SH OPTIONS
@@ -284,6 +331,45 @@ This option corresponds to the \-\-css\-file command line option of
 .br
 
 By default, a standard CSS file is generated.
+.PP
+
+.BR genhtml_header " ="
+.I string
+.IP
+Specify header text to use at top of each HTML page.
+.br
+
+This option corresponds to the \-\-header\-title command line option of
+.BR genhtml .
+.br
+
+Default is "LCOV - coverage report".
+.PP
+
+.BR genhtml_footer " ="
+.I string
+.IP
+Specify footer text to use at bottom of each HTML page.
+.br
+
+This option corresponds to the \-\-footer command line option of
+.BR genhtml .
+.br
+
+Default is LCOV tool version string.
+.PP
+
+.BR genhtml_dark_mode " ="
+.IR  0 | 1
+.IP
+If non-zero, display using light text on dark background rather than dark text on light background.
+.br
+
+This option corresponds to the \-\-dark\-mode command line option of
+.BR genhtml .
+.br
+
+By default, a 'light' palette is used.
 .PP
 
 .BR genhtml_hi_limit "  ="
@@ -586,6 +672,32 @@ This option corresponds to the \-\-demangle\-cpp command line option of
 Default is 0.
 .PP
 
+.BR genhtml_demangle_cpp_tool " ="
+.I path_to_c++filt
+.IP
+Specify the location of the demangle tool (see
+.BR c++filt (1))
+used to convert C++ internal function names to human readable format
+for display on the HTML function overview page.
+.br
+
+Default is 'c++filt'.
+.PP
+
+.BR genhtml_demangle_cpp_params " ="
+.I parameters
+.IP
+Specify extra parameters to be passed to the demangling tool
+
+Use this option if your environment requires additional parameters such
+as --no-strip-underscore for correctly demangling C++ internal function
+names. See also
+.BR c++filt (1)).
+.br
+
+Default is "".
+.PP
+
 .BR genhtml_desc_html " ="
 .IR 0 | 1
 .IP
@@ -789,6 +901,34 @@ located, and in addition, is different between files of the same project.
 Default is 1.
 .PP
 
+.BR geninfo_intermediate " ="
+.IR 0 | 1 | auto
+.IP
+Specify whether to use gcov intermediate format
+.br
+
+Use this option to control whether geninfo should use the gcov intermediate
+format while collecting coverage data. The use of the gcov intermediate format
+should increase processing speed. It also provides branch coverage data when
+using the \-\-initial command line option.
+.br
+
+Valid values are 0 for off, 1 for on, and "auto" to let geninfo automatically
+use immediate format when supported by gcov.
+.br
+
+Default is "auto".
+.PP
+
+.BR geninfo_no_exception_branch " ="
+.IR 0 | 1
+.IP
+Specify whether to exclude exception branches from branch coverage.
+.br
+
+Default is 0.
+.PP
+
 .BR lcov_gcov_dir " ="
 .I path_to_kernel_coverage_data
 .IP
@@ -892,6 +1032,39 @@ Specify the regular expression of lines to exclude from branch coverage.
 
 Default is 'LCOV_EXCL_BR_LINE'.
 .PP
+
+.BR lcov_excl_exception_br_line " ="
+.I expression
+.IP
+Specify the regular expression of lines to exclude from exception branch coverage.
+.br
+
+Default is 'LCOV_EXCL_EXCEPTION_BR_LINE'.
+.PP
+
+.BR lcov_fail_under_lines " ="
+.I percentage
+.IP
+Specify line coverage threshold to lcov.  If the line coverage is below this threshold, lcov will generate all the normal result files and messages, but will return a non-zero exit code.
+.br
+
+This option is equivalent to the \-\-fail\-under\-lines lcov command line option.
+
+.br
+The default is 0 (no threshold).
+.PP
+
+.BR lcov_json_module " ="
+.IR module | auto
+.IP
+Specify the JSON module to use, or choose best available from a set of
+alternatives if set to 'auto'. Note that some JSON modules are slower than
+others (notably JSON::PP can be very slow compared to JSON::XS).
+.br
+
+Default is 'auto'.
+.PP
+
 
 .SH FILES
 

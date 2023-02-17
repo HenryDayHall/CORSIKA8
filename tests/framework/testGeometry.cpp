@@ -60,6 +60,20 @@ TEST_CASE("Geometry CoordinateSystems") {
     CHECK(testV3.getNorm() / (tesla * meter) == Approx(6));
   }
 
+  SECTION("point") {
+    Point const p00 = Point(rootCS, {0_m, 0_m, 0_m});
+    Point const p01 = Point(rootCS, {3_m, 3_m, 3_m});
+    Point const p02 = Point(rootCS, {1_m, -5_m, 6_m});
+
+    LengthVector const d01 = p00 - p01;
+    LengthVector const d12 = p01 - p02;
+    LengthVector const d20 = p02 - p00;
+
+    CHECK(d12.getNorm() / (p01 - p02).getNorm() == Approx(1));
+    CHECK(d12.getNorm() / distance(p01, p02) == Approx(1));
+    CHECK(d12.getNorm() / distance(p02, p01) == Approx(1));
+  }
+
   SECTION("translations") {
     QuantityVector<length_d> const translationVector{0_m, 4_m, 0_m};
     CORSIKA_LOG_INFO("QuantityVector<length_d> translationVector={}", translationVector);

@@ -91,6 +91,12 @@ namespace corsika::sibyll {
     /**
      * In this function SIBYLL is called to produce one event. The
      * event is copied (and boosted) into the shower lab frame.
+     *
+     * @param view is the stack object for the secondaries
+     * @param projectile is the Code of the projectile
+     * @param target is the Code of the target
+     * @param projectileP4: four-momentum of projectile
+     * @param targetP4: four-momentum of target
      */
 
     template <typename TSecondaries>

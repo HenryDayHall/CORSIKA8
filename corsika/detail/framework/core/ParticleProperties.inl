@@ -147,7 +147,7 @@ namespace corsika {
     return get_mass(Code::Proton) * Z + (A - Z) * get_mass(Code::Neutron);
   }
 
-  inline std::string_view get_nucleus_name(Code const code) {
+  inline std::string get_nucleus_name(Code const code) {
     size_t const A = get_nucleus_A(code);
     size_t const Z = get_nucleus_Z(code);
     return fmt::format("Nucleus_A{}_Z{}", A, Z);

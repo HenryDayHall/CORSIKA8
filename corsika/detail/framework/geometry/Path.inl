@@ -9,7 +9,9 @@
 #pragma once
 
 #include <deque>
+
 #include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika {
 
@@ -51,15 +53,21 @@ namespace corsika {
 
   inline LengthType Path::getLength() const { return length_; }
 
-  inline Point Path::getStart() const { return points_.front(); }
+  inline Point const& Path::getStart() const { return points_.front(); }
 
-  inline Point Path::getEnd() const { return points_.back(); }
+  inline Point const& Path::getEnd() const { return points_.back(); }
 
-  inline Point Path::getPoint(std::size_t const index) const { return points_.at(index); }
+  inline Point const& Path::getPoint(std::size_t const index) const {
+    return points_.at(index);
+  }
 
-  inline auto Path::begin() { return points_.begin(); }
+  inline Path::const_iterator Path::begin() const { return points_.cbegin(); }
 
-  inline auto Path::end() { return points_.end(); }
+  inline Path::const_iterator Path::end() const { return points_.cend(); }
+
+  inline Path::iterator Path::begin() { return points_.begin(); }
+
+  inline Path::iterator Path::end() { return points_.end(); }
 
   inline int Path::getNSegments() const { return points_.size() - 1; }
 

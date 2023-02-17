@@ -233,7 +233,7 @@ namespace corsika {
           return A_.getCrossSection(projectile, projectile.getPID(),
                                     {projectile.getEnergy(), projectile.getMomentum()});
         }
-      } else if (process1_type::is_process_sequence) {
+      } else if constexpr (process1_type::is_process_sequence) {
         return A_.getCrossSection(projectile, targetId, targetP4);
       }
 
@@ -252,7 +252,7 @@ namespace corsika {
         } else {
           return B_.getCrossSection(projectile, targetId, targetP4);
         }
-      } else if (process2_type::is_process_sequence) {
+      } else if constexpr (process2_type::is_process_sequence) {
         return B_.getCrossSection(projectile, targetId, targetP4);
       }
     }

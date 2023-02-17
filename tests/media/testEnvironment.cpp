@@ -101,11 +101,19 @@ TEST_CASE("FlatExponential") {
   LengthType const length = 2_m;
   TimeType const tEnd = length / speed;
 
+  CHECK((medium.getMassDensity(gOrigin)) == rho0);
   CHECK(medium.getNuclearComposition().getFractions() == std::vector<double>{1.});
   CHECK(medium.getNuclearComposition().getComponents() ==
         std::vector<Code>{Code::Proton});
 
   SECTION("horizontal") {
+    // Check that not moving along axis does not change density
+    CHECK(medium.getMassDensity(Point(gCS, 1_m, 0_m, 0_m)) == rho0);
+    CHECK(medium.getMassDensity(Point(gCS, 1_m, 0_m, 0_m)) == rho0);
+    CHECK(medium.getMassDensity(Point(gCS, -1_m, 0_m, 0_m)) == rho0);
+    CHECK(medium.getMassDensity(Point(gCS, 0_m, 1_m, 0_m)) == rho0);
+    CHECK(medium.getMassDensity(Point(gCS, 0_m, -1_m, 0_m)) == rho0);
+
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
                                  gCS, {speed, 0_m / second, 0_m / second}));
     setup::Trajectory const trajectory =
@@ -117,6 +125,10 @@ TEST_CASE("FlatExponential") {
   }
 
   SECTION("vertical") {
+    // Moving along axis does change density
+    CHECK(medium.getMassDensity(Point(gCS, 0_m, 0_m, 1_m)) > rho0);
+    CHECK(medium.getMassDensity(Point(gCS, 0_m, 0_m, -1_m)) < rho0);
+
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
                                  gCS, {0_m / second, 0_m / second, speed}));
     setup::Trajectory const trajectory =
