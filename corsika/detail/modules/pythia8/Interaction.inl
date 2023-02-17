@@ -18,6 +18,7 @@
 
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
+#include <corsika/framework/core/EnergyMomentumOperations.hpp>
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 
@@ -41,11 +42,6 @@ namespace corsika::pythia8 {
     // Can also do decays, but no hard processes.
 
     pythiaMain_.readString("ProcessLevel:all = off");
-    pythiaMain_.readString(
-        "211:mayDecay = on"); // TODO: probably not necessary, but ask Torjbörn maybe
-    pythiaMain_.readString("13:mayDecay  = on");
-    pythiaMain_.readString("321:mayDecay = on");
-    pythiaMain_.readString("130:mayDecay = on");
 
     // Reduce statistics printout to relevant ones.
     pythiaMain_.readString("Stat:showProcessLevel = off");
@@ -91,7 +87,7 @@ namespace corsika::pythia8 {
     pythiaColl_.readString("Stat:showProcessLevel = off");
     pythiaColl_.readString("Stat:showPartonLevel = off");
 
-    bool const reuse = true; // TODO: make this more flexible
+    bool const reuse = true; // could be made more flexible
     // Reuse MPI initialization file if it exists; else create a new one.
     if (reuse)
       pythiaColl_.readString("MultipartonInteractions:reuseInit = 3");
@@ -104,48 +100,23 @@ namespace corsika::pythia8 {
     if (!pythiaColl_.init())
       throw std::runtime_error("Pythia::Interaction: Initialization failed!");
     // LCOV_EXCL_STOP
-
-    //~ // any decays in pythia? if yes need to define which particles
-    //~ if (internalDecays_) {
-    //~ // define which particles are passed to corsika, i.e. which particles make it into
-    //~ // history even very shortlived particles like charm or pi0 are of interest here
-    //~ std::vector<Code> const HadronsWeWantTrackedByCorsika = {
-    //~ Code::PiPlus, Code::PiMinus, Code::Pi0,        Code::KMinus,     Code::KPlus,
-    //~ Code::K0Long, Code::K0Short, Code::SigmaPlus,  Code::SigmaMinus, Code::Lambda0,
-    //~ Code::Xi0,    Code::XiMinus, Code::OmegaMinus, Code::DPlus,      Code::DMinus,
-    //~ Code::D0,     Code::D0Bar};
-
-    //~ Interaction::setStable(HadronsWeWantTrackedByCorsika);
-    //~ }
   }
-
-  //~ inline void Interaction::setStable(std::vector<Code> const& particleList) {
-  //~ for (auto p : particleList) Interaction::setStable(p);
-  //~ }
-
-  //~ inline void Interaction::setUnstable(Code const pCode) {
-  //~ CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} unstable..", pCode);
-  //~ Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
-  //~ }
-
-  //~ inline void Interaction::setStable(Code const pCode) {
-  //~ CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} stable..", pCode);
-  //~ Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
-  //~ }
 
   inline bool Interaction::isValid(Code const projectileId, Code const targetId,
                                    HEPEnergyType const sqrtS) const {
     if (is_nucleus(projectileId)) // not yet possible with Pythia
       return false;
 
-    // TODO: check sqrtS for validity
+    HEPEnergyType const labE = calculate_lab_energy(
+        static_pow<2>(sqrtS), get_mass(projectileId), get_mass(targetId));
+    if (labE < eKinMinLab_) return false;
 
     return std::find(validTargets_.begin(), validTargets_.end(), targetId) !=
            validTargets_.end();
   }
 
   inline bool Interaction::canInteract(Code const pCode) const {
-    return true; // TODO: implement this
+    return is_hadron(pCode) && !is_nucleus(pCode); // should be sufficient
   }
 
   inline std::tuple<CrossSectionType, CrossSectionType>
@@ -365,9 +336,7 @@ namespace corsika::pythia8 {
                            eventMain[iProj].p(), idProj, idNuc);
           eventMain.clear();
           ++unsuccessful_iterations;
-          goto event_repeat; // retry event, last remaining good use-cse for goto
-
-          throw std::runtime_error("Pythia collision next() failed!");
+          goto event_repeat; // retry event, last remaining good use-case for goto
         }
 
         // Insert target nucleon. Mothers are (0,iProj) to mark who it

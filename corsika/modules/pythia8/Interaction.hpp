@@ -27,16 +27,7 @@ namespace corsika::pythia8 {
         bool const print_listing = false);
     ~Interaction();
 
-    //~ void setStable(std::vector<Code> const&);
-    //~ void setUnstable(Code const);
-    //~ void setStable(Code const);
-
-    bool isValidCoMEnergy(HEPEnergyType const ecm) const {
-      return (10_GeV < ecm) && (ecm < 1_PeV);
-    }
-
     bool canInteract(Code const) const;
-    //~ void configureLabFrameCollision(Code const, Code const, HEPEnergyType const);
 
     bool isValid(Code const projectileId, Code const targetId,
                  HEPEnergyType const sqrtS) const;

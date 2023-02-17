@@ -220,30 +220,32 @@ namespace corsika::pythia8 {
     // loop over final state
     for (int i = 0; i < event.size(); ++i) {
       if (event[i].isFinal()) {
-      try {
-        auto const volatile id = static_cast<PDGCode>(event[i].id());
-        auto const pyId = convert_from_PDG(id);
-        HEPEnergyType const Erest = event[i].e() * 1_GeV;
-        MomentumVector const pRest(
-            rotatedCS,
-            {event[i].px() * 1_GeV, event[i].py() * 1_GeV, event[i].pz() * 1_GeV});
-        FourVector const fourMomRest{Erest, pRest};
-        auto const fourMomLab = boost.fromCoM(fourMomRest);
-        auto const p3 = fourMomLab.getSpaceLikeComponents();
+        try {
+          auto const id = static_cast<PDGCode>(event[i].id());
+          auto const pyId = convert_from_PDG(id);
+          HEPEnergyType const Erest = event[i].e() * 1_GeV;
+          MomentumVector const pRest(
+              rotatedCS,
+              {event[i].px() * 1_GeV, event[i].py() * 1_GeV, event[i].pz() * 1_GeV});
+          FourVector const fourMomRest{Erest, pRest};
+          auto const fourMomLab = boost.fromCoM(fourMomRest);
+          auto const p3 = fourMomLab.getSpaceLikeComponents();
 
-        HEPEnergyType const mass = get_mass(pyId);
-        HEPEnergyType const Ekin = sqrt(p3.getSquaredNorm() + mass * mass) - mass;
+          HEPEnergyType const mass = get_mass(pyId);
+          HEPEnergyType const Ekin = sqrt(p3.getSquaredNorm() + mass * mass) - mass;
 
-        CORSIKA_LOG_TRACE(
-            "particle: id={} momentum={} energy={} ", pyId,
-            fourMomLab.getSpaceLikeComponents().getComponents(labCS) / 1_GeV,
-            fourMomLab.getTimeLikeComponent());
+          CORSIKA_LOG_TRACE(
+              "particle: id={} momentum={} energy={} ", pyId,
+              fourMomLab.getSpaceLikeComponents().getComponents(labCS) / 1_GeV,
+              fourMomLab.getTimeLikeComponent());
 
-        view.addSecondary(std::make_tuple(pyId, Ekin, p3.normalized()));
-      } catch (std::out_of_range const& ex) {
-        CORSIKA_LOG_CRITICAL("Pythia ID {} unknown in C8", event[i].id());
-        throw ex;
-      } } }
+          view.addSecondary(std::make_tuple(pyId, Ekin, p3.normalized()));
+        } catch (std::out_of_range const& ex) {
+          CORSIKA_LOG_CRITICAL("Pythia ID {} unknown in C8", event[i].id());
+          throw ex;
+        }
+      }
+    }
 
     // set particle stable
     Decay::setStable(particleId);
