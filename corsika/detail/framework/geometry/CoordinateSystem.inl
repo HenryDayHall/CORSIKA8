@@ -82,9 +82,9 @@ namespace corsika {
   inline CoordinateSystemPtr make_rotationToZ(CoordinateSystemPtr const& cs,
                                               Vector<TDim> const& vVec) {
     if (vVec.getSquaredNorm().magnitude() == 0) {
-        // in case of null-vector, there is nothing to do and the computations
-        // below do not work
-        return cs;
+      // in case of null-vector, there is nothing to do and the computations
+      // below do not work
+      return cs;
     }
 
     auto const a = vVec.normalized().getComponents(cs).getEigenVector();
