@@ -9,5 +9,5 @@ if ! conan profile show corsika8 >/dev/null 2>/dev/null; then
     conan profile update settings.compiler.libcxx=libstdc++11 corsika8
   fi
 fi
-
-conan install -pr corsika8 --build=missing ${DIR}
+# force rebuild of cubicinterpolation (see discussion in MR509)
+conan install -pr corsika8 --build=missing --build=cubicinterpolation ${DIR}

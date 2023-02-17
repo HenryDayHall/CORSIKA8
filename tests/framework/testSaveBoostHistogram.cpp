@@ -25,7 +25,8 @@ TEST_CASE("SaveHistogram") {
   std::uniform_real_distribution<double> r{-3, 3};
 
   auto h = bh::make_histogram(
-      bh::axis::regular{5, 0, 10, "normal"}, bh::axis::regular{3, 0, 4, "exponential"},
+      bh::axis::regular{5, 0., 10., "normal"},
+      bh::axis::regular{3, 0., 4., "exponential"},
       bh::axis::category<int>{{2, 3, 5, 7}, "integer category"},
       bh::axis::regular<double, bh::use_default, bh::use_default,
                         bh::axis::option::growth_t>{10, -1, 1, "integer category"});
