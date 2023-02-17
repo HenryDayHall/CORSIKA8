@@ -55,7 +55,7 @@ namespace corsika {
 
     typedef typename TStack::particle_type particle_type;
 
-    typedef std::remove_pointer_t<decltype(((particle_type*)nullptr)->getNode())>
+    typedef std::remove_pointer_t<decltype(std::declval<particle_type>().getNode())>
         volume_tree_node_type;
 
     typedef typename volume_tree_node_type::IModelProperties medium_interface_type;
