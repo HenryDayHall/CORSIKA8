@@ -144,8 +144,10 @@ namespace corsika::pythia8 {
     auto const pdgCodeTarget = static_cast<int>(get_PDG(targetId));
     double const ecm_GeV = CoMenergy * (1 / 1_GeV);
 
-    auto const sigTot = pythiaColl_.getSigmaTotal(pdgCodeBeam, 2212, ecm_GeV) * 1_mb;
-    auto const sigEla = pythiaColl_.getSigmaPartial(pdgCodeBeam, 2212, ecm_GeV, 2) * 1_mb;
+    auto const sigTot =
+        pythiaColl_.getSigmaTotal(pdgCodeBeam, pdgCodeTarget, ecm_GeV) * 1_mb;
+    auto const sigEla =
+        pythiaColl_.getSigmaPartial(pdgCodeBeam, pdgCodeTarget, ecm_GeV, 2) * 1_mb;
 
     return std::make_tuple(sigTot - sigEla, sigEla);
   }
@@ -155,15 +157,25 @@ namespace corsika::pythia8 {
                                                 FourMomentum const& projectileP4,
                                                 FourMomentum const& targetP4) const {
 
-    if (!is_nucleus(targetId) || get_nucleus_A(targetId) == 1) {
+    if (!is_nucleus(targetId)) {
       auto const [sigProd, sigEla] =
           getCrossSectionInelEla(projectileId, targetId, projectileP4, targetP4);
+      return sigProd + sigEla;
+    } else if (get_nucleus_A(targetId) == 1) {
+      auto const [sigProd, sigEla] = getCrossSectionInelEla(
+          projectileId, get_nucleus_Z(targetId) == 1 ? Code::Proton : Code::Neutron,
+          projectileP4, targetP4);
       return sigProd + sigEla;
     } else {
       auto const [sigProd, sigEla] =
           getCrossSectionInelEla(projectileId, Code::Proton, projectileP4, targetP4);
       auto const sigTot = sigProd + sigEla;
-      return sigTot * get_nucleus_A(targetId) / getAverageSubcollisions(targetId, sigTot);
+      auto const nSubcoll = getAverageSubcollisions(targetId, sigTot);
+      if (nSubcoll == 0) { // no parameterization available -> we can't handle this
+        return CrossSectionType::zero();
+      } else {
+        return sigTot * get_nucleus_A(targetId) / nSubcoll;
+      }
     }
   }
 
@@ -378,10 +390,10 @@ namespace corsika::pythia8 {
     } while (unsuccessful_iterations < 100);
 
     if (unsuccessful_iterations >= 100) {
-      CORSIKA_LOG_ERROR(
-          "Pythia event generation failed after 100 trials; returning without "
-          "secondaries");
-      return;
+      CORSIKA_LOG_CRITICAL(
+          "Pythia event generation failed after 100 trials: projectile: {}, target: {}",
+          projectileId, targetId);
+      throw std::runtime_error{"Pythia event generation failed after 100 trials"};
     }
 
     MomentumVector Plab_final{labFrameBoost.getOriginalCS()};
