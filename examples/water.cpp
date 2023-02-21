@@ -224,24 +224,6 @@ int main(int argc, char** argv) {
 
   // decay process
   corsika::pythia8::Decay decayPythia;
-  corsika::sibyll::Decay decaySibyll{{
-      Code::N1440Plus,
-      Code::N1440MinusBar,
-      Code::N1440_0,
-      Code::N1440_0Bar,
-      Code::N1710Plus,
-      Code::N1710MinusBar,
-      Code::N1710_0,
-      Code::N1710_0Bar,
-      Code::Pi1300Plus,
-      Code::Pi1300Minus,
-      Code::Pi1300_0,
-      Code::KStar0_1430_0,
-      Code::KStar0_1430_0Bar,
-      Code::KStar0_1430_Plus,
-      Code::KStar0_1430_MinusBar,
-  }};
-  auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   corsika::sophia::InteractionModel sophia;
 
@@ -252,7 +234,7 @@ int main(int argc, char** argv) {
 
   // total physics list
   auto physics_sequence =
-      make_sequence(emCascade, emContinuous, hadronSequence, decaySequence);
+      make_sequence(emCascade, emContinuous, hadronSequence, decayPythia);
 
   // * output module
   OutputManager output(output_dir);
