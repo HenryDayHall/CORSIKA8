@@ -53,11 +53,10 @@ namespace corsika::pythia8 {
         "1000180400:all = 40Ar 40Arbar 1 54 0 "
         "37.22474 0. 0. 0. 0.");
 
+    // we can't test this block, LCOV_EXCL_START
     if (!pythiaMain_.init())
       throw std::runtime_error("Pythia::Interaction: Initialization failed!");
-
-    // TODO: do we need this?
-    //~ CORSIKA_LOG_INFO("Configuring Pythia8 from: {}", CORSIKA_Pythia8_XML_DIR);
+    // LCOV_EXCL_STOP
 
     // Secondary Pythia object for performing individual collisions.
     // Variable incoming beam type and energy.
@@ -320,9 +319,12 @@ namespace corsika::pythia8 {
             }
 
           // No further subcollision if no particle with enough energy.
+          // cannot be reliably provoked in tests
+          // LCOV_EXCL_START
           if (iProj == 0 ||
               eventMain[iProj].e() - eventMain[iProj].m() < eKinMinLab_ / 1_GeV)
             break;
+          // LCOV_EXCL_STOP
 
           // Choose process; only SD or ND at perturbative energies.
           double const eCMSub =
@@ -419,10 +421,13 @@ namespace corsika::pythia8 {
 
         Plab_final += pnew.getMomentum();
         Elab_final += pnew.getEnergy();
-      } catch (std::out_of_range const& ex) {
+      }
+      // irreproducible in tests, LCOV_EXCL_START
+      catch (std::out_of_range const& ex) {
         CORSIKA_LOG_CRITICAL("Pythia ID {} unknown in C8", p8p.id());
         throw ex;
       }
+      // LCOV_EXCL_STOP
     }
 
     eventMain.clear();
