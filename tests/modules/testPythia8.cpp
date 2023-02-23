@@ -219,11 +219,17 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     corsika::pythia8::Interaction collision;
 
+    // 5 MeV lab is too low, 0 mb expected
+    REQUIRE(
+        collision.getCrossSectionInelEla(
+            Code::Proton, Code::Proton,
+            {calculate_total_energy(Proton::mass, 5_MeV), {rootCS, 0_eV, 0_eV, 5_MeV}},
+            {Proton::mass, {rootCS, 0_eV, 0_eV, 0_eV}}) == std::tuple{0_mb, 0_mb});
+
     REQUIRE_THROWS(collision.doInteraction(
-        view, Code::Neutron, Code::Hydrogen,
-        {sqrt(static_pow<2>(Neutron::mass) + static_pow<2>(1_MeV)),
-         {rootCS, {0_eV, 0_eV, 1_MeV}}},
-        {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
+        view, Code::Neutron, Code::Proton,
+        {calculate_total_energy(Neutron::mass, 5_MeV), {rootCS, 0_eV, 0_eV, 5_MeV}},
+        {Proton::mass, {rootCS, 0_eV, 0_eV, 0_eV}}));
   }
 
   SECTION("pythia wrong target") {
@@ -247,7 +253,7 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     REQUIRE(collision.getCrossSectionInelEla(
                 Code::Proton, Code::Iron,
-                {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
+                {calculate_total_energy(Proton::mass, 100_GeV),
                  {rootCS, {0_eV, 0_eV, 100_GeV}}},
                 {Iron::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) == std::tuple{0_mb, 0_mb});
 
@@ -273,15 +279,16 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     corsika::pythia8::Interaction collision;
     REQUIRE(collision.getCrossSectionInelEla(
-              Code::Helium, Code::Nitrogen,
-              {sqrt(static_pow<2>(Helium::mass) + static_pow<2>(100_GeV)),
-               {rootCS, {0_eV, 0_eV, 100_GeV}}},
-              {Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) == std::tuple{0_mb, 0_mb});
+                Code::Helium, Code::Nitrogen,
+                {sqrt(static_pow<2>(Helium::mass) + static_pow<2>(100_GeV)),
+                 {rootCS, {0_eV, 0_eV, 100_GeV}}},
+                {Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) ==
+            std::tuple{0_mb, 0_mb});
 
-    REQUIRE_THROWS(
-        collision.doInteraction(*secViewPtr, Code::Helium, Code::Nitrogen,
-                                {sqrt(static_pow<2>(Helium::mass) + static_pow<2>(100_GeV)),
-                                 {rootCS, {0_eV, 0_eV, 100_GeV}}},
-                                {Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
+    REQUIRE_THROWS(collision.doInteraction(
+        *secViewPtr, Code::Helium, Code::Nitrogen,
+        {sqrt(static_pow<2>(Helium::mass) + static_pow<2>(100_GeV)),
+         {rootCS, {0_eV, 0_eV, 100_GeV}}},
+        {Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
   }
 }
