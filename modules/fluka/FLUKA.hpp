@@ -9,7 +9,51 @@
 #pragma once
 
 namespace fluka {
+  size_t constexpr nmxhep = 10000;
+  template <typename T>
+  using hepmc_array = std::array<T, nmxhep>;
+
   extern "C" {
+  /*
+  c---------------------------------------------------------------------------
+  c                   hep standard event commonblock.
+  c---------------------------------------------------------------------------
+  c---------------------------------------------------------------------------
+  c
+  c         nevhep      -   event number
+  c         nhep        -   number of entries in the event record
+  c
+  c         isthep(i)   -   status code
+  c         idhep(i)    -   particle id (particle data group standard)
+  c
+  c         jmohep(1,i) -   position of mother particle in list
+  c         jmohep(2,i) -   position of second mother particle in list
+  c         jdahep(1,i) -   position of first daughter in list
+  c         jdahep(2,i) -   position of first daughter in list
+  c
+  c         phep(1,i)   -   p_x momentum in gev/c
+  c         phep(2,i)   -   p_y momentum in gev/c
+  c         phep(3,i)   -   p_z momentum in gev/c
+  c         phep(4,i)   -   energy in gev
+  c         phep(5,i)   -   mass in gev/c**2
+  c
+  c         vhep(1,i)   -   x position of production vertex in mm
+  c         vhep(2,i)   -   y position of production vertex in mm
+  c         vhep(3,i)   -   z position of production vertex in mm
+  c         vhep(4,i)   -   time of production  in mm/c
+  */
+
+  extern struct {
+    int nevhep;                  // event number
+    int nhep;                    // number of entries
+    hepmc_array<int> isthep;     // status code
+    hepmc_array<int> idhep;      // PDG particle id
+    hepmc_array<int[2]> jmohep;  // position of first, second mother
+    hepmc_array<int[2]> jdahep;  // position of first, last daughter
+    hepmc_array<double[5]> phep; // 4-momemtum, mass (GeV)
+    hepmc_array<double[4]> vhep; // vertex, production time in mm
+  } hepevt_;
+
   /*  Iflxyz must be consistent in all calls, to Stpxyz, Sgmxyz, Evtxyz
    *    Iflxyz =  1 -> only inelastic
    *    Iflxyz = 10 -> only elastic

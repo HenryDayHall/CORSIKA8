@@ -79,7 +79,7 @@ TEST_CASE("FLUKA") {
     };
 
     HEPEnergyType const p = 100_GeV;
-    for (auto const& [projectileCode, targetCode] : combinations) {
+    for (auto const& [projectileCode, targetCode] : combinationsOK) {
       auto const projectile4mom =
           FourVector{calculate_total_energy(p, get_mass(projectileCode)),
                      MomentumVector{cs, 0_eV, 0_eV, p}};
