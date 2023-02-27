@@ -157,6 +157,13 @@ namespace corsika::proposal {
         vP.getNode()->getModelProperties().getArclengthFromGrammage(track, grammage);
     CORSIKA_LOG_TRACE("PROPOSAL::getMaxStepLength X={} g/cm2, l={} m ",
                       grammage / 1_g * square(1_cm), dist / 1_m);
+    if (dist < 0_m) {
+      CORSIKA_LOG_WARN(
+          "PROPOSAL::getMaxStepLength calculated a negative step length of l={} m. "
+          "Return 0_m instead.",
+          dist / 1_m);
+      return 0_m;
+    }
     return dist;
   }
 
