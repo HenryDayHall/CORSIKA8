@@ -34,7 +34,7 @@ namespace corsika {
      */
     template <typename... TArgs>
     CoREAS(TRadioDetector& detector, TArgs&&... args)
-        : RadioProcess<TRadioDetector, CoREAS, TPropagator>(detector, args...){};
+        : RadioProcess<TRadioDetector, CoREAS, TPropagator>(detector, args...) {}
 
     /**
      * Simulate the radio emission from a particle across a track.

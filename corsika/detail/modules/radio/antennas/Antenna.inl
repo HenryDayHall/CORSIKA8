@@ -16,7 +16,7 @@ namespace corsika {
                                         CoordinateSystemPtr const& coordinateSystem)
       : name_(name)
       , location_(location)
-      , coordinateSystem_(coordinateSystem){};
+      , coordinateSystem_(coordinateSystem) {}
 
   template <typename TAntennaImpl>
   inline Point const& Antenna<TAntennaImpl>::getLocation() const {
