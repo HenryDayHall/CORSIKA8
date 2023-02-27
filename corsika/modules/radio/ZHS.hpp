@@ -36,7 +36,7 @@ namespace corsika {
      */
     template <typename... TArgs>
     ZHS(TRadioDetector& detector, TArgs&&... args)
-        : RadioProcess<TRadioDetector, ZHS, TPropagator>(detector, args...){};
+        : RadioProcess<TRadioDetector, ZHS, TPropagator>(detector, args...) {}
 
     /**
      * Simulate the radio emission from a particle across a track.

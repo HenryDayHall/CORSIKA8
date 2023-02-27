@@ -13,12 +13,13 @@ namespace corsika {
 
   template <typename TEnvironment>
   inline SimplePropagator<TEnvironment>::SimplePropagator(TEnvironment const& env)
-      : RadioPropagator<SimplePropagator, TEnvironment>(env){};
+      : RadioPropagator<SimplePropagator, TEnvironment>(env) {}
 
   template <typename TEnvironment>
   inline typename SimplePropagator<TEnvironment>::SignalPathCollection
-  SimplePropagator<TEnvironment>::propagate(Point const& source, Point const& destination,
-                                            LengthType const stepsize) const {
+  SimplePropagator<TEnvironment>::propagate(
+      Point const& source, Point const& destination,
+      [[maybe_unused]] LengthType const stepsize) const {
 
     /**
      * This is the simplest case of straight propagator
@@ -62,8 +63,9 @@ namespace corsika {
     // compute the total time delay.
     TimeType const time = averageRefractiveIndex_ * (distance_ / constants::c);
 
-    return {SignalPath(time, averageRefractiveIndex_, ri_source, ri_destination, emit_,
-                       receive_, distance_, points)};
+    return std::vector<SignalPath>(
+        1, SignalPath(time, averageRefractiveIndex_, ri_source, ri_destination, emit_,
+                      receive_, distance_, points));
 
   } // END: propagate()
 
