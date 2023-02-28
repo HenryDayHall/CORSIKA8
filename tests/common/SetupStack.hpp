@@ -24,7 +24,7 @@ namespace corsika::test {
   /*
    * the version with history
    */
-  using Stack = detaill::StackWithHistory;
+  using Stack = detail::StackWithHistory;
 
 #else // WITH_HISTORY
 
