@@ -10,11 +10,13 @@
 
 #include <vector>
 #include <utility>
+#include <memory>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
+#include <corsika/framework/core/Logging.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika::fluka {
@@ -39,6 +41,8 @@ namespace corsika::fluka {
   private:
     std::vector<std::pair<Code, int>> const
         materials_; //!< map target Code to FLUKA material no.
+    std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_FLUKA_Interaction");
+    std::unique_ptr<double[]> cumsgx_; //!< dump for evtxyz cumsg*
 
     template <typename TEnvironment>
     static std::vector<std::pair<Code, int>> genFlukaMaterials(TEnvironment const&);

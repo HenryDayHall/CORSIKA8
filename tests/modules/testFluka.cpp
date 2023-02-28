@@ -24,6 +24,9 @@
 #include <fstream>
 #include <iomanip>
 
+#include <SetupTestStack.hpp>
+#include <SetupTestEnvironment.hpp>
+
 using namespace corsika;
 
 TEST_CASE("FLUKACodeConversion") {
@@ -35,18 +38,20 @@ TEST_CASE("FLUKACodeConversion") {
 }
 
 TEST_CASE("FLUKA") {
-  using DummyEnvironmentInterface = IMediumModel;
+  using DummyEnvironmentInterface =
+      IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
   using DummyEnvironment = Environment<DummyEnvironmentInterface>;
-  using MyHomogeneousModel = HomogeneousMedium<DummyEnvironmentInterface>;
+  using MyHomogeneousModel = MediumPropertyModel<
+      UniformMagneticField<HomogeneousMedium<DummyEnvironmentInterface>>>;
 
   DummyEnvironment env;
   auto& universe = *env.getUniverse();
   CoordinateSystemPtr const& cs = env.getCoordinateSystem();
   universe.setModelProperties<MyHomogeneousModel>(
-      1_kg / (1_m * 1_m * 1_m),
-      NuclearComposition(
+      Medium::AirDry1Atm, Vector(cs, 0_T, 0_T, 0_T), 1_kg / (1_m * 1_m * 1_m),
+      NuclearComposition{
           std::vector<Code>{Code::Hydrogen, Code::Oxygen, Code::Nitrogen, Code::Argon},
-          std::vector<double>{.25, .25, .25, .25}));
+          std::vector<double>{.25, .25, .25, .25}});
 
   corsika::fluka::InteractionModel flukaModel{env};
 
@@ -89,5 +94,25 @@ TEST_CASE("FLUKA") {
       CHECK(flukaModel.getCrossSection(projectileCode, targetCode, projectile4mom,
                                        target4mom) > 0_mb);
     }
+  }
+
+  {
+    auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Proton);
+    auto const& cs = *csPtr;
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::Hydrogen, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
+    { [[maybe_unused]] auto const& dummy_StackPtr = stackPtr; }
+
+    auto const projectileCode = Code::PiPlus;
+    auto const targetCode = Code::Nitrogen;
+    auto const p = 20_GeV;
+    auto const projectile4mom =
+        FourVector{calculate_total_energy(p, get_mass(projectileCode)),
+                   MomentumVector{cs, 0_eV, 0_eV, p}};
+    auto const target4mom =
+        FourVector{get_mass(targetCode), MomentumVector{cs, 0_eV, 0_eV, 0_eV}};
+
+    flukaModel.doInteraction(*secViewPtr, projectileCode, targetCode, projectile4mom,
+                             target4mom);
   }
 }

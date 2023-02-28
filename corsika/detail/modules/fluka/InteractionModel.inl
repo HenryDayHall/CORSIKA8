@@ -16,6 +16,7 @@
 #include <utility>
 
 #include <boost/iterator/zip_iterator.hpp>
+#include <Eigen/Dense>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/NuclearComposition.hpp>
@@ -29,9 +30,11 @@
 namespace corsika::fluka {
   template <typename TEnvironment>
   inline InteractionModel::InteractionModel(TEnvironment const& env)
-      : materials_{genFlukaMaterials(env)} {
+      : materials_{genFlukaMaterials(env)}
+      , cumsgx_{std::make_unique<double[]>(materials_.size() * 3)} {
     for (auto const& [code, matno] : materials_) {
-      std::cout << get_name(code, full_name{}) << "    " << matno << std::endl;
+      CORSIKA_LOGGER_DEBUG(logger_, "FLUKA material initialization: {} -> {}",
+                           get_name(code, full_name{}), matno);
     }
   }
 
@@ -89,11 +92,8 @@ namespace corsika::fluka {
 
     std::cout << targetRestBoost.boost_ << '\n';
     std::cout << targetRestBoost.rotatedCS_->getTransform().matrix() << '\n';
-    std::cout << "Elab / GeV = " << Elab * invGeV << '\n';
-    std::cout << "plab = " << plab << '\n';
-    std::cout << "EkinLab / GeV = " << EkinLab << '\n';
-    std::cout << "labMomentum / GeV = "
-              << projectileLab4mom.getSpaceLikeComponents() * invGeV << '\n';
+    CORSIKA_LOGGER_DEBUG(logger_, fmt::format("Elab = {} GeV", Elab * invGeV));
+    CORSIKA_LOGGER_DEBUG(logger_, fmt::format("EkinLab = {} GeV", EkinLab * invGeV));
 
     CrossSectionType const xs = ::fluka::sgmxyz_(&flukaCodeProj, &flukaMaterial, &EkinLab,
                                                  &labMomentum, &iflxyz_) *
@@ -106,7 +106,59 @@ namespace corsika::fluka {
                                               Code const projectileId,
                                               Code const targetId,
                                               FourMomentum const& projectileP4,
-                                              FourMomentum const& targetP4) {}
+                                              FourMomentum const& targetP4) {
+
+    auto const flukaCodeProj =
+        static_cast<FLUKACodeIntType>(convertToFluka(projectileId));
+    auto const flukaMaterial = getMaterialIndex(targetId);
+
+    HEPEnergyType const sqrtS = (projectileP4 + targetP4).getNorm();
+    if (!isValid(projectileId, flukaMaterial, sqrtS)) {
+      std::string const errmsg = fmt::format(
+          "Event generation with invalid configuration requested: proj: {}, target: {}",
+          get_name(projectileId, full_name{}), get_name(targetId, full_name{}));
+      CORSIKA_LOGGER_CRITICAL(logger_, errmsg);
+      throw std::runtime_error{errmsg.c_str()};
+    }
+
+    COMBoost const targetRestBoost{targetP4.getSpaceLikeComponents(), get_mass(targetId)};
+    FourMomentum const projectileLab4mom = targetRestBoost.toCoM(projectileP4);
+    HEPEnergyType const Elab = projectileLab4mom.getTimeLikeComponent();
+    auto constexpr invGeV = 1 / 1_GeV;
+    double const EkinLab = (Elab - get_mass(projectileId)) * invGeV;
+
+    auto const plab = projectileLab4mom.getSpaceLikeComponents();
+    auto const& cs = plab.getCoordinateSystem();
+    auto const labMomentum = plab.getNorm();
+    double const labMomentumGeV = labMomentum * invGeV;
+
+    auto const direction = (plab / labMomentum).getComponents().getEigenVector();
+
+    ::fluka::evtxyz_(&flukaCodeProj, &flukaMaterial, &EkinLab, &labMomentumGeV,
+                     &direction[0], &direction[1], &direction[2], &iflxyz_, cumsgx_.get(),
+                     cumsgx_.get() + materials_.size(),
+                     cumsgx_.get() + materials_.size() * 2);
+
+    //~ extern struct {
+    //~ int nevhep;                  // event number
+    //~ int nhep;                    // number of entries
+    //~ hepmc_array<int> isthep;     // status code
+    //~ hepmc_array<int> idhep;      // PDG particle id
+    //~ hepmc_array<int[2]> jmohep;  // position of first, second mother
+    //~ hepmc_array<int[2]> jdahep;  // position of first, last daughter
+    //~ hepmc_array<double[5]> phep; // 4-momemtum, mass (GeV)
+    //~ hepmc_array<double[4]> vhep; // vertex, production time in mm
+    //~ } hepevt_;
+
+    for (int i = 0; i < ::fluka::hepevt_.nhep; ++i) {
+      int const pdg = ::fluka::hepevt_.idhep[i];
+      int const status = ::fluka::hepevt_.isthep[i];
+      auto const mom = QuantityVector<hepenergy_d>{
+          Eigen::Map<Eigen::Vector3d>(&::fluka::hepevt_.phep[i][0]) * invGeV.magnitude()};
+
+      std::cout << pdg << '\t' << status << '\t' << mom << std::endl;
+    }
+  }
 
   template <typename TEnvironment>
   inline std::vector<std::pair<Code, int>> InteractionModel::genFlukaMaterials(
@@ -145,16 +197,6 @@ namespace corsika::fluka {
     auto mtflka = std::make_unique<int[]>(mxelfl);
     char crvrck[8 + 1] =
         "76466879"; // magic number that FLUKA uses to see if it's the right version
-
-    /*
-     *    Iflxyz =  1 -> only inelastic
-     *    Iflxyz = 10 -> only elastic
-     *    Iflxyz = 11 -> inelastic + elastic
-     *    Iflxyz =100 -> only emd
-     *    Iflxyz =101 -> inelastic + emd
-     *    Iflxyz =110 -> elastic + emd
-     *    Iflxyz =111 -> inelastic + elastic + emd
-     */
 
     std::fill(&nelmfl[0], &nelmfl[nElements], 1);
     std::fill(&wfelml[0], &wfelml[nElements], 1.);

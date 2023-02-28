@@ -149,8 +149,9 @@ namespace fluka {
    *                                                                      *
    *                                                                      *
    *----------------------------------------------------------------------*/
-  //~ void evtxyz_ (int& , MMAT  , EKIN  , PPROJ , TXX, TYY, TZZ,
-  //~ &                    IFLXYZ, CUMSGI, CUMSGE, CUMSGM )
+  void evtxyz_(int const* KPROJ, int const* MMAT, double const* EKIN, double const* PPROJ,
+               double const* TXX, double const* TYY, double const* TZZ, int const* IFLXYZ,
+               double CUMSGI[], double CUMSGE[], double CUMSGM[]);
 
   /*----------------------------------------------------------------------*
    *                                                                      *
@@ -171,5 +172,24 @@ namespace fluka {
    *----------------------------------------------------------------------*/
   double sgmxyz_(int const* KPROJ, int const* MMAT, double const* EKIN,
                  double const* PPROJ, int const* IFLXYZ);
+
+  /*----------------------------------------------------------------------*
+   *                                                                      *
+   *     Copyright (C) 2023-2023      by    Alfredo Ferrari & Paola Sala  *
+   *     All Rights Reserved.                                             *
+   *                                                                      *
+   *     FiLL HEP common:                                                 *
+   *                                                                      *
+   *     Authors:                           Alfredo Ferrari & Paola Sala  *
+   *                                                                      *
+   *                                                                      *
+   *     Created on 06 February 2023  by    Alfredo Ferrari & Paola Sala  *
+   *                                            Private        Private    *
+   *                                                                      *
+   *     Last change on  07-Feb-23    by             Alfredo Ferrari      *
+   *                                                     Private          *
+   *                                                                      *
+   *----------------------------------------------------------------------*/
+  void fllhep_();
   }
 } // namespace fluka
