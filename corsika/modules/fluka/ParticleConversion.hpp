@@ -27,13 +27,14 @@ namespace corsika::fluka {
 
   FLUKACode constexpr convertToFluka(Code const c8id) {
     if (is_nucleus(c8id)) {
-		throw std::runtime_error{"nucleus conversion to FLUKA not implemented"};
-	}
+      throw std::runtime_error{"nucleus conversion to FLUKA not implemented"};
+    }
 
     FLUKACode const flukaID = corsika2fluka[static_cast<corsika::CodeIntType>(c8id)];
     if (flukaID == FLUKACode::Unknown) {
-		throw std::runtime_error{fmt::format("no correspondig FLUKA id for {}", get_name(c8id)).c_str()};
-	}
+      throw std::runtime_error{
+          fmt::format("no correspondig FLUKA id for {}", get_name(c8id)).c_str()};
+    }
 
     return flukaID;
   }

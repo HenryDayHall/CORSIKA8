@@ -18,6 +18,7 @@
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/core/Logging.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
 
 namespace corsika::fluka {
   class InteractionModel {
@@ -39,14 +40,14 @@ namespace corsika::fluka {
                        FourMomentum const& projectileP4, FourMomentum const& targetP4);
 
   private:
+    default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("fluka");
     std::vector<std::pair<Code, int>> const
         materials_; //!< map target Code to FLUKA material no.
     std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_FLUKA_Interaction");
-    std::unique_ptr<double[]> cumsgx_; //!< dump for evtxyz cumsg*
+    std::unique_ptr<double[]> cumsgx_; //!< dump for evtxyz cumsg*, never read again
 
     template <typename TEnvironment>
     static std::vector<std::pair<Code, int>> genFlukaMaterials(TEnvironment const&);
-    // TODO: random number stream
   };
 
   inline static int const iflxyz_ = 1;

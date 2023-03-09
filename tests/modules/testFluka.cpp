@@ -7,6 +7,7 @@
  */
 
 #include <corsika/modules/FLUKA.hpp>
+#include <corsika/modules/fluka/Random.hpp>
 //~ #include <SetupTestEnvironment.hpp>
 
 #include <corsika/framework/core/EnergyMomentumOperations.hpp>
@@ -29,6 +30,13 @@
 
 using namespace corsika;
 
+template <typename TStackView>
+auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
+  MomentumVector sum{vCS, 0_eV, 0_eV, 0_eV};
+  for (auto const& p : view) { sum += p.getMomentum(); }
+  return sum;
+}
+
 TEST_CASE("FLUKACodeConversion") {
   REQUIRE(corsika::fluka::convertToFluka(Code::PiPlus) ==
           corsika::fluka::FLUKACode::PiPlus);
@@ -43,6 +51,8 @@ TEST_CASE("FLUKA") {
   using DummyEnvironment = Environment<DummyEnvironmentInterface>;
   using MyHomogeneousModel = MediumPropertyModel<
       UniformMagneticField<HomogeneousMedium<DummyEnvironmentInterface>>>;
+
+  RNGManager<>::getInstance().registerRandomStream("fluka");
 
   DummyEnvironment env;
   auto& universe = *env.getUniverse();
@@ -99,20 +109,35 @@ TEST_CASE("FLUKA") {
   {
     auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Proton);
     auto const& cs = *csPtr;
-    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Hydrogen, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
-    { [[maybe_unused]] auto const& dummy_StackPtr = stackPtr; }
 
-    auto const projectileCode = Code::PiPlus;
-    auto const targetCode = Code::Nitrogen;
-    auto const p = 20_GeV;
-    auto const projectile4mom =
-        FourVector{calculate_total_energy(p, get_mass(projectileCode)),
-                   MomentumVector{cs, 0_eV, 0_eV, p}};
-    auto const target4mom =
-        FourVector{get_mass(targetCode), MomentumVector{cs, 0_eV, 0_eV, 0_eV}};
+    auto const projectiles = std::array{Code::PiPlus, Code::PiMinus, Code::KPlus,
+                                        Code::K0Long, Code::Lambda0, Code::SigmaPlus};
+    auto const momenta = std::array{100_MeV, 1_GeV, 20_GeV, 100_GeV, 1_TeV};
 
-    flukaModel.doInteraction(*secViewPtr, projectileCode, targetCode, projectile4mom,
-                             target4mom);
+    for (auto const p : momenta) {
+      for (auto const projectileCode : projectiles) {
+        std::cout << "===== " << projectileCode << " @ " << p << "\n";
+
+        auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+            Code::Hydrogen, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr,
+            *csPtr);
+        { [[maybe_unused]] auto const& dummy_StackPtr = stackPtr; }
+
+        auto const targetCode = Code::Oxygen;
+        auto const projectile4mom =
+            FourVector{calculate_total_energy(p, get_mass(projectileCode)),
+                       MomentumVector{cs, 0_eV, 0_eV, p}};
+        auto const target4mom =
+            FourVector{get_mass(targetCode), MomentumVector{cs, 0_eV, 0_eV, 0_eV}};
+
+        flukaModel.doInteraction(*secViewPtr, projectileCode, targetCode, projectile4mom,
+                                 target4mom);
+        auto const pSum = sumMomentum(*secViewPtr, cs);
+        std::cout << "psum = " << pSum << '\n';
+        CHECK((pSum - projectile4mom.getSpaceLikeComponents()).getNorm() / p ==
+              Approx(0).margin(1e-4));
+        CHECK((pSum.getNorm() - p) / p == Approx(0).margin(1e-4));
+      }
+    }
   }
 }

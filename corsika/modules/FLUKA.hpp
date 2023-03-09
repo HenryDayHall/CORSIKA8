@@ -13,9 +13,9 @@
 #include <corsika/framework/process/InteractionProcess.hpp>
 
 /**
- * @file Epos.hpp
+ * @file FLUKA.hpp
  *
- * Includes all the parts of the EPOS model. Defines the InteractionProcess<TModel>
+ * Includes all the parts of the FLUKA model. Defines the InteractionProcess<TModel>
  * classes needed for the ProcessSequence.
  */
 

@@ -21,6 +21,8 @@
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
+#include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/EnergyMomentumOperations.hpp>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
@@ -90,8 +92,6 @@ namespace corsika::fluka {
 
     auto const plab = projectileLab4mom.getSpaceLikeComponents();
 
-    std::cout << targetRestBoost.boost_ << '\n';
-    std::cout << targetRestBoost.rotatedCS_->getTransform().matrix() << '\n';
     CORSIKA_LOGGER_DEBUG(logger_, fmt::format("Elab = {} GeV", Elab * invGeV));
     CORSIKA_LOGGER_DEBUG(logger_, fmt::format("EkinLab = {} GeV", EkinLab * invGeV));
 
@@ -139,24 +139,32 @@ namespace corsika::fluka {
                      cumsgx_.get() + materials_.size(),
                      cumsgx_.get() + materials_.size() * 2);
 
-    //~ extern struct {
-    //~ int nevhep;                  // event number
-    //~ int nhep;                    // number of entries
-    //~ hepmc_array<int> isthep;     // status code
-    //~ hepmc_array<int> idhep;      // PDG particle id
-    //~ hepmc_array<int[2]> jmohep;  // position of first, second mother
-    //~ hepmc_array<int[2]> jdahep;  // position of first, last daughter
-    //~ hepmc_array<double[5]> phep; // 4-momemtum, mass (GeV)
-    //~ hepmc_array<double[4]> vhep; // vertex, production time in mm
-    //~ } hepevt_;
-
     for (int i = 0; i < ::fluka::hepevt_.nhep; ++i) {
-      int const pdg = ::fluka::hepevt_.idhep[i];
       int const status = ::fluka::hepevt_.isthep[i];
-      auto const mom = QuantityVector<hepenergy_d>{
-          Eigen::Map<Eigen::Vector3d>(&::fluka::hepevt_.phep[i][0]) * invGeV.magnitude()};
+      // TODO: enable this when FLUKA writes status code
+      //~ if (status != 1) // skip non-final-state particles
+      //~ continue;
 
-      std::cout << pdg << '\t' << status << '\t' << mom << std::endl;
+      auto const pdg = static_cast<corsika::PDGCode>(::fluka::hepevt_.idhep[i]);
+      auto const c8code = corsika::convert_from_PDG(pdg);
+      auto const mom = QuantityVector<hepenergy_d>{
+          Eigen::Map<Eigen::Vector3d>(&::fluka::hepevt_.phep[i][0]) *
+          (1_GeV).magnitude()};
+      auto const pPrime = mom.getNorm();
+      auto const c8mass = corsika::get_mass(c8code);
+      auto const flMass = ::fluka::hepevt_.phep[i][5 - 1];
+
+      auto const fourMomCollisionFrame =
+          FourVector{calculate_total_energy(pPrime, c8mass), MomentumVector{cs, mom}};
+      auto const fourMomOrigFrame = targetRestBoost.fromCoM(fourMomCollisionFrame);
+      auto const momOrigFrame = fourMomOrigFrame.getSpaceLikeComponents();
+      auto const p = momOrigFrame.getNorm();
+
+      view.addSecondary(std::tuple{c8code, corsika::calculate_kinetic_energy(p, c8mass),
+                                   momOrigFrame / p});
+      std::cout << static_cast<int>(pdg) << '\t' << get_name(c8code, full_name{}) << '\t'
+                << momOrigFrame / 1_GeV << '\t' << flMass << ' ' << c8mass / 1_GeV << " "
+                << std::endl;
     }
   }
 
@@ -195,8 +203,9 @@ namespace corsika::fluka {
     double const df2dp3 = -1;   // default
     bool const lprint = true;
     auto mtflka = std::make_unique<int[]>(mxelfl);
-    char crvrck[8 + 1] =
-        "76466879"; // magic number that FLUKA uses to see if it's the right version
+    // magic number that FLUKA uses to see if it's the right version
+    char crvrck[] = "76466879";
+    int const size = 8;
 
     std::fill(&nelmfl[0], &nelmfl[nElements], 1);
     std::fill(&wfelml[0], &wfelml[nElements], 1.);
@@ -210,7 +219,8 @@ namespace corsika::fluka {
 
     // call FLUKA
     ::fluka::stpxyz_(&nElements, nelmfl.get(), izelfl.data(), wfelml.get(), &mxelfl,
-                     &pptmax, &ef2dp3, &df2dp3, &iflxyz_, &lprint, mtflka.get(), crvrck);
+                     &pptmax, &ef2dp3, &df2dp3, &iflxyz_, &lprint, mtflka.get(), crvrck,
+                     &size);
 
     // now create & fill vector of (C8 Code, FLUKA mat. no.) pairs
     std::vector<std::pair<Code, int>> mapping;
