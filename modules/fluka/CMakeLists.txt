@@ -17,17 +17,20 @@ if (DEFINED C8_FLUKALIB)
         $<INSTALL_INTERFACE:include/corsika_modules/fluka>
     )
     
-    # this contains our own implementation of flrndm_()
-    add_library(flukaRndm SHARED flrndm.cpp)
-    target_link_libraries(flukaRndm PRIVATE flukahp-norndm)
+    # build shared library containing FLUKA + our own implementation of flrndm_()
+    # Note: This apparently works only when built as shared lib, not possible so easily as static lib
+    # Note also that this lib is not self-contained as it doesn't contain fluka::rndm_interface(), so
+    # you can't load it at runtime
+    add_library(fluka SHARED fluka.cpp)
+    target_link_libraries(fluka PRIVATE flukahp-norndm)
 
-    target_include_directories (flukaRndm PUBLIC
+    target_include_directories (fluka PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
       $<INSTALL_INTERFACE:include/corsika_modules/fluka>
       )
     
     set_target_properties (
-      flukaRndm
+      fluka
       PROPERTIES
       POSITION_INDEPENDENT_CODE 1
       )
@@ -35,17 +38,17 @@ if (DEFINED C8_FLUKALIB)
     install (
       FILES
       fluka.hpp
-      DESTINATION include/corsika_modules/urqmd
+      DESTINATION include/corsika_modules/fluka
       )
     
     install (
-      TARGETS flukaRndm
+      TARGETS fluka
       EXPORT CORSIKA8PublicTargets
       ARCHIVE DESTINATION lib/corsika
       INCLUDES DESTINATION include/corsika_modules/fluka
       )
     
     # add fluka to corsika8 build
-    add_dependencies (CORSIKA8 flukaRndm)
-    target_link_libraries (CORSIKA8 INTERFACE flukaRndm)
+    add_dependencies (CORSIKA8 fluka)
+    target_link_libraries (CORSIKA8 INTERFACE fluka)
 endif()

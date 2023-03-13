@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <corsika/modules/fluka/ParticleConversion.hpp>
 #include <corsika/modules/fluka/InteractionModel.hpp>
 #include <corsika/framework/process/InteractionProcess.hpp>
 
@@ -27,5 +26,10 @@ namespace corsika::fluka {
    * to provide all the functions for ProcessSequence.
    */
   class Interaction : public fluka::InteractionModel,
-                      public corsika::InteractionProcess<Interaction> {};
+                      public corsika::InteractionProcess<Interaction> {
+  public:
+    template <typename TEnvironment>
+    Interaction(TEnvironment const& env)
+        : fluka::InteractionModel{env} {}
+  };
 } // namespace corsika::fluka

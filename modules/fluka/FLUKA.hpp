@@ -26,34 +26,34 @@ namespace fluka {
   using hepmc_array = std::array<T, nmxhep>;
 
   extern "C" {
-  /*
-  c---------------------------------------------------------------------------
-  c                   hep standard event commonblock.
-  c---------------------------------------------------------------------------
-  c---------------------------------------------------------------------------
-  c
-  c         nevhep      -   event number
-  c         nhep        -   number of entries in the event record
-  c
-  c         isthep(i)   -   status code
-  c         idhep(i)    -   particle id (particle data group standard)
-  c
-  c         jmohep(1,i) -   position of mother particle in list
-  c         jmohep(2,i) -   position of second mother particle in list
-  c         jdahep(1,i) -   position of first daughter in list
-  c         jdahep(2,i) -   position of first daughter in list
-  c
-  c         phep(1,i)   -   p_x momentum in gev/c
-  c         phep(2,i)   -   p_y momentum in gev/c
-  c         phep(3,i)   -   p_z momentum in gev/c
-  c         phep(4,i)   -   energy in gev
-  c         phep(5,i)   -   mass in gev/c**2
-  c
-  c         vhep(1,i)   -   x position of production vertex in mm
-  c         vhep(2,i)   -   y position of production vertex in mm
-  c         vhep(3,i)   -   z position of production vertex in mm
-  c         vhep(4,i)   -   time of production  in mm/c
-  */
+  /**
+   *---------------------------------------------------------------------------
+   *                   hep standard event commonblock.
+   *---------------------------------------------------------------------------
+   *---------------------------------------------------------------------------
+   *
+   *         nevhep      -   event number
+   *         nhep        -   number of entries in the event record
+   *
+   *         isthep(i)   -   status code
+   *         idhep(i)    -   particle id (particle data group standard)
+   *
+   *         jmohep(1,i) -   position of mother particle in list
+   *         jmohep(2,i) -   position of second mother particle in list
+   *         jdahep(1,i) -   position of first daughter in list
+   *         jdahep(2,i) -   position of first daughter in list
+   *
+   *         phep(1,i)   -   p_x momentum in gev/c
+   *         phep(2,i)   -   p_y momentum in gev/c
+   *         phep(3,i)   -   p_z momentum in gev/c
+   *         phep(4,i)   -   energy in gev
+   *         phep(5,i)   -   mass in gev/c**2
+   *
+   *         vhep(1,i)   -   x position of production vertex in mm
+   *         vhep(2,i)   -   y position of production vertex in mm
+   *         vhep(3,i)   -   z position of production vertex in mm
+   *         vhep(4,i)   -   time of production  in mm/c
+   */
 
   extern struct {
     int nevhep;                  // event number
@@ -76,7 +76,7 @@ namespace fluka {
    *    Iflxyz =111 -> inelastic + elastic + emd
    */
 
-  /*----------------------------------------------------------------------*
+  /**---------------------------------------------------------------------*
    *                                                                      *
    *     Copyright (C) 2022-2022      by    Alfredo Ferrari & Paola Sala  *
    *     All Rights Reserved.                                             *
@@ -130,7 +130,7 @@ namespace fluka {
                double const* EF2DP3, double const* DF2DP3, int const* IFLXYZ,
                bool const* LPRINT, int* MTFLKA, char const* CRVRCK, int const*);
 
-  /*----------------------------------------------------------------------*
+  /**---------------------------------------------------------------------*
    *                                                                      *
    *     Copyright (C) 2022-2022      by    Alfredo Ferrari & Paola Sala  *
    *     All Rights Reserved.                                             *
@@ -165,7 +165,7 @@ namespace fluka {
                double const* TXX, double const* TYY, double const* TZZ, int const* IFLXYZ,
                double CUMSGI[], double CUMSGE[], double CUMSGM[]);
 
-  /*----------------------------------------------------------------------*
+  /**---------------------------------------------------------------------*
    *                                                                      *
    *     Copyright (C) 2022-2022      by    Alfredo Ferrari & Paola Sala  *
    *     All Rights Reserved.                                             *
@@ -185,7 +185,7 @@ namespace fluka {
   double sgmxyz_(int const* KPROJ, int const* MMAT, double const* EKIN,
                  double const* PPROJ, int const* IFLXYZ);
 
-  /*----------------------------------------------------------------------*
+  /**---------------------------------------------------------------------*
    *                                                                      *
    *     Copyright (C) 2023-2023      by    Alfredo Ferrari & Paola Sala  *
    *     All Rights Reserved.                                             *
@@ -203,7 +203,8 @@ namespace fluka {
    *                                                                      *
    *----------------------------------------------------------------------*/
   void fllhep_();
-  
-  double flrndm();
+
+  //! random-number generator called from within FLUKA
+  double flrndm_();
   }
 } // namespace fluka

@@ -130,7 +130,7 @@ namespace corsika::fluka {
     auto const plab = projectileLab4mom.getSpaceLikeComponents();
     auto const& cs = plab.getCoordinateSystem();
     auto const labMomentum = plab.getNorm();
-    double const labMomentumGeV = labMomentum * invGeV;
+    double const labMomentumGeV = labMomentum * invGeV * 0;
 
     auto const direction = (plab / labMomentum).getComponents().getEigenVector();
 
@@ -141,9 +141,8 @@ namespace corsika::fluka {
 
     for (int i = 0; i < ::fluka::hepevt_.nhep; ++i) {
       int const status = ::fluka::hepevt_.isthep[i];
-      // TODO: enable this when FLUKA writes status code
-      //~ if (status != 1) // skip non-final-state particles
-      //~ continue;
+      if (status != 1) // skip non-final-state particles
+        continue;
 
       auto const pdg = static_cast<corsika::PDGCode>(::fluka::hepevt_.idhep[i]);
       auto const c8code = corsika::convert_from_PDG(pdg);
@@ -152,7 +151,6 @@ namespace corsika::fluka {
           (1_GeV).magnitude()};
       auto const pPrime = mom.getNorm();
       auto const c8mass = corsika::get_mass(c8code);
-      auto const flMass = ::fluka::hepevt_.phep[i][5 - 1];
 
       auto const fourMomCollisionFrame =
           FourVector{calculate_total_energy(pPrime, c8mass), MomentumVector{cs, mom}};
@@ -162,9 +160,6 @@ namespace corsika::fluka {
 
       view.addSecondary(std::tuple{c8code, corsika::calculate_kinetic_energy(p, c8mass),
                                    momOrigFrame / p});
-      std::cout << static_cast<int>(pdg) << '\t' << get_name(c8code, full_name{}) << '\t'
-                << momOrigFrame / 1_GeV << '\t' << flMass << ' ' << c8mass / 1_GeV << " "
-                << std::endl;
     }
   }
 
@@ -172,8 +167,8 @@ namespace corsika::fluka {
   inline std::vector<std::pair<Code, int>> InteractionModel::genFlukaMaterials(
       TEnvironment const& env) {
     auto const& universe = *(env.getUniverse());
-    // generate complete list of all nuclei types in universe
 
+    // generate complete list of all nuclei types in universe
     auto const allElementsInUniverse = std::invoke([&]() {
       std::set<Code> allElementsInUniverse;
       auto collectElements = [&](auto& vtn) {
@@ -204,7 +199,7 @@ namespace corsika::fluka {
     bool const lprint = true;
     auto mtflka = std::make_unique<int[]>(mxelfl);
     // magic number that FLUKA uses to see if it's the right version
-    char crvrck[] = "76466879";
+    char const crvrck[] = "76466879";
     int const size = 8;
 
     std::fill(&nelmfl[0], &nelmfl[nElements], 1);
