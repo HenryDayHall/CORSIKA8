@@ -27,6 +27,8 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/modules/fluka/ParticleConversion.hpp>
 
+#include <FLUKA.hpp>
+
 namespace corsika::fluka {
   template <typename TEnvironment>
   inline InteractionModel::InteractionModel(TEnvironment const& env)
@@ -35,6 +37,12 @@ namespace corsika::fluka {
     for (auto const& [code, matno] : materials_) {
       CORSIKA_LOGGER_DEBUG(logger_, "FLUKA material initialization: {} -> {}",
                            get_name(code, full_name{}), matno);
+    }
+
+    if (int const ndmhep = ::fluka::ndmhep_(); ::fluka::nmxhep != ndmhep) {
+      CORSIKA_LOGGER_CRITICAL(logger_, "HEPEVT dimension mismatch. FLUKA reports %d",
+                              ndmhep);
+      throw std::runtime_error{"FLUKA HEPEVT dimension mismatch"};
     }
   }
 

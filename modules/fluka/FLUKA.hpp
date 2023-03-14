@@ -204,6 +204,25 @@ namespace fluka {
    *----------------------------------------------------------------------*/
   void fllhep_();
 
+  /**----------------------------------------------------------------------*
+   *                                                                      *
+   *     Copyright (C) 2023-2023      by    Alfredo Ferrari & Paola Sala  *
+   *     All Rights Reserved.                                             *
+   *                                                                      *
+   *     N DiMension of the HEP common:                                   *
+   *                                                                      *
+   *     Authors:                           Alfredo Ferrari & Paola Sala  *
+   *                                                                      *
+   *                                                                      *
+   *     Created on   09 March 2023   by    Alfredo Ferrari & Paola Sala  *
+   *                                            Private        Private    *
+   *                                                                      *
+   *     Last change on  09-Mar-23    by             Alfredo Ferrari      *
+   *                                                     Private          *
+   *                                                                      *
+   *----------------------------------------------------------------------*/
+  int ndmhep_();
+
   //! random-number generator called from within FLUKA
   double flrndm_();
   }

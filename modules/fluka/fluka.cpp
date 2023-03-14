@@ -26,6 +26,7 @@ namespace fluka {
   [[maybe_unused]] auto* const stpxyc_ptr = &stpxyz_;
   [[maybe_unused]] auto* const evtxyz_ptr = &evtxyz_;
   [[maybe_unused]] auto* const sgmxyz_ptr = &sgmxyz_;
+  [[maybe_unused]] auto* const ndmhep_ptr = &ndmhep_;
   }
 
 } // namespace fluka
