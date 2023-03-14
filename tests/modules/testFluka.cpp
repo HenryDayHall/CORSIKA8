@@ -77,6 +77,8 @@ TEST_CASE("FLUKA") {
     REQUIRE(flukaModel.getMaterialIndex(Code::Oxygen) > 0);
     REQUIRE(flukaModel.getMaterialIndex(Code::Nitrogen) > 0);
     REQUIRE(flukaModel.getMaterialIndex(Code::Argon) > 0);
+
+    // not initialized
     REQUIRE(flukaModel.getMaterialIndex(Code::Uranium) < 0);
   }
 
@@ -98,6 +100,21 @@ TEST_CASE("FLUKA") {
 
     CHECK(flukaModel.getCrossSection(projectileCode, targetCode, projectile4mom,
                                      target4mom) > 0_mb);
+  }
+
+  SECTION("getCrossSection invalid") {
+    auto const projectileCode = GENERATE(Code::Electron, Code::Photon);
+    auto const targetCode = GENERATE(Code::Oxygen, Code::Hydrogen);
+
+    HEPEnergyType const p = 100_GeV;
+    auto const projectile4mom =
+        FourVector{calculate_total_energy(p, get_mass(projectileCode)),
+                   MomentumVector{cs, 0_eV, 0_eV, p}};
+    auto const target4mom =
+        FourVector{get_mass(targetCode), MomentumVector{cs, 0_eV, 0_eV, 0_eV}};
+
+    CHECK(flukaModel.getCrossSection(projectileCode, targetCode, projectile4mom,
+                                     target4mom) == CrossSectionType::zero());
   }
 
   SECTION("doInteraction") {
@@ -126,5 +143,47 @@ TEST_CASE("FLUKA") {
           Approx(0).margin(1e-4));
     CHECK((pSum.getNorm() - p) / p == Approx(0).margin(1e-4));
     CHECK(secViewPtr->getSize() > 1);
+  }
+
+  SECTION("doInteraction-invalid-projectile") {
+    auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Proton);
+    auto const& cs = *csPtr;
+
+    auto const projectileCode = GENERATE(Code::Electron, Code::MuPlus);
+    auto const p = 50_GeV;
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::Hydrogen, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
+    { [[maybe_unused]] auto const& dummy_StackPtr = stackPtr; }
+
+    auto const targetCode = Code::Oxygen;
+    auto const projectile4mom =
+        FourVector{calculate_total_energy(p, get_mass(projectileCode)),
+                   MomentumVector{cs, 0_eV, 0_eV, p}};
+    auto const target4mom =
+        FourVector{get_mass(targetCode), MomentumVector{cs, 0_eV, 0_eV, 0_eV}};
+
+    REQUIRE_THROWS(flukaModel.doInteraction(*secViewPtr, projectileCode, targetCode,
+                                            projectile4mom, target4mom));
+  }
+
+  SECTION("doInteraction-invalid-target") {
+    auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Proton);
+    auto const& cs = *csPtr;
+
+    auto const projectileCode = Code::AntiNeutron;
+    auto const p = 50_GeV;
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::Hydrogen, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
+    { [[maybe_unused]] auto const& dummy_StackPtr = stackPtr; }
+
+    auto const targetCode = Code::Uranium;
+    auto const projectile4mom =
+        FourVector{calculate_total_energy(p, get_mass(projectileCode)),
+                   MomentumVector{cs, 0_eV, 0_eV, p}};
+    auto const target4mom =
+        FourVector{get_mass(targetCode), MomentumVector{cs, 0_eV, 0_eV, 0_eV}};
+
+    REQUIRE_THROWS(flukaModel.doInteraction(*secViewPtr, projectileCode, targetCode,
+                                            projectile4mom, target4mom));
   }
 }
