@@ -17,7 +17,7 @@ set (test_modules_sources
   testSophia.cpp
 )
   
-if (DEFINED C8_FLUKALIB)
+if (EXISTS "${C8_FLUKALIB}")
     list(APPEND test_modules_sources "testFluka.cpp")
 endif()
 

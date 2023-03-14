@@ -14,6 +14,11 @@
 flukalibOrig="$1"
 target="$2"
 
+if [ ! -r "$flukalibOrig" ]; then
+    echo "\"$flukalibOrig\" not readable" 1>&2
+    exit 1
+fi
+
 tmpdir=`mktemp -d fluka_objectsXXXXXX`
 
 echo "extracting objects from $1 into `realpath $tmpdir`..."
