@@ -21,11 +21,24 @@
 #include <corsika/framework/random/RNGManager.hpp>
 
 namespace corsika::fluka {
+  /**
+   * This class exposes the (hadronic) interactions of FLUKA. FLUKA needs to be
+   * initialized with a predefined set of target materials and a flag describing the type
+   * of interactions (elastic, inelastic, electromagnetic dissociation). Currently, only
+   * inelastic events are supported.
+   *
+   */
   class InteractionModel {
   public:
+    /**
+     * Create a new InteractionModel. The FLUKA materials are collected from the elements
+     * present in the environment. Each element is its own FLUKA material, no FLUKA
+     * compounds are used.
+     */
     template <typename TEnvironment>
     InteractionModel(TEnvironment const&);
 
+    //! Return the cross-section of a given combination of projectile/target.
     CrossSectionType getCrossSection(Code projectileId, Code targetId,
                                      FourMomentum const& projectileP4,
                                      FourMomentum const& targetP4) const;
@@ -33,6 +46,7 @@ namespace corsika::fluka {
     bool isValid(Code projectileID, Code targetID, HEPEnergyType sqrtS) const;
     bool isValid(Code projectileID, int material, HEPEnergyType sqrtS) const;
 
+    //! convert target Code to FLUKA material number
     int getMaterialIndex(Code targetID) const;
 
     template <typename TSecondaryView>

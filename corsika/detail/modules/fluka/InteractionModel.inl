@@ -25,8 +25,6 @@
 #include <corsika/framework/core/EnergyMomentumOperations.hpp>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
-
-#include <FLUKA.hpp>
 #include <corsika/modules/fluka/ParticleConversion.hpp>
 
 namespace corsika::fluka {
