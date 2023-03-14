@@ -9,17 +9,6 @@
 #include <FLUKA.hpp>
 
 namespace fluka {
-
-  /**
-   * The following (function) pointers make sure the corresponding objects in libflukahp.a
-   * won't get dropped from the final file during linking.
-   */
-
-  auto* const hepevt_ptr = &hepevt_;
-  auto* const stpxyc_ptr = &stpxyz_;
-  auto* const evtxyz_ptr = &evtxyz_;
-  auto* const sgmxyz_ptr = &sgmxyz_;
-
   double (*rndmPtr)() = &rndm_interface;
 
   extern "C" {
@@ -27,6 +16,16 @@ namespace fluka {
 
   //! overwrite function pointer to be used as FLUKA RNG (flrndm_())
   void setFlukaRNG(double (*func)()) { ::fluka::rndmPtr = func; }
+
+  /**
+   * The following (function) pointers make sure the corresponding objects in libflukahp.a
+   * won't get dropped from the final file during linking.
+   */
+
+  [[maybe_unused]] auto* const hepevt_ptr = &hepevt_;
+  [[maybe_unused]] auto* const stpxyc_ptr = &stpxyz_;
+  [[maybe_unused]] auto* const evtxyz_ptr = &evtxyz_;
+  [[maybe_unused]] auto* const sgmxyz_ptr = &sgmxyz_;
   }
 
 } // namespace fluka
