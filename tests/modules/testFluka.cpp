@@ -42,6 +42,8 @@ TEST_CASE("FLUKACodeConversion") {
   REQUIRE(corsika::fluka::convertToFlukaRaw(Code::PiPlus) == 13);
   REQUIRE(corsika::fluka::convertToFlukaRaw(Code::Proton) == 1);
   REQUIRE(corsika::fluka::convertToFlukaRaw(Code::Lambda0) == 17);
+
+  REQUIRE_THROWS(corsika::fluka::convertToFluka(Code::WPlus));
 }
 
 auto setupEnvironment() {
