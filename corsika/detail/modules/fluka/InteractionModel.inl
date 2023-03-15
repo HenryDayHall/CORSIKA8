@@ -50,7 +50,6 @@ namespace corsika::fluka {
                                         HEPEnergyType /*sqrtS*/) const {
     if (!fluka::canInteract(projectileID)) {
       // invalid projectile
-      //~ std::cout << "invalid projecile (cannot interact)";
       return false;
     }
 
@@ -81,8 +80,6 @@ namespace corsika::fluka {
   inline CrossSectionType InteractionModel::getCrossSection(
       Code const projectileId, Code const targetId, FourMomentum const& projectileP4,
       FourMomentum const& targetP4) const {
-    auto const flukaCodeProj =
-        static_cast<FLUKACodeIntType>(convertToFluka(projectileId));
     auto const flukaMaterial = getMaterialIndex(targetId);
 
     HEPEnergyType const sqrtS = (projectileP4 + targetP4).getNorm();
@@ -98,6 +95,8 @@ namespace corsika::fluka {
     auto const plab = projectileLab4mom.getSpaceLikeComponents();
 
     CORSIKA_LOGGER_DEBUG(logger_, fmt::format("Elab = {} GeV", Elab * invGeV));
+    auto const flukaCodeProj =
+        static_cast<FLUKACodeIntType>(convertToFluka(projectileId));
 
     double const dummyEkin = 0;
     CrossSectionType const xs = ::fluka::sgmxyz_(&flukaCodeProj, &flukaMaterial,
