@@ -11,7 +11,7 @@
 # This script strips off flrndm() from the libflukahp.a so that we can provide our own
 # implementation.
 
-flukalibOrig="$1"
+flukalibOrig=`realpath $1`
 target="$2"
 
 if [ ! -r "$flukalibOrig" ]; then
@@ -20,9 +20,12 @@ if [ ! -r "$flukalibOrig" ]; then
 fi
 
 tmpdir=`mktemp -d fluka_objectsXXXXXX`
+workdir=`pwd`
 
-echo "extracting objects from $1 into `realpath $tmpdir`..."
-ar --output "$tmpdir" x "$flukalibOrig"
+echo "extracting objects from $flukalibOrig into `realpath $tmpdir`..."
+cd "$tmpdir"
+ar x "$flukalibOrig"
+cd "$workdir"
 rm "$tmpdir/flrndm.o"
 
 [ -f "libflukahp-norndm.a" ] && rm "libflukahp-norndm.a"
