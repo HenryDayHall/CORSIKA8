@@ -92,17 +92,16 @@ namespace corsika::fluka {
     FourMomentum const projectileLab4mom = targetRestBoost.toCoM(projectileP4);
     HEPEnergyType const Elab = projectileLab4mom.getTimeLikeComponent();
     auto constexpr invGeV = 1 / 1_GeV;
-    double const EkinLab = (Elab - get_mass(projectileId)) * invGeV;
     double const labMomentum =
         projectileLab4mom.getSpaceLikeComponents().getNorm() * invGeV;
 
     auto const plab = projectileLab4mom.getSpaceLikeComponents();
 
     CORSIKA_LOGGER_DEBUG(logger_, fmt::format("Elab = {} GeV", Elab * invGeV));
-    CORSIKA_LOGGER_DEBUG(logger_, fmt::format("EkinLab = {} GeV", EkinLab * invGeV));
 
-    CrossSectionType const xs = ::fluka::sgmxyz_(&flukaCodeProj, &flukaMaterial, &EkinLab,
-                                                 &labMomentum, &iflxyz_) *
+    double const dummyEkin = 0;
+    CrossSectionType const xs = ::fluka::sgmxyz_(&flukaCodeProj, &flukaMaterial,
+                                                 &dummyEkin, &labMomentum, &iflxyz_) *
                                 1_mb;
     return xs;
   }
@@ -129,18 +128,17 @@ namespace corsika::fluka {
 
     COMBoost const targetRestBoost{targetP4.getSpaceLikeComponents(), get_mass(targetId)};
     FourMomentum const projectileLab4mom = targetRestBoost.toCoM(projectileP4);
-    HEPEnergyType const Elab = projectileLab4mom.getTimeLikeComponent();
     auto constexpr invGeV = 1 / 1_GeV;
-    double const EkinLab = (Elab - get_mass(projectileId)) * invGeV;
 
     auto const plab = projectileLab4mom.getSpaceLikeComponents();
     auto const& cs = plab.getCoordinateSystem();
     auto const labMomentum = plab.getNorm();
-    double const labMomentumGeV = labMomentum * invGeV * 0;
+    double const labMomentumGeV = labMomentum * invGeV;
 
     auto const direction = (plab / labMomentum).getComponents().getEigenVector();
 
-    ::fluka::evtxyz_(&flukaCodeProj, &flukaMaterial, &EkinLab, &labMomentumGeV,
+    double const dummyEkin = 0;
+    ::fluka::evtxyz_(&flukaCodeProj, &flukaMaterial, &dummyEkin, &labMomentumGeV,
                      &direction[0], &direction[1], &direction[2], &iflxyz_, cumsgx_.get(),
                      cumsgx_.get() + materials_.size(),
                      cumsgx_.get() + materials_.size() * 2);

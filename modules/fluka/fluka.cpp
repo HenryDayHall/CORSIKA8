@@ -22,11 +22,11 @@ namespace fluka {
    * won't get dropped from the final file during linking.
    */
 
-  [[maybe_unused]] auto* const hepevt_ptr = &hepevt_;
-  [[maybe_unused]] auto* const stpxyc_ptr = &stpxyz_;
-  [[maybe_unused]] auto* const evtxyz_ptr = &evtxyz_;
-  [[maybe_unused]] auto* const sgmxyz_ptr = &sgmxyz_;
-  [[maybe_unused]] auto* const ndmhep_ptr = &ndmhep_;
+  [[maybe_unused]] extern auto* const hepevt_ptr = &hepevt_;
+  [[maybe_unused]] extern auto* const stpxyc_ptr = &stpxyz_;
+  [[maybe_unused]] extern auto* const evtxyz_ptr = &evtxyz_;
+  [[maybe_unused]] extern auto* const sgmxyz_ptr = &sgmxyz_;
+  [[maybe_unused]] extern auto* const ndmhep_ptr = &ndmhep_;
   }
 
 } // namespace fluka
