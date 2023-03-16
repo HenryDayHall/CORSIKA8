@@ -3,7 +3,7 @@ spdlog/1.9.2
 catch2/2.13.8
 eigen/3.3.8
 boost/1.78.0
-zlib/1.2.11
+zlib/1.2.13
 proposal/7.4.2
 yaml-cpp/0.7.0
 arrow/10.0.0
