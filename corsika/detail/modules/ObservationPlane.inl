@@ -46,7 +46,8 @@ namespace corsika {
         return ProcessReturn::Ok;
     }
 
-    HEPEnergyType const energy = step.getEkinPost();
+    HEPEnergyType const energy =
+        step.getEkinPost() + get_mass(step.getParticlePre().getPID());
     Point const pointOfIntersection = step.getPositionPost();
     Vector const displacement = pointOfIntersection - plane_.getCenter();
 
