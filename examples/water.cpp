@@ -266,7 +266,7 @@ int main(int argc, char** argv) {
   output.add("energy_loss", dEdX);
 
   // * the final process sequence
-  auto sequence = make_sequence(physics_sequence, cut, obsPlaneSequence, longprof);
+  auto sequence = make_sequence(physics_sequence, cut, longprof, obsPlaneSequence);
 
   // * tracking and stack
   tracking_line::Tracking tracking;

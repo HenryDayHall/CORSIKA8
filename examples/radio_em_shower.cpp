@@ -286,7 +286,7 @@ int main(int argc, char** argv) {
 
   // auto sequence = make_sequence(emCascade, emContinuous, longprof, cut, coreas, zhs);
   auto sequence = make_sequence(emCascade, emContinuous, longprof, cut, coreas, zhs,
-                                observationLevel, tracks);
+                                tracks, observationLevel);
   // define air shower object, run simulation
   setup::Tracking tracking;
 
