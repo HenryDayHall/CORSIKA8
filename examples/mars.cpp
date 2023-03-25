@@ -404,7 +404,7 @@ int main(int argc, char** argv) {
   // assemble the final process sequence
   auto sequence =
       make_sequence(stackInspect, hadronSequence, decaySequence, emCascade, emContinuous,
-                    cut, trackWriter, observationLevel, profile);
+                    cut, trackWriter, profile, observationLevel);
   /* === END: SETUP PROCESS LIST === */
 
   // create the cascade object using the default stack and tracking

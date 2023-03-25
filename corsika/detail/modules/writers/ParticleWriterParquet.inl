@@ -29,8 +29,8 @@ namespace corsika {
     // build the schema
     output_.addField("pdg", parquet::Repetition::REQUIRED, parquet::Type::INT32,
                      parquet::ConvertedType::INT_32);
-    output_.addField("energy", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
-                     parquet::ConvertedType::NONE);
+    output_.addField("kinetic_energy", parquet::Repetition::REQUIRED,
+                     parquet::Type::FLOAT, parquet::ConvertedType::NONE);
     output_.addField("x", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
     output_.addField("y", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,

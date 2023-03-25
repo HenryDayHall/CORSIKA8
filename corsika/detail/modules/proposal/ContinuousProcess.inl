@@ -137,14 +137,14 @@ namespace corsika::proposal {
     // a hyper parameter which must be adjusted.
     //
     auto const energy = vP.getEnergy();
-    auto const energy_lim =
-        std::max(energy * 0.9, // either 10% relative loss max., or
-                 get_kinetic_energy_propagation_threshold(
-                     code) // energy thresholds globally defined for individual particles
-                     * 0.9999 // need to go slightly below global e-cut to assure removal
-                              // in ParticleCut. This does not matter since at cut-time
-                              // the entire energy is removed.
-        );
+    auto const energy_lim = std::max(
+        energy * 0.9, // either 10% relative loss max., or
+        (get_kinetic_energy_propagation_threshold(code) +
+         get_mass(code)) // energy thresholds globally defined for individual particles
+            * 0.9999     // need to go slightly below global e-cut to assure removal
+                         // in ParticleCut. This does not matter since at cut-time
+                         // the entire energy is removed.
+    );
 
     // solving the track integral for giving energy lim
     auto c = getCalculator(vP, calc);
