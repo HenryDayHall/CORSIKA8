@@ -26,7 +26,6 @@ namespace corsika::fluka {
    * initialized with a predefined set of target materials and a flag describing the type
    * of interactions (elastic, inelastic, electromagnetic dissociation). Currently, only
    * inelastic events are supported.
-   *
    */
   class InteractionModel {
   public:
@@ -49,6 +48,10 @@ namespace corsika::fluka {
     //! convert target Code to FLUKA material number
     int getMaterialIndex(Code targetID) const;
 
+    /**
+     * Perform an interaction. Since FLUKA expects a fixed-target configuration, we
+     * perform a Lorentz transform into the rest frame of the target.
+     */
     template <typename TSecondaryView>
     void doInteraction(TSecondaryView& view, Code const projectileId, Code const targetId,
                        FourMomentum const& projectileP4, FourMomentum const& targetP4);
