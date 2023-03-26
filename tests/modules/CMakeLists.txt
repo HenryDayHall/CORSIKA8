@@ -15,7 +15,11 @@ set (test_modules_sources
   testRadio.cpp
   testEMThinning.cpp
   testSophia.cpp
-  )
+)
+  
+if (EXISTS "${C8_FLUKALIB}")
+    list(APPEND test_modules_sources "testFluka.cpp")
+endif()
 
 CORSIKA_ADD_TEST (testModules SOURCES ${test_modules_sources})
 

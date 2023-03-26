@@ -22,3 +22,4 @@
 #include <corsika/modules/urqmd/Random.hpp>
 #include <corsika/modules/qgsjetII/Random.hpp>
 #include <corsika/modules/conex/Random.hpp>
+#include <corsika/modules/fluka/Random.hpp>
