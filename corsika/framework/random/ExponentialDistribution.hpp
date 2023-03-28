@@ -14,8 +14,8 @@
 namespace corsika {
 
   /**
-   * Describes a random distribution with \f[ \beta e^{-X} \f] for a physical quantity of
-   * type Quantity.
+   * Describes a random distribution with \f[ \beta e^{-\beta X} \f] for a physical 
+   * quantity of type Quantity.
    *
    * @tparam Quantity is the type of the physical quantity.
    */
@@ -46,7 +46,7 @@ namespace corsika {
 
     /**
      * @fn value_type getBeta() const
-     * @brief Get parameter of exponential distribution \f[ \beta e^{-X}\f].
+     * @brief Get parameter of exponential distribution \f[ \beta e^{-\beta X}\f].
      *
      * @return  value_type
      */
@@ -54,7 +54,7 @@ namespace corsika {
 
     /**
      * @fn void setBeta(value_type)
-     * @brief Set parameter of exponential distribution \f[ \beta e^{-X}\f].
+     * @brief Set parameter of exponential distribution \f[ \beta e^{-\beta X}\f].
      *
      * @param vBeta
      */
@@ -62,7 +62,7 @@ namespace corsika {
 
     /**
      * @fn value_type operator ()(Generator&)
-     * @brief Generate a random number distributed like \f[ \beta e^{-X}\f].
+     * @brief Generate a random number distributed like \f[ \beta e^{-\beta X}\f].
      *
      * @tparam Generator
      * @param g
