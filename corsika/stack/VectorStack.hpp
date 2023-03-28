@@ -156,7 +156,7 @@ namespace corsika {
     //! Get electric charge
     ElectricChargeType getCharge() const { return get_charge(this->getPID()); }
 
-    //! Get kinetic energy
+    //! Get total energy
     HEPEnergyType getEnergy() const { return this->getKineticEnergy() + this->getMass(); }
 
     //! Get charge number
