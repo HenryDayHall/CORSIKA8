@@ -14,7 +14,7 @@
 namespace corsika {
 
   /**
-   * Describes a random distribution with \f[ \beta e^{-\beta X} \f] for a physical 
+   * Describes a random distribution with \f[ \beta e^{-\beta X} \f] for a physical
    * quantity of type Quantity.
    *
    * @tparam Quantity is the type of the physical quantity.
