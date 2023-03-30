@@ -303,7 +303,7 @@ int main(int argc, char** argv) {
   output.add("particles", observationLevel);
 
   auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emContinuous,
-                                cut, profile, observationLevel);
+                                profile, observationLevel, cut);
 
   // define air shower object, run simulation
   setup::Tracking tracking;

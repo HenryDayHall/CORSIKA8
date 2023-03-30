@@ -304,8 +304,8 @@ int main(int argc, char** argv) {
   };
   auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted, sibyllCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
-  auto sequence = make_sequence(hadronSequence, decaySequence, eLoss, cut, conex_model,
-                                longprof, observationLevel, trackCheck);
+  auto sequence = make_sequence(hadronSequence, decaySequence, eLoss, conex_model,
+                                longprof, observationLevel, trackCheck, cut);
 
   // define air shower object, run simulation
   setup::Tracking tracking;

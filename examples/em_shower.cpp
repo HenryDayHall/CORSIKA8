@@ -192,7 +192,7 @@ int main(int argc, char** argv) {
       obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
   output.add("particles", observationLevel);
 
-  auto sequence = make_sequence(emCascade, emContinuous, longprof, cut, observationLevel);
+  auto sequence = make_sequence(emCascade, emContinuous, longprof, observationLevel, cut);
   // define air shower object, run simulation
   setup::Tracking tracking;
 
