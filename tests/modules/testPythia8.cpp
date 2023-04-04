@@ -196,17 +196,18 @@ TEST_CASE("Pythia8Interface", "modules") {
                  {rootCS, {0_eV, 0_eV, 100_GeV}}},
                 {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) > 0_mb);
 
-    // K+N
+    // K+{N,O,Ar}
+    Code const target = GENERATE(Code::Nitrogen, Code::Oxygen, Code::Argon);
     REQUIRE(collision.getCrossSection(
-                Code::KPlus, Code::Nitrogen,
+                Code::KPlus, target,
                 {sqrt(static_pow<2>(KPlus::mass) + static_pow<2>(100_GeV)),
                  {rootCS, {0_eV, 0_eV, 100_GeV}}},
-                {Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) > 0_mb);
+                {get_mass(target), {rootCS, {0_eV, 0_eV, 0_eV}}}) > 0_mb);
 
-    collision.doInteraction(view, Code::Proton, Code::Nitrogen,
+    collision.doInteraction(view, Code::Proton, target,
                             {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
                              {rootCS, {0_eV, 0_eV, 100_GeV}}},
-                            {Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}});
+                            {get_mass(target), {rootCS, {0_eV, 0_eV, 0_eV}}});
     REQUIRE(view.getSize() >= 2);
   }
 
@@ -271,7 +272,6 @@ TEST_CASE("Pythia8Interface", "modules") {
   }
 
   SECTION("pythia wrong projectile") {
-
     // resonable projectile, but tool low energy
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Iron, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
@@ -290,5 +290,11 @@ TEST_CASE("Pythia8Interface", "modules") {
         {sqrt(static_pow<2>(Helium::mass) + static_pow<2>(100_GeV)),
          {rootCS, {0_eV, 0_eV, 100_GeV}}},
         {Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
+
+    // gamma+p not possible
+    REQUIRE(collision.getCrossSection(Code::Photon, Code::Proton,
+                                      {100_GeV, {rootCS, {0_eV, 0_eV, 100_GeV}}},
+                                      {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) ==
+            CrossSectionType::zero());
   }
 }
