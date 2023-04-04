@@ -51,7 +51,7 @@ namespace corsika {
     Vector const displacement = pointOfIntersection - plane_.getCenter();
 
     // add our particles to the output file stream
-    double const weight = 1.; // step.getParticlePre().getWeight();
+    double const weight = step.getParticlePre().getWeight();
     this->write(step.getParticlePre().getPID(), kineticEnergy, displacement.dot(xAxis_),
                 displacement.dot(yAxis_), 0_m, step.getTimePost(), weight);
 
