@@ -196,8 +196,9 @@ TEST_CASE("Pythia8Interface", "modules") {
                  {rootCS, {0_eV, 0_eV, 100_GeV}}},
                 {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) > 0_mb);
 
-    // K+{N,O,Ar}
-    Code const target = GENERATE(Code::Nitrogen, Code::Oxygen, Code::Argon);
+    // K+{p,n,N,O,Ar}
+    Code const target =
+        GENERATE(Code::Proton, Code::Neutron, Code::Nitrogen, Code::Oxygen, Code::Argon);
     REQUIRE(collision.getCrossSection(
                 Code::KPlus, target,
                 {sqrt(static_pow<2>(KPlus::mass) + static_pow<2>(100_GeV)),
@@ -296,5 +297,10 @@ TEST_CASE("Pythia8Interface", "modules") {
                                       {100_GeV, {rootCS, {0_eV, 0_eV, 100_GeV}}},
                                       {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) ==
             CrossSectionType::zero());
+
+    REQUIRE(collision.getCrossSectionInelEla(
+                Code::Photon, Code::Proton, {100_GeV, {rootCS, {0_eV, 0_eV, 100_GeV}}},
+                {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) ==
+            std::make_tuple(CrossSectionType::zero(), CrossSectionType::zero()));
   }
 }
