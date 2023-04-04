@@ -14,7 +14,7 @@ namespace corsika {
   template <typename TEnvironment>
   // TODO: maybe the constructor doesn't take any arguments for the environment (?)
   inline StraightPropagator<TEnvironment>::StraightPropagator(TEnvironment const& env)
-      : RadioPropagator<StraightPropagator, TEnvironment>(env){};
+      : RadioPropagator<StraightPropagator, TEnvironment>(env) {}
 
   template <typename TEnvironment>
   inline typename StraightPropagator<TEnvironment>::SignalPathCollection
@@ -30,17 +30,17 @@ namespace corsika {
      */
 
     // these are used for the direction of emission and reception of signal at the antenna
-    auto const emit_{(destination - source).normalized()};
-    auto const receive_{-emit_};
+    auto const emit{(destination - source).normalized()};
+    auto const receive{-emit};
 
     // the distance from the point of emission to an observer
-    auto const distance_{(destination - source).getNorm()};
+    auto const distance{(destination - source).getNorm()};
 
     try {
-      if (stepsize <= 0.5 * distance_) {
+      if (stepsize <= 0.5 * distance) {
 
         // "step" is the direction vector with length `stepsize`
-        auto const step{emit_ * stepsize};
+        auto const step{emit * stepsize};
 
         // calculate the number of points (roughly) for the numerical integration
         auto const n_points{(destination - source).getNorm() / stepsize};
@@ -93,7 +93,7 @@ namespace corsika {
         auto N = rindex.size();
         std::size_t index = 0;
         double sum = rindex.at(index);
-        auto refra_ = rindex.at(index);
+        auto refra = rindex.at(index);
         TimeType time{0_s};
 
         if ((N - 1) % 2 == 0) {
@@ -102,15 +102,15 @@ namespace corsika {
 
           for (std::size_t index = 1; index < (N - 1); index += 2) {
             sum += 4 * rindex.at(index);
-            refra_ += rindex.at(index);
+            refra += rindex.at(index);
           }
           for (std::size_t index = 2; index < (N - 1); index += 2) {
             sum += 2 * rindex.at(index);
-            refra_ += rindex.at(index);
+            refra += rindex.at(index);
           }
           index = N - 1;
           sum = sum + rindex.at(index);
-          refra_ += rindex.at(index);
+          refra += rindex.at(index);
 
           // compute the total time delay.
           time = sum * (h / (3 * constants::c));
@@ -133,15 +133,15 @@ namespace corsika {
           auto const h = ((extrapoint2_ - source).getNorm()) / (N - 1);
           for (std::size_t index = 1; index < (N - 1); index += 2) {
             sum += 4 * rindex.at(index);
-            refra_ += rindex.at(index);
+            refra += rindex.at(index);
           }
           for (std::size_t index = 2; index < (N - 1); index += 2) {
             sum += 2 * rindex.at(index);
-            refra_ += rindex.at(index);
+            refra += rindex.at(index);
           }
           index = N - 1;
           sum = sum + rindex.at(index);
-          refra_ += rindex.at(index);
+          refra += rindex.at(index);
 
           // compute the total time delay including the correction
           time =
@@ -150,13 +150,14 @@ namespace corsika {
         }
 
         // uncomment the following if you want to skip the integration for fast tests
-        // TimeType time = ri_destination * (distance_ / constants::c);
+        // TimeType time = ri_destination * (distance / constants::c);
 
         // compute the average refractive index.
-        auto const averageRefractiveIndex_ = refra_ / N;
+        auto const averageRefractiveIndex = refra / N;
 
-        return {SignalPath(time, averageRefractiveIndex_, ri_source, ri_destination,
-                           emit_, receive_, distance_, points)};
+        return std::vector<SignalPath>(
+            1, SignalPath(time, averageRefractiveIndex, ri_source, ri_destination, emit,
+                          receive, distance, points));
       } else {
         throw stepsize;
       }
@@ -164,6 +165,11 @@ namespace corsika {
       CORSIKA_LOG_ERROR("Please choose a smaller stepsize for the numerical integration");
     }
 
-  } // END: propagate()
+    std::deque<Point> const defaultPoints;
+    return std::vector<SignalPath>(
+        1, SignalPath(0_s, 0, 0, 0, emit, receive, distance,
+                      defaultPoints)); // Dummy return that is never called (combat
+                                       // compile warnings)
+  }                                    // END: propagate()
 
 } // namespace corsika

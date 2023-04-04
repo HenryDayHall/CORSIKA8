@@ -46,13 +46,13 @@ namespace corsika {
         return ProcessReturn::Ok;
     }
 
-    HEPEnergyType const energy = step.getEkinPost();
+    HEPEnergyType const kineticEnergy = step.getEkinPost();
     Point const pointOfIntersection = step.getPositionPost();
     Vector const displacement = pointOfIntersection - plane_.getCenter();
 
     // add our particles to the output file stream
     double const weight = 1.; // step.getParticlePre().getWeight();
-    this->write(step.getParticlePre().getPID(), energy, displacement.dot(xAxis_),
+    this->write(step.getParticlePre().getPID(), kineticEnergy, displacement.dot(xAxis_),
                 displacement.dot(yAxis_), 0_m, step.getTimePost(), weight);
 
     CORSIKA_LOG_TRACE("Particle detected absorbed={}", deleteOnHit_);

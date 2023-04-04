@@ -81,11 +81,12 @@ Also initialize devtools, before building CORSIKA 8:
 
 
 CORSIKA 8 uses the `conan <https://conan.io/>`_ package manager to
-manage our dependencies. If you do not have Conan installed, it can be
+manage our dependencies. Currently, version 1.55.0 or higher is required.
+If you do not have Conan installed, it can be
 installed with:
 ::
-   
-  pip install --user conan
+
+  pip install --user conan~=1.55.0
 
   
 Compiling

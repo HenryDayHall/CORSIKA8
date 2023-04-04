@@ -57,10 +57,10 @@ namespace corsika {
     if (w1 <= maxWeightFactor && w2 <= maxWeightFactor) { // apply Hillas thinning
       if (uniform_(rng_) <= p1) {                         // keep 1st with probability p1
         particle2.setWeight(0);
-        particle1.setWeight(w1 * parentWeight);
+        particle1.setWeight(w1);
       } else { // keep 2nd
         particle1.setWeight(0);
-        particle2.setWeight(w2 * parentWeight);
+        particle2.setWeight(w2);
       }
     } else { // weight limitation kicks in, do statistical thinning
       double const w1prime = std::min(w1, maxWeightFactor);

@@ -2,6 +2,8 @@
 
 DIR=$(readlink -f $(dirname $0))
 
+echo "using `conan --version`"
+
 if ! conan profile show corsika8 >/dev/null 2>/dev/null; then
   conan profile new --detect corsika8
   conan profile update settings.compiler.cppstd=17 corsika8

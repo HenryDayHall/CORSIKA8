@@ -132,6 +132,11 @@ namespace corsika {
     if (std::abs(k) <= maxPDG) {
       return particle::detail::conversionArray[k + maxPDG];
     } else {
+      if (1000000000 <= k && k <= 1009999990) { // nucleus (no L or I)
+        int const Z = (k - 1000000000) / 10000;
+        int const A = (k - 1000000000 - 10000 * Z) / 10;
+        return get_nucleus_code(A, Z);
+      }
       return particle::detail::conversionMap.at(p);
     }
   }

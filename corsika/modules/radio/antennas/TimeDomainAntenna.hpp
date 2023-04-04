@@ -8,6 +8,7 @@
 #pragma once
 
 #include <corsika/modules/radio/antennas/Antenna.hpp>
+#include <yaml-cpp/yaml.h>
 #include <vector>
 
 namespace corsika {
@@ -22,11 +23,11 @@ namespace corsika {
     TimeType const start_time_;         ///< The start time of this waveform.
     TimeType const duration_;           ///< The duration of this waveform.
     InverseTimeType const sample_rate_; ///< The sampling rate of this antenna.
-    int const num_bins_;                ///< The number of bins used.
-    std::vector<double> waveformEX_;    ///< EX polarization.
-    std::vector<double> waveformEY_;    ///< EY polarization.
-    std::vector<double> waveformEZ_;    ///< EZ polarization.
     TimeType const ground_hit_time_; ///< The time the primary particle hits the ground.
+    uint64_t const num_bins_;        ///< The number of bins used.
+    std::vector<double> waveformEX_; ///< EX polarization.
+    std::vector<double> waveformEY_; ///< EY polarization.
+    std::vector<double> waveformEZ_; ///< EZ polarization.
     std::vector<long double> const
         time_axis_; ///< The time axis corresponding to the electric field.
 

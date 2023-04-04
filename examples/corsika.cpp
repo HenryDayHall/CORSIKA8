@@ -345,9 +345,9 @@ int main(int argc, char** argv) {
   output.add("particles", observationLevel);
 
   // assemble the final process sequence
-  auto sequence = make_sequence(stackInspect, hadronSequence, decayPythia, cut, emCascade,
-                                emContinuous, // trackWriter,
-                                observationLevel, longprof);
+  auto sequence = make_sequence(stackInspect, hadronSequence, decayPythia, cut,
+                                emCascade, emContinuous, // trackWriter,
+                                longprof, observationLevel);
   /* === END: SETUP PROCESS LIST === */
 
   // create the cascade object using the default stack and tracking

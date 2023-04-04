@@ -81,13 +81,13 @@ namespace corsika {
   template <typename TDim>
   inline CoordinateSystemPtr make_rotationToZ(CoordinateSystemPtr const& cs,
                                               Vector<TDim> const& vVec) {
-    if (vVec.getSquaredNorm().magnitude() == 0) {
-      // in case of null-vector, there is nothing to do and the computations
-      // below do not work
+    auto const vVecComp = vVec.getComponents(cs);
+    if (vVecComp.getX().magnitude() == 0 && vVecComp.getY().magnitude() == 0 &&
+        vVecComp.getZ().magnitude() == 0) {
       return cs;
     }
 
-    auto const a = vVec.normalized().getComponents(cs).getEigenVector();
+    auto const a = vVecComp.normalized().getEigenVector();
     auto const a1 = a(0), a2 = a(1), a3 = a(2);
 
     Eigen::Matrix3d A, B;

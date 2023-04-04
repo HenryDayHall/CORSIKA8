@@ -63,6 +63,7 @@ You will also need:
 - cmake 
 - git
 - g++, gfortran, binutils, make
+- optional: FLUKA (see below)
 
 On a bare Ubuntu 20.04, just add:
 ``` shell
@@ -76,11 +77,12 @@ source /opt/rh/devtoolset-9/enable
 ```
 
 CORSIKA 8 uses the [conan](https://conan.io/) package manager to
-manage our dependencies. If you do not have Conan installed, it can be
+manage our dependencies. Currently, version 1.55.0 or higher is required.
+If you do not have Conan installed, it can be
 installed with:
 
 ``` shell
-pip install --user conan
+pip install --user conan~=1.55.0
 ```
 
 ### Compiling
@@ -96,6 +98,17 @@ cmake ../corsika -DCMAKE_INSTALL_PREFIX=../corsika-install
 make -j8
 make install
 ```
+
+### FLUKA support
+For legal reasons we do not distribute/bundle FLUKA together with CORSIKA 8.
+If you want to use FLUKA as low-energy hadronic interaction model, you have to download
+it separately from (http://www.fluka.org/), which requires registering there as FLUKA user.
+You need to download binaries suitable for your system (check compiler and glibc versions)
+and unpack the binaries into a directory of your choice. You also need the data archive
+(fluka20xy.z-data.tar.gz) unpacked in the same directory. To compile CORSIKA 8 with FLUKA,
+you need to specify the path of libflukahp.a when invoking cmake with the option
+`-DC8_FLUKALIB=<path>`. CMake will print a status message indicating whether FLUKA support
+is enabled or disabled when the library is (not) found.
 
 
 ## Installation (using docker containers)
