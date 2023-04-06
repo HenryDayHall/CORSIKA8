@@ -279,7 +279,12 @@ namespace corsika::pythia8 {
           return std::make_pair<int, int>(get_nucleus_A(targetId),
                                           get_nucleus_Z(targetId));
         } else {
-          return std::make_pair(0, 0); // TODO: what to do in this case?
+          // due to the earlier call to isValid(), we shouldn't end up here
+          // LCOV_EXCL_START
+          CORSIKA_LOG_ERROR("invalid target {}; you shouldn't have gotten this far!",
+                            targetId);
+          return std::make_pair(0, 0);
+          // LCOV_EXCL_STOP
         }
       });
 
