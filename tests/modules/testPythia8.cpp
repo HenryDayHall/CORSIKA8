@@ -244,7 +244,7 @@ TEST_CASE("Pythia8Interface", "modules") {
       [[maybe_unused]] auto const& node_dummy_Fe = nodePtr_Fe;
     }
 
-    // resonable projectile, but tool low energy
+    // resonable projectile, but too low energy
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Proton, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr_Fe,
         *csPtr_Fe);
@@ -280,11 +280,10 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     corsika::pythia8::Interaction collision;
     REQUIRE(collision.getCrossSectionInelEla(
-                Code::Helium, Code::Nitrogen,
-                {sqrt(static_pow<2>(Helium::mass) + static_pow<2>(100_GeV)),
+                Code::Electron, Code::Electron,
+                {sqrt(static_pow<2>(Electron::mass) + static_pow<2>(100_GeV)),
                  {rootCS, {0_eV, 0_eV, 100_GeV}}},
-                {Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) ==
-            std::tuple{0_mb, 0_mb});
+                {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) == std::tuple{0_mb, 0_mb});
 
     REQUIRE_THROWS(collision.doInteraction(
         *secViewPtr, Code::Helium, Code::Nitrogen,
