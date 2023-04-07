@@ -85,11 +85,11 @@ TEST_CASE("FLUKA") {
   }
 
   SECTION("getCrossSection") {
-    auto const projectileCode =
-        GENERATE(Code::PiMinus, Code::PiMinus, Code::PiMinus, Code::KMinus, Code::K0Long,
-                 Code::K0Short, Code::Lambda0, Code::SigmaPlus, Code::Proton,
-                 Code::AntiProton, Code::KMinus, Code::K0Long, Code::K0Short,
-                 Code::Lambda0, Code::SigmaPlus, Code::Proton, Code::AntiProton);
+    auto const projectileCode = GENERATE(
+        Code::PiMinus, Code::PiMinus, Code::PiMinus, Code::KMinus, Code::K0Long,
+        Code::K0Short, Code::Lambda0, Code::SigmaPlus, Code::Proton, Code::AntiProton,
+        Code::KMinus, Code::K0Long, Code::K0Short, Code::Lambda0, Code::SigmaPlus,
+        Code::Proton, Code::AntiProton, Code::Photon);
 
     auto const targetCode = GENERATE(Code::Oxygen, Code::Hydrogen);
 
@@ -105,7 +105,7 @@ TEST_CASE("FLUKA") {
   }
 
   SECTION("getCrossSection invalid") {
-    auto const projectileCode = GENERATE(Code::Electron, Code::Photon);
+    auto const projectileCode = Code::Electron;
     auto const targetCode = GENERATE(Code::Oxygen, Code::Hydrogen);
 
     HEPEnergyType const p = 100_GeV;
@@ -123,14 +123,15 @@ TEST_CASE("FLUKA") {
     auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Proton);
     auto const& cs = *csPtr;
 
-    auto const projectileCode = GENERATE(Code::PiPlus, Code::PiMinus, Code::KPlus,
-                                         Code::K0Long, Code::Lambda0, Code::SigmaPlus);
+    auto const projectileCode =
+        GENERATE(Code::PiPlus, Code::PiMinus, Code::KPlus, Code::K0Long, Code::Lambda0,
+                 Code::SigmaPlus, Code::Photon);
     auto const p = GENERATE(1_GeV, 20_GeV, 100_GeV, 1_TeV);
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Hydrogen, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
     { [[maybe_unused]] auto const& dummy_StackPtr = stackPtr; }
 
-    auto const targetCode = Code::Oxygen;
+    auto const targetCode = GENERATE(Code::Oxygen, Code::Nitrogen, Code::Argon);
     auto const projectile4mom =
         FourVector{calculate_total_energy(p, get_mass(projectileCode)),
                    MomentumVector{cs, 0_eV, 0_eV, p}};
