@@ -180,7 +180,7 @@ namespace corsika::pythia8 {
 
   double Interaction::getAverageSubcollisions(Code targetId,
                                               CrossSectionType sigTot) const {
-    if (targetId == Code::Proton || targetId == Code::Neutron ||
+    if (targetId == Code::Proton || targetId == Code::Neutron || targetId == Hydrogen ||
         targetId == Code::AntiProton || targetId == Code::AntiNeutron)
       return 1;
 
@@ -265,8 +265,7 @@ namespace corsika::pythia8 {
       int const iHad = eventMain.append(idNow, 12, 0, 0, 0, 0, 0, 0, pNow,
                                         get_mass(projectileId) * (1 / 1_GeV));
 
-      Pythia8::Vec4 const
-          vNow{}; // production vertex; useless but necessary (?) TODO: ask TS
+      Pythia8::Vec4 const vNow{}; // production vertex
 
       eventMain[iHad].vProd(vNow);
 

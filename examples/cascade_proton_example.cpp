@@ -84,7 +84,7 @@ int main() {
 
   world->setModelProperties<MyHomogeneousModel>(
       Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 1_mT),
-      1_kg / (1_m * 1_m * 1_m), NuclearComposition({Code::Hydrogen}, {1.}));
+      1_kg / (1_m * 1_m * 1_m), NuclearComposition({Code::Proton}, {1.}));
 
   universe.addChild(std::move(world));
 
