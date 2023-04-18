@@ -11,6 +11,7 @@
 #include <corsika/media/IRefractiveIndexModel.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/framework/utility/ImplementsMixin.hpp>
+#include <corsika/media/NuclearComposition.hpp>
 
 // for detail namespace, NoExtraModelInner, NoExtraModel and traits
 #include <corsika/detail/media/LayeredSphericalAtmosphereBuilder.hpp>
@@ -203,6 +204,10 @@ namespace corsika {
             typename TEnvironment, typename... TArgs>
   void create_5layer_atmosphere(TEnvironment& env, AtmosphereId const atmId,
                                 Point const& center, TArgs... args);
+
+  //! The standard/default air composition with fraction values based on CORSIKA 7
+  static inline NuclearComposition const standardAirComposition{
+      {Code::Nitrogen, Code::Oxygen, Code::Argon}, {0.78479, .21052, 0.00469}};
 
 } // namespace corsika
 

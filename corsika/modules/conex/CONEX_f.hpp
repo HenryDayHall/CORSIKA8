@@ -36,12 +36,17 @@ namespace conex {
 
   extern double double_rndm_interface();
 
-  extern "C" {}
-
   // the CONEX fortran interface
 
   extern "C" {
   extern struct { std::array<double, 16> dptl; } cxoptl_;
+
+  //! common block for atmosphere composition
+  extern struct {
+    std::array<double, 3> airz, aira, airw; //!< nuclear Z, A, composition fraction
+    double airavz, airava;                  //!< average Z, A
+    std::array<double, 3> airi;             //!< ionization potential, not used in cxroot
+  } cxair_;
 
   void cegs4_(int&, int&);
 
