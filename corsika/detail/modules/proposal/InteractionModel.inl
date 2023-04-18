@@ -133,7 +133,10 @@ namespace corsika::proposal {
           this->doHadronicPhotonInteraction(view, labCS, photonP4, targetId);
         } else {
           auto sec_code = convert_from_PDG(static_cast<PDGCode>(s.type));
-          view.addSecondary(std::make_tuple(sec_code, E - get_mass(sec_code), dir));
+          // use mass provided by PROPOSAL to ensure correct conversion to kinetic energy
+          auto massProposal =
+              PROPOSAL::ParticleDef::GetParticleDefForType(s.type).mass * 1_MeV;
+          view.addSecondary(std::make_tuple(sec_code, E - massProposal, dir));
         }
       }
     }
