@@ -20,13 +20,7 @@ namespace corsika {
         TEnvironmentInterface, TExtraEnv>::create(center, constants::EarthRadius::Mean,
                                                   std::forward<TArgs>(args)...);
 
-    // composition values from AIRES manual
-    builder.setNuclearComposition({{
-                                       Code::Nitrogen,
-                                       Code::Argon,
-                                       Code::Oxygen,
-                                   },
-                                   {0.7847, 0.0047, 1. - 0.7847 - 0.0047}});
+    builder.setNuclearComposition(standardAirComposition);
 
     // add the standard atmosphere layers
     auto const params = atmosphereParameterList[static_cast<uint8_t>(atmId)];

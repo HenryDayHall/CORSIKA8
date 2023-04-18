@@ -46,7 +46,7 @@ namespace corsika {
   }
 
   template <typename TFunction>
-  inline auto NuclearComposition::getWeighted(TFunction const& func) const {
+  inline auto NuclearComposition::getWeighted(TFunction func) const {
     using ResultQuantity = decltype(func(std::declval<Code>()));
     auto const product = [&](auto const compID, auto const fraction) {
       return func(compID) * fraction;
@@ -66,7 +66,7 @@ namespace corsika {
   } // namespace corsika
 
   template <typename TFunction>
-  inline auto NuclearComposition::getWeightedSum(TFunction const& func) const
+  inline auto NuclearComposition::getWeightedSum(TFunction func) const
       -> decltype(func(std::declval<Code>())) {
     using ResultQuantity = decltype(func(std::declval<Code>()));
 
