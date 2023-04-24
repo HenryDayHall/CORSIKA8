@@ -19,6 +19,7 @@
 #include <corsika/framework/utility/COMBoost.hpp>
 
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/multi_array.hpp>
 
 #include <algorithm>

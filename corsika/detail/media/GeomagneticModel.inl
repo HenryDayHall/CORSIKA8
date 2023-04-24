@@ -8,6 +8,8 @@
 
 #include <corsika/framework/core/Logging.hpp>
 #include <boost/math/tr1.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 #include <stdexcept>
 #include <string>
