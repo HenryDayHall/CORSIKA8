@@ -99,7 +99,7 @@ Once Conan is installed, follow these steps to download and install CORSIKA 8:
   mkdir corsika-build
   cd corsika-build
   ../corsika/conan-install.sh
-  cmake ../corsika -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX=../corsika-install
+  cmake ../corsika -DCMAKE_BUILD_TYPE="RelWithDebInfo" -DCMAKE_INSTALL_PREFIX=../corsika-install
   make -j8
   make install
 
