@@ -20,6 +20,7 @@
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
 #include <corsika/media/ExponentialRefractiveIndex.hpp>
+#include <corsika/media/GladstoneDaleRefractiveIndex.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
 
 #include <SetupTestTrajectory.hpp>
@@ -31,8 +32,11 @@ using namespace corsika;
 template <typename TInterface>
 using MyExtraEnv =
     ExponentialRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
+template <typename TInterface2>
+using MyExtraEnv2 =
+    GladstoneDaleRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface2>>>;
 
-TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
+TEST_CASE("UniformRefractiveIndex w/ Homogeneous medium") {
 
   logging::set_level(logging::level::info);
 
@@ -40,7 +44,7 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
 
   Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 
-  // setup our interface types
+  // set up our interface types
   using IModelInterface = IRefractiveIndexModel<IMediumModel>;
   using AtmModel = UniformRefractiveIndex<HomogeneousMedium<IModelInterface>>;
 
@@ -50,7 +54,7 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
   // the composition we use for the homogenous medium
   NuclearComposition const protonComposition({Code::Proton}, {1.});
 
-  // the refrative index that we use
+  // the refractive index that we use
   const double n{1.000327};
 
   // create the atmospheric model
@@ -212,4 +216,79 @@ TEST_CASE("ExponentialRefractiveIndex w/ 5-layered atmosphere") {
   auto const rIndex{node->getModelProperties().getRefractiveIndex(ref_)};
 
   CHECK(rIndex - n0 == Approx(0));
+}
+
+TEST_CASE("GladstoneDaleRefractiveIndex w/ Homogeneous medium") {
+
+  logging::set_level(logging::level::info);
+
+  // get a CS and a point
+  CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
+
+  Point const gOrigin(gCS, {0_m, 0_m, 0_m});
+
+  // setup interface types
+  using IModelInterface = IRefractiveIndexModel<IMediumModel>;
+  using AtmModel = GladstoneDaleRefractiveIndex<HomogeneousMedium<IModelInterface>>;
+
+  // the constant density
+  const auto density{19.2_g / cube(1_cm)};
+
+  // the composition we use for the homogenous medium
+  NuclearComposition const protonComposition({Code::Proton}, {1.});
+
+  // the refractive index at sea level
+  const double n0{1.000327};
+
+  // a point at the surface of the earth
+  Point const surface_{gCS, 0_m, 0_m, constants::EarthRadius::Mean};
+
+  // a random point in the atmosphere
+  Point const p1_{gCS, 1_km, 1_km, constants::EarthRadius::Mean + 10_km};
+
+  // create the atmospheric model and check refractive index
+  AtmModel medium(n0, surface_, density, protonComposition);
+
+  CHECK(n0 - medium.getRefractiveIndex(surface_) == Approx(0));
+  CHECK(n0 - medium.getRefractiveIndex(p1_) == Approx(0));
+}
+
+TEST_CASE("GladstoneDaleRefractiveIndex w/ 5-layered atmosphere") {
+
+  logging::set_level(logging::level::info);
+
+  // get a CS
+  CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
+
+  // the center of the earth
+  Point const center_{gCS, 0_m, 0_m, 0_m};
+
+  // a point at the surface of the earth
+  Point const surface_{gCS, 0_m, 0_m, constants::EarthRadius::Mean};
+
+  // the refractive index at sea level
+  const double n0{1.000327};
+
+  // a reference point to calculate the refractive index there
+  Point const ref_{gCS, 0_km, 0_km, constants::EarthRadius::Mean + 10_km};
+
+  // setup a 5-layered environment
+  using EnvironmentInterface =
+      IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+  using EnvType = Environment<EnvironmentInterface>;
+  EnvType env;
+
+  create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv2>(
+      env, AtmosphereId::LinsleyUSStd, center_, n0, surface_, Medium::AirDry1Atm,
+      MagneticFieldVector{gCS, 0_T, 50_uT, 0_T});
+
+  // get the universe for this environment
+  auto const* const universe{env.getUniverse().get()};
+  auto const* node{universe->getContainingNode(ref_)};
+  // get the refractive index
+  auto const rIndex1{node->getModelProperties().getRefractiveIndex(ref_)};
+  auto const rIndex2{node->getModelProperties().getRefractiveIndex(surface_)};
+
+  CHECK(rIndex1 - n0 == Approx(-0.0002591034));
+  CHECK(rIndex2 - n0 == Approx(0));
 }

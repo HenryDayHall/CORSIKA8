@@ -24,7 +24,8 @@ namespace corsika {
       , radius_(radius) {}
 
   template <typename T>
-  double ExponentialRefractiveIndex<T>::getRefractiveIndex(Point const& point) const {
+  inline double ExponentialRefractiveIndex<T>::getRefractiveIndex(
+      Point const& point) const {
     return n0_ * exp((-lambda_) * (distance(point, center_) - radius_));
   }
 
