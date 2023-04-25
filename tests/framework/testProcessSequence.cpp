@@ -1124,8 +1124,12 @@ TEST_CASE("SwitchProcessSequence Indexing", "ProcessSequence") {
   auto cp3 = ContinuousProcess1(0, 0_m);
   auto cp4 = ContinuousProcess1(0, 0_m);
 
-  auto sequence = make_sequence(make_select(select1, cp1, cp2), cp3, cp4);
-  
+  auto switch_sequence = make_select(select1, cp1, cp2);
+  auto sequence = make_sequence(switch_sequence, cp3, cp4);
+
+  CHECK(sequence.getNumberOfProcesses() == 4);
+  CHECK(switch_sequence.getNumberOfProcesses() == 2);
+
   DummyData particle;
   DummyTrajectory track;
   DummyView view(particle);
