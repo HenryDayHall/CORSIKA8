@@ -1218,3 +1218,71 @@ TEST_CASE("SwitchProcessSequence Indexing", "ProcessSequence") {
   cp3.resetFlag();
   cp4.resetFlag();
 }
+
+TEST_CASE("Nested ProcessSequence", "ProcessSequence") {
+  //
+
+  logging::set_level(logging::level::info);
+
+  CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
+
+  auto cp1 = ContinuousProcess1(0, 0_m);
+  auto cp2 = ContinuousProcess1(0, 0_m);
+  auto cp3 = ContinuousProcess1(0, 0_m);
+
+  auto sequence = make_sequence(make_sequence(cp1, cp2), cp3);
+
+  CHECK(sequence.getNumberOfProcesses() == 3);
+
+  DummyData particle;
+  DummyTrajectory track;
+  DummyView view(particle);
+  Step step(particle, track);
+
+  // cp1 selected
+  cp1.setStep(1_m);
+  cp2.setStep(100_m);
+  cp3.setStep(100_m);
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  ContinuousProcessStepLength continuousMaxStep =
+      sequence.getMaxStepLength(particle, track);
+  sequence.doContinuous(step, continuousMaxStep.getIndex());
+  CHECK(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  cp1.resetFlag();
+  cp2.resetFlag();
+  cp3.resetFlag();
+
+  // cp2 selected
+  cp1.setStep(100_m);
+  cp2.setStep(1_m);
+  cp3.setStep(100_m);
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  continuousMaxStep = sequence.getMaxStepLength(particle, track);
+  sequence.doContinuous(step, continuousMaxStep.getIndex());
+  CHECK_FALSE(cp1.getFlag());
+  CHECK(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  cp1.resetFlag();
+  cp2.resetFlag();
+  cp3.resetFlag();
+
+  // cp3 selected
+  cp1.setStep(100_m);
+  cp2.setStep(100_m);
+  cp3.setStep(1_m);
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  continuousMaxStep = sequence.getMaxStepLength(particle, track);
+  sequence.doContinuous(step, continuousMaxStep.getIndex());
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK(cp3.getFlag());
+
+}
