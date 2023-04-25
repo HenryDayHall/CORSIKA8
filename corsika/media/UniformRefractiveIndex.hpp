@@ -19,7 +19,7 @@ namespace corsika {
    * for all evaluated locations.
    */
   template <typename T>
-  class UniformRefractiveIndex final : public T {
+  class UniformRefractiveIndex : public T {
 
     double n_; ///< The constant refractive index that we use.
 
