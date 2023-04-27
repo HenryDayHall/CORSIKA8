@@ -33,10 +33,6 @@ namespace corsika {
 
   public:
     // import the methods from the antenna
-
-    // label this as a time-domain antenna.
-    static constexpr bool is_time_domain{true};
-
     using Antenna<TimeDomainAntenna>::getName;
     using Antenna<TimeDomainAntenna>::getLocation;
 
@@ -99,6 +95,14 @@ namespace corsika {
     auto const& getWaveformZ() const;
 
     /**
+     * Return a label that indicates that this is a time
+     * domain antenna
+     *
+     * This returns the string "Time".
+     */
+    std::string const getDomainLabel();
+
+    /**
      * Creates time-units of each waveform.
      *
      * It creates them in nanoseconds for ease of use.
@@ -110,7 +114,7 @@ namespace corsika {
      *
      * This returns them in nanoseconds for ease of use.
      */
-    auto const& getAxis() const;
+    auto const getAxis() const;
 
     /**
      * Returns the sampling rate of the time domain antenna.

@@ -36,13 +36,13 @@ namespace corsika {
                                     TPropagator>::doContinuous(const Step<Particle>& step,
                                                                const bool) {
     // we want the following particles:
-    // Code::Electron & Code::Positron & Code::Gamma
+    // Code::Electron & Code::Positron
 
     // we wrap Simulate() in doContinuous as the plan is to add particle level
     // filtering or thinning for calculation of the radio emission. This is
     // important for controlling the runtime of radio (by ignoring particles
     // that aren't going to contribute i.e. heavy hadrons)
-    // if (valid(particle, track)) {
+    // if (valid(step)) {
     auto const particleID_{step.getParticlePre().getPID()};
     if ((particleID_ == Code::Electron) || (particleID_ == Code::Positron)) {
       CORSIKA_LOG_DEBUG("Particle for radio calculation: {} ", particleID_);
@@ -62,17 +62,28 @@ namespace corsika {
     return meter * std::numeric_limits<double>::infinity();
   }
 
-  // this should all be moved at a separate radio output function
-  // LCOV_EXCL_START
   template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
   inline void RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>::startOfLibrary(
       const boost::filesystem::path& directory) {
 
-    // loop over every antenna and set the initial path
-    // this also writes the time-bins to disk.
-    for (auto& antenna : antennas_.getAntennas()) {
-      antenna.startOfLibrary(directory, this->implementation().algorithm);
-    }
+    // setup the streamer
+    output_.initStreamer((directory / ("antennas.parquet")).string());
+    // LCOV_EXCL_START
+    // build the schema
+    output_.addField("Time", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
+                     parquet::ConvertedType::NONE);
+
+    output_.addField("Ex", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
+                     parquet::ConvertedType::NONE);
+
+    output_.addField("Ey", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
+                     parquet::ConvertedType::NONE);
+
+    output_.addField("Ez", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
+                     parquet::ConvertedType::NONE);
+    // LCOV_EXCL_STOP
+    // and build the streamer
+    output_.buildStreamer();
   }
 
   template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
@@ -83,13 +94,55 @@ namespace corsika {
     // flush data to disk, and then reset the antenna
     // before the next event
     for (auto& antenna : antennas_.getAntennas()) {
-      antenna.endOfShower(event_, this->implementation().algorithm,
-                          antenna.getSampleRate() * 1_s);
+
+      auto const sampleRate = antenna.getSampleRate() * 1_s;
+      auto const radioImplementation =
+          static_cast<std::string>(this->implementation().algorithm);
+
+      // get the axis labels for this antenna and write the first row.
+      axistype axis = antenna.implementation().getAxis();
+
+      // get the copy of the waveform data for this event
+      std::vector<double> const& dataX = antenna.implementation().getWaveformX();
+      std::vector<double> const& dataY = antenna.implementation().getWaveformY();
+      std::vector<double> const& dataZ = antenna.implementation().getWaveformZ();
+
+      // check for the axis name
+      std::string label = "Unknown";
+      if (antenna.getDomainLabel() == "Time") {
+        label = "Time";
+      }
+      // LCOV_EXCL_START
+      else if (antenna.getDomainLabel() == "Frequency") {
+        label = "Frequency";
+      }
+      // LCOV_EXCL_STOP
+      if (radioImplementation == "ZHS" && label == "Time") {
+        for (size_t i = 0; i < axis.size() - 1; i++) {
+          auto time = (axis.at(i + 1) + axis.at(i)) / 2.;
+          auto Ex = -(dataX.at(i + 1) - dataX.at(i)) * sampleRate;
+          auto Ey = -(dataY.at(i + 1) - dataY.at(i)) * sampleRate;
+          auto Ez = -(dataZ.at(i + 1) - dataZ.at(i)) * sampleRate;
+
+          *(output_.getWriter())
+              << showerId_ << static_cast<double>(time) << static_cast<double>(Ex)
+              << static_cast<double>(Ey) << static_cast<double>(Ez) << parquet::EndRow;
+        }
+      } else if (radioImplementation == "CoREAS" && label == "Time") {
+        for (size_t i = 0; i < axis.size() - 1; i++) {
+          *(output_.getWriter())
+              << showerId_ << static_cast<double>(axis[i])
+              << static_cast<double>(dataX[i]) << static_cast<double>(dataY[i])
+              << static_cast<double>(dataZ[i]) << parquet::EndRow;
+        }
+      }
+
       antenna.reset();
     }
+    output_.closeStreamer();
 
     // increment our event counter
-    event_++;
+    showerId_++;
   }
 
   template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
@@ -123,6 +176,5 @@ namespace corsika {
 
     return config;
   }
-  // LCOV_EXCL_STOP
 
 } // namespace corsika

@@ -71,7 +71,7 @@ namespace corsika {
     double countHadrons_ = 0; ///< count hadrons hitting plane
     double countMuons_ = 0;   ///< count muons hitting plane
     double countEM_ = 0;      ///< count EM particles hitting plane.
-    double countOthers_ = 0;  ///< count othe types of particles hitting plane
+    double countOthers_ = 0;  ///< count other types of particles hitting plane
 
     HEPEnergyType totalEnergy_; ///< energy absorbed in ground.
 

@@ -97,6 +97,8 @@ namespace corsika {
 
   inline auto const& TimeDomainAntenna::getWaveformZ() const { return waveformEZ_; }
 
+  inline std::string const TimeDomainAntenna::getDomainLabel() { return "Time"; }
+
   inline std::vector<long double> TimeDomainAntenna::createTimeAxis() const {
 
     // create a 1-D xtensor to store time values so we can print them later.
@@ -115,7 +117,7 @@ namespace corsika {
     return times;
   }
 
-  inline auto const& TimeDomainAntenna::getAxis() const { return time_axis_; }
+  inline auto const TimeDomainAntenna::getAxis() const { return time_axis_; }
 
   inline InverseTimeType const& TimeDomainAntenna::getSampleRate() const {
     return sample_rate_;
