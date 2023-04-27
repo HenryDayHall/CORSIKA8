@@ -7,11 +7,8 @@
  */
 #pragma once
 
-#include <istream>
-#include <fstream>
-#include <iostream>
-#include <string>
 #include <corsika/output/BaseOutput.hpp>
+#include <corsika/output/ParquetStreamer.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
 #include <corsika/framework/core/Step.hpp>
 #include <corsika/setup/SetupStack.hpp>
@@ -49,9 +46,11 @@ namespace corsika {
   protected:
     TAntennaCollection& antennas_; ///< The radio antennas we store into.
     TPropagator propagator_;       ///< The propagator implementation.
-    int event_{0};                 ///< The current event ID.
+    unsigned int showerId_{0};     ///< The current event ID.
+    ParquetStreamer output_;       //!< The parquet streamer for this process.
 
   public:
+    using axistype = std::vector<long double>;
     /**
      * Construct a new RadioProcess.
      */

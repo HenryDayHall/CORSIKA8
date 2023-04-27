@@ -7,10 +7,10 @@
  */
 #pragma once
 
-#include <cnpy.hpp>
 #include <boost/filesystem.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/core/PhysicalGeometry.hpp>
+#include <corsika/output/ParquetStreamer.hpp>
 
 namespace corsika {
 
@@ -28,7 +28,6 @@ namespace corsika {
     std::string const name_;                     ///< The name/identifier of this antenna.
     Point const location_;                       ///< The location of this antenna.
     CoordinateSystemPtr const coordinateSystem_; ///< The coordinate system of the antenna
-    std::string filename_ = ""; ///< The filename for the output file for this antenna.
 
   public:
     using axistype = std::vector<long double>;
@@ -102,19 +101,6 @@ namespace corsika {
      */
     std::vector<double> const& getWaveformZ() const;
 
-    /**
-     * Prepare for the start of the library.
-     */
-    void startOfLibrary(boost::filesystem::path const& directory,
-                        std::string const radioImplementation);
-
-    /**
-     * Flush the data from this shower to disk.
-     */
-    void endOfShower(int const event, std::string const& radioImplementation,
-                     double const sampleRate);
-
-  protected:
     /**
      * Get a reference to the underlying radio implementation.
      */

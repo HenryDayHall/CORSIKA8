@@ -158,11 +158,10 @@ int main() {
   // assemble all processes into an ordered process list
   auto sequence = make_sequence(coreas, zhs, cut);
 
+  output.startOfLibrary();
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);
-  output.startOfShower();
   EAS.run();
-  output.endOfShower();
 
   CORSIKA_LOG_INFO("|p| = {} and E = {}", plab.getNorm(), Elab);
   CORSIKA_LOG_INFO("period: {}", period);

@@ -7,6 +7,7 @@
  */
 #include <catch2/catch.hpp>
 
+#include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/ZHS.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
@@ -65,9 +66,10 @@ TEST_CASE("Radio", "[processes]") {
 
   SECTION("CoREAS process") {
 
-    // This serves as a compiler test for any changes in the CoREAS algorithm
-    // Environment
+    // This serves as a compiler test for any changes in the CoREAS algorithm and
+    // check the radio process output
 
+    // Environment
     using EnvironmentInterface =
         IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
 
@@ -178,6 +180,23 @@ TEST_CASE("Radio", "[processes]") {
       REQUIRE(total < (1e-12 * ant.getWaveformX().size()));
     }
 
+    // coreas output check
+    std::string const implemencoreas{"CoREAS"};
+
+    boost::filesystem::path const tempPathC{boost::filesystem::temp_directory_path() /
+                                            ("test_corsika_radio_" + implemencoreas)};
+    if (boost::filesystem::exists(tempPathC)) {
+      boost::filesystem::remove_all(tempPathC);
+    }
+
+    boost::filesystem::create_directory(tempPathC);
+    coreas.startOfLibrary(tempPathC);
+    auto const outputFileC = tempPathC / ("antennas.parquet");
+    CHECK(boost::filesystem::exists(outputFileC));
+    // run end of shower and make sure that something extra was added
+    auto const fileSizeC = boost::filesystem::file_size(outputFileC);
+    coreas.endOfShower(0);
+    CHECK(boost::filesystem::file_size(outputFileC) > fileSizeC);
     coreas.endOfLibrary();
 
   } // END: SECTION("CoREAS process")
@@ -374,6 +393,25 @@ TEST_CASE("Radio", "[processes]") {
     // check doContinuous and simulate methods
     zhs.doContinuous(step, true);
 
+    // zhs output check
+    std::string const implemenzhs{"ZHS"};
+
+    boost::filesystem::path const tempPathZ{boost::filesystem::temp_directory_path() /
+                                            ("test_corsika_radio_" + implemenzhs)};
+    if (boost::filesystem::exists(tempPathZ)) {
+      boost::filesystem::remove_all(tempPathZ);
+    }
+
+    boost::filesystem::create_directory(tempPathZ);
+    zhs.startOfLibrary(tempPathZ);
+    auto const outputFileZ = tempPathZ / ("antennas.parquet");
+    CHECK(boost::filesystem::exists(outputFileZ));
+    // run end of shower and make sure that something extra was added
+    auto const fileSizeZ = boost::filesystem::file_size(outputFileZ);
+    zhs.endOfShower(0);
+    CHECK(boost::filesystem::file_size(outputFileZ) > fileSizeZ);
+    zhs.endOfLibrary();
+
   } // END: SECTION("ZHS process")
 
   SECTION("Radio extreme cases") {
@@ -399,6 +437,7 @@ TEST_CASE("Radio", "[processes]") {
     Point const point_1(rootCSRadio, {1_m, 1_m, 0_m});
     Point const point_2(rootCSRadio, {2_km, 1_km, 0_m});
     Point const point_4(rootCSRadio, {0_m, 1_m, 0_m});
+    const auto point_b{Point(rootCSRadio, 30000_m, 0_m, 0_m)};
 
     // create times for the antenna
     const TimeType start{0_s};
@@ -407,17 +446,26 @@ TEST_CASE("Radio", "[processes]") {
     const TimeType duration_dummy{2_s};
     const InverseTimeType sample_dummy{1_Hz};
 
+    // create specific times for antenna to do timebin check
+    const TimeType start_b{0.994e-4_s};
+    const TimeType duration_b{1.07e-4_s - 0.994e-4_s};
+    const InverseTimeType sampleRate_b{5e+11_Hz};
+
     // check that I can create an antenna at (1, 2, 3)
     TimeDomainAntenna ant1("antenna_name", point1, rootCSRadio, start, duration, sample,
                            start);
     TimeDomainAntenna ant2("dummy", point1, rootCSRadio, start, duration_dummy,
                            sample_dummy, start);
+    TimeDomainAntenna ant_b("timebin", point_b, rootCSRadio, start_b, duration_b,
+                            sampleRate_b, start_b);
     // construct a radio detector instance to store our antennas
     AntennaCollection<TimeDomainAntenna> detector;
     AntennaCollection<TimeDomainAntenna> detector_dummy;
+    AntennaCollection<TimeDomainAntenna> detector_b;
     // add the antennas to the detector
     detector.addAntenna(ant1);
     detector_dummy.addAntenna(ant2);
+    detector_b.addAntenna(ant_b);
 
     // create a new stack for each trial
     setup::Stack<EnvType> stack;
@@ -428,7 +476,7 @@ TEST_CASE("Radio", "[processes]") {
     const auto pmass{get_mass(particle)};
     // construct an energy
     const HEPEnergyType E0{1_TeV};
-    // compute the necessary momentumn
+    // compute the necessary momentum
     const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
     // and create the momentum vector
     const auto plab{MomentumVector(rootCSRadio, {P0, 0_GeV, 0_GeV})};
@@ -455,7 +503,18 @@ TEST_CASE("Radio", "[processes]") {
     VelocityVector vh{(point_4 - point1) / th};
     Line lh{point1, vh};
     StraightTrajectory track_h{lh, th};
+    StraightTrajectory track_h_neg_time{lh, -th};
     Step step_h(particle_stack, track_h);
+    Step step_h_neg_time(particle_stack, track_h_neg_time);
+
+    // feed radio with an electron track that ends in a different antenna bin.
+    Point const point_start(rootCSRadio, {100_m, 0_m, 0_m});
+    Point const point_end(rootCSRadio, {100_m, 0.00628319_m, 0_m});
+    TimeType tb{(point_end - point_start).getNorm() / (0.999 * constants::c)};
+    VelocityVector vb{(point_end - point_start) / tb};
+    Line lb{point_start, vb};
+    StraightTrajectory track_b{lb, tb};
+    Step step_b(particle_stack, track_b);
 
     // create radio process instances
     RadioProcess<decltype(detector),
@@ -467,13 +526,12 @@ TEST_CASE("Radio", "[processes]") {
                  ZHS<decltype(detector), decltype(SimplePropagator(envRadio))>,
                  decltype(SimplePropagator(envRadio))>
         zhs(detector, envRadio);
-
     coreas.doContinuous(step_proton, true);
     zhs.doContinuous(step_proton, true);
     coreas.doContinuous(step_h, true);
     zhs.doContinuous(step_h, true);
+    zhs.doContinuous(step_h_neg_time, true);
 
-    // create radio processes with "dummy" antenna to trigger extreme time-binning
     RadioProcess<decltype(detector_dummy),
                  CoREAS<decltype(detector_dummy), decltype(SimplePropagator(envRadio))>,
                  decltype(SimplePropagator(envRadio))>
@@ -483,9 +541,23 @@ TEST_CASE("Radio", "[processes]") {
                  ZHS<decltype(detector_dummy), decltype(SimplePropagator(envRadio))>,
                  decltype(SimplePropagator(envRadio))>
         zhs_dummy(detector_dummy, envRadio);
-
+    coreas_dummy.doContinuous(step_proton, true);
+    zhs_dummy.doContinuous(step_proton, true);
     coreas_dummy.doContinuous(step_h, true);
     zhs_dummy.doContinuous(step_h, true);
+
+    // create radio process instances
+    RadioProcess<decltype(detector_b),
+                 CoREAS<decltype(detector_b), decltype(SimplePropagator(envRadio))>,
+                 decltype(SimplePropagator(envRadio))>
+        coreas_b(detector_b, envRadio);
+
+    RadioProcess<decltype(detector_b),
+                 ZHS<decltype(detector_b), decltype(SimplePropagator(envRadio))>,
+                 decltype(SimplePropagator(envRadio))>
+        zhs_b(detector_b, envRadio);
+    coreas_b.doContinuous(step_b, true);
+    zhs_b.doContinuous(step_b, true);
 
   } // END: SECTION("Radio extreme cases")
 
@@ -574,7 +646,7 @@ TEST_CASE("Radio", "[processes]") {
     CHECK(config["antennas"]["antenna_name2"]["location"][0].as<double>() == 4);
     CHECK(config["antennas"]["antenna_name2"]["location"][1].as<double>() == 80);
     CHECK(config["antennas"]["antenna_name2"]["location"][2].as<double>() == 6);
-  }
+  } // END: SECTION("Process Library")
 
 } // END: TEST_CASE("Radio", "[processes]")
 
@@ -827,7 +899,7 @@ TEST_CASE("Antennas") {
 
   } // END: SECTION("TimeDomainAntenna AntennaCollection")
 
-  SECTION("TimeDomainAntenna Library") {
+  SECTION("TimeDomainAntenna Config File") {
     // Runs checks that the file readers are working properly
     Environment<IRefractiveIndexModel<IMediumModel>> env;
     const auto rootCS = env.getCoordinateSystem();
@@ -837,36 +909,24 @@ TEST_CASE("Antennas") {
     InverseTimeType const sampleRate(1_GHz);
     TimeType const groundHitTime(1e3_ns);
 
-    TimeDomainAntenna antenna("test_antenna", antPos, rootCS, tStart, duration,
-                              sampleRate, groundHitTime);
-
-    // Run the start of lib and end of shower functions on the antenna
-    std::vector<std::string> implementations{"CoREAS", "ZHS"};
-    for (auto const implemen : implementations) {
-      // For each implementation type, save a file
-      boost::filesystem::path const tempPath{boost::filesystem::temp_directory_path() /
-                                             ("test_corsika_radio_" + implemen)};
-      if (boost::filesystem::exists(tempPath)) {
-        boost::filesystem::remove_all(tempPath);
-      }
-      boost::filesystem::create_directory(tempPath);
-      antenna.startOfLibrary(tempPath, implemen);
-      auto const outputFile = tempPath / (antenna.getName() + ".npz");
-      CHECK(boost::filesystem::exists(outputFile));
-
-      // run end of shower and make sure that something extra was added
-      auto const fileSize = boost::filesystem::file_size(outputFile);
-      antenna.endOfShower(0, implemen, sampleRate / 1_Hz);
-      CHECK(boost::filesystem::file_size(outputFile) > fileSize);
-    }
+    TimeDomainAntenna antennaC("test_antennaCoREAS", antPos, rootCS, tStart, duration,
+                               sampleRate, groundHitTime);
+    TimeDomainAntenna antennaZ("test_antennaZHS", antPos, rootCS, tStart, duration,
+                               sampleRate, groundHitTime);
 
     // Check the YAML file output
-    auto const config = antenna.getConfig();
-    CHECK(config["type"].as<std::string>() == "TimeDomainAntenna");
-    CHECK(config["start_time"].as<double>() == tStart / 1_ns);
-    CHECK(config["duration"].as<double>() == duration / 1_ns);
-    CHECK(config["sample_rate"].as<double>() == sampleRate / 1_GHz);
-  } // END: SECTION("TimeDomainAntenna Library")
+    auto const configC = antennaC.getConfig();
+    CHECK(configC["type"].as<std::string>() == "TimeDomainAntenna");
+    CHECK(configC["start_time"].as<double>() == tStart / 1_ns);
+    CHECK(configC["duration"].as<double>() == duration / 1_ns);
+    CHECK(configC["sample_rate"].as<double>() == sampleRate / 1_GHz);
+
+    auto const configZ = antennaZ.getConfig();
+    CHECK(configZ["type"].as<std::string>() == "TimeDomainAntenna");
+    CHECK(configZ["start_time"].as<double>() == tStart / 1_ns);
+    CHECK(configZ["duration"].as<double>() == duration / 1_ns);
+    CHECK(configZ["sample_rate"].as<double>() == sampleRate / 1_GHz);
+  } // END: SECTION("TimeDomainAntenna Config File")
 
 } // END: TEST_CASE("Antennas")
 
@@ -1156,7 +1216,7 @@ TEST_CASE("Propagators") {
             Approx(0).margin(absMargin));
       CHECK(path.average_refractive_index_ == Approx(0.210275935));
       CHECK(path.refractive_index_source_ == Approx(2));
-      // CHECK(path.refractive_index_destination_ == Approx(0.0000000041));
+      CHECK(path.refractive_index_destination_ == Approx(4.12231e-09));
       CHECK(path.emit_.getComponents() == vvv1.getComponents());
       CHECK(path.receive_.getComponents() == vvv2.getComponents());
       CHECK(path.R_distance_ == 10_m);

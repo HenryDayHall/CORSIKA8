@@ -214,7 +214,7 @@ namespace corsika {
               VectorPotential Vp =
                   betaPerp * sign * constants * f / denominator / midPaths[i].R_distance_;
               antenna.receive(detectionTime1, betaPerp, Vp);
-              // intermidiate contributions
+              // intermediate contributions
               for (int it{1}; it < numberOfBins; ++it) {
                 Vp = betaPerp * sign * constants / denominator / midPaths[i].R_distance_;
                 antenna.receive(
