@@ -4,6 +4,7 @@ set (test_framework_sources
   testFourVector.cpp
   testSaveBoostHistogram.cpp
   testClassTimer.cpp
+  testDynamicInteractionProcess.cpp;
   testLogging.cpp
   testParticles.cpp
   testStackInterface.cpp
