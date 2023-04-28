@@ -19,6 +19,7 @@
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
+#include <corsika/framework/process/DynamicInteractionProcess.hpp>
 #include <corsika/framework/process/InteractionCounter.hpp>
 #include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/process/SwitchProcessSequence.hpp>
@@ -65,8 +66,10 @@
 #include <CLI/Config.hpp>
 #include <CLI/Formatter.hpp>
 
+#include <cstdlib>
 #include <iomanip>
 #include <limits>
+#include <string>
 #include <string_view>
 
 /*
@@ -164,6 +167,10 @@ int main(int argc, char** argv) {
   app.add_option("-v,--verbosity", "Verbosity level: warn, info, debug, trace.")
       ->default_val("info")
       ->check(CLI::IsMember({"warn", "info", "debug", "trace"}))
+      ->group("Misc.");
+  app.add_option("-M,--hadronModel", "High-energy hadronic interaction model")
+      ->default_val("SIBYLL-2.3d")
+      ->check(CLI::IsMember({"SIBYLL-2.3d", "QGSJet-II.04", "EPOS-LHC"}))
       ->group("Misc.");
 
   // parse the command line options into the variables
@@ -287,8 +294,26 @@ int main(int argc, char** argv) {
   TrackWriter tracks;
   output.add("tracks", tracks);
 
-  corsika::sibyll::Interaction sibyll{env};
-  InteractionCounter sibyllCounted{sibyll};
+  DynamicInteractionProcess<setup::Stack<EnvType>> heModel;
+
+  // have SIBYLL always for PROPOSAL photo-hadronic interactions
+  auto sibyll = std::make_shared<corsika::sibyll::Interaction>(env);
+
+  if (auto const modelStr = app["--hadronModel"]->as<std::string_view>();
+      modelStr == "SIBYLL-2.3d") {
+    heModel = DynamicInteractionProcess<setup::Stack<EnvType>>{sibyll};
+  } else if (modelStr == "QGSJet-II.04") {
+    heModel = DynamicInteractionProcess<setup::Stack<EnvType>>{
+        std::make_shared<corsika::qgsjetII::Interaction>()};
+  } else if (modelStr == "EPOS-LHC") {
+    heModel = DynamicInteractionProcess<setup::Stack<EnvType>>{
+        std::make_shared<corsika::epos::Interaction>()};
+  } else {
+    CORSIKA_LOG_CRITICAL("invalid choice \"{}\"; also check argument parser", modelStr);
+    return EXIT_FAILURE;
+  }
+
+  InteractionCounter heCounted{heModel};
 
   corsika::pythia8::Decay decayPythia;
 
@@ -327,7 +352,7 @@ int main(int argc, char** argv) {
   HEPEnergyType heHadronModelThreshold = 63.1_GeV;
 
   corsika::proposal::Interaction emCascade(
-      env, sophia, sibyll.getHadronInteractionModel(), heHadronModelThreshold);
+      env, sophia, sibyll->getHadronInteractionModel(), heHadronModelThreshold);
 
   // use BetheBlochPDG for hadronic continuous losses, and proposal otherwise
   corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuousProposal(
@@ -356,10 +381,8 @@ int main(int argc, char** argv) {
     bool operator()(const Particle& p) const { return (p.getKineticEnergy() < cutE_); }
   };
   auto hadronSequence =
-      make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, sibyllCounted);
+      make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, heCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
-
-  TrackWriter trackWriter{tracks};
 
   // observation plane
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
@@ -430,9 +453,7 @@ int main(int argc, char** argv) {
         Efinal / 1_GeV, dEdX.getEnergyLost() / 1_GeV,
         observationLevel.getEnergyGround() / 1_GeV, (Efinal / E0 - 1) * 100);
 
-    // auto const hists = heModelCounted.getHistogram() +
-    // urqmdCounted.getHistogram();
-    auto const hists = sibyllCounted.getHistogram() + urqmdCounted.getHistogram();
+    auto const hists = heCounted.getHistogram() + urqmdCounted.getHistogram();
 
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);
@@ -440,4 +461,6 @@ int main(int argc, char** argv) {
 
   // and finalize the output on disk
   output.endOfLibrary();
+
+  return EXIT_SUCCESS;
 }
