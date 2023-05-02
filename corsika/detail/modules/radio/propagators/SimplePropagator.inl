@@ -13,13 +13,15 @@ namespace corsika {
 
   template <typename TEnvironment>
   inline SimplePropagator<TEnvironment>::SimplePropagator(TEnvironment const& env)
-      : RadioPropagator<SimplePropagator, TEnvironment>(env) {}
+      : RadioPropagator<SimplePropagator, TEnvironment>(env) {
+      rindex.reserve(2);
+      }
 
   template <typename TEnvironment>
   inline typename SimplePropagator<TEnvironment>::SignalPathCollection
   SimplePropagator<TEnvironment>::propagate(
       Point const& source, Point const& destination,
-      [[maybe_unused]] LengthType const stepsize) const {
+      [[maybe_unused]] LengthType const stepsize) {
 
     /**
      * This is the simplest case of straight propagator
@@ -38,12 +40,9 @@ namespace corsika {
     // get the universe for this environment
     auto const* const universe{Base::env_.getUniverse().get()};
 
-    // the points that consist the signal path (source & destination).
-    std::deque<Point> points;
-
-    // store value of the refractive index at points.
-    std::vector<double> rindex;
-    rindex.reserve(2);
+    // clear the refractive index vector and points deque for this signal propagation.
+    rindex.clear();
+    points.clear();
 
     // get and store the refractive index of the first point 'source'.
     auto const* const nodeSource{universe->getContainingNode(source)};
@@ -58,7 +57,7 @@ namespace corsika {
     points.push_back(destination);
 
     // compute the average refractive index.
-    auto const averageRefractiveIndex_ = (ri_source + ri_destination) / 2;
+    auto const averageRefractiveIndex_ = (ri_source + ri_destination) * 0.5;
 
     // compute the total time delay.
     TimeType const time = averageRefractiveIndex_ * (distance_ / constants::c);

@@ -43,7 +43,12 @@ namespace corsika {
      *
      */
     SignalPathCollection propagate(Point const& source, Point const& destination,
-                                   LengthType const stepsize) const;
+                                   LengthType const stepsize);
+
+  private:
+      std::deque<Point> points;
+      std::vector<double> rindex;
+
   }; // End: SimplePropagator
 
 } // namespace corsika
