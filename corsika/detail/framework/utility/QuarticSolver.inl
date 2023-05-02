@@ -41,8 +41,8 @@ namespace corsika {
       long double y = x3[0]; // there is always at least one solution
       // The essence - choosing Y with maximal absolute value.
       if (x3.size() == 3) {
-        if (fabs(x3[1]) > fabs(y)) y = x3[1];
-        if (fabs(x3[2]) > fabs(y)) y = x3[2];
+        if (std::abs(x3[1]) > std::abs(y)) y = x3[1];
+        if (std::abs(x3[2]) > std::abs(y)) y = x3[2];
       }
 
       long double q1, q2, p1, p2;
@@ -50,13 +50,13 @@ namespace corsika {
 
       long double Det = y * y - 4 * e;
       CORSIKA_LOG_TRACE("Det={}", Det);
-      if (fabs(Det) < epsilon) // in other words - D==0
+      if (std::abs(Det) < epsilon) // in other words - D==0
       {
         q1 = q2 = y * 0.5;
         // g1+g2 = b && g1+g2 = c-y   <=>   g^2 - b*g + c-y = 0    (p === g)
         Det = b * b - 4 * (c - y);
         CORSIKA_LOG_TRACE("Det={}", Det);
-        if (fabs(Det) < epsilon) { // in other words - D==0
+        if (std::abs(Det) < epsilon) { // in other words - D==0
           p1 = p2 = b * 0.5;
         } else {
           if (Det < 0) return {};
