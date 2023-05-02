@@ -70,9 +70,6 @@ namespace corsika {
    // the geometrical distance from the point of emission to an observer
    auto const distance_{(destination - source).getNorm()};
 
-   // get the universe for this environment
-   auto const* const universe{Base::env_.getUniverse().get()};
-
    // clear the refractive index vector and points deque for this signal propagation.
    rindex.clear();
    points.clear();
