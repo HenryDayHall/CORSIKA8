@@ -299,15 +299,20 @@ namespace corsika {
 
     FourMomentum const projectileP4Post{particle.getEnergy(), particle.getMomentum()};
 
+    bool eraseParticle =
+        false; // only erase original particle if it decayed or interacted
+
     if (distance_interact < distance_decay) {
       CrossSectionType const total_cx_post = composition.getWeightedSum(xs_function);
-      interaction(secondaries, projectileP4Post, composition, total_cx_post);
+      eraseParticle = isInteracted(
+          interaction(secondaries, projectileP4Post, composition, total_cx_post));
     } else {
       [[maybe_unused]] auto projectile = secondaries.getProjectile();
 
       InverseTimeType const total_inv_lifetime_post =
           sequence_.getInverseLifetime(particle);
       if (decay(secondaries, total_inv_lifetime_post) == ProcessReturn::Decayed) {
+        eraseParticle = true;
         if (secondaries.getSize() == 1 &&
             projectile.getPID() == secondaries.getNextParticle().getPID()) {
           throw std::runtime_error(fmt::format("Particle {} decays into itself!",
@@ -317,7 +322,7 @@ namespace corsika {
     }
 
     sequence_.doSecondaries(secondaries);
-    particle.erase();
+    if (eraseParticle) particle.erase();
   }
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
