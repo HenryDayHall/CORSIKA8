@@ -15,7 +15,7 @@ namespace corsika {
   template <typename TRadioDetector, typename TPropagator>
   template <typename Particle>
   inline ProcessReturn ZHS<TRadioDetector, TPropagator>::simulate(
-      Step<Particle> const& step) const {
+      Step<Particle> const& step) {
     auto const startTime{step.getTimePre()};
     auto const endTime{step.getTimePost()};
 
