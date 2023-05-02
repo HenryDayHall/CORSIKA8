@@ -18,20 +18,16 @@ namespace corsika {
          , upperLimit_(upperLimit)
          , lowerLimit_(lowerLimit)
          , step_(step)
+         , inverseStep_(1 / step)
       {
                 auto const maxHeight_ = upperLimit_.getCoordinates().getZ();
                 auto const minHeight_ = lowerLimit_.getCoordinates().getZ();
                 auto const minX_ = lowerLimit_.getCoordinates().getX();
                 auto const minY_ = lowerLimit_.getCoordinates().getY();
-                std::size_t const nBins_ = (maxHeight_ - minHeight_) / step_ + 1;
+                std::size_t const nBins_ = (maxHeight_ - minHeight_) * inverseStep_ + 1;
                 rIndexTable_.reserve(nBins_);
                 heightTable_.reserve(nBins_);
                 integratedRIndexTable_.reserve(nBins_);
-                std::cout << "number of bins = " << nBins_ << std::endl;
-
-                std::cout << "rIndexTable_.size() = " << rIndexTable_.size() << std::endl;
-                std::cout << "heightTable_.size() = " << heightTable_.size() << std::endl;
-                std::cout << "integratedRIndexTable_.size() = " << integratedRIndexTable_.size() << std::endl;
 
                 // get the root coordinate system of this environment
                 CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
@@ -43,11 +39,11 @@ namespace corsika {
                   auto const* const node{universe->getContainingNode(point_)};
                   auto const ri_ = node->getModelProperties().getRefractiveIndex(point_);
                   rIndexTable_.push_back(ri_);
-                  auto const height_ = minHeight_ + i*step_;
+                  auto const height_ = minHeight_ + i * step_;
                   heightTable_.push_back(height_);
                 }
 
-                double const stepOverMeter_{step / 1_m};
+                double const stepOverMeter_{inverseStep_ * 1_m};
                 auto const intRiZero_ = rIndexTable_.at(0) * stepOverMeter_;
                 integratedRIndexTable_.push_back(intRiZero_);
                 for (std::size_t i = 1; i < nBins_; i++) {
@@ -59,7 +55,7 @@ namespace corsika {
  template <typename TEnvironment>
  inline typename FlatEarthPropagator<TEnvironment>::SignalPathCollection
  FlatEarthPropagator<TEnvironment>::propagate(Point const& source, Point const& destination,
-                                           LengthType const stepsize) const {
+                                              [[maybe_unused]] LengthType const stepsize) {
 
    /**
     * This is a simple case of straight propagator where
@@ -77,30 +73,27 @@ namespace corsika {
    // get the universe for this environment
    auto const* const universe{Base::env_.getUniverse().get()};
 
-   // the points that consist the signal path (source & destination).
-   std::deque<Point> points;
-
-   // store value of the refractive index at points.
-   std::vector<double> rindex;
-   rindex.reserve(2);
+   // clear the refractive index vector and points deque for this signal propagation.
+   rindex.clear();
+   points.clear();
 
    // get and store the refractive index of the first point 'source'.
-   std::size_t const indexSource_{static_cast<std::size_t>((source.getCoordinates().getZ() - heightTable_.front()) / step_ + 0.5)};
+   std::size_t const indexSource_{static_cast<std::size_t>((source.getCoordinates().getZ() - heightTable_.front()) * inverseStep_ + 0.5)};
    auto const ri_source{rIndexTable_.at(indexSource_)};
    rindex.push_back(ri_source);
    points.push_back(source);
 
    // add the refractive index of last point 'destination' and store it.
-   std::size_t const indexDestination_{static_cast<std::size_t>((destination.getCoordinates().getZ() - heightTable_.front()) / step_ + 0.5)};
+   std::size_t const indexDestination_{static_cast<std::size_t>((destination.getCoordinates().getZ() - heightTable_.front()) * inverseStep_ + 0.5)};
    auto const ri_destination{rIndexTable_.at(indexDestination_)};
    rindex.push_back(ri_destination);
    points.push_back(destination);
 
    // compute the average refractive index.
-   auto const averageRefractiveIndex_ = (ri_source + ri_destination) / 2;
+   auto const averageRefractiveIndex_ = (ri_source + ri_destination) * 0.5;
 
    // compute the total time delay.
-   TimeType const time = (integratedRIndexTable_.at(indexSource_) - integratedRIndexTable_.at(indexDestination_)) * (distance_ / constants::c);
+   TimeType const time = (integratedRIndexTable_.at(indexDestination_) - integratedRIndexTable_.at(indexSource_)) * (distance_ / constants::c);
 
    return {SignalPath(time, averageRefractiveIndex_, ri_source, ri_destination, emit_,
                       receive_, distance_, points)};

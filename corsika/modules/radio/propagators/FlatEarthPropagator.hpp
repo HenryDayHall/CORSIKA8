@@ -43,15 +43,18 @@ namespace corsika {
     *
     */
    SignalPathCollection propagate(Point const& source, Point const& destination,
-                                  LengthType const stepsize) const;
+                                  LengthType const stepsize);
 
  private:
    Point const upperLimit_;
    Point const lowerLimit_;
    LengthType const step_;
+   InverseLengthType const inverseStep_;
    std::vector<double> rIndexTable_;
    std::vector<double> integratedRIndexTable_;
    std::vector<LengthType> heightTable_;
+   std::deque<Point> points;
+   std::vector<double> rindex;
 
  }; // End: FlatEarthPropagator
 
