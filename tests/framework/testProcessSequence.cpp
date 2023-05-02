@@ -1065,3 +1065,54 @@ TEST_CASE("ProcessSequence Indexing", "ProcessSequence") {
               << std::endl;
   }
 }
+
+class ProcessZero : public InteractionProcess<ProcessZero> {
+public:
+  ProcessZero(int const v)
+      : v_(v) {
+    CORSIKA_LOG_DEBUG(
+        "globalCount: {}"
+        ", v_: {}",
+        globalCount, v_);
+    globalCount++;
+  }
+
+  template <typename TView>
+  void doInteraction(TView& v, Code const, Code const, FourMomentum const&,
+                     FourMomentum const&) const {
+    FAIL("ProcessZero::doInteraction has been called!");
+  }
+
+  CrossSectionType getCrossSection(Code const, Code const, FourMomentum const&,
+                                   FourMomentum const&) const {
+    CORSIKA_LOG_DEBUG("ProcessZero::getCrossSection");
+    return 0_mb;
+  }
+
+private:
+  int v_ = 0;
+};
+
+TEST_CASE("SelectInteractionZeroCrossSection", "ProcessSequence") {
+  logging::set_level(logging::level::info);
+  CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
+
+  auto sequence = make_sequence(ProcessZero(0));
+
+  DummyData particle;
+  DummyTrajectory track;
+  DummyView view(particle);
+
+  FourMomentum const projectileP4{10_GeV, {rootCS, {0_eV, 0_eV, 0_eV}}};
+
+  CrossSectionType cx_select =
+      sequence.getCrossSection(particle, Code::Nitrogen, projectileP4);
+  CHECK(cx_select == 0_mb); // should be zero
+  NuclearComposition const noComposition({Code::Nitrogen}, {1});
+  DummyRNG rng;
+
+  auto retValue =
+      sequence.selectInteraction(view, projectileP4, noComposition, rng, 0_mb);
+  CHECK(!isInteracted(retValue)); // cross section of process sequence is zero, no process
+                                  // should cause an interaction
+}
