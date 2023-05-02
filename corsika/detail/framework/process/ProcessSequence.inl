@@ -678,7 +678,7 @@ namespace corsika {
         // if this is not a ContinuousProcess --> evaluate probability
         decay_inv_sum += A_.getInverseLifetime(view.parent());
         // check if we should execute THIS process and then EXIT
-        if (decay_inv_select <= decay_inv_sum) { // more pedagogical: rndm_select <
+        if (decay_inv_select < decay_inv_sum) { // more pedagogical: rndm_select <
                                                  // decay_inv_sum / decay_inv_tot
           // interface checking on TProcess1
           static_assert(has_method_doDecay_v<TProcess1, void, TSecondaryView&>,
@@ -701,7 +701,7 @@ namespace corsika {
         // if this is not a ContinuousProcess --> evaluate probability
         decay_inv_sum += B_.getInverseLifetime(view.parent());
         // check if we should execute THIS process and then EXIT
-        if (decay_inv_select <= decay_inv_sum) {
+        if (decay_inv_select < decay_inv_sum) {
 
           // interface checking on TProcess1
           static_assert(has_method_doDecay_v<TProcess2, void, TSecondaryView&>,
