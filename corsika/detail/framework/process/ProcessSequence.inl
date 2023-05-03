@@ -679,7 +679,7 @@ namespace corsika {
         decay_inv_sum += A_.getInverseLifetime(view.parent());
         // check if we should execute THIS process and then EXIT
         if (decay_inv_select < decay_inv_sum) { // more pedagogical: rndm_select <
-                                                 // decay_inv_sum / decay_inv_tot
+                                                // decay_inv_sum / decay_inv_tot
           // interface checking on TProcess1
           static_assert(has_method_doDecay_v<TProcess1, void, TSecondaryView&>,
                         "TDerived has no method with correct signature \"void "
