@@ -180,8 +180,9 @@ namespace corsika::pythia8 {
 
   double Interaction::getAverageSubcollisions(Code targetId,
                                               CrossSectionType sigTot) const {
-    if (targetId == Code::Proton || targetId == Code::Neutron || targetId == Hydrogen ||
-        targetId == Code::AntiProton || targetId == Code::AntiNeutron)
+    if (targetId == Code::Proton || targetId == Code::Neutron ||
+        targetId == Code::Hydrogen || targetId == Code::AntiProton ||
+        targetId == Code::AntiNeutron)
       return 1;
 
     auto const Z = get_nucleus_Z(targetId);
