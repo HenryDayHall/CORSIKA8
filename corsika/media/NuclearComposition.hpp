@@ -51,7 +51,7 @@ namespace corsika {
      *  @retval returns the vector with weighted return types of func.
      */
     template <typename TFunction>
-    auto getWeighted(TFunction const& func) const;
+    auto getWeighted(TFunction func) const;
 
     /**
      * Sum all all relative composition weighted by func(element)
@@ -65,8 +65,7 @@ namespace corsika {
      *  @retval returns the weighted sum with the type defined by the return type of func.
      */
     template <typename TFunction>
-    auto getWeightedSum(TFunction const& func) const
-        -> decltype(func(std::declval<Code>()));
+    auto getWeightedSum(TFunction func) const -> decltype(func(std::declval<Code>()));
 
     /**
      * Number of elements in the composition array

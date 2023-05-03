@@ -92,6 +92,8 @@ namespace corsika::units::si {
       phys::units::quantity<phys::units::dimensions<-1, 0, 0>, double>;
   using InverseTimeType =
       phys::units::quantity<phys::units::dimensions<0, 0, -1>, double>;
+  using InverseMassDensityType =
+      phys::units::quantity<phys::units::dimensions<3, -1, 0>, double>;
   using InverseGrammageType =
       phys::units::quantity<phys::units::dimensions<2, -1, 0>, double>;
   using MagneticFluxType =

@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
   // build a Linsley US Standard atmosphere into `env`
   create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
       env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
-      MagneticFieldVector{rootCS, 20.4_uT, 0_T, 43.23_uT});
+      MagneticFieldVector{rootCS, 20.4_uT, 0_T, -43.23_uT});
 
   // Uncomment if you want to use PROPOSAL
   //  std::unordered_map<Code, HEPEnergyType> energy_resolution = {

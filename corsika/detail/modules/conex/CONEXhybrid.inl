@@ -7,6 +7,7 @@
  */
 
 #include <corsika/framework/core/Logging.hpp>
+#include <corsika/media/CORSIKA7Atmospheres.hpp>
 #include <corsika/modules/conex/CONEXhybrid.hpp>
 #include <corsika/modules/conex/CONEX_f.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
@@ -17,7 +18,7 @@
 
 #include <algorithm>
 #include <fstream>
-#include <iomanip>
+#include <numeric>
 #include <utility>
 
 namespace corsika {
@@ -82,6 +83,28 @@ namespace corsika {
                       showerCore_.getCoordinates(conexObservationCS_));
     CORSIKA_LOG_DEBUG("showerCore (C8): {}",
                       showerCore_.getCoordinates(center.getCoordinateSystem()));
+
+    auto const& components = ::corsika::standardAirComposition.getComponents();
+    auto const& fractions = ::corsika::standardAirComposition.getFractions();
+    if (::corsika::standardAirComposition.getSize() != 3) {
+      throw std::runtime_error{"CONEXhybrid only usable with standard 3-component air"};
+    }
+
+    std::transform(components.cbegin(), components.cend(), ::conex::cxair_.aira.begin(),
+                   get_nucleus_A);
+    std::transform(components.cbegin(), components.cend(), ::conex::cxair_.airz.begin(),
+                   get_nucleus_Z);
+    std::copy(fractions.cbegin(), fractions.cend(), ::conex::cxair_.airw.begin());
+
+    ::conex::cxair_.airava =
+        std::inner_product(::conex::cxair_.airw.cbegin(), ::conex::cxair_.airw.cend(),
+                           ::conex::cxair_.aira.cbegin(), 0.);
+    ::conex::cxair_.airavz =
+        std::inner_product(::conex::cxair_.airw.cbegin(), ::conex::cxair_.airw.cend(),
+                           ::conex::cxair_.airz.cbegin(), 0.);
+
+    // this is the CONEX default but actually unused there
+    ::conex::cxair_.airi = {82.0e-09, 95.0e-09, 188.e-09};
 
     int randomSeeds[3] = {1234, 0,
                           0}; // SEEDS ARE NOT USED. All random numbers are obtained from

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <boost/filesystem/fstream.hpp>
+
 namespace corsika {
 
   inline void YAMLStreamer::writeYAML(YAML::Node const& node,

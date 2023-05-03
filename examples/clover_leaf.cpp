@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2022 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -37,8 +37,6 @@
 #include <corsika/modules/radio/detectors/AntennaCollection.hpp>
 #include <corsika/modules/radio/propagators/StraightPropagator.hpp>
 #include <corsika/modules/radio/propagators/SimplePropagator.hpp>
-#include <corsika/modules/radio/propagators/SignalPath.hpp>
-#include <corsika/modules/radio/propagators/RadioPropagator.hpp>
 #include <corsika/modules/TrackWriter.hpp>
 
 #include <corsika/modules/StackInspector.hpp>
@@ -47,13 +45,13 @@
 //#include <corsika/modules/TrackWriter.hpp>
 
 /*
-  NOTE, WARNING, ATTENTION
+ NOTE, WARNING, ATTENTION
 
-  The .../Random.hpppp implement the hooks of external modules to the C8 random
-  number generator. It has to occur excatly ONCE per linked
-  executable. If you include the header below multiple times and
-  link this together, it will fail.
- */
+ The .../Random.hpppp implement the hooks of external modules to the C8 random
+ number generator. It has to occur excatly ONCE per linked
+ executable. If you include the header below multiple times and
+ link this together, it will fail.
+*/
 #include <corsika/modules/sibyll/Random.hpp>
 #include <corsika/modules/urqmd/Random.hpp>
 
@@ -72,7 +70,7 @@ using namespace std;
 //
 int main() {
 
-  logging::set_level(logging::level::warn);
+  logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   CORSIKA_LOG_INFO("Synchrotron radiation");
@@ -210,11 +208,10 @@ int main() {
   // assemble all processes into an ordered process list
   auto sequence = make_sequence(coreas, cut);
 
+  output.startOfLibrary();
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);
-  output.startOfShower();
   EAS.run();
-  output.endOfShower();
 
   CORSIKA_LOG_INFO("|p| electron = {} and E electron = {}", plab.getNorm(), Elab);
   CORSIKA_LOG_INFO("period: {}", period);
