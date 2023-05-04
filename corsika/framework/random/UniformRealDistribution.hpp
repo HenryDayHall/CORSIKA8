@@ -15,6 +15,7 @@ namespace corsika {
 
   template <typename Quantity>
   class UniformRealDistribution {
+    static_assert(is_quantity_v<Quantity>, "usable only with Quantity types");
 
     typedef typename Quantity::value_type real_type;
     typedef std::uniform_real_distribution<real_type> distribution_type;
@@ -24,23 +25,23 @@ namespace corsika {
 
     UniformRealDistribution() = delete;
 
-    UniformRealDistribution(Quantity const& b)
-        : min_{value_type(phys::units::detail::magnitude_tag, 0)}
-        , max_(b) {}
+    UniformRealDistribution(value_type b)
+        : min_{value_type::zero()}
+        , diff_{b} {}
 
-    UniformRealDistribution(value_type const& pmin, value_type const& pmax)
+    UniformRealDistribution(value_type pmin, value_type pmax)
         : min_(pmin)
-        , max_(pmax) {}
+        , diff_{pmax - pmin} {}
 
     UniformRealDistribution(UniformRealDistribution<value_type> const& other)
-        : min_(other.getMin())
-        , max_(other.getMax()) {}
+        : min_{other.min_}
+        , diff_{other.diff_} {}
 
     UniformRealDistribution<value_type>& operator=(
         UniformRealDistribution<value_type> const& other) {
       if (this == &other) return *this;
-      min_ = other.getMin();
-      max_ = other.getMax();
+      min_ = other.min_;
+      diff_ = other.diff_;
       return *this;
     }
 
@@ -49,31 +50,31 @@ namespace corsika {
      *
      * @return value_type
      */
-    value_type getMax() const { return max_; }
+    value_type getMax() const { return min_ + diff_; }
 
     /**
-     * Set the upper limit.
+     * Set the upper bound.
      *
-     * @param vMax
+     * @param pmax: new upper bound
      */
-    void setMax(value_type const& pmax) { max_ = pmax; }
+    void setMax(value_type const pmax) { diff_ = pmax - min_; }
 
     /**
-     * Get the lower limit.
+     * Get the lower bound.
      *
      * @return The minimum possible value.
      */
     value_type getMin() const { return min_; }
 
     /**
-     * Set the lower limit.
+     * Set the lower bound.
      *
      * @param pmin is the new lower bound.
      */
-    void setMin(value_type const& pmin) { min_ = pmin; }
+    void setMin(value_type const pmin) { min_ = pmin; }
 
     /**
-     * Generate a random number in the range [min, max].
+     * Generate a random number in the range [min, max).
      *
      * @tparam TGenerator
      * @param g
@@ -81,14 +82,14 @@ namespace corsika {
      */
     template <class TGenerator>
     value_type operator()(TGenerator& g) {
-      return min_ + dist_(g) * (max_ - min_);
+      return min_ + dist_(g) * diff_;
     }
 
   private:
     distribution_type dist_{real_type(0.), real_type(1.)};
 
     value_type min_;
-    value_type max_;
+    value_type diff_;
   };
 
 } // namespace corsika

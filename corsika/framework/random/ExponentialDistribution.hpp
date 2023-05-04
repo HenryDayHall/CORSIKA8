@@ -22,6 +22,7 @@ namespace corsika {
 
   template <typename Quantity>
   class ExponentialDistribution {
+    static_assert(is_quantity_v<Quantity>, "usable only with Quantity types");
 
     typedef typename Quantity::value_type real_type;
     typedef std::exponential_distribution<real_type> distribution_type;
@@ -31,7 +32,7 @@ namespace corsika {
 
     ExponentialDistribution() = delete;
 
-    ExponentialDistribution(value_type const& beta)
+    ExponentialDistribution(value_type beta)
         : beta_(beta) {}
 
     ExponentialDistribution(ExponentialDistribution<value_type> const& other)
