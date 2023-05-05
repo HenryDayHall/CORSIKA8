@@ -106,7 +106,7 @@ namespace corsika {
     CORSIKA_LOG_DEBUG("next time-intersect: {}, node {} ", minTime, fmt::ptr(minNode));
     // this branch cannot be unit-testes. This is malfunction: LCOV_EXCL_START
     if (minTime < 0_s) {
-      if (minTime < 1e-8_s) {
+      if (minTime < -1e-8_s) {
         CORSIKA_LOG_ERROR(
             "There is a very negative time step detected: {}. This is not physical and "
             "may "
