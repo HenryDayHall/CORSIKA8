@@ -51,6 +51,14 @@ namespace corsika {
 
   }; // End: SimplePropagator
 
+template <typename TEnvironment>
+SimplePropagator<TEnvironment>
+make_simple_radio_propagator(TEnvironment const& env){
+    return SimplePropagator<TEnvironment>(env);
+
+}
+
+
 } // namespace corsika
 
 #include <corsika/detail/modules/radio/propagators/SimplePropagator.inl>

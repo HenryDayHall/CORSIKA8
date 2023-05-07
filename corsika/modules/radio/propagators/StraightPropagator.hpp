@@ -47,6 +47,13 @@ namespace corsika {
 
   }; // End: StraightPropagator
 
+template <typename TEnvironment>
+StraightPropagator<TEnvironment>
+make_straight_radio_propagator(TEnvironment const& env){
+  return StraightPropagator<TEnvironment>(env);
+
+}
+
 } // namespace corsika
 
 #include <corsika/detail/modules/radio/propagators/StraightPropagator.inl>
