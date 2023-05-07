@@ -131,12 +131,12 @@ TEST_CASE("Radio", "[processes]") {
     auto const particle1{stack.addParticle(std::make_tuple(
         electron, calculate_kinetic_energy(plab.getNorm(), get_mass(electron)),
         plab.normalized(), pos, 0_ns))};
-
+    auto SP = make_straight_radio_propagator(envCoREAS);
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector),
-                 CoREAS<decltype(detector), decltype(StraightPropagator(envCoREAS))>,
-                 decltype(StraightPropagator(envCoREAS))>
-        coreas(detector, envCoREAS);
+                 CoREAS<decltype(detector), decltype(SP)>,
+                 decltype(SP)>
+        coreas(detector, SP);
 
     Step step(particle1, base);
     // check doContinuous and simulate methods
@@ -265,11 +265,13 @@ TEST_CASE("Radio", "[processes]") {
         electron, calculate_kinetic_energy(plab.getNorm(), get_mass(electron)),
         plab.normalized(), pos, 0_ns))};
 
+    auto SP = make_straight_radio_propagator(envCoREAS);
+
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector),
-                 CoREAS<decltype(detector), decltype(StraightPropagator(envCoREAS))>,
-                 decltype(StraightPropagator(envCoREAS))>
-        coreas(detector, envCoREAS);
+                 CoREAS<decltype(detector), decltype(SP)>,
+                 decltype(SP)>
+        coreas(detector, SP);
 
     auto result = coreas.doContinuous(
         Step(particle1, StraightTrajectory(line, 0_ns, 0_ns, v0, v0)), true);
@@ -383,12 +385,14 @@ TEST_CASE("Radio", "[processes]") {
 
     auto const charge_{get_charge(particle1.getPID())};
 
+    auto SP = make_straight_radio_propagator(envZHS);
+
     // create a radio process instance using ZHS
     RadioProcess<
         AntennaCollection<TimeDomainAntenna>,
-        ZHS<AntennaCollection<TimeDomainAntenna>, decltype(StraightPropagator(envZHS))>,
-        decltype(StraightPropagator(envZHS))>
-        zhs(detector, envZHS);
+        ZHS<AntennaCollection<TimeDomainAntenna>, decltype(SP)>,
+        decltype(SP)>
+        zhs(detector, SP);
 
     Step step(particle1, base);
     // check doContinuous and simulate methods
@@ -517,31 +521,35 @@ TEST_CASE("Radio", "[processes]") {
     StraightTrajectory track_b{lb, tb};
     Step step_b(particle_stack, track_b);
 
+    auto SP = make_simple_radio_propagator(envRadio);
+
     // create radio process instances
     RadioProcess<decltype(detector),
-                 CoREAS<decltype(detector), decltype(SimplePropagator(envRadio))>,
-                 decltype(SimplePropagator(envRadio))>
-        coreas(detector, envRadio);
+                 CoREAS<decltype(detector), decltype(SP)>,
+                 decltype(SP)>
+        coreas(detector, SP);
 
     RadioProcess<decltype(detector),
-                 ZHS<decltype(detector), decltype(SimplePropagator(envRadio))>,
-                 decltype(SimplePropagator(envRadio))>
-        zhs(detector, envRadio);
+                 ZHS<decltype(detector), decltype(SP)>,
+                 decltype(SP)>
+        zhs(detector, SP);
+
     coreas.doContinuous(step_proton, true);
     zhs.doContinuous(step_proton, true);
     coreas.doContinuous(step_h, true);
     zhs.doContinuous(step_h, true);
     zhs.doContinuous(step_h_neg_time, true);
 
+    // create radio processes with "dummy" antenna to trigger extreme time-binning
     RadioProcess<decltype(detector_dummy),
-                 CoREAS<decltype(detector_dummy), decltype(SimplePropagator(envRadio))>,
-                 decltype(SimplePropagator(envRadio))>
-        coreas_dummy(detector_dummy, envRadio);
+                 CoREAS<decltype(detector_dummy), decltype(SP)>,
+                 decltype(SP)>
+        coreas_dummy(detector_dummy, SP);
 
-    RadioProcess<decltype(detector_dummy),
-                 ZHS<decltype(detector_dummy), decltype(SimplePropagator(envRadio))>,
-                 decltype(SimplePropagator(envRadio))>
-        zhs_dummy(detector_dummy, envRadio);
+        RadioProcess<decltype(detector_dummy),
+                ZHS<decltype(detector_dummy), decltype(SP)>,
+                decltype(SP)>
+                zhs_dummy(detector_dummy, SP);
     coreas_dummy.doContinuous(step_proton, true);
     zhs_dummy.doContinuous(step_proton, true);
     coreas_dummy.doContinuous(step_h, true);
@@ -549,14 +557,14 @@ TEST_CASE("Radio", "[processes]") {
 
     // create radio process instances
     RadioProcess<decltype(detector_b),
-                 CoREAS<decltype(detector_b), decltype(SimplePropagator(envRadio))>,
-                 decltype(SimplePropagator(envRadio))>
-        coreas_b(detector_b, envRadio);
+                 CoREAS<decltype(detector_b), decltype(SP)>,
+                 decltype(SP)>
+        coreas_b(detector_b, SP);
 
     RadioProcess<decltype(detector_b),
-                 ZHS<decltype(detector_b), decltype(SimplePropagator(envRadio))>,
-                 decltype(SimplePropagator(envRadio))>
-        zhs_b(detector_b, envRadio);
+                 ZHS<decltype(detector_b), decltype(SP)>,
+                 decltype(SP)>
+        zhs_b(detector_b, SP);
     coreas_b.doContinuous(step_b, true);
     zhs_b.doContinuous(step_b, true);
 
@@ -625,11 +633,13 @@ TEST_CASE("Radio", "[processes]") {
         electron, calculate_kinetic_energy(plab.getNorm(), get_mass(electron)),
         plab.normalized(), pos, 0_ns))};
 
+    auto SP = make_straight_radio_propagator(envCoREAS);
+
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector),
-                 CoREAS<decltype(detector), decltype(StraightPropagator(envCoREAS))>,
-                 decltype(StraightPropagator(envCoREAS))>
-        coreas(detector, envCoREAS);
+                 CoREAS<decltype(detector), decltype(SP)>,
+                 decltype(SP)>
+        coreas(detector, SP);
 
     const auto config = coreas.getConfig();
 

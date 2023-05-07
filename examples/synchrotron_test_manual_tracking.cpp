@@ -121,6 +121,9 @@ int main() {
   // construct the output manager
   OutputManager outputs("synchrotron_radiation_manual_tracking-output");
 
+  // the radio signal propagator
+  auto SP = make_simple_radio_propagator(env);
+
   // create a radio process instance using CoREAS
   RadioProcess<
       AntennaCollection<TimeDomainAntenna>,

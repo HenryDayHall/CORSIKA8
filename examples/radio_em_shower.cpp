@@ -259,20 +259,23 @@ int main(int argc, char** argv) {
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
+  // the radio signal propagator
+  auto SP = make_simple_radio_propagator(env);
+
   // initiate CoREAS
   RadioProcess<decltype(detectorCoREAS),
-               CoREAS<decltype(detectorCoREAS), decltype(SimplePropagator(env))>,
-               decltype(SimplePropagator(env))>
-      coreas(detectorCoREAS, env);
+               CoREAS<decltype(detectorCoREAS), decltype(SP)>,
+               decltype(SP)>
+      coreas(detectorCoREAS, SP);
 
   // register CoREAS with the output manager
   output.add("CoREAS", coreas);
 
   // initiate ZHS
   RadioProcess<decltype(detectorZHS),
-               ZHS<decltype(detectorZHS), decltype(SimplePropagator(env))>,
-               decltype(SimplePropagator(env))>
-      zhs(detectorZHS, env);
+               ZHS<decltype(detectorZHS), decltype(SP)>,
+               decltype(SP)>
+      zhs(detectorZHS, SP);
 
   // // register ZHS with the output manager
   output.add("ZHS", zhs);
