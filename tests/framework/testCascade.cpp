@@ -179,7 +179,7 @@ public:
   int getCalls() const { return calls_; }
 
 private:
-  int maxCalls_;
+  const int maxCalls_;
   int calls_ = 0;
 };
 

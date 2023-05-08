@@ -1068,17 +1068,10 @@ TEST_CASE("ProcessSequence Indexing", "ProcessSequence") {
 
 class ProcessZero : public InteractionProcess<ProcessZero> {
 public:
-  ProcessZero(int const v)
-      : v_(v) {
-    CORSIKA_LOG_DEBUG(
-        "globalCount: {}"
-        ", v_: {}",
-        globalCount, v_);
-    globalCount++;
-  }
+  ProcessZero() = default;
 
   template <typename TView>
-  void doInteraction(TView& v, Code const, Code const, FourMomentum const&,
+  void doInteraction(TView&, Code const, Code const, FourMomentum const&,
                      FourMomentum const&) const {
     FAIL("ProcessZero::doInteraction has been called!");
   }
@@ -1088,16 +1081,13 @@ public:
     CORSIKA_LOG_DEBUG("ProcessZero::getCrossSection");
     return 0_mb;
   }
-
-private:
-  int v_ = 0;
 };
 
 TEST_CASE("SelectInteractionZeroCrossSection", "ProcessSequence") {
   logging::set_level(logging::level::info);
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
-  auto sequence = make_sequence(ProcessZero(0));
+  auto sequence = make_sequence(ProcessZero());
 
   DummyData particle;
   DummyTrajectory track;
