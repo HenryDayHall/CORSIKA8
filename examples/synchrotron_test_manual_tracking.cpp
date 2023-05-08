@@ -127,17 +127,17 @@ int main() {
   // create a radio process instance using CoREAS
   RadioProcess<
       AntennaCollection<TimeDomainAntenna>,
-      CoREAS<AntennaCollection<TimeDomainAntenna>, decltype(SimplePropagator(env))>,
-      decltype(SimplePropagator(env))>
-      coreas(detectorCoREAS, env);
+      CoREAS<AntennaCollection<TimeDomainAntenna>, decltype(SP)>,
+      decltype(SP)>
+      coreas(detectorCoREAS, SP);
   // register CoREAS to the output manager
   outputs.add("CoREAS", coreas);
 
   // create a radio process instance using ZHS
   RadioProcess<AntennaCollection<TimeDomainAntenna>,
-               ZHS<AntennaCollection<TimeDomainAntenna>, decltype(SimplePropagator(env))>,
-               decltype(SimplePropagator(env))>
-      zhs(detectorZHS, env);
+               ZHS<AntennaCollection<TimeDomainAntenna>, decltype(SP)>,
+               decltype(SP)>
+      zhs(detectorZHS, SP);
   // register ZHS to the output manager
   outputs.add("ZHS", zhs);
 

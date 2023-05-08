@@ -277,7 +277,7 @@ int main(int argc, char** argv) {
                decltype(SP)>
       zhs(detectorZHS, SP);
 
-  // // register ZHS with the output manager
+  // register ZHS with the output manager
   output.add("ZHS", zhs);
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));

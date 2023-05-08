@@ -188,16 +188,19 @@ int main() {
   // setup relevant processes
   setup::Tracking tracking;
 
+// the radio signal propagator
+auto SP = make_simple_radio_propagator(env);
+
   // put radio processes here
   RadioProcess<decltype(detectorCoREAS),
-               CoREAS<decltype(detectorCoREAS), decltype(SimplePropagator(env))>,
-               decltype(SimplePropagator(env))>
-      coreas(detectorCoREAS, env);
+               CoREAS<decltype(detectorCoREAS), decltype(SP)>,
+               decltype(SP)>
+      coreas(detectorCoREAS, SP);
   output.add("CoREAS", coreas);
 
   // RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS),
-  //         decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
-  //                                           zhs(detectorZHS, env);
+  //         decltype(SP)>, decltype(SP)>
+  //                                           zhs(detectorZHS, SP);
   // output.add("ZHS", zhs);
 
   TimeCut cut(period / 4);
