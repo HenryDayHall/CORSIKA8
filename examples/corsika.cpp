@@ -70,7 +70,6 @@
 #include <iomanip>
 #include <limits>
 #include <string>
-#include <string_view>
 
 /*
   NOTE, WARNING, ATTENTION
@@ -177,7 +176,7 @@ int main(int argc, char** argv) {
   CLI11_PARSE(app, argc, argv);
 
   if (app.count("--verbosity")) {
-    std::string_view const loglevel = app["--verbosity"]->as<std::string_view>();
+    auto const loglevel = app["--verbosity"]->as<std::string>();
     if (loglevel == "warn") {
       logging::set_level(logging::level::warn);
     } else if (loglevel == "info") {
@@ -299,7 +298,7 @@ int main(int argc, char** argv) {
   // have SIBYLL always for PROPOSAL photo-hadronic interactions
   auto sibyll = std::make_shared<corsika::sibyll::Interaction>(env);
 
-  if (auto const modelStr = app["--hadronModel"]->as<std::string_view>();
+  if (auto const modelStr = app["--hadronModel"]->as<std::string>();
       modelStr == "SIBYLL-2.3d") {
     heModel = DynamicInteractionProcess<setup::Stack<EnvType>>{sibyll};
   } else if (modelStr == "QGSJet-II.04") {
