@@ -206,6 +206,9 @@ int main(int argc, char** argv) {
       ->default_val(0)
       ->check(CLI::NonNegativeNumber)
       ->group("Thinning");
+  bool multithin = false;
+  app.add_flag("--multithin", multithin, "keep thinned particles (with weight=0)")
+      ->group("Thinning");
 
   // parse the command line options into the variables
   CLI11_PARSE(app, argc, argv);
@@ -326,7 +329,7 @@ int main(int argc, char** argv) {
     else
       return emthinfrac * E0 / 1_GeV;
   });
-  EMThinning thinning{emthinfrac * E0, maxWeight};
+  EMThinning thinning{emthinfrac * E0, maxWeight, !multithin};
 
   // create the output manager that we then register outputs with
   OutputManager output(app["--filename"]->as<std::string>());
