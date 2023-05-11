@@ -147,7 +147,7 @@ int main() {
   output.add("tracks", trackWriter); // register TrackWriter
 
   // assemble all processes into an ordered process list
-  auto sequence = make_sequence(stackInspect, sibyll, decay, eLoss, cut, trackWriter);
+  auto sequence = make_sequence(stackInspect, sibyll, decay, eLoss, trackWriter, cut);
 
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);

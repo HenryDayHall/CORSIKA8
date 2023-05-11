@@ -283,8 +283,8 @@ int main(int argc, char** argv) {
   output.add("particles", observationLevel);
 
   // auto sequence = make_sequence(emCascade, emContinuous, longprof, cut, coreas, zhs);
-  auto sequence = make_sequence(emCascade, emContinuous, longprof, cut, coreas, zhs,
-                                tracks, observationLevel);
+  auto sequence = make_sequence(emCascade, emContinuous, longprof, coreas, zhs, tracks,
+                                observationLevel, cut);
   // define air shower object, run simulation
   setup::Tracking tracking;
 
