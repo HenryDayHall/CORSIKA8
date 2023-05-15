@@ -146,6 +146,29 @@ int main(int argc, char** argv) {
       ->default_val(0.)
       ->check(CLI::Range(0., 360.))
       ->group("Primary");
+  app.add_option("--emcut",
+                 "Min. kin. energy of photons, electrons and positrons in tracking (GeV)")
+      ->default_val(50.)
+      ->check(CLI::Range(0.000001, 1.e13))
+      ->group("Config");
+  app.add_option("--hadcut", "Min. kin. energy of hadrons in tracking (GeV)")
+      ->default_val(50.)
+      ->check(CLI::Range(0.000001, 1.e13))
+      ->group("Config");
+  app.add_option("--mucut", "Min. kin. energy of muons in tracking (GeV)")
+      ->default_val(50.)
+      ->check(CLI::Range(0.000001, 1.e13))
+      ->group("Config");
+  app.add_option("--observation-level",
+                 "Height above earth radius of the observation level (in m)")
+      ->default_val(0.)
+      ->check(CLI::Range(-1.e3, 1.e5))
+      ->group("Config");
+  app.add_option("--injection-height",
+                 "Height above earth radius of the injection point (in km)")
+      ->default_val(111.75)
+      ->check(CLI::Range(-1.e3, 1.e6))
+      ->group("Config");
   app.add_option("-N,--nevent", nevent, "The number of events/showers to run.")
       ->default_val(1)
       ->check(CLI::PositiveNumber)
@@ -265,8 +288,10 @@ int main(int argc, char** argv) {
   /* === END: CONSTRUCT PRIMARY PARTICLE === */
 
   /* === START: CONSTRUCT GEOMETRY === */
-  auto const observationHeight = 0_km + constants::EarthRadius::Mean;
-  auto const injectionHeight = 111.75_km + constants::EarthRadius::Mean;
+  auto const observationHeight =
+      app["--observation-level"]->as<double>() * 1_m + constants::EarthRadius::Mean;
+  auto const injectionHeight =
+      app["--injection-height"]->as<double>() * 1_km + constants::EarthRadius::Mean;
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));
@@ -342,9 +367,17 @@ int main(int argc, char** argv) {
   // hadronic photon interactions in resonance region
   corsika::sophia::InteractionModel sophia;
 
-  HEPEnergyType const emcut = 50_GeV;
-  HEPEnergyType const hadcut = 50_GeV;
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, dEdX);
+  HEPEnergyType const emcut = 1_GeV * app["--emcut"]->as<double>();
+  HEPEnergyType const hadcut = 1_GeV * app["--hadcut"]->as<double>();
+  HEPEnergyType const mucut = 1_GeV * app["--mucut"]->as<double>();
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, mucut, true, dEdX);
+
+  // tell proposal that we are interested in all energy losses above the emcut
+  set_energy_production_threshold(Code::Electron, emcut);
+  set_energy_production_threshold(Code::Positron, emcut);
+  set_energy_production_threshold(Code::Photon, emcut);
+  set_energy_production_threshold(Code::MuMinus, mucut);
+  set_energy_production_threshold(Code::MuPlus, mucut);
 
   // energy threshold for high energy hadronic model. Affects LE/HE switch for
   // hadron interactions and the hadronic photon model in proposal
