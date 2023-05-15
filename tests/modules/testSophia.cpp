@@ -28,7 +28,7 @@
   link them togehter, it will fail.
  */
 #include <corsika/modules/sophia/Random.hpp>
-#include "corsika/framework/core/PhysicalConstants.hpp"
+#include <corsika/framework/core/PhysicalConstants.hpp>
 
 using namespace corsika;
 using namespace corsika::sophia;
