@@ -155,6 +155,7 @@ TEST_CASE("SophiaInterface", "modules") {
     CHECK(model.isValid(Code::Photon, Code::Neutron, sqrtSNN_n));
     view.clear();
     model.doInteraction(view, Code::Photon, Code::Neutron, photonP4, neutronP4);
+    CHECK(view.getSize() > 0);
   }
 
   SECTION("InteractionInterface - interaction") {
