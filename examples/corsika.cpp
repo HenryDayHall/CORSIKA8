@@ -166,8 +166,8 @@ int main(int argc, char** argv) {
       ->check(CLI::Range(-1.e3, 1.e5))
       ->group("Config");
   app.add_option("--injection-height",
-                 "Height above earth radius of the injection point (in km)")
-      ->default_val(111.75)
+                 "Height above earth radius of the injection point (in m)")
+      ->default_val(111.75e3)
       ->check(CLI::Range(-1.e3, 1.e6))
       ->group("Config");
   app.add_option("-N,--nevent", nevent, "The number of events/showers to run.")
@@ -306,7 +306,7 @@ int main(int argc, char** argv) {
   auto const observationHeight =
       app["--observation-level"]->as<double>() * 1_m + constants::EarthRadius::Mean;
   auto const injectionHeight =
-      app["--injection-height"]->as<double>() * 1_km + constants::EarthRadius::Mean;
+      app["--injection-height"]->as<double>() * 1_m + constants::EarthRadius::Mean;
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));
