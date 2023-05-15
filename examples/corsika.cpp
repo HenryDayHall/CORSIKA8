@@ -90,7 +90,7 @@ using EnvType = Environment<EnvironmentInterface>;
 
 using Particle = setup::Stack<EnvType>::particle_type;
 
-void registerRandomStreams(int seed) {
+void registerRandomStreams(long seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
@@ -99,6 +99,7 @@ void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("urqmd");
   RNGManager<>::getInstance().registerRandomStream("proposal");
+  RNGManager<>::getInstance().registerRandomStream("thinning");
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
@@ -241,7 +242,7 @@ int main(int argc, char** argv) {
   }
 
   // initialize random number sequence(s)
-  registerRandomStreams(app["--seed"]->as<int>());
+  registerRandomStreams(app["--seed"]->as<long>());
 
   /* === START: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
   EnvType env;
