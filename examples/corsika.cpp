@@ -58,6 +58,7 @@
 #include <corsika/modules/StackInspector.hpp>
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/UrQMD.hpp>
+#include <corsika/modules/thinning/EMThinning.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -194,6 +195,17 @@ int main(int argc, char** argv) {
       ->default_val("SIBYLL-2.3d")
       ->check(CLI::IsMember({"SIBYLL-2.3d", "QGSJet-II.04", "EPOS-LHC"}))
       ->group("Misc.");
+  app.add_option("--emthin",
+                 "fraction of primary energy at which thinning of EM particles starts")
+      ->default_val(1.e-6)
+      ->check(CLI::Range(0., 1.))
+      ->group("Thinning");
+  app.add_option(
+         "--max-weight",
+         "maximum weight for thinning of EM particles (0 to select Kobal's optimum)")
+      ->default_val(0)
+      ->check(CLI::NonNegativeNumber)
+      ->group("Thinning");
 
   // parse the command line options into the variables
   CLI11_PARSE(app, argc, argv);
@@ -306,6 +318,15 @@ int main(int argc, char** argv) {
   // profile will go beyond the core, depending on zenith angle
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
   /* === END: CONSTRUCT GEOMETRY === */
+
+  double const emthinfrac = app["--emthin"]->as<double>();
+  double const maxWeight = std::invoke([&]() {
+    if (auto const wm = app["--max-weight"]->as<double>(); wm > 0)
+      return wm;
+    else
+      return emthinfrac * E0 / 1_GeV;
+  });
+  EMThinning thinning{emthinfrac * E0, maxWeight};
 
   // create the output manager that we then register outputs with
   OutputManager output(app["--filename"]->as<std::string>());
@@ -426,7 +447,7 @@ int main(int argc, char** argv) {
   // assemble the final process sequence
   auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emCascade,
                                 emContinuous, // trackWriter,
-                                longprof, observationLevel, cut);
+                                longprof, observationLevel, thinning, cut);
   /* === END: SETUP PROCESS LIST === */
 
   // create the cascade object using the default stack and tracking
