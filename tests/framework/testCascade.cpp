@@ -144,6 +144,45 @@ private:
   HEPEnergyType Ecrit_;
 };
 
+class ProcessZero : public InteractionProcess<ProcessZero> {
+
+public:
+  CrossSectionType getCrossSection(Code const, Code const, FourMomentum const&,
+                                   FourMomentum const&) const {
+    return 0_mb;
+  }
+
+  template <typename TView>
+  void doInteraction(TView& view, Code, Code, FourMomentum const&, FourMomentum const&) {
+    FAIL("doInteraction of ProcessZero has been called! This should never happen.");
+  }
+};
+
+// Continuous process that does nothing for the first `maxCalls`-1 calls, but absorbs
+// the particle when called for the `maxCalls` time
+class ContinuousCounter : public ContinuousProcess<ContinuousCounter> {
+public:
+  ContinuousCounter(int maxCalls)
+      : maxCalls_(maxCalls){};
+
+  template <typename D>
+  ProcessReturn doContinuous(Step<D>& d, bool flag) {
+    if (++calls_ == maxCalls_) return ProcessReturn::ParticleAbsorbed;
+    return ProcessReturn::Ok;
+  }
+
+  template <typename TParticle, typename TTrack>
+  LengthType getMaxStepLength(TParticle&, TTrack&) {
+    return meter * std::numeric_limits<double>::infinity();
+  }
+
+  int getCalls() const { return calls_; }
+
+private:
+  const int maxCalls_;
+  int calls_ = 0;
+};
+
 TEST_CASE("Cascade", "[Cascade]") {
 
   logging::set_level(logging::level::info);
@@ -195,4 +234,42 @@ TEST_CASE("Cascade", "[Cascade]") {
     CHECK(stack.getSize() == 13);
     CHECK(split.getCalls() == 2047);
   }
+}
+
+TEST_CASE("Cascade Zero Interaction", "[Cascade]") {
+  // In this test, we have an interaction with a crosssection of 0_mb, therefore this
+  // should never be called. This test checks that this is indeed the case.
+  // We also check that the particle is not erased too early - If no interaction can be
+  // called, the particle should stay on the stack until we delete it with the
+  // `ContinuousCounter` process (after 100 iterations).
+
+  logging::set_level(logging::level::info);
+  HEPEnergyType E0 = 100_GeV;
+
+  auto& rmng = RNGManager<>::getInstance();
+  rmng.registerRandomStream("cascade");
+
+  auto env = make_dummy_env();
+  auto const& rootCS = env.getCoordinateSystem();
+
+  ProcessZero zero; // process that has a crosssection of zero. should not be called!
+  ContinuousCounter counter{100}; // limited to 100 calls to avoid endless loop
+  auto sequence = make_sequence(zero, counter);
+  TestCascadeStack stack;
+  stack.clear();
+  stack.addParticle(std::make_tuple(Code::Electron,
+                                    E0 - get_mass(Code::Electron), // Ekin
+                                    DirectionVector(rootCS, {0, 0, -1}),
+                                    Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
+
+  DummyTracking tracking;
+  DummyOutputManager output;
+  Cascade<DummyTracking, decltype(sequence), DummyOutputManager, TestCascadeStack> EAS(
+      env, tracking, sequence, output, stack);
+
+  CHECK(counter.getCalls() == 0);
+  EAS.run();
+  // expect 100 calls. if it would be less, this means that the particle has been erased
+  // early by the Cascade.inl algorithm
+  CHECK(counter.getCalls() == 100);
 }
