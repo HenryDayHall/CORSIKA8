@@ -17,9 +17,10 @@
 namespace corsika {
 
  /**
-  * This class implements a simple propagator that uses
-  * the straight-line (vector) between the particle
-  * location and the antenna as the trajectory.
+  * This class implements a tabulated propagator that approximates
+  * the Earth's atmopshere as flat. Signal propagation is rectilinear
+  * and this is intended to be used for vertical showers
+  * (<60 degrees zenith angle) for fast simulations.
   *
   */
  template <typename TEnvironment>
@@ -34,7 +35,8 @@ namespace corsika {
     * Construct a new FlatEarthPropagator with a given environment.
     *
     */
-   FlatEarthPropagator(TEnvironment const& env, Point const& upperLimit, Point const& lowerLimit, LengthType const step);
+   FlatEarthPropagator(TEnvironment const& env, Point const& upperLimit, Point const& lowerLimit,
+                       LengthType const step);
 
    /**
     * Return the collection of paths from `source` to `destination`.
@@ -50,8 +52,8 @@ namespace corsika {
    Point const lowerLimit_;
    LengthType const step_;
    InverseLengthType const inverseStep_;
-   std::vector<double> rIndexTable_;
-   std::vector<double> integratedRIndexTable_;
+   std::vector<double> refractivityTable_;
+   std::vector<double> integratedRefractivityTable_;
    std::vector<LengthType> heightTable_;
    std::deque<Point> points;
    std::vector<double> rindex;

@@ -40,6 +40,7 @@
 #include <corsika/media/ExponentialRefractiveIndex.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
+#include <corsika/media/GladstoneDaleRefractiveIndex.hpp>
 
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
 #include <corsika/framework/geometry/Line.hpp>
@@ -60,6 +61,11 @@ double constexpr absMargin = 1.0e-7;
 template <typename TInterface>
 using MyExtraEnv =
     UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
+
+template <typename TInterface2>
+using MyExtraEnv2 =
+        GladstoneDaleRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface2>>>;
+
 
 TEST_CASE("Radio", "[processes]") {
 
@@ -1237,38 +1243,166 @@ TEST_CASE("Propagators") {
 
   } // END: SECTION("Straight Propagator w/ Exponential Refractive Index")
 
+//    SECTION("Flat Earth Propagator w/ Uniform Refractive Index") {
+//
+//        // create a suitable environment
+//        using IModelInterface =
+//                IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+//        using AtmModel = UniformRefractiveIndex<
+//                MediumPropertyModel<UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
+//        using EnvType = Environment<AtmModel>;
+//        EnvType env;
+//        CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
+//        // get the center point
+//        Point const center{rootCS, 0_m, 0_m, 0_m};
+//        // a refractive index for the vacuum
+//        const double ri_{2};
+//        // the constant density
+//        const auto density{19.2_g / cube(1_cm)};
+//        // the composition we use for the homogeneous medium
+//        NuclearComposition const Composition({Code::Nitrogen}, {1.});
+//        // create magnetic field vector
+//        Vector B1(rootCS, 0_T, 0_T, 0.3809_T);
+//        // create a Sphere for the medium
+//        auto Medium = EnvType::createNode<Sphere>(center, 1_km);
+//        // set the environment properties
+//        auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1,
+//                                                                density, Composition);
+//        // bind things together
+//        env.getUniverse()->addChild(std::move(Medium));
+//
+//        // get some points
+//        Point const upperBoundary_(rootCS, {0_m, 0_m, 10_m});
+//        Point const p0(rootCS, {0_m, 0_m, 0_m});
+//        Point const p10(rootCS, {0_m, 0_m, 10_m});
+//
+//        // get a unit vector
+//        Vector<dimensionless_d> const v1(rootCS, {0, 0, 1});
+//        Vector<dimensionless_d> const v2(rootCS, {0, 0, -1});
+//
+//        // get a geometrical path of points
+//        Path const P1({p0, p10});
+//
+//        LengthType const step_{1_m};
+//
+//        // construct a Straight Propagator given the uniform refractive index environment
+//        FlatEarthPropagator SP(env, upperBoundary_, p0, step_);
+//
+//        // store the outcome of the Propagate method to paths_
+//        auto paths_ = SP.propagate(p0, p10, 1_m);
+//
+//        // perform checks to paths_ components
+//        for (auto const& path : paths_) {
+//            CHECK((path.propagation_time_ / 1_s) -
+//                  (((p10 - p0).getNorm() / constants::c) / 1_s) ==
+//                  Approx(0));
+//            CHECK(path.average_refractive_index_ == Approx(1));
+//            CHECK(path.refractive_index_source_ == Approx(1));
+//            CHECK(path.refractive_index_destination_ == Approx(1));
+//            CHECK(path.emit_.getComponents() == v1.getComponents());
+//            CHECK(path.receive_.getComponents() == v2.getComponents());
+//            CHECK(path.R_distance_ == 10_m);
+//            CHECK(std::equal(
+//                    P1.begin(), P1.end(), path.begin(),
+//                    [](Point const& a, Point const& b) { return (a - b).getNorm() / 1_m < 1e-5; }));
+//        }
+//    } // END: SECTION("Flat Earth Propagator w/ Uniform Refractive Index")
+
+//    SECTION("Flat Earth Propagator w/ Gladstone-Dale Refractive Index") {
+//
+//
+//        // get a CS
+//        CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
+//
+//        // the center of the earth
+//        Point const center_{rootCS, 0_m, 0_m, 0_m};
+//
+//        // a point at the surface of the earth
+//        Point const surface_{rootCS, 0_m, 0_m, constants::EarthRadius::Mean};
+//
+//        // the refractive index at sea level
+//        const double n0{1.000327};
+//
+////        // a reference point to calculate the refractive index there
+////        Point const ref_{rootCS, 0_km, 0_km, constants::EarthRadius::Mean + 10_km};
+//
+//        // setup a 5-layered environment
+//        using EnvironmentInterface =
+//                IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+//        using EnvType = Environment<EnvironmentInterface>;
+//        EnvType env;
+//
+//        create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv2>(
+//                env, AtmosphereId::LinsleyUSStd, center_, n0, surface_, Medium::AirDry1Atm,
+//                MagneticFieldVector{rootCS, 0_T, 0_uT, 0_T});
+//
+//
+//        // get some points
+//        Point const upperBoundary_(rootCS, {0_m, 0_m, constants::EarthRadius::Mean + 10_m});
+//        Point const p0(rootCS, {0_m, 0_m, constants::EarthRadius::Mean});
+//        Point const p10(rootCS, {0_m, 0_m, constants::EarthRadius::Mean + 10_m});
+//
+//        // get a unit vector
+//        Vector<dimensionless_d> const v1(rootCS, {0, 0, 1});
+//        Vector<dimensionless_d> const v2(rootCS, {0, 0, -1});
+//
+//        // get a geometrical path of points
+//        Path const P1({p0, p10});
+//
+//        LengthType const step_{1_m};
+//
+//        // construct a Straight Propagator given the uniform refractive index environment
+//        FlatEarthPropagator SP(env, upperBoundary_, p0, step_);
+//
+//        // store the outcome of the Propagate method to paths_
+//        auto paths_ = SP.propagate(p0, p10, 1_m);
+//
+//        // perform checks to paths_ components
+//        for (auto const& path : paths_) {
+//            CHECK((path.propagation_time_ / 1_s) -
+//                  (((p10 - p0).getNorm() / constants::c) / 1_s) ==
+//                  Approx(0));
+//            CHECK(path.average_refractive_index_ == Approx(1));
+//            CHECK(path.refractive_index_source_ == Approx(1));
+//            CHECK(path.refractive_index_destination_ == Approx(1));
+//            CHECK(path.emit_.getComponents() == v1.getComponents());
+//            CHECK(path.receive_.getComponents() == v2.getComponents());
+//            CHECK(path.R_distance_ == 10_m);
+//            CHECK(std::equal(
+//                    P1.begin(), P1.end(), path.begin(),
+//                    [](Point const& a, Point const& b) { return (a - b).getNorm() / 1_m < 1e-5; }));
+//        }
+//    } // END: SECTION("Flat Earth Propagator w/ Gladstone-Dale Refractive Index")
+
     SECTION("Flat Earth Propagator w/ Uniform Refractive Index") {
 
-        // create a suitable environment
-        using IModelInterface =
+        // get a CS
+        CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
+
+        // the center of the earth
+        Point const center_{rootCS, 0_m, 0_m, 0_m};
+
+        // a point at the surface of the earth
+        Point const surface_{rootCS, 0_m, 0_m, constants::EarthRadius::Mean};
+
+        // the refractive index at sea level
+        const double n0{1.000327};
+
+        // setup a 5-layered environment
+        using EnvironmentInterface =
                 IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-        using AtmModel = UniformRefractiveIndex<
-                MediumPropertyModel<UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
-        using EnvType = Environment<AtmModel>;
+        using EnvType = Environment<EnvironmentInterface>;
         EnvType env;
-        CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
-        // get the center point
-        Point const center{rootCS, 0_m, 0_m, 0_m};
-        // a refractive index for the vacuum
-        const double ri_{1};
-        // the constant density
-        const auto density{19.2_g / cube(1_cm)};
-        // the composition we use for the homogeneous medium
-        NuclearComposition const Composition({Code::Nitrogen}, {1.});
-        // create magnetic field vector
-        Vector B1(rootCS, 0_T, 0_T, 0.3809_T);
-        // create a Sphere for the medium
-        auto Medium = EnvType::createNode<Sphere>(center, 1_km);
-        // set the environment properties
-        auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1,
-                                                                density, Composition);
-        // bind things together
-        env.getUniverse()->addChild(std::move(Medium));
+
+        create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
+                env, AtmosphereId::LinsleyUSStd, center_, n0, Medium::AirDry1Atm,
+                MagneticFieldVector{rootCS, 0_T, 50_uT, 0_T});
+
 
         // get some points
-        Point const upperBoundary_(rootCS, {0_m, 0_m, 100_m});
-        Point const p0(rootCS, {0_m, 0_m, 0_m});
-        Point const p10(rootCS, {0_m, 0_m, 100_m});
+        Point const upperBoundary_(rootCS, {0_m, 0_m, constants::EarthRadius::Mean + 10_m});
+        Point const p0(rootCS, {0_m, 0_m, constants::EarthRadius::Mean});
+        Point const p10(rootCS, {0_m, 0_m, constants::EarthRadius::Mean + 10_m});
 
         // get a unit vector
         Vector<dimensionless_d> const v1(rootCS, {0, 0, 1});
@@ -1287,15 +1421,14 @@ TEST_CASE("Propagators") {
 
         // perform checks to paths_ components
         for (auto const& path : paths_) {
-//            CHECK((path.propagation_time_ / 1_s) -
-//                  (((p10 - p0).getNorm() / constants::c) / 1_s) ==
-//                  Approx(0));
-            CHECK(path.average_refractive_index_ == Approx(1));
-            CHECK(path.refractive_index_source_ == Approx(1));
-            CHECK(path.refractive_index_destination_ == Approx(1));
+            CHECK((path.propagation_time_ / 1_s) -
+                  (((p10 - p0).getNorm() / constants::c) / 1_s) == Approx(1.09075e-11));
+            CHECK(path.average_refractive_index_ == n0);
+            CHECK(path.refractive_index_source_ == n0);
+            CHECK(path.refractive_index_destination_ == n0);
             CHECK(path.emit_.getComponents() == v1.getComponents());
             CHECK(path.receive_.getComponents() == v2.getComponents());
-            CHECK(path.R_distance_ == 100_m);
+            CHECK(path.R_distance_ == 10_m);
             CHECK(std::equal(
                     P1.begin(), P1.end(), path.begin(),
                     [](Point const& a, Point const& b) { return (a - b).getNorm() / 1_m < 1e-5; }));

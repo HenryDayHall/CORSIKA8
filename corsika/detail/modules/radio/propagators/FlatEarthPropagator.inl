@@ -13,7 +13,8 @@ namespace corsika {
 
  template <typename TEnvironment>
  inline FlatEarthPropagator<TEnvironment>::FlatEarthPropagator(TEnvironment const& env,
-                                                                Point const& upperLimit, Point const& lowerLimit, LengthType const step)
+                                                                Point const& upperLimit, Point const& lowerLimit,
+                                                                LengthType const step)
      : RadioPropagator<FlatEarthPropagator, TEnvironment>(env)
          , upperLimit_(upperLimit)
          , lowerLimit_(lowerLimit)
@@ -25,9 +26,9 @@ namespace corsika {
                 auto const minX_ = lowerLimit_.getCoordinates().getX();
                 auto const minY_ = lowerLimit_.getCoordinates().getY();
                 std::size_t const nBins_ = (maxHeight_ - minHeight_) * inverseStep_ + 1;
-                rIndexTable_.reserve(nBins_);
+                refractivityTable_.reserve(nBins_);
                 heightTable_.reserve(nBins_);
-                integratedRIndexTable_.reserve(nBins_);
+                integratedRefractivityTable_.reserve(nBins_);
 
                 // get the root coordinate system of this environment
                 CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
@@ -38,19 +39,19 @@ namespace corsika {
                   Point point_{rootCS, minX_, minY_, minHeight_ + i * step_};
                   auto const* const node{universe->getContainingNode(point_)};
                   auto const ri_ = node->getModelProperties().getRefractiveIndex(point_);
-                  rIndexTable_.push_back(ri_);
+                  refractivityTable_.push_back(ri_ - 1);
                   auto const height_ = minHeight_ + i * step_;
                   heightTable_.push_back(height_);
                 }
 
                 double const stepOverMeter_{inverseStep_ * 1_m};
-                auto const intRiZero_ = rIndexTable_.at(0) * stepOverMeter_;
-                integratedRIndexTable_.push_back(intRiZero_);
+                auto const intRerfZero_ = refractivityTable_.at(0) * stepOverMeter_;
+                integratedRefractivityTable_.push_back(intRerfZero_);
                 for (std::size_t i = 1; i < nBins_; i++) {
-                  auto const intRi_ = integratedRIndexTable_[i-1] + integratedRIndexTable_[i] * stepOverMeter_;
-                  integratedRIndexTable_.push_back(intRi_);
+                  auto const intRefrI_ = integratedRefractivityTable_[i-1] + refractivityTable_[i] * stepOverMeter_;
+                  integratedRefractivityTable_.push_back(intRefrI_);
                 }
-            };
+       };
 
  template <typename TEnvironment>
  inline typename FlatEarthPropagator<TEnvironment>::SignalPathCollection
@@ -76,21 +77,22 @@ namespace corsika {
 
    // get and store the refractive index of the first point 'source'.
    std::size_t const indexSource_{static_cast<std::size_t>((source.getCoordinates().getZ() - heightTable_.front()) * inverseStep_ + 0.5)};
-   auto const ri_source{rIndexTable_.at(indexSource_)};
+   auto const ri_source{refractivityTable_.at(indexSource_) + 1};
    rindex.push_back(ri_source);
    points.push_back(source);
 
    // add the refractive index of last point 'destination' and store it.
    std::size_t const indexDestination_{static_cast<std::size_t>((destination.getCoordinates().getZ() - heightTable_.front()) * inverseStep_ + 0.5)};
-   auto const ri_destination{rIndexTable_.at(indexDestination_)};
+   auto const ri_destination{refractivityTable_.at(indexDestination_) + 1};
    rindex.push_back(ri_destination);
    points.push_back(destination);
 
+    auto const height_ = (heightTable_.at(indexSource_) - heightTable_.at(indexDestination_)) / 1_m;
    // compute the average refractive index.
    auto const averageRefractiveIndex_ = (ri_source + ri_destination) * 0.5;
 
-   // compute the total time delay.
-   TimeType const time = (integratedRIndexTable_.at(indexDestination_) - integratedRIndexTable_.at(indexSource_)) * (distance_ / constants::c);
+     // compute the total time delay.
+   TimeType const time = (1 + (integratedRefractivityTable_.at(indexSource_) - integratedRefractivityTable_.at(indexDestination_)) / height_) * (distance_ / constants::c);
 
    return {SignalPath(time, averageRefractiveIndex_, ri_source, ri_destination, emit_,
                       receive_, distance_, points)};
