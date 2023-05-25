@@ -339,7 +339,8 @@ namespace corsika {
 
     auto const returnCode = sequence_.selectDecay(view, sample_process);
     if (returnCode != ProcessReturn::Decayed) {
-      CORSIKA_LOG_DEBUG("Particle did not decay!");
+      CORSIKA_LOG_ERROR("Particle {} did not decay!",
+                        get_name(view.getProjectile().getPID()));
     }
     setEventType(view, history::EventType::Decay);
     return returnCode;
