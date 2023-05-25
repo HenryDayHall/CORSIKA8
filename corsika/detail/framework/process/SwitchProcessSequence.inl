@@ -403,7 +403,7 @@ namespace corsika {
         }
 
         // check if we should execute THIS process and then EXIT
-        if (cx_select <= cx_sum) {
+        if (cx_select < cx_sum) {
 
           if constexpr (has_signature_cx1) {
 
