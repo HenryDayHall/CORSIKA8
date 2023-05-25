@@ -53,7 +53,9 @@ def parsePythia(filename):
                 float(particle.attrib['mWidth']) * 1e-15 * 1000.0  # mm / s
         # those are certainly not stable....
         elif pdg_id in (0, 423, 433, 4312, 4322, 5112, 5222):
-            ctau = 0.
+            print("missing ctau0 or width for: " + str(pdg_id) + " " + str(name))
+            print("setting ctau to arbitrary small value..")
+            ctau = 1.e-15
         else:
             print("missing lifetime: " + str(pdg_id) + " " + str(name))
             sys.exit(1)
