@@ -12,4 +12,4 @@ if ! conan profile show corsika8 >/dev/null 2>/dev/null; then
   fi
 fi
 # force rebuild of cubicinterpolation (see discussion in MR509)
-conan install -pr corsika8 --build=missing --build=cubicinterpolation ${DIR}
+conan install -pr corsika8 --build=missing ${DIR}
