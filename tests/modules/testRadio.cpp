@@ -137,7 +137,7 @@ TEST_CASE("Radio", "[processes]") {
     auto const particle1{stack.addParticle(std::make_tuple(
         electron, calculate_kinetic_energy(plab.getNorm(), get_mass(electron)),
         plab.normalized(), pos, 0_ns))};
-    auto SP = make_numerical_integrating_radio_propagator(envCoREAS);
+    auto SP = make_numerical_integrating_radio_propagator(envCoREAS, 1_m);
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector),
                  CoREAS<decltype(detector), decltype(SP)>,
@@ -271,7 +271,7 @@ TEST_CASE("Radio", "[processes]") {
         electron, calculate_kinetic_energy(plab.getNorm(), get_mass(electron)),
         plab.normalized(), pos, 0_ns))};
 
-    auto SP = make_numerical_integrating_radio_propagator(envCoREAS);
+    auto SP = make_numerical_integrating_radio_propagator(envCoREAS, 1_m);
 
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector),
@@ -391,7 +391,7 @@ TEST_CASE("Radio", "[processes]") {
 
     auto const charge_{get_charge(particle1.getPID())};
 
-    auto SP = make_numerical_integrating_radio_propagator(envZHS);
+    auto SP = make_numerical_integrating_radio_propagator(envZHS, 1_m);
 
     // create a radio process instance using ZHS
     RadioProcess<
@@ -639,7 +639,7 @@ TEST_CASE("Radio", "[processes]") {
         electron, calculate_kinetic_energy(plab.getNorm(), get_mass(electron)),
         plab.normalized(), pos, 0_ns))};
 
-    auto SP = make_numerical_integrating_radio_propagator(envCoREAS);
+    auto SP = make_numerical_integrating_radio_propagator(envCoREAS, 1_m);
 
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector),
@@ -993,7 +993,7 @@ TEST_CASE("Propagators") {
     DummyTestPropagator SP(env);
 
     // store the outcome of the Propagate method to paths_
-    auto const paths_ = SP.propagate(p0, p10, 1_m);
+    auto const paths_ = SP.propagate(p0, p10);
 
     // perform checks to paths_ components
     for (auto const& path : paths_) {
@@ -1065,10 +1065,10 @@ TEST_CASE("Propagators") {
     Path const P1({p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10});
 
     // construct a Straight Propagator given the uniform refractive index environment
-    NumericalIntegratingPropagator const SP(env);
+    NumericalIntegratingPropagator const SP(env, 1_m);
 
     // store the outcome of the Propagate method to paths_
-    auto const paths_ = SP.propagate(p0, p10, 1_m);
+    auto const paths_ = SP.propagate(p0, p10);
 
     // perform checks to paths_ components
     for (auto const& path : paths_) {
@@ -1086,8 +1086,9 @@ TEST_CASE("Propagators") {
           [](Point const& a, Point const& b) { return (a - b).getNorm() / 1_m < 1e-5; }));
     }
 
+    NumericalIntegratingPropagator const SP2(env, 909_m);
     // get another path to different points
-    auto const paths2_{SP.propagate(p0, p30, 909_m)};
+    auto const paths2_{SP2.propagate(p0, p30)};
 
     for (auto const& path : paths2_) {
       CHECK((path.propagation_time_ / 1_s) -
@@ -1099,8 +1100,9 @@ TEST_CASE("Propagators") {
       CHECK(path.R_distance_ == 30000_m);
     }
 
+    NumericalIntegratingPropagator const SP3(env, 731.89_m);
     // get a third path using a weird stepsize
-    auto const paths3_{SP.propagate(p0, p30, 731.89_m)};
+    auto const paths3_{SP3.propagate(p0, p30)};
 
     for (auto const& path : paths3_) {
       CHECK((path.propagation_time_ / 1_s) -
@@ -1163,10 +1165,10 @@ TEST_CASE("Propagators") {
     Path const PP1({pp0, pp1, pp2, pp3, pp4, pp5, pp6, pp7, pp8, pp9, pp10});
 
     // construct a Straight Propagator given the exponential refractive index environment
-    NumericalIntegratingPropagator const SP1(env1);
+    NumericalIntegratingPropagator const SP1(env1, 1_m);
 
     // store the outcome of Propagate method to paths1_
-    auto const paths1_ = SP1.propagate(pp0, pp10, 1_m);
+    auto const paths1_ = SP1.propagate(pp0, pp10);
 
     // perform checks to paths1_ components (this is just a sketch for now)
     for (auto const& path : paths1_) {
@@ -1221,10 +1223,10 @@ TEST_CASE("Propagators") {
     Vector<dimensionless_d> const vvv2(rootCS2, {0, 0, -1});
 
     // construct a Straight Propagator given the exponential refractive index environment
-    NumericalIntegratingPropagator const SP2(env2);
+    NumericalIntegratingPropagator const SP2(env2, 1_m);
 
     // store the outcome of Propagate method to paths1_
-    auto const paths2_ = SP2.propagate(ppp0, ppp10, 1_m);
+    auto const paths2_ = SP2.propagate(ppp0, ppp10);
 
     // perform checks to paths1_ components (this is just a sketch for now)
     for (auto const& path : paths2_) {

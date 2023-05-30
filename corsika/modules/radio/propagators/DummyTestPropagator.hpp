@@ -45,8 +45,7 @@ namespace corsika {
      * emission point to the antenna location.
      *
      */
-    SignalPathCollection propagate(Point const& source, Point const& destination,
-                                   LengthType const stepsize);
+    SignalPathCollection propagate(Point const& source, Point const& destination);
 
   private:
       std::deque<Point> points;

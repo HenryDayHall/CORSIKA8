@@ -39,22 +39,24 @@ namespace corsika {
      * Construct a new StraightPropagator with a given environment.
      *
      */
-    NumericalIntegratingPropagator(TEnvironment const& env);
+    NumericalIntegratingPropagator(TEnvironment const& env, LengthType const stepsize);
 
     /**
      * Return the collection of paths from `start` to `end`.
      * or from 'source' which is the emission point to 'destination'
      * which is the location of the antenna
      */
-    SignalPathCollection propagate(Point const& source, Point const& destination,
-                                   LengthType const stepsize) const;
+    SignalPathCollection propagate(Point const& source, Point const& destination) const;
+
+  private:
+    LengthType const stepsize_;
 
   }; // End: StraightPropagator
 
 template <typename TEnvironment>
   NumericalIntegratingPropagator<TEnvironment>
-make_numerical_integrating_radio_propagator(TEnvironment const& env){
-  return NumericalIntegratingPropagator<TEnvironment>(env);
+make_numerical_integrating_radio_propagator(TEnvironment const& env, LengthType const stepsize){
+  return NumericalIntegratingPropagator<TEnvironment>(env, stepsize);
 
 }
 

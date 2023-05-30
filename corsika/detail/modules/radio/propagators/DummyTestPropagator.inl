@@ -20,8 +20,7 @@ namespace corsika {
   template <typename TEnvironment>
   inline typename DummyTestPropagator<TEnvironment>::SignalPathCollection
       DummyTestPropagator<TEnvironment>::propagate(
-      Point const& source, Point const& destination,
-      [[maybe_unused]] LengthType const stepsize) {
+      Point const& source, Point const& destination) {
 
     /**
      * This is the simplest case of straight propagator

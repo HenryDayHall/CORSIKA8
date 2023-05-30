@@ -13,14 +13,14 @@ namespace corsika {
 
   template <typename TEnvironment>
   // TODO: maybe the constructor doesn't take any arguments for the environment (?)
-  inline NumericalIntegratingPropagator<TEnvironment>::NumericalIntegratingPropagator(TEnvironment const& env)
-      : RadioPropagator<NumericalIntegratingPropagator, TEnvironment>(env) {}
+  inline NumericalIntegratingPropagator<TEnvironment>::NumericalIntegratingPropagator(TEnvironment const& env, LengthType const stepsize)
+      : RadioPropagator<NumericalIntegratingPropagator, TEnvironment>(env)
+      , stepsize_(stepsize) {}
 
   template <typename TEnvironment>
   inline typename NumericalIntegratingPropagator<TEnvironment>::SignalPathCollection
   NumericalIntegratingPropagator<TEnvironment>::propagate(Point const& source,
-                                              Point const& destination,
-                                              LengthType const stepsize) const {
+                                              Point const& destination) const {
 
     /*
      * get the normalized (unit) vector from `source` to `destination'.
@@ -37,13 +37,13 @@ namespace corsika {
     auto const distance{(destination - source).getNorm()};
 
     try {
-      if (stepsize <= 0.5 * distance) {
+      if (stepsize_ <= 0.5 * distance) {
 
         // "step" is the direction vector with length `stepsize`
-        auto const step{emit * stepsize};
+        auto const step{emit * stepsize_};
 
         // calculate the number of points (roughly) for the numerical integration
-        auto const n_points{(destination - source).getNorm() / stepsize};
+        auto const n_points{(destination - source).getNorm() / stepsize_};
 
         // get the universe for this environment
         auto const* const universe{Base::env_.getUniverse().get()};
@@ -63,7 +63,7 @@ namespace corsika {
 
         // loop from `source` to `destination` to store values before Simpson's rule.
         // this loop skips the last point 'destination' and "misses" the extra point
-        for (auto point = source + step; (point - destination).getNorm() > 0.6 * stepsize;
+        for (auto point = source + step; (point - destination).getNorm() > 0.6 * stepsize_;
              point = point + step) {
 
           // get the environment node at this specific 'point'
@@ -159,7 +159,7 @@ namespace corsika {
             1, SignalPath(time, averageRefractiveIndex, ri_source, ri_destination, emit,
                           receive, distance, points));
       } else {
-        throw stepsize;
+        throw stepsize_;
       }
     } catch (const LengthType& s) {
       CORSIKA_LOG_ERROR("Please choose a smaller stepsize for the numerical integration");
