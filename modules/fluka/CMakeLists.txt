@@ -1,4 +1,4 @@
-set(C8_FLUKALIB CACHE STRING "path to libflukahp.a")
+set(C8_FLUKALIB CACHE FILEPATH "path to libflukahp.a")
 
 if (EXISTS "${C8_FLUKALIB}")
     message("libflukahp.a found at ${C8_FLUKALIB}; FLUKA support is enabled.")
