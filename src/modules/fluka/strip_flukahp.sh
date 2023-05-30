@@ -8,8 +8,8 @@
 # Licence version 3 (GPL Version 3). See file LICENSE for a full version of
 # the license.
 
-# This script strips off flrndm() from the libflukahp.a so that we can provide our own
-# implementation.
+# This script strips off flrndm() and flrnlp() from libflukahp.a so that
+# we can provide our own implementation.
 
 flukalibOrig=`realpath $1`
 target="$2"
@@ -19,18 +19,5 @@ if [ ! -r "$flukalibOrig" ]; then
     exit 1
 fi
 
-tmpdir=`mktemp -d fluka_objectsXXXXXX`
-workdir=`pwd`
-
-echo "extracting objects from $flukalibOrig into `realpath $tmpdir`..."
-cd "$tmpdir"
-ar x "$flukalibOrig"
-cd "$workdir"
-rm "$tmpdir/flrndm.o"
-
-[ -f "libflukahp-norndm.a" ] && rm "libflukahp-norndm.a"
-
-echo "creating libflukahp-norndm.a..."
-ar -rcs "$target/libflukahp-norndm.a" "$tmpdir"/*.o
-
-rm -r "$tmpdir"
+cp "${flukalibOrig}" "${target}/libflukahp-norndm.a" && \
+ar -d "${target}/libflukahp-norndm.a" flrndm.o flrnlp.o
