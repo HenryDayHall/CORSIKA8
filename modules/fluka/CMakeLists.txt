@@ -1,7 +1,21 @@
 set(C8_FLUKALIB CACHE FILEPATH "path to libflukahp.a")
 
-if (EXISTS "${C8_FLUKALIB}")
-    message("libflukahp.a found at ${C8_FLUKALIB}; FLUKA support is enabled.")
+set(C8_FLUKALIB_ "")
+if (EXISTS "$CACHE{C8_FLUKALIB}")
+    message("libflukahp.a found at ${C8_FLUKALIB} via C8_FLUKALIB")
+    set(C8_FLUKALIB_ "$CACHE{C8_FLUKALIB}")
+elseif (EXISTS "$ENV{FLUPRO}/libflukahp.a")
+    message("libflukahp.a found in directory $ENV{FLUPRO} via FLUPRO environment variable")
+    set(C8_FLUKALIB_ "$ENV{FLUPRO}/libflukahp.a")
+endif()
+
+if ("${C8_FLUKALIB_}" STREQUAL "")
+    message("C8_FLUKALIB not set/invalid and FLUPRO not set, building without FLUKA support")
+    set(C8_FLUKA_ENABLED "" CACHE INTERNAL "" FORCE) # makeshift global var
+else()
+    message("FLUKA support is enabled.")
+    set(C8_FLUKA_ENABLED "enabled" CACHE INTERNAL "" FORCE) # makeshift global var
+
     set (input_dir ${PROJECT_SOURCE_DIR}/src/modules/fluka)
     
     # we remove flrndm_.o from the original libflukahp.a and save the result as libflukahp-norndm.a
@@ -50,6 +64,4 @@ if (EXISTS "${C8_FLUKALIB}")
     # add fluka to corsika8 build
     add_dependencies (CORSIKA8 fluka)
     target_link_libraries (CORSIKA8 INTERFACE fluka)
-else()
-    message("C8_FLUKALIB not set/invalid, building without FLUKA support")
 endif()
