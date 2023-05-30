@@ -17,16 +17,19 @@
 namespace corsika {
 
   /**
-   * This class implements a simple propagator that uses
+   * This class implements a dummy propagator that uses
    * the straight-line (vector) between the particle
    * location and the antenna as the trajectory.
+   * It is intended mainly for fast testing as it only
+   * works with 2 points in a uniform refractive index
+   * atmospheric profile.
    *
    */
   template <typename TEnvironment>
-  class SimplePropagator final
-      : public RadioPropagator<SimplePropagator<TEnvironment>, TEnvironment> {
+  class DummyTestPropagator final
+      : public RadioPropagator<DummyTestPropagator<TEnvironment>, TEnvironment> {
 
-    using Base = RadioPropagator<SimplePropagator<TEnvironment>, TEnvironment>;
+    using Base = RadioPropagator<DummyTestPropagator<TEnvironment>, TEnvironment>;
     using SignalPathCollection = typename Base::SignalPathCollection;
 
   public:
@@ -34,7 +37,7 @@ namespace corsika {
      * Construct a new SimplePropagator with a given environment.
      *
      */
-    SimplePropagator(TEnvironment const& env);
+    DummyTestPropagator(TEnvironment const& env);
 
     /**
      * Return the collection of paths from `source` to `destination`.
@@ -52,13 +55,13 @@ namespace corsika {
   }; // End: SimplePropagator
 
 template <typename TEnvironment>
-SimplePropagator<TEnvironment>
-make_simple_radio_propagator(TEnvironment const& env){
-    return SimplePropagator<TEnvironment>(env);
+  DummyTestPropagator<TEnvironment>
+make_dummy_test_radio_propagator(TEnvironment const& env){
+    return DummyTestPropagator<TEnvironment>(env);
 
 }
 
 
 } // namespace corsika
 
-#include <corsika/detail/modules/radio/propagators/SimplePropagator.inl>
+#include <corsika/detail/modules/radio/propagators/DummyTestPropagator.inl>

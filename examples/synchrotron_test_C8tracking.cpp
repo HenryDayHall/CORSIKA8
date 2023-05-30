@@ -33,7 +33,7 @@
 #include <corsika/modules/radio/ZHS.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
 #include <corsika/modules/radio/detectors/AntennaCollection.hpp>
-#include <corsika/modules/radio/propagators/SimplePropagator.hpp>
+#include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 
 #include <corsika/modules/TimeCut.hpp>
 
@@ -141,7 +141,7 @@ int main() {
   setup::Tracking tracking;
 
   // the radio signal propagator
-  auto SP = make_simple_radio_propagator(env);
+  auto SP = make_dummy_test_radio_propagator(env);
 
   // put radio processes here
   RadioProcess<decltype(detectorCoREAS),

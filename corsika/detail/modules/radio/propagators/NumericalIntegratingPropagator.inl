@@ -7,18 +7,18 @@
  */
 #pragma once
 
-#include <corsika/modules/radio/propagators/StraightPropagator.hpp>
+#include <corsika/modules/radio/propagators/NumericalIntegratingPropagator.hpp>
 
 namespace corsika {
 
   template <typename TEnvironment>
   // TODO: maybe the constructor doesn't take any arguments for the environment (?)
-  inline StraightPropagator<TEnvironment>::StraightPropagator(TEnvironment const& env)
-      : RadioPropagator<StraightPropagator, TEnvironment>(env) {}
+  inline NumericalIntegratingPropagator<TEnvironment>::NumericalIntegratingPropagator(TEnvironment const& env)
+      : RadioPropagator<NumericalIntegratingPropagator, TEnvironment>(env) {}
 
   template <typename TEnvironment>
-  inline typename StraightPropagator<TEnvironment>::SignalPathCollection
-  StraightPropagator<TEnvironment>::propagate(Point const& source,
+  inline typename NumericalIntegratingPropagator<TEnvironment>::SignalPathCollection
+  NumericalIntegratingPropagator<TEnvironment>::propagate(Point const& source,
                                               Point const& destination,
                                               LengthType const stepsize) const {
 

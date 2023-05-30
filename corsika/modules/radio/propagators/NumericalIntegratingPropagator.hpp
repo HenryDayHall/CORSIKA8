@@ -20,14 +20,18 @@ namespace corsika {
    * This class implements a basic propagator that uses
    * the straight-line (vector) between the particle
    * location and the antenna as the trajectory.
+   * To calculate the time delay of the signal, a basic
+   * numerical integration scheme based on Simpson's rule
+   * takes place. This propagator is slow and not
+   * recommended for big showers simulations.
    *
    * This is what is used in ZHAireS and CoREAS in C7.
    */
   template <typename TEnvironment>
-  class StraightPropagator final
-      : public RadioPropagator<StraightPropagator<TEnvironment>, TEnvironment> {
+  class NumericalIntegratingPropagator final
+      : public RadioPropagator<NumericalIntegratingPropagator<TEnvironment>, TEnvironment> {
 
-    using Base = RadioPropagator<StraightPropagator<TEnvironment>, TEnvironment>;
+    using Base = RadioPropagator<NumericalIntegratingPropagator<TEnvironment>, TEnvironment>;
     using SignalPathCollection = typename Base::SignalPathCollection;
 
   public:
@@ -35,7 +39,7 @@ namespace corsika {
      * Construct a new StraightPropagator with a given environment.
      *
      */
-    StraightPropagator(TEnvironment const& env);
+    NumericalIntegratingPropagator(TEnvironment const& env);
 
     /**
      * Return the collection of paths from `start` to `end`.
@@ -48,12 +52,12 @@ namespace corsika {
   }; // End: StraightPropagator
 
 template <typename TEnvironment>
-StraightPropagator<TEnvironment>
-make_straight_radio_propagator(TEnvironment const& env){
-  return StraightPropagator<TEnvironment>(env);
+  NumericalIntegratingPropagator<TEnvironment>
+make_numerical_integrating_radio_propagator(TEnvironment const& env){
+  return NumericalIntegratingPropagator<TEnvironment>(env);
 
 }
 
 } // namespace corsika
 
-#include <corsika/detail/modules/radio/propagators/StraightPropagator.inl>
+#include <corsika/detail/modules/radio/propagators/NumericalIntegratingPropagator.inl>

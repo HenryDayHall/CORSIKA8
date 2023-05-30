@@ -12,8 +12,8 @@
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
 #include <corsika/modules/radio/detectors/AntennaCollection.hpp>
-#include <corsika/modules/radio/propagators/StraightPropagator.hpp>
-#include <corsika/modules/radio/propagators/SimplePropagator.hpp>
+#include <corsika/modules/radio/propagators/NumericalIntegratingPropagator.hpp>
+#include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 #include <corsika/modules/radio/propagators/FlatEarthPropagator.hpp>
 #include <corsika/modules/radio/propagators/SignalPath.hpp>
 #include <corsika/modules/radio/propagators/RadioPropagator.hpp>
@@ -137,7 +137,7 @@ TEST_CASE("Radio", "[processes]") {
     auto const particle1{stack.addParticle(std::make_tuple(
         electron, calculate_kinetic_energy(plab.getNorm(), get_mass(electron)),
         plab.normalized(), pos, 0_ns))};
-    auto SP = make_straight_radio_propagator(envCoREAS);
+    auto SP = make_numerical_integrating_radio_propagator(envCoREAS);
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector),
                  CoREAS<decltype(detector), decltype(SP)>,
@@ -271,7 +271,7 @@ TEST_CASE("Radio", "[processes]") {
         electron, calculate_kinetic_energy(plab.getNorm(), get_mass(electron)),
         plab.normalized(), pos, 0_ns))};
 
-    auto SP = make_straight_radio_propagator(envCoREAS);
+    auto SP = make_numerical_integrating_radio_propagator(envCoREAS);
 
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector),
@@ -391,7 +391,7 @@ TEST_CASE("Radio", "[processes]") {
 
     auto const charge_{get_charge(particle1.getPID())};
 
-    auto SP = make_straight_radio_propagator(envZHS);
+    auto SP = make_numerical_integrating_radio_propagator(envZHS);
 
     // create a radio process instance using ZHS
     RadioProcess<
@@ -527,7 +527,7 @@ TEST_CASE("Radio", "[processes]") {
     StraightTrajectory track_b{lb, tb};
     Step step_b(particle_stack, track_b);
 
-    auto SP = make_simple_radio_propagator(envRadio);
+    auto SP = make_dummy_test_radio_propagator(envRadio);
 
     // create radio process instances
     RadioProcess<decltype(detector),
@@ -639,7 +639,7 @@ TEST_CASE("Radio", "[processes]") {
         electron, calculate_kinetic_energy(plab.getNorm(), get_mass(electron)),
         plab.normalized(), pos, 0_ns))};
 
-    auto SP = make_straight_radio_propagator(envCoREAS);
+    auto SP = make_numerical_integrating_radio_propagator(envCoREAS);
 
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector),
@@ -949,7 +949,7 @@ TEST_CASE("Antennas") {
 
 TEST_CASE("Propagators") {
 
-  SECTION("Simple Propagator w/ Uniform Refractive Index") {
+  SECTION("Dummy Test Propagator w/ Uniform Refractive Index") {
 
     // create a suitable environment
     using IModelInterface =
@@ -990,7 +990,7 @@ TEST_CASE("Propagators") {
     Path const P1({p0, p10});
 
     // construct a Straight Propagator given the uniform refractive index environment
-    SimplePropagator SP(env);
+    DummyTestPropagator SP(env);
 
     // store the outcome of the Propagate method to paths_
     auto const paths_ = SP.propagate(p0, p10, 1_m);
@@ -1011,10 +1011,10 @@ TEST_CASE("Propagators") {
           [](Point const& a, Point const& b) { return (a - b).getNorm() / 1_m < 1e-5; }));
     }
 
-  } // END: SECTION("Simple Propagator w/ Uniform Refractive Index")
+  } // END: SECTION("Dummy Test Propagator w/ Uniform Refractive Index")
 
   // check that I can create working Straight Propagators in different environments
-  SECTION("Straight Propagator w/ Uniform Refractive Index") {
+  SECTION("Numerical Integrating Propagator w/ Uniform Refractive Index") {
 
     // create a suitable environment
     using IModelInterface =
@@ -1065,7 +1065,7 @@ TEST_CASE("Propagators") {
     Path const P1({p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10});
 
     // construct a Straight Propagator given the uniform refractive index environment
-    StraightPropagator const SP(env);
+    NumericalIntegratingPropagator const SP(env);
 
     // store the outcome of the Propagate method to paths_
     auto const paths_ = SP.propagate(p0, p10, 1_m);
@@ -1115,9 +1115,9 @@ TEST_CASE("Propagators") {
     CHECK(paths_.size() == 1);
     CHECK(paths2_.size() == 1);
     CHECK(paths3_.size() == 1);
-  } // END: SECTION("Straight Propagator w/ Uniform Refractive Index")
+  } // END: SECTION("Numerical Integrating Propagator w/ Uniform Refractive Index")
 
-  SECTION("Straight Propagator w/ Exponential Refractive Index") {
+  SECTION("Numerical Integrating Propagator w/ Exponential Refractive Index") {
 
     // create an environment with exponential refractive index (n_0 = 1 & lambda = 0)
     using ExpoRIndex = ExponentialRefractiveIndex<
@@ -1163,7 +1163,7 @@ TEST_CASE("Propagators") {
     Path const PP1({pp0, pp1, pp2, pp3, pp4, pp5, pp6, pp7, pp8, pp9, pp10});
 
     // construct a Straight Propagator given the exponential refractive index environment
-    StraightPropagator const SP1(env1);
+    NumericalIntegratingPropagator const SP1(env1);
 
     // store the outcome of Propagate method to paths1_
     auto const paths1_ = SP1.propagate(pp0, pp10, 1_m);
@@ -1221,7 +1221,7 @@ TEST_CASE("Propagators") {
     Vector<dimensionless_d> const vvv2(rootCS2, {0, 0, -1});
 
     // construct a Straight Propagator given the exponential refractive index environment
-    StraightPropagator const SP2(env2);
+    NumericalIntegratingPropagator const SP2(env2);
 
     // store the outcome of Propagate method to paths1_
     auto const paths2_ = SP2.propagate(ppp0, ppp10, 1_m);
@@ -1241,7 +1241,7 @@ TEST_CASE("Propagators") {
 
     CHECK(paths2_.size() == 1);
 
-  } // END: SECTION("Straight Propagator w/ Exponential Refractive Index")
+  } // END: SECTION("Numerical Integrating Propagator w/ Exponential Refractive Index")
 
 //    SECTION("Flat Earth Propagator w/ Uniform Refractive Index") {
 //

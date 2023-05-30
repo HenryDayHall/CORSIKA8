@@ -49,8 +49,8 @@
 #include <corsika/modules/radio/antennas/Antenna.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
 #include <corsika/modules/radio/detectors/AntennaCollection.hpp>
-#include <corsika/modules/radio/propagators/StraightPropagator.hpp>
-#include <corsika/modules/radio/propagators/SimplePropagator.hpp>
+#include <corsika/modules/radio/propagators/NumericalIntegratingPropagator.hpp>
+#include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -260,7 +260,7 @@ int main(int argc, char** argv) {
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
   // the radio signal propagator
-  auto SP = make_simple_radio_propagator(env);
+  auto SP = make_dummy_test_radio_propagator(env);
 
   // initiate CoREAS
   RadioProcess<decltype(detectorCoREAS),

@@ -29,7 +29,7 @@
 #include <corsika/modules/radio/ZHS.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
 #include <corsika/modules/radio/detectors/AntennaCollection.hpp>
-#include <corsika/modules/radio/propagators/SimplePropagator.hpp>
+#include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 
 /*
   NOTE, WARNING, ATTENTION
@@ -122,7 +122,7 @@ int main() {
   OutputManager outputs("synchrotron_radiation_manual_tracking-output");
 
   // the radio signal propagator
-  auto SP = make_simple_radio_propagator(env);
+  auto SP = make_dummy_test_radio_propagator(env);
 
   // create a radio process instance using CoREAS
   RadioProcess<

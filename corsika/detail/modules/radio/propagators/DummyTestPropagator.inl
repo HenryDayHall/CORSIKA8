@@ -7,19 +7,19 @@
  */
 #pragma once
 
-#include <corsika/modules/radio/propagators/SimplePropagator.hpp>
+#include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 
 namespace corsika {
 
   template <typename TEnvironment>
-  inline SimplePropagator<TEnvironment>::SimplePropagator(TEnvironment const& env)
-      : RadioPropagator<SimplePropagator, TEnvironment>(env) {
+  inline DummyTestPropagator<TEnvironment>::DummyTestPropagator(TEnvironment const& env)
+      : RadioPropagator<DummyTestPropagator, TEnvironment>(env) {
       rindex.reserve(2);
       }
 
   template <typename TEnvironment>
-  inline typename SimplePropagator<TEnvironment>::SignalPathCollection
-  SimplePropagator<TEnvironment>::propagate(
+  inline typename DummyTestPropagator<TEnvironment>::SignalPathCollection
+      DummyTestPropagator<TEnvironment>::propagate(
       Point const& source, Point const& destination,
       [[maybe_unused]] LengthType const stepsize) {
 
