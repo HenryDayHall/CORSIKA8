@@ -125,18 +125,15 @@ int main() {
   auto SP = make_dummy_test_radio_propagator(env);
 
   // create a radio process instance using CoREAS
-  RadioProcess<
-      AntennaCollection<TimeDomainAntenna>,
-      CoREAS<AntennaCollection<TimeDomainAntenna>, decltype(SP)>,
-      decltype(SP)>
+  RadioProcess<AntennaCollection<TimeDomainAntenna>,
+               CoREAS<AntennaCollection<TimeDomainAntenna>, decltype(SP)>, decltype(SP)>
       coreas(detectorCoREAS, SP);
   // register CoREAS to the output manager
   outputs.add("CoREAS", coreas);
 
   // create a radio process instance using ZHS
   RadioProcess<AntennaCollection<TimeDomainAntenna>,
-               ZHS<AntennaCollection<TimeDomainAntenna>, decltype(SP)>,
-               decltype(SP)>
+               ZHS<AntennaCollection<TimeDomainAntenna>, decltype(SP)>, decltype(SP)>
       zhs(detectorZHS, SP);
   // register ZHS to the output manager
   outputs.add("ZHS", zhs);

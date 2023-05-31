@@ -13,14 +13,15 @@ namespace corsika {
 
   template <typename TEnvironment>
   // TODO: maybe the constructor doesn't take any arguments for the environment (?)
-  inline NumericalIntegratingPropagator<TEnvironment>::NumericalIntegratingPropagator(TEnvironment const& env, LengthType const stepsize)
+  inline NumericalIntegratingPropagator<TEnvironment>::NumericalIntegratingPropagator(
+      TEnvironment const& env, LengthType const stepsize)
       : RadioPropagator<NumericalIntegratingPropagator, TEnvironment>(env)
       , stepsize_(stepsize) {}
 
   template <typename TEnvironment>
   inline typename NumericalIntegratingPropagator<TEnvironment>::SignalPathCollection
-  NumericalIntegratingPropagator<TEnvironment>::propagate(Point const& source,
-                                              Point const& destination) const {
+  NumericalIntegratingPropagator<TEnvironment>::propagate(
+      Point const& source, Point const& destination) const {
 
     /*
      * get the normalized (unit) vector from `source` to `destination'.
@@ -63,8 +64,8 @@ namespace corsika {
 
         // loop from `source` to `destination` to store values before Simpson's rule.
         // this loop skips the last point 'destination' and "misses" the extra point
-        for (auto point = source + step; (point - destination).getNorm() > 0.6 * stepsize_;
-             point = point + step) {
+        for (auto point = source + step;
+             (point - destination).getNorm() > 0.6 * stepsize_; point = point + step) {
 
           // get the environment node at this specific 'point'
           auto const* const node{universe->getContainingNode(point)};

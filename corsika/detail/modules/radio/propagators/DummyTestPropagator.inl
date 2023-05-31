@@ -14,13 +14,13 @@ namespace corsika {
   template <typename TEnvironment>
   inline DummyTestPropagator<TEnvironment>::DummyTestPropagator(TEnvironment const& env)
       : RadioPropagator<DummyTestPropagator, TEnvironment>(env) {
-      rindex.reserve(2);
-      }
+    rindex.reserve(2);
+  }
 
   template <typename TEnvironment>
   inline typename DummyTestPropagator<TEnvironment>::SignalPathCollection
-      DummyTestPropagator<TEnvironment>::propagate(
-      Point const& source, Point const& destination) {
+  DummyTestPropagator<TEnvironment>::propagate(Point const& source,
+                                               Point const& destination) {
 
     /**
      * This is the simplest case of straight propagator

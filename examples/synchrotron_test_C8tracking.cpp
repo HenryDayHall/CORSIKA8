@@ -144,14 +144,12 @@ int main() {
   auto SP = make_dummy_test_radio_propagator(env);
 
   // put radio processes here
-  RadioProcess<decltype(detectorCoREAS),
-               CoREAS<decltype(detectorCoREAS), decltype(SP)>,
+  RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS), decltype(SP)>,
                decltype(SP)>
       coreas(detectorCoREAS, SP);
   output.add("CoREAS", coreas);
 
-  RadioProcess<decltype(detectorZHS),
-               ZHS<decltype(detectorZHS), decltype(SP)>,
+  RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS), decltype(SP)>,
                decltype(SP)>
       zhs(detectorZHS, SP);
   output.add("ZHS", zhs);

@@ -188,12 +188,11 @@ int main() {
   // setup relevant processes
   setup::Tracking tracking;
 
-// the radio signal propagator
-auto SP = make_dummy_test_radio_propagator(env);
+  // the radio signal propagator
+  auto SP = make_dummy_test_radio_propagator(env);
 
   // put radio processes here
-  RadioProcess<decltype(detectorCoREAS),
-               CoREAS<decltype(detectorCoREAS), decltype(SP)>,
+  RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS), decltype(SP)>,
                decltype(SP)>
       coreas(detectorCoREAS, SP);
   output.add("CoREAS", coreas);

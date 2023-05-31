@@ -263,8 +263,7 @@ int main(int argc, char** argv) {
   auto SP = make_dummy_test_radio_propagator(env);
 
   // initiate CoREAS
-  RadioProcess<decltype(detectorCoREAS),
-               CoREAS<decltype(detectorCoREAS), decltype(SP)>,
+  RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS), decltype(SP)>,
                decltype(SP)>
       coreas(detectorCoREAS, SP);
 
@@ -272,8 +271,7 @@ int main(int argc, char** argv) {
   output.add("CoREAS", coreas);
 
   // initiate ZHS
-  RadioProcess<decltype(detectorZHS),
-               ZHS<decltype(detectorZHS), decltype(SP)>,
+  RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS), decltype(SP)>,
                decltype(SP)>
       zhs(detectorZHS, SP);
 

@@ -48,18 +48,16 @@ namespace corsika {
     SignalPathCollection propagate(Point const& source, Point const& destination);
 
   private:
-      std::deque<Point> points;
-      std::vector<double> rindex;
+    std::deque<Point> points;
+    std::vector<double> rindex;
 
   }; // End: SimplePropagator
 
-template <typename TEnvironment>
-  DummyTestPropagator<TEnvironment>
-make_dummy_test_radio_propagator(TEnvironment const& env){
+  template <typename TEnvironment>
+  DummyTestPropagator<TEnvironment> make_dummy_test_radio_propagator(
+      TEnvironment const& env) {
     return DummyTestPropagator<TEnvironment>(env);
-
-}
-
+  }
 
 } // namespace corsika
 

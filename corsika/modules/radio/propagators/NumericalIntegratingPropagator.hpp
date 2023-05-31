@@ -29,9 +29,11 @@ namespace corsika {
    */
   template <typename TEnvironment>
   class NumericalIntegratingPropagator final
-      : public RadioPropagator<NumericalIntegratingPropagator<TEnvironment>, TEnvironment> {
+      : public RadioPropagator<NumericalIntegratingPropagator<TEnvironment>,
+                               TEnvironment> {
 
-    using Base = RadioPropagator<NumericalIntegratingPropagator<TEnvironment>, TEnvironment>;
+    using Base =
+        RadioPropagator<NumericalIntegratingPropagator<TEnvironment>, TEnvironment>;
     using SignalPathCollection = typename Base::SignalPathCollection;
 
   public:
@@ -53,12 +55,12 @@ namespace corsika {
 
   }; // End: StraightPropagator
 
-template <typename TEnvironment>
+  template <typename TEnvironment>
   NumericalIntegratingPropagator<TEnvironment>
-make_numerical_integrating_radio_propagator(TEnvironment const& env, LengthType const stepsize){
-  return NumericalIntegratingPropagator<TEnvironment>(env, stepsize);
-
-}
+  make_numerical_integrating_radio_propagator(TEnvironment const& env,
+                                              LengthType const stepsize) {
+    return NumericalIntegratingPropagator<TEnvironment>(env, stepsize);
+  }
 
 } // namespace corsika
 
