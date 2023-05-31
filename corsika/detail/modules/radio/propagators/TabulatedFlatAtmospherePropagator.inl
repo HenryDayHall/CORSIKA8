@@ -7,15 +7,15 @@
 */
 #pragma once
 
-#include <corsika/modules/radio/propagators/FlatEarthPropagator.hpp>
+#include <corsika/modules/radio/propagators/TabulatedFlatAtmospherePropagator.hpp>
 
 namespace corsika {
 
  template <typename TEnvironment>
- inline FlatEarthPropagator<TEnvironment>::FlatEarthPropagator(TEnvironment const& env,
+ inline TabulatedFlatAtmospherePropagator<TEnvironment>::TabulatedFlatAtmospherePropagator(TEnvironment const& env,
                                                                 Point const& upperLimit, Point const& lowerLimit,
                                                                 LengthType const step)
-     : RadioPropagator<FlatEarthPropagator, TEnvironment>(env)
+     : RadioPropagator<TabulatedFlatAtmospherePropagator, TEnvironment>(env)
          , upperLimit_(upperLimit)
          , lowerLimit_(lowerLimit)
          , step_(step)
@@ -54,13 +54,13 @@ namespace corsika {
        };
 
  template <typename TEnvironment>
- inline typename FlatEarthPropagator<TEnvironment>::SignalPathCollection
- FlatEarthPropagator<TEnvironment>::propagate(Point const& source, Point const& destination,
-                                              [[maybe_unused]] LengthType const stepsize) {
+ inline typename TabulatedFlatAtmospherePropagator<TEnvironment>::SignalPathCollection
+       TabulatedFlatAtmospherePropagator<TEnvironment>::propagate(Point const& source, Point const& destination) {
 
    /**
     * This is a simple case of straight propagator where
-    * tabulated values of refractive index are called assuming a flat earth.
+    * tabulated values of refractive index are called assuming
+    * a flat atmosphere.
     *
     */
 
@@ -76,7 +76,7 @@ namespace corsika {
    points.clear();
 
    // get and store the refractive index of the first point 'source'.
-   std::size_t const indexSource_{static_cast<std::size_t>((source.getCoordinates().getZ() - heightTable_.front()) * inverseStep_ + 0.5)};
+   std::size_t const indexSource_{static_cast<std::size_t>((source.getCoordinates().getZ() - heightTable_.front()) * inverseStep_ + 0.5)}; // ToDo: this does no interpolation for particles in ground, it just stops on the surface.
    auto const ri_source{refractivityTable_.at(indexSource_) + 1};
    rindex.push_back(ri_source);
    points.push_back(source);

@@ -18,16 +18,16 @@ namespace corsika {
 
  /**
   * This class implements a tabulated propagator that approximates
-  * the Earth's atmopshere as flat. Signal propagation is rectilinear
+  * the Earth's atmosphere as flat. Signal propagation is rectilinear
   * and this is intended to be used for vertical showers
   * (<60 degrees zenith angle) for fast simulations.
   *
   */
  template <typename TEnvironment>
- class FlatEarthPropagator final
-     : public RadioPropagator<FlatEarthPropagator<TEnvironment>, TEnvironment> {
+ class TabulatedFlatAtmospherePropagator final
+     : public RadioPropagator<TabulatedFlatAtmospherePropagator<TEnvironment>, TEnvironment> {
 
-   using Base = RadioPropagator<FlatEarthPropagator<TEnvironment>, TEnvironment>;
+   using Base = RadioPropagator<TabulatedFlatAtmospherePropagator<TEnvironment>, TEnvironment>;
    using SignalPathCollection = typename Base::SignalPathCollection;
 
  public:
@@ -35,7 +35,7 @@ namespace corsika {
     * Construct a new FlatEarthPropagator with a given environment.
     *
     */
-   FlatEarthPropagator(TEnvironment const& env, Point const& upperLimit, Point const& lowerLimit,
+   TabulatedFlatAtmospherePropagator(TEnvironment const& env, Point const& upperLimit, Point const& lowerLimit,
                        LengthType const step);
 
    /**
@@ -44,8 +44,7 @@ namespace corsika {
     * emission point to the antenna location.
     *
     */
-   SignalPathCollection propagate(Point const& source, Point const& destination,
-                                  LengthType const stepsize);
+   SignalPathCollection propagate(Point const& source, Point const& destination);
 
  private:
    Point const upperLimit_;
@@ -62,4 +61,4 @@ namespace corsika {
 
 } // namespace corsika
 
-#include <corsika/detail/modules/radio/propagators/FlatEarthPropagator.inl>
+#include <corsika/detail/modules/radio/propagators/TabulatedFlatAtmospherePropagator.inl>
