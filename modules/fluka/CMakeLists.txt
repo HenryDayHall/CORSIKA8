@@ -21,7 +21,7 @@ else()
     # we remove flrndm_.o from the original libflukahp.a and save the result as libflukahp-norndm.a
     add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/libflukahp-norndm.a
-        COMMAND ${input_dir}/strip_flukahp.sh ${C8_FLUKALIB} ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${input_dir}/strip_flukahp.sh ${C8_FLUKALIB_} ${CMAKE_CURRENT_BINARY_DIR}
     )
     add_custom_target(generate_libfluka-norndm DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libflukahp-norndm.a)
 
