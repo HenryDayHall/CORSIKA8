@@ -59,6 +59,14 @@ namespace corsika {
 
  }; // End: FlatEarthPropagator
 
+ template <typename TEnvironment>
+ TabulatedFlatAtmospherePropagator<TEnvironment>
+ make_tabulated_flat_atmosphere_radio_propagator(TEnvironment const& env, Point const& upperLimit, Point const& lowerLimit,
+                                                 LengthType const step){
+   return TabulatedFlatAtmospherePropagator<TEnvironment>(env, upperLimit, lowerLimit, step);
+
+ }
+
 } // namespace corsika
 
 #include <corsika/detail/modules/radio/propagators/TabulatedFlatAtmospherePropagator.inl>

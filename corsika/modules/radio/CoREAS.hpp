@@ -8,11 +8,8 @@
 #pragma once
 
 #include <corsika/modules/radio/RadioProcess.hpp>
-#include <corsika/modules/radio/propagators/NumericalIntegratingPropagator.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/modules/radio/propagators/SignalPath.hpp>
-#include <cmath>
 
 namespace corsika {
 

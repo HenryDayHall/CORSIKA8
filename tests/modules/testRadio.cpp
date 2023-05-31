@@ -1285,7 +1285,7 @@ TEST_CASE("Propagators") {
     LengthType const step_{1_m};
 
     // construct a Tabulated Flat Atmosphere Propagator given the uniform refractive index environment
-    TabulatedFlatAtmospherePropagator SP(env, upperBoundary_, p0, step_);
+    auto SP = make_tabulated_flat_atmosphere_radio_propagator(env, upperBoundary_, p0, step_);
 
     // store the outcome of the Propagate method to paths_
     auto paths_ = SP.propagate(p0, p10);
