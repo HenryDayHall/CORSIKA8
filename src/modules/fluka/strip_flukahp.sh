@@ -14,6 +14,16 @@
 flukalibOrig=`realpath $1`
 target="$2"
 
+if [ -d "$flukalibOrig" ]; then
+    echo "\"$flukalibOrig\" is a directory. Please specify full path to libflukahp.a?" 1>&2
+    exit 1
+fi
+
+if [ ! -f "$flukalibOrig" ]; then
+    echo "\"$flukalibOrig\" is not a regular file. Did you specify the full path to libflukahp.a?" 1>&2
+    exit 1
+fi
+
 if [ ! -r "$flukalibOrig" ]; then
     echo "\"$flukalibOrig\" not readable" 1>&2
     exit 1
