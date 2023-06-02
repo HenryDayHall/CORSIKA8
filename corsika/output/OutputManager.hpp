@@ -38,7 +38,8 @@ namespace corsika {
      * @param name    The name of this output collection.
      * @param dir     The directory where the output directory will be stored.
      */
-    OutputManager(std::string const& name, const long& vseed, boost::filesystem::path const& dir);
+    OutputManager(std::string const& name, const long& vseed,
+                  boost::filesystem::path const& dir);
 
     /**
      * Handle graceful closure of the outputs upon destruction.
