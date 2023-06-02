@@ -103,9 +103,9 @@ void registerRandomStreams(long seed) {
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
-    CORSIKA_LOG_INFO("random seed (auto) {} ", seed);
+    std::cout << "random seed (auto)  " << seed << std::endl;
   } else {
-    CORSIKA_LOG_INFO("random seed {} ", seed);
+      std::cout << "random seed {} " << seed << std::endl;
   }
   RNGManager<>::getInstance().setSeed(seed);
 }
