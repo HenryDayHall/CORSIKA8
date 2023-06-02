@@ -29,5 +29,12 @@ if [ ! -r "$flukalibOrig" ]; then
     exit 1
 fi
 
+# check if FLUKA has the required symbols. If not, it is an imcompatible
+# version (e.g. CERN FLUKA or too old)
+if ! ar t "$flukalibOrig" | grep ndmhep.o >/dev/null; then
+    echo "The provided libflukahp.a is incompatible." 1>&2
+    exit 1
+fi
+
 cp "${flukalibOrig}" "${target}/libflukahp-norndm.a" && \
 ar -d "${target}/libflukahp-norndm.a" flrndm.o flrnlp.o
