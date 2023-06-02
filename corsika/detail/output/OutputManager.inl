@@ -23,7 +23,7 @@
 namespace corsika {
 
   inline OutputManager::OutputManager(
-      std::string const& name, const long& vseed,
+      std::string const& name, const long& vseed = 0,
       boost::filesystem::path const& dir = boost::filesystem::current_path())
       : root_(dir / name)
       , name_(name)
