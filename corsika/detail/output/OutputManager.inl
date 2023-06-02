@@ -23,11 +23,12 @@
 namespace corsika {
 
   inline OutputManager::OutputManager(
-      std::string const& name,
+      std::string const& name, const long& vseed,
       boost::filesystem::path const& dir = boost::filesystem::current_path())
       : root_(dir / name)
       , name_(name)
-      , count_(0) {
+      , count_(0)
+      , seed_(vseed) {
 
     // check if this directory already exists
     if (boost::filesystem::exists(root_)) {
@@ -111,6 +112,8 @@ namespace corsika {
 
     // the total number of showers contained in the library
     summary["showers"] = count_;
+
+    summary["seed"] = seed_;
 
     // this next section handles writing some time and duration information
 
