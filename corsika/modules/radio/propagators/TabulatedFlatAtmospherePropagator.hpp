@@ -53,20 +53,20 @@ namespace corsika {
   private:
     Point const upperLimit_; ///< the upper point of the table.
     Point const lowerLimit_; ///< the lowest point of the table (ideally earth's surface).
-    LengthType const minHeight_; ///< z coordinate of lower limit (minimum height) - 1_km for safety reasons.
-    LengthType const maxHeight_; ///< z coordinate of upper limit (maximum height).
     LengthType const step_; ///< the tabulation step.
     InverseLengthType const inverseStep_; ///< inverse of the step used to speed up calculations.
+    LengthType const maxHeight_; ///< z coordinate of upper limit (maximum height).
+    LengthType const minHeight_; ///< z coordinate of lower limit (minimum height) - 1_km for safety reasons.
     std::vector<double> refractivityTable_; ///< the table that stores refractivity.
-    std::vector<double> integratedRefractivityTable_; ///< the table that stores integrated refractivity.
     std::vector<LengthType> heightTable_; ///< the table that stores the height using the step above.
-    std::deque<Point> points; ///< the points that the signal has propagated through.
-    std::vector<double> rindex; ///< the refractive index values along the signal propagation path.
+    std::vector<double> integratedRefractivityTable_; ///< the table that stores integrated refractivity.
     double slopeRefrLower_; ///< used to interpolate refractivity for particles below the lowest point.
     double slopeIntRefrLower_; ///< used to interpolate integrated refractivity for particles below the lowest point.
     double slopeRefrUpper_; ///< used to interpolate refractivity for particles above the highest point.
     double slopeIntRefrUpper_; ///< used to interpolate integrated refractivity for particles above the highest point.
     double lastElement_ ; ///< last index of tables.
+    std::deque<Point> points; ///< the points that the signal has propagated through.
+    std::vector<double> rindex; ///< the refractive index values along the signal propagation path.
 
   }; // End: FlatEarthPropagator
 
