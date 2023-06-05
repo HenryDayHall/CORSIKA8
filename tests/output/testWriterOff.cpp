@@ -30,8 +30,8 @@ TEST_CASE("WriterOff") {
 
   logging::set_level(logging::level::info);
 
-  WriterOff test("irrelevant", 3);
-  WriterOff test2();
+  WriterOff test{"irrelevant", 3};
+  WriterOff test2{};
 
   test.startOfLibrary("./output_dir_eloss");
   test.startOfShower(0);
