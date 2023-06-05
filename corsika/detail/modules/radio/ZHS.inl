@@ -48,7 +48,7 @@ namespace corsika {
 
       // we loop over each antenna in the collection
       for (auto& antenna : antennas_.getAntennas()) {
-        auto midPaths{this->propagator_.propagate(midPoint, antenna.getLocation())};
+        auto midPaths{this->propagator_.propagate(step.getParticlePre(), midPoint, antenna.getLocation())};
         // Loop over midPaths, first check Fraunhoffer limit
         for (size_t i{0}; i < midPaths.size(); i++) {
           double const uTimesK{beta.dot(midPaths[i].emit_) / betaModule};
@@ -72,7 +72,7 @@ namespace corsika {
               auto const newHalfVector{(point1 - point2) / 2.};
               auto const newMidPoint{point2 + newHalfVector};
               auto const newMidPaths{
-                  this->propagator_.propagate(newMidPoint, antenna.getLocation())};
+                  this->propagator_.propagate(step.getParticlePre(), newMidPoint, antenna.getLocation())};
               // A function for calculating the field should be made since it is repeated
               // later
               for (size_t k{0}; k < newMidPaths.size(); k++) {

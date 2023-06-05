@@ -19,8 +19,9 @@ namespace corsika {
       , stepsize_(stepsize) {}
 
   template <typename TEnvironment>
+  template <typename Particle>
   inline typename NumericalIntegratingPropagator<TEnvironment>::SignalPathCollection
-  NumericalIntegratingPropagator<TEnvironment>::propagate(
+  NumericalIntegratingPropagator<TEnvironment>::propagate(Particle const& particle,
       Point const& source, Point const& destination) const {
 
     /*
@@ -57,7 +58,7 @@ namespace corsika {
         rindex.reserve(n_points);
 
         // get and store the refractive index of the first point 'source'
-        auto const* const nodeSource{universe->getContainingNode(source)};
+        auto const* const nodeSource{particle.getNode()};
         auto const ri_source{nodeSource->getModelProperties().getRefractiveIndex(source)};
         rindex.push_back(ri_source);
         points.push_back(source);
@@ -73,7 +74,6 @@ namespace corsika {
           // get the associated refractivity at 'point'
           auto const refractive_index{
               node->getModelProperties().getRefractiveIndex(point)};
-          //         auto const refractive_index{1.000327};
           rindex.push_back(refractive_index);
 
           // add this 'point' to our deque collection
@@ -87,7 +87,6 @@ namespace corsika {
         auto const* const node{universe->getContainingNode(destination)};
         auto const ri_destination{
             node->getModelProperties().getRefractiveIndex(destination)};
-        //      auto const ri_destination{1.000327};
         rindex.push_back(ri_destination);
         points.push_back(destination);
 
@@ -149,9 +148,6 @@ namespace corsika {
               sum * (h / (3 * constants::c)) -
               (ri_extrapoint2 * ((extrapoint2_ - destination).getNorm()) / constants::c);
         }
-
-        // uncomment the following if you want to skip the integration for fast tests
-        // TimeType time = ri_destination * (distance / constants::c);
 
         // compute the average refractive index.
         auto const averageRefractiveIndex = refra / N;

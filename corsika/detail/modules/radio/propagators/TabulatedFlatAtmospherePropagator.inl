@@ -56,8 +56,9 @@ namespace corsika {
   };
 
   template <typename TEnvironment>
+  template <typename Particle>
   inline typename TabulatedFlatAtmospherePropagator<TEnvironment>::SignalPathCollection
-  TabulatedFlatAtmospherePropagator<TEnvironment>::propagate(Point const& source,
+  TabulatedFlatAtmospherePropagator<TEnvironment>::propagate(Particle const& particle, Point const& source,
                                                              Point const& destination) {
 
     /**

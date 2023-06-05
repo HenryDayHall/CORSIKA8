@@ -46,7 +46,8 @@ namespace corsika {
      * emission point to the antenna location.
      *
      */
-    SignalPathCollection propagate(Point const& source, Point const& destination);
+    template <typename Particle>
+    SignalPathCollection propagate(Particle const& particle, Point const& source, Point const& destination);
 
   private:
     Point const upperLimit_;

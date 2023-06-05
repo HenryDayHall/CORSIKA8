@@ -18,8 +18,9 @@ namespace corsika {
   }
 
   template <typename TEnvironment>
+  template <typename Particle>
   inline typename DummyTestPropagator<TEnvironment>::SignalPathCollection
-  DummyTestPropagator<TEnvironment>::propagate(Point const& source,
+  DummyTestPropagator<TEnvironment>::propagate(Particle const& particle, Point const& source,
                                                Point const& destination) {
 
     /**
@@ -44,7 +45,7 @@ namespace corsika {
     points.clear();
 
     // get and store the refractive index of the first point 'source'.
-    auto const* const nodeSource{universe->getContainingNode(source)};
+    auto const* const nodeSource{particle.getNode()};
     auto const ri_source{nodeSource->getModelProperties().getRefractiveIndex(source)};
     rindex.push_back(ri_source);
     points.push_back(source);
