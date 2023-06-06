@@ -1284,5 +1284,4 @@ TEST_CASE("Nested ProcessSequence", "ProcessSequence") {
   CHECK_FALSE(cp1.getFlag());
   CHECK_FALSE(cp2.getFlag());
   CHECK(cp3.getFlag());
-
 }
