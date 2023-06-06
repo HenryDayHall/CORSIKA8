@@ -99,7 +99,9 @@ namespace corsika {
         //            "doContinuous(TParticle[const]&,TTrack[const]&,bool)\" required for
         //            " "ContinuousProcess<TDerived>. ");
 
-        return A_.doContinuous(step, idLimit == ContinuousProcessIndex(IndexProcess1));
+        return A_.doContinuous(
+            step, idLimit == ContinuousProcessIndex(
+                                 reinterpret_cast<void const*>(std::addressof(A_))));
       }
     } else {
       if constexpr (process2_type::is_process_sequence) {
@@ -120,7 +122,9 @@ namespace corsika {
         //            "doContinuous(TParticle [const]&,TTrack[const]&,bool)\" required for
         //            " "ContinuousProcess<TDerived>. ");
 
-        return B_.doContinuous(step, idLimit == ContinuousProcessIndex(IndexProcess2));
+        return B_.doContinuous(
+            step, idLimit == ContinuousProcessIndex(
+                                 reinterpret_cast<void const*>(std::addressof(B_))));
       }
     }
     return ProcessReturn::Ok;
@@ -184,8 +188,9 @@ namespace corsika {
                       "getMaxStepLength(TParticle const&, TTrack const&)\" required for "
                       "ContinuousProcess<TDerived>. ");
 
-        return ContinuousProcessStepLength(A_.getMaxStepLength(particle, vTrack),
-                                           ContinuousProcessIndex(IndexProcess1));
+        return ContinuousProcessStepLength(
+            A_.getMaxStepLength(particle, vTrack),
+            ContinuousProcessIndex(reinterpret_cast<void const*>(std::addressof(A_))));
       }
     } else {
       if constexpr (process2_type::is_process_sequence) {
@@ -200,8 +205,9 @@ namespace corsika {
                       "getMaxStepLength(TParticle const&, TTrack const&)\" required for "
                       "ContinuousProcess<TDerived>. ");
 
-        return ContinuousProcessStepLength(B_.getMaxStepLength(particle, vTrack),
-                                           ContinuousProcessIndex(IndexProcess2));
+        return ContinuousProcessStepLength(
+            B_.getMaxStepLength(particle, vTrack),
+            ContinuousProcessIndex(reinterpret_cast<void const*>(std::addressof(B_))));
       }
     }
 

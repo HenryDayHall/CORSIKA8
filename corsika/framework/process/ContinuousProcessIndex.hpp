@@ -19,16 +19,16 @@ namespace corsika {
   class ContinuousProcessIndex {
   public:
     ContinuousProcessIndex()
-        : id_(-1) {} // default
-    ContinuousProcessIndex(int const id)
+        : id_(nullptr) {} // default
+    ContinuousProcessIndex(void const* id)
         : id_(id) {}
-    void setIndex(int const id) { id_ = id; }
-    int getIndex() const { return id_; }
+    void setIndex(void const* id) { id_ = id; }
+    void const* getIndex() const { return id_; }
     bool operator==(ContinuousProcessIndex const v) const { return id_ == v.id_; }
-    bool operator!=(ContinuousProcessIndex const v) const { return id_ != v.id_; }
+    bool operator!=(ContinuousProcessIndex const v) const { return !(*this == v); }
 
   private:
-    int id_;
+    void const* id_;
   };
 
 } // namespace corsika
