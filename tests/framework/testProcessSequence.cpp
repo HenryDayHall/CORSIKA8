@@ -535,7 +535,7 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     int const nLoop = 5;
     CORSIKA_LOG_DEBUG("Running loop with n={}", nLoop);
     for (int iLoop = 0; iLoop < nLoop; ++iLoop) {
-      sequence2.doContinuous(step, ContinuousProcessIndex(1));
+      sequence2.doContinuous(step, ContinuousProcessIndex(&cp1));
     }
     CHECK(step.getDiffT() / 1_s == Approx(77));
     CHECK(step.getDiffEkin() / 1_eV == Approx(7));
@@ -692,7 +692,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkSec = 0;
     checkCont = 0;
     particle.data_[0] = 100; // data positive --> sequence1
-    sequence3.doContinuous(step, ContinuousProcessIndex(1));
+    sequence3.doContinuous(step, ContinuousProcessIndex(&cp1));
     CHECK(checkInteract == 0);
     CHECK(checkDecay == 0);
     CHECK(checkCont == 0b011);
@@ -703,7 +703,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkSec = 0;
     checkCont = 0;
     particle.data_[0] = -100; // data negative  --> sequence2
-    sequence3.doContinuous(step, ContinuousProcessIndex(1));
+    sequence3.doContinuous(step, ContinuousProcessIndex(&cp1));
     CHECK(checkInteract == 0);
     CHECK(checkDecay == 0);
     CHECK(checkCont == 0b101);
