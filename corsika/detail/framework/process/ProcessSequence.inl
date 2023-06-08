@@ -121,7 +121,9 @@ namespace corsika {
         //~ "doContinuous(TParticle [const]&,TTrack [const]&,bool)\" required for "
         //~ "ContinuousProcess<TDerived>. ");
 
-        ret |= A_.doContinuous(step, limitId == ContinuousProcessIndex(IndexProcess1));
+        ret |= A_.doContinuous(
+            step, limitId == ContinuousProcessIndex(
+                                 static_cast<void const*>(std::addressof(A_))));
       }
     }
 
@@ -142,7 +144,9 @@ namespace corsika {
         //~ "doContinuous(TParticle [const]&,TTrack [const]&,bool)\" required for "
         //~ "ContinuousProcess<TDerived>. ");
 
-        ret |= B_.doContinuous(step, limitId == ContinuousProcessIndex(IndexProcess2));
+        ret |= B_.doContinuous(
+            step, limitId == ContinuousProcessIndex(
+                                 static_cast<void const*>(std::addressof(B_))));
       }
     }
 
@@ -279,8 +283,9 @@ namespace corsika {
                       "getMaxStepLength(TParticle const&, TTrack const&)\" required for "
                       "ContinuousProcess<TDerived>. ");
 
-        ContinuousProcessStepLength const step(A_.getMaxStepLength(particle, vTrack),
-                                               ContinuousProcessIndex(IndexProcess1));
+        ContinuousProcessStepLength const step(
+            A_.getMaxStepLength(particle, vTrack),
+            ContinuousProcessIndex(static_cast<void const*>(std::addressof(A_))));
         max_length = std::min(max_length, step);
       }
     }
@@ -299,8 +304,9 @@ namespace corsika {
                       "getMaxStepLength(TParticle const&, TTrack const&)\" required for "
                       "ContinuousProcess<TDerived>. ");
 
-        ContinuousProcessStepLength const step(B_.getMaxStepLength(particle, vTrack),
-                                               ContinuousProcessIndex(IndexProcess2));
+        ContinuousProcessStepLength const step(
+            B_.getMaxStepLength(particle, vTrack),
+            ContinuousProcessIndex(static_cast<void const*>(std::addressof(B_))));
         max_length = std::min(max_length, step);
       }
     }
