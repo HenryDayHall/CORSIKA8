@@ -101,7 +101,7 @@ namespace corsika {
 
         return A_.doContinuous(
             step, idLimit == ContinuousProcessIndex(
-                                 reinterpret_cast<void const*>(std::addressof(A_))));
+                                 static_cast<void const*>(std::addressof(A_))));
       }
     } else {
       if constexpr (process2_type::is_process_sequence) {
@@ -124,7 +124,7 @@ namespace corsika {
 
         return B_.doContinuous(
             step, idLimit == ContinuousProcessIndex(
-                                 reinterpret_cast<void const*>(std::addressof(B_))));
+                                 static_cast<void const*>(std::addressof(B_))));
       }
     }
     return ProcessReturn::Ok;
@@ -190,7 +190,7 @@ namespace corsika {
 
         return ContinuousProcessStepLength(
             A_.getMaxStepLength(particle, vTrack),
-            ContinuousProcessIndex(reinterpret_cast<void const*>(std::addressof(A_))));
+            ContinuousProcessIndex(static_cast<void const*>(std::addressof(A_))));
       }
     } else {
       if constexpr (process2_type::is_process_sequence) {
@@ -207,7 +207,7 @@ namespace corsika {
 
         return ContinuousProcessStepLength(
             B_.getMaxStepLength(particle, vTrack),
-            ContinuousProcessIndex(reinterpret_cast<void const*>(std::addressof(B_))));
+            ContinuousProcessIndex(static_cast<void const*>(std::addressof(B_))));
       }
     }
 
