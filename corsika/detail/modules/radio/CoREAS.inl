@@ -46,9 +46,12 @@ namespace corsika {
       // get particle charge
       auto const charge_{get_charge(step.getParticlePre().getPID())};
 
+      // get thinning weight
+      auto const thinningWeight{step.getParticlePre().getWeight()};
+
       // constants for electric field vector calculation
-      auto const constants_{charge_ / (4 * M_PI) / (constants::epsilonZero) /
-                            constants::c};
+      auto const constants_{(charge_ / (4 * M_PI) / (constants::epsilonZero) /
+                            constants::c) * thinningWeight};
 
       // set threshold for application of ZHS-like approximation.
       const double approxThreshold_{1.0e-3};
