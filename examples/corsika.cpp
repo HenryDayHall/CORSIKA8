@@ -105,7 +105,7 @@ long registerRandomStreams(long seed) {
     seed = rd();
     std::cout << "random seed (auto)  " << seed << std::endl;
   } else {
-    std::cout << "random seed {} " << seed << std::endl;
+    std::cout << "random seed " << seed << std::endl;
   }
   RNGManager<>::getInstance().setSeed(seed);
   return seed;
