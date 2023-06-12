@@ -2,6 +2,17 @@
 
 DIR=$(readlink -f $(dirname $0))
 
+if [ $# -eq 0 ]; then
+  # no arguments passed, target is current working dir
+  target_dir="$PWD"
+elif [ $# -eq 1 ]; then
+  # target is provided directory
+  target_dir="$1"
+else
+  echo "usage: conan-install.sh [directory]" >&2
+  exit 1
+fi
+
 echo "using `conan --version`"
 
 if ! conan profile show corsika8 >/dev/null 2>/dev/null; then
@@ -11,5 +22,7 @@ if ! conan profile show corsika8 >/dev/null 2>/dev/null; then
     conan profile update settings.compiler.libcxx=libstdc++11 corsika8
   fi
 fi
-# force rebuild of cubicinterpolation (see discussion in MR509)
-conan install -pr corsika8 --build=missing --build=cubicinterpolation ${DIR}
+
+mkdir -p "$target_dir" || exit 2
+cd "$target_dir" || exit 3
+conan install -pr corsika8 --build=missing "${DIR}"

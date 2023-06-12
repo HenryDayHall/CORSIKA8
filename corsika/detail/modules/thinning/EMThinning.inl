@@ -48,31 +48,33 @@ namespace corsika {
     double const p2 = particle2.getEnergy() / Esum;
 
     // weight factors
-    double const w1 = parentWeight / p1;
-    double const w2 = parentWeight / p2;
+    auto const f1 = 1 / p1;
+    auto const f2 = 1 / p2;
 
     // max. allowed weight factor
-    double const maxWeightFactor = maxWeight_ / parentWeight;
+    double const fMax = maxWeight_ / parentWeight;
 
-    if (w1 <= maxWeightFactor && w2 <= maxWeightFactor) { // apply Hillas thinning
-      if (uniform_(rng_) <= p1) {                         // keep 1st with probability p1
+    if (f1 <= fMax && f2 <= fMax) {
+      /* cannot possibly reach wmax in this vertex; apply
+        Hillas thinning; select one of the two */
+      if (uniform_(rng_) <= p1) { // keep 1st with probability p1
         particle2.setWeight(0);
-        particle1.setWeight(w1);
+        particle1.setWeight(parentWeight * f1);
       } else { // keep 2nd
         particle1.setWeight(0);
-        particle2.setWeight(w2);
+        particle2.setWeight(parentWeight * f2);
       }
     } else { // weight limitation kicks in, do statistical thinning
-      double const w1prime = std::min(w1, maxWeightFactor);
-      double const w2prime = std::min(w2, maxWeightFactor);
+      double const f1prime = std::min(f1, fMax);
+      double const f2prime = std::min(f2, fMax);
 
-      if (uniform_(rng_) * w1prime <= parentWeight) { // keep 1st
-        particle1.setWeight(w1prime * parentWeight);
+      if (uniform_(rng_) * f1prime <= 1) { // keep 1st
+        particle1.setWeight(parentWeight * f1prime);
       } else {
         particle1.setWeight(0);
       }
-      if (uniform_(rng_) * w2prime <= parentWeight) { // keep 2nd
-        particle2.setWeight(w2prime * parentWeight);
+      if (uniform_(rng_) * f2prime <= 1) { // keep 2nd
+        particle2.setWeight(parentWeight * f2prime);
       } else {
         particle2.setWeight(0);
       }

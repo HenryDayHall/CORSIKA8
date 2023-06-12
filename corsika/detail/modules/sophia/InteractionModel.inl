@@ -66,7 +66,9 @@ namespace corsika::sophia {
 
     // accepts only photon-nucleon interactions
     if (!isValid(projectileId, targetId, sqrtS)) {
-      CORSIKA_LOGGER_ERROR(logger_, "Invalid target/projectile/energy combination");
+      CORSIKA_LOGGER_ERROR(logger_,
+                           "Invalid target/projectile/energy combination: {},{},{} GeV",
+                           projectileId, targetId, sqrtS / 1_GeV);
       throw std::runtime_error("SOPHIA: Invalid target/projectile/energy combination");
     }
 

@@ -58,6 +58,7 @@
 #include <corsika/modules/StackInspector.hpp>
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/UrQMD.hpp>
+#include <corsika/modules/thinning/EMThinning.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -70,7 +71,6 @@
 #include <iomanip>
 #include <limits>
 #include <string>
-#include <string_view>
 
 /*
   NOTE, WARNING, ATTENTION
@@ -90,7 +90,7 @@ using EnvType = Environment<EnvironmentInterface>;
 
 using Particle = setup::Stack<EnvType>::particle_type;
 
-void registerRandomStreams(int seed) {
+void registerRandomStreams(long seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
@@ -99,6 +99,7 @@ void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("urqmd");
   RNGManager<>::getInstance().registerRandomStream("proposal");
+  RNGManager<>::getInstance().registerRandomStream("thinning");
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
@@ -147,6 +148,29 @@ int main(int argc, char** argv) {
       ->default_val(0.)
       ->check(CLI::Range(0., 360.))
       ->group("Primary");
+  app.add_option("--emcut",
+                 "Min. kin. energy of photons, electrons and positrons in tracking (GeV)")
+      ->default_val(50.)
+      ->check(CLI::Range(0.000001, 1.e13))
+      ->group("Config");
+  app.add_option("--hadcut", "Min. kin. energy of hadrons in tracking (GeV)")
+      ->default_val(50.)
+      ->check(CLI::Range(0.000001, 1.e13))
+      ->group("Config");
+  app.add_option("--mucut", "Min. kin. energy of muons in tracking (GeV)")
+      ->default_val(50.)
+      ->check(CLI::Range(0.000001, 1.e13))
+      ->group("Config");
+  app.add_option("--observation-level",
+                 "Height above earth radius of the observation level (in m)")
+      ->default_val(0.)
+      ->check(CLI::Range(-1.e3, 1.e5))
+      ->group("Config");
+  app.add_option("--injection-height",
+                 "Height above earth radius of the injection point (in m)")
+      ->default_val(111.75e3)
+      ->check(CLI::Range(-1.e3, 1.e6))
+      ->group("Config");
   app.add_option("-N,--nevent", nevent, "The number of events/showers to run.")
       ->default_val(1)
       ->check(CLI::PositiveNumber)
@@ -172,12 +196,26 @@ int main(int argc, char** argv) {
       ->default_val("SIBYLL-2.3d")
       ->check(CLI::IsMember({"SIBYLL-2.3d", "QGSJet-II.04", "EPOS-LHC"}))
       ->group("Misc.");
+  app.add_option("--emthin",
+                 "fraction of primary energy at which thinning of EM particles starts")
+      ->default_val(1.e-6)
+      ->check(CLI::Range(0., 1.))
+      ->group("Thinning");
+  app.add_option(
+         "--max-weight",
+         "maximum weight for thinning of EM particles (0 to select Kobal's optimum)")
+      ->default_val(0)
+      ->check(CLI::NonNegativeNumber)
+      ->group("Thinning");
+  bool multithin = false;
+  app.add_flag("--multithin", multithin, "keep thinned particles (with weight=0)")
+      ->group("Thinning");
 
   // parse the command line options into the variables
   CLI11_PARSE(app, argc, argv);
 
   if (app.count("--verbosity")) {
-    std::string_view const loglevel = app["--verbosity"]->as<std::string_view>();
+    auto const loglevel = app["--verbosity"]->as<std::string>();
     if (loglevel == "warn") {
       logging::set_level(logging::level::warn);
     } else if (loglevel == "info") {
@@ -204,7 +242,7 @@ int main(int argc, char** argv) {
   }
 
   // initialize random number sequence(s)
-  registerRandomStreams(app["--seed"]->as<int>());
+  registerRandomStreams(app["--seed"]->as<long>());
 
   /* === START: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
   EnvType env;
@@ -266,8 +304,10 @@ int main(int argc, char** argv) {
   /* === END: CONSTRUCT PRIMARY PARTICLE === */
 
   /* === START: CONSTRUCT GEOMETRY === */
-  auto const observationHeight = 0_km + constants::EarthRadius::Mean;
-  auto const injectionHeight = 111.75_km + constants::EarthRadius::Mean;
+  auto const observationHeight =
+      app["--observation-level"]->as<double>() * 1_m + constants::EarthRadius::Mean;
+  auto const injectionHeight =
+      app["--injection-height"]->as<double>() * 1_m + constants::EarthRadius::Mean;
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));
@@ -282,6 +322,15 @@ int main(int argc, char** argv) {
   // profile will go beyond the core, depending on zenith angle
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
   /* === END: CONSTRUCT GEOMETRY === */
+
+  double const emthinfrac = app["--emthin"]->as<double>();
+  double const maxWeight = std::invoke([&]() {
+    if (auto const wm = app["--max-weight"]->as<double>(); wm > 0)
+      return wm;
+    else
+      return emthinfrac * E0 / 1_GeV;
+  });
+  EMThinning thinning{emthinfrac * E0, maxWeight, !multithin};
 
   // create the output manager that we then register outputs with
   OutputManager output(app["--filename"]->as<std::string>());
@@ -299,7 +348,7 @@ int main(int argc, char** argv) {
   // have SIBYLL always for PROPOSAL photo-hadronic interactions
   auto sibyll = std::make_shared<corsika::sibyll::Interaction>(env);
 
-  if (auto const modelStr = app["--hadronModel"]->as<std::string_view>();
+  if (auto const modelStr = app["--hadronModel"]->as<std::string>();
       modelStr == "SIBYLL-2.3d") {
     heModel = DynamicInteractionProcess<setup::Stack<EnvType>>{sibyll};
   } else if (modelStr == "QGSJet-II.04") {
@@ -320,9 +369,17 @@ int main(int argc, char** argv) {
   // hadronic photon interactions in resonance region
   corsika::sophia::InteractionModel sophia;
 
-  HEPEnergyType const emcut = 50_GeV;
-  HEPEnergyType const hadcut = 50_GeV;
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, hadcut, true, dEdX);
+  HEPEnergyType const emcut = 1_GeV * app["--emcut"]->as<double>();
+  HEPEnergyType const hadcut = 1_GeV * app["--hadcut"]->as<double>();
+  HEPEnergyType const mucut = 1_GeV * app["--mucut"]->as<double>();
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, mucut, true, dEdX);
+
+  // tell proposal that we are interested in all energy losses above the emcut
+  set_energy_production_threshold(Code::Electron, emcut);
+  set_energy_production_threshold(Code::Positron, emcut);
+  set_energy_production_threshold(Code::Photon, emcut);
+  set_energy_production_threshold(Code::MuMinus, mucut);
+  set_energy_production_threshold(Code::MuPlus, mucut);
 
   // energy threshold for high energy hadronic model. Affects LE/HE switch for
   // hadron interactions and the hadronic photon model in proposal
@@ -370,7 +427,7 @@ int main(int argc, char** argv) {
   // assemble the final process sequence
   auto sequence = make_sequence(stackInspect, hadronSequence, decayPythia, cut, emCascade,
                                 emContinuous, // trackWriter,
-                                longprof, observationLevel);
+                                longprof, observationLevel, thinning, cut);
   /* === END: SETUP PROCESS LIST === */
 
   // create the cascade object using the default stack and tracking

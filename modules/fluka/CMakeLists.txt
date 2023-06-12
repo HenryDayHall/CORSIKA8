@@ -1,7 +1,7 @@
 set(C8_FLUKALIB CACHE STRING "path to libflukahp.a")
 
 if (EXISTS "${C8_FLUKALIB}")
-    message("libflukahp.a fount at ${C8_FLUKALIB}; FLUKA support is enabled.")
+    message("libflukahp.a found at ${C8_FLUKALIB}; FLUKA support is enabled.")
     set (input_dir ${PROJECT_SOURCE_DIR}/src/modules/fluka)
     
     # we remove flrndm_.o from the original libflukahp.a and save the result as libflukahp-norndm.a

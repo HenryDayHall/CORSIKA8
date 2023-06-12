@@ -535,7 +535,7 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     int const nLoop = 5;
     CORSIKA_LOG_DEBUG("Running loop with n={}", nLoop);
     for (int iLoop = 0; iLoop < nLoop; ++iLoop) {
-      sequence2.doContinuous(step, ContinuousProcessIndex(1));
+      sequence2.doContinuous(step, ContinuousProcessIndex(&cp1));
     }
     CHECK(step.getDiffT() / 1_s == Approx(77));
     CHECK(step.getDiffEkin() / 1_eV == Approx(7));
@@ -692,7 +692,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkSec = 0;
     checkCont = 0;
     particle.data_[0] = 100; // data positive --> sequence1
-    sequence3.doContinuous(step, ContinuousProcessIndex(1));
+    sequence3.doContinuous(step, ContinuousProcessIndex(&cp1));
     CHECK(checkInteract == 0);
     CHECK(checkDecay == 0);
     CHECK(checkCont == 0b011);
@@ -703,7 +703,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkSec = 0;
     checkCont = 0;
     particle.data_[0] = -100; // data negative  --> sequence2
-    sequence3.doContinuous(step, ContinuousProcessIndex(1));
+    sequence3.doContinuous(step, ContinuousProcessIndex(&cp1));
     CHECK(checkInteract == 0);
     CHECK(checkDecay == 0);
     CHECK(checkCont == 0b101);
@@ -1064,4 +1064,224 @@ TEST_CASE("ProcessSequence Indexing", "ProcessSequence") {
               << boost::typeindex::type_id<decltype(sequence3)>().pretty_name()
               << std::endl;
   }
+}
+
+class ProcessZero : public InteractionProcess<ProcessZero> {
+public:
+  ProcessZero() = default;
+
+  template <typename TView>
+  void doInteraction(TView&, Code const, Code const, FourMomentum const&,
+                     FourMomentum const&) const {
+    FAIL("ProcessZero::doInteraction has been called!");
+  }
+
+  CrossSectionType getCrossSection(Code const, Code const, FourMomentum const&,
+                                   FourMomentum const&) const {
+    CORSIKA_LOG_DEBUG("ProcessZero::getCrossSection");
+    return 0_mb;
+  }
+};
+
+TEST_CASE("SelectInteractionZeroCrossSection", "ProcessSequence") {
+  logging::set_level(logging::level::info);
+  CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
+
+  auto sequence = make_sequence(ProcessZero());
+
+  FourMomentum const projectileP4{10_GeV, {rootCS, {0_eV, 0_eV, 0_eV}}};
+
+  DummyData particle;
+  DummyView view(particle);
+
+  CrossSectionType cx_select =
+      sequence.getCrossSection(particle, Code::Nitrogen, projectileP4);
+  CHECK(cx_select == 0_mb); // should be zero
+  NuclearComposition const noComposition({Code::Nitrogen}, {1});
+  DummyRNG rng;
+
+  auto retValue =
+      sequence.selectInteraction(view, projectileP4, noComposition, rng, 0_mb);
+  CHECK(!isInteracted(retValue)); // cross section of process sequence is zero, no process
+                                  // should cause an interaction
+}
+
+TEST_CASE("SwitchProcessSequence Indexing", "ProcessSequence") {
+  // see issue https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/issues/573
+  // and issue https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/issues/586
+
+  logging::set_level(logging::level::info);
+
+  CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
+
+  struct SwitchSelect {
+    bool operator()(DummyData const& p) const { return (p.data_[0] > 0); }
+  };
+  SwitchSelect select1;
+
+  auto cp1 = ContinuousProcess1(0, 0_m);
+  auto cp2 = ContinuousProcess1(0, 0_m);
+  auto cp3 = ContinuousProcess1(0, 0_m);
+  auto cp4 = ContinuousProcess1(0, 0_m);
+
+  auto switch_sequence = make_select(select1, cp1, cp2);
+  auto sequence = make_sequence(switch_sequence, cp3, cp4);
+
+  CHECK(sequence.getNumberOfProcesses() == 4);
+  CHECK(switch_sequence.getNumberOfProcesses() == 2);
+
+  DummyData particle;
+  DummyTrajectory track;
+  DummyView view(particle);
+  Step step(particle, track);
+
+  // cp1 selected
+  cp1.setStep(1_m);
+  cp2.setStep(100_m);
+  cp3.setStep(100_m);
+  cp4.setStep(100_m);
+  particle.data_[0] = 1; // positive so that cp1 is selected
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  CHECK_FALSE(cp4.getFlag());
+  ContinuousProcessStepLength continuousMaxStep =
+      sequence.getMaxStepLength(particle, track);
+  sequence.doContinuous(step, continuousMaxStep.getIndex());
+  CHECK(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  CHECK_FALSE(cp4.getFlag());
+  cp1.resetFlag();
+  cp2.resetFlag();
+  cp3.resetFlag();
+  cp4.resetFlag();
+
+  // cp2 selected
+  cp1.setStep(100_m);
+  cp2.setStep(1_m);
+  cp3.setStep(100_m);
+  cp4.setStep(100_m);
+  particle.data_[0] = -1; // negative so that cp2 is selected
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  CHECK_FALSE(cp4.getFlag());
+  continuousMaxStep = sequence.getMaxStepLength(particle, track);
+  sequence.doContinuous(step, continuousMaxStep.getIndex());
+  CHECK_FALSE(cp1.getFlag());
+  CHECK(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  CHECK_FALSE(cp4.getFlag());
+  cp1.resetFlag();
+  cp2.resetFlag();
+  cp3.resetFlag();
+  cp4.resetFlag();
+
+  // cp3 selected
+  cp1.setStep(100_m);
+  cp2.setStep(100_m);
+  cp3.setStep(1_m);
+  cp4.setStep(100_m);
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  CHECK_FALSE(cp4.getFlag());
+  continuousMaxStep = sequence.getMaxStepLength(particle, track);
+  sequence.doContinuous(step, continuousMaxStep.getIndex());
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK(cp3.getFlag());
+  CHECK_FALSE(cp4.getFlag());
+  cp1.resetFlag();
+  cp2.resetFlag();
+  cp3.resetFlag();
+  cp4.resetFlag();
+
+  // cp4 selected
+  cp1.setStep(100_m);
+  cp2.setStep(100_m);
+  cp3.setStep(100_m);
+  cp4.setStep(1_m);
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  CHECK_FALSE(cp4.getFlag());
+  continuousMaxStep = sequence.getMaxStepLength(particle, track);
+  sequence.doContinuous(step, continuousMaxStep.getIndex());
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  CHECK(cp4.getFlag());
+  cp1.resetFlag();
+  cp2.resetFlag();
+  cp3.resetFlag();
+  cp4.resetFlag();
+}
+
+TEST_CASE("Nested ProcessSequence", "ProcessSequence") {
+  //
+
+  logging::set_level(logging::level::info);
+
+  CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
+
+  auto cp1 = ContinuousProcess1(0, 0_m);
+  auto cp2 = ContinuousProcess1(0, 0_m);
+  auto cp3 = ContinuousProcess1(0, 0_m);
+
+  auto sequence = make_sequence(make_sequence(cp1, cp2), cp3);
+
+  CHECK(sequence.getNumberOfProcesses() == 3);
+
+  DummyData particle;
+  DummyTrajectory track;
+  DummyView view(particle);
+  Step step(particle, track);
+
+  // cp1 selected
+  cp1.setStep(1_m);
+  cp2.setStep(100_m);
+  cp3.setStep(100_m);
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  ContinuousProcessStepLength continuousMaxStep =
+      sequence.getMaxStepLength(particle, track);
+  sequence.doContinuous(step, continuousMaxStep.getIndex());
+  CHECK(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  cp1.resetFlag();
+  cp2.resetFlag();
+  cp3.resetFlag();
+
+  // cp2 selected
+  cp1.setStep(100_m);
+  cp2.setStep(1_m);
+  cp3.setStep(100_m);
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  continuousMaxStep = sequence.getMaxStepLength(particle, track);
+  sequence.doContinuous(step, continuousMaxStep.getIndex());
+  CHECK_FALSE(cp1.getFlag());
+  CHECK(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  cp1.resetFlag();
+  cp2.resetFlag();
+  cp3.resetFlag();
+
+  // cp3 selected
+  cp1.setStep(100_m);
+  cp2.setStep(100_m);
+  cp3.setStep(1_m);
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK_FALSE(cp3.getFlag());
+  continuousMaxStep = sequence.getMaxStepLength(particle, track);
+  sequence.doContinuous(step, continuousMaxStep.getIndex());
+  CHECK_FALSE(cp1.getFlag());
+  CHECK_FALSE(cp2.getFlag());
+  CHECK(cp3.getFlag());
 }
