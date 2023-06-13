@@ -90,7 +90,7 @@ using EnvType = Environment<EnvironmentInterface>;
 
 using Particle = setup::Stack<EnvType>::particle_type;
 
-void registerRandomStreams(long seed) {
+long registerRandomStreams(long seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
@@ -103,11 +103,12 @@ void registerRandomStreams(long seed) {
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
-    CORSIKA_LOG_INFO("random seed (auto) {} ", seed);
+    std::cout << "random seed (auto)  " << seed << std::endl;
   } else {
-    CORSIKA_LOG_INFO("random seed {} ", seed);
+    std::cout << "random seed " << seed << std::endl;
   }
   RNGManager<>::getInstance().setSeed(seed);
+  return seed;
 }
 
 template <typename T>
@@ -242,7 +243,7 @@ int main(int argc, char** argv) {
   }
 
   // initialize random number sequence(s)
-  registerRandomStreams(app["--seed"]->as<long>());
+  auto seed = registerRandomStreams(app["--seed"]->as<long>());
 
   /* === START: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
   EnvType env;
@@ -333,7 +334,7 @@ int main(int argc, char** argv) {
   EMThinning thinning{emthinfrac * E0, maxWeight, !multithin};
 
   // create the output manager that we then register outputs with
-  OutputManager output(app["--filename"]->as<std::string>());
+  OutputManager output(app["--filename"]->as<std::string>(), seed);
 
   // register energy losses as output
   EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};

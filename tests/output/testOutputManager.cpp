@@ -67,7 +67,7 @@ TEST_CASE("OutputManager") {
     }
 
     // output manager performs nothing, no action, just interface
-    OutputManager output("check", "./out_test");
+    OutputManager output("check", 0, "./out_test");
 
     CHECK(boost::filesystem::is_directory("./out_test/check"));
 
@@ -105,7 +105,7 @@ TEST_CASE("OutputManager") {
     }
 
     // output manager performs nothing, no action, just interface
-    OutputManager* output = new OutputManager("check", "./out_test");
+    OutputManager* output = new OutputManager("check", 0, "./out_test");
 
     CHECK(boost::filesystem::is_directory("./out_test/check"));
 
@@ -136,8 +136,8 @@ TEST_CASE("OutputManager") {
     }
 
     // output manager performs nothing, no action, just interface
-    OutputManager output("check", "./out_test");
-    CHECK_THROWS(new OutputManager("check", "./out_test"));
+    OutputManager output("check", 0, "./out_test");
+    CHECK_THROWS(new OutputManager("check", 0, "./out_test"));
 
     CHECK_THROWS(output.endOfLibrary());
 
