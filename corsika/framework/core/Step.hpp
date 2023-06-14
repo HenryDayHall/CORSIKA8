@@ -100,8 +100,7 @@ namespace corsika {
     }
 
     DirectionVector getDirectionPost() const {
-      return getDirectionPre() + getDiffDirection(); // TODO: think about normalization.
-                                                     // Where does it happen, here?
+      return (getDirectionPre() + getDiffDirection()).normalized();
     }
 
     Point const& getPositionPre() const { return getParticlePre().getPosition(); }
