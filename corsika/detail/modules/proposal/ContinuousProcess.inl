@@ -121,7 +121,8 @@ namespace corsika::proposal {
 
     // also send to output
     TOutput::write(step.getPositionPre(), step.getPositionPost(),
-                   step.getParticlePre().getPID(), dE);
+                   step.getParticlePre().getPID(), 
+                   step.getParticlePre().getWeight()*dE);
 
     return ProcessReturn::Ok;
   }
