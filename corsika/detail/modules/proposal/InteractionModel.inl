@@ -15,6 +15,7 @@
 #include <memory>
 #include <random>
 #include <tuple>
+#include <PROPOSAL/particle/Particle.h>
 
 namespace corsika::proposal {
 
@@ -50,7 +51,8 @@ namespace corsika::proposal {
     auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(c);
     calc_[std::make_pair(comp.getHash(), code)] = std::make_tuple(
         PROPOSAL::make_secondaries(inter_types, particle[code], media.at(comp.getHash())),
-        PROPOSAL::make_interaction(c, true, true));
+        PROPOSAL::make_interaction(c, true, true),
+        std::make_unique<LPM_calculator>(media.at(comp.getHash()), code, inter_types));
   }
 
   template <typename THadronicLEModel, typename THadronicHEModel>
@@ -110,6 +112,23 @@ namespace corsika::proposal {
 
       auto sec =
           std::get<eSECONDARIES>(c->second)->CalculateSecondaries(loss, target, rnd);
+
+      // Check for LPM effect suppression!
+
+      if (std::get<eLPM_SUPPRESSION>(c->second)) {
+        auto lpm_suppression = CheckForLPM(
+            *std::get<eLPM_SUPPRESSION>(c->second), projectile.getEnergy(), type, sec,
+            projectile.getNode()->getModelProperties().getMassDensity(place), target, v);
+        if (lpm_suppression) {
+          // Discard interaction - put initial particle back on stack
+          CORSIKA_LOG_DEBUG("LPM suppression detected!");
+          view.addSecondary(std::make_tuple(
+              projectileId, projectile.getEnergy() - get_mass(projectileId),
+              projectile.getDirection()));
+          return ProcessReturn::Ok;
+        }
+      }
+
       for (auto& s : sec) {
         auto E = s.energy * 1_MeV;
         auto vecProposal = s.direction;
@@ -168,5 +187,65 @@ namespace corsika::proposal {
     }
 
     return CrossSectionType::zero();
+  }
+
+  template <typename THadronicLEModel, typename THadronicHEModel>
+  bool InteractionModel<THadronicLEModel, THadronicHEModel>::CheckForLPM(
+      const LPM_calculator& lpm_calculator, const HEPEnergyType projectile_energy,
+      const PROPOSAL::InteractionType type,
+      const std::vector<PROPOSAL::ParticleState>& sec, const MassDensityType mass_density,
+      const PROPOSAL::Component& target, const double v) {
+
+    double suppression_factor;
+    double current_density = mass_density * ((1_cm * 1_cm * 1_cm) / 1_g);
+
+    if (type == PROPOSAL::InteractionType::Photopair && lpm_calculator.photo_pair_lpm_) {
+      if (sec.size() != 2)
+        throw std::runtime_error(
+            "Invalid number of secondaries for Photopair in CheckForLPM");
+      auto x =
+          sec[0].energy / (sec[0].energy + sec[1].energy); // particle energy asymmetry
+      double density_correction = current_density / lpm_calculator.mass_density_baseline_;
+      suppression_factor = lpm_calculator.photo_pair_lpm_->suppression_factor(
+          projectile_energy / 1_MeV, x, target, density_correction);
+    } else if (type == PROPOSAL::InteractionType::Brems && lpm_calculator.brems_lpm_) {
+      double density_correction = current_density / lpm_calculator.mass_density_baseline_;
+      suppression_factor = lpm_calculator.brems_lpm_->suppression_factor(
+          projectile_energy / 1_MeV, v, target, density_correction);
+    } else if (type == PROPOSAL::InteractionType::Epair && lpm_calculator.epair_lpm_) {
+      if (sec.size() != 3)
+        throw std::runtime_error(
+            "Invalid number of secondaries for EPair in CheckForLPM");
+      double rho = (sec[1].energy - sec[2].energy) /
+                   (sec[1].energy + sec[2].energy); // todo: check
+      // it would be better if these variables are calculated within PROPOSAL
+      double beta = (v * v) / (2 * (1 - v));
+      double xi = (lpm_calculator.particle_mass_ * lpm_calculator.particle_mass_) /
+                  (PROPOSAL::ME * PROPOSAL::ME) * v * v / 4 * (1 - rho * rho) / (1 - v);
+      double density_correction = current_density / lpm_calculator.mass_density_baseline_;
+      suppression_factor = lpm_calculator.epair_lpm_->suppression_factor(
+          projectile_energy / 1_MeV, v, rho * rho, beta, xi, density_correction);
+    } else {
+      return false;
+    }
+
+    // rejection sampling
+    std::uniform_real_distribution<double> distr(0., 1.);
+    auto rnd_num = distr(RNG_);
+
+    CORSIKA_LOGGER_TRACE(logger_,
+                         "Checking for LPM suppression! energy: {}, v: {}, type: {}, "
+                         "target: {}, mass_density: {}, mass_density_baseline: {}, "
+                         "suppression_factor: {}, rnd: {}, result: {}, pmass: {} ",
+                         projectile_energy, v, type, target.GetName(),
+                         mass_density / (1_g / (1_cm * 1_cm * 1_cm)),
+                         lpm_calculator.mass_density_baseline_, suppression_factor,
+                         rnd_num, (rnd_num > suppression_factor),
+                         lpm_calculator.particle_mass_);
+
+    if (rnd_num > suppression_factor)
+      return true;
+    else
+      return false;
   }
 } // namespace corsika::proposal
