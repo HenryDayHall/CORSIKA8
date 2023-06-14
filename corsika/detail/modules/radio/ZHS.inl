@@ -41,7 +41,10 @@ namespace corsika {
       auto const halfVector{(startPoint - endPoint) / 2};
       auto const midPoint{endPoint + halfVector};
 
-      auto const constants{charge / (4 * M_PI) / (constants::epsilonZero) / constants::c};
+      // get thinning weight
+      auto const thinningWeight{step.getParticlePre().getWeight()};
+
+      auto const constants{charge * emConstant_ * thinningWeight};
 
       // we loop over each antenna in the collection
       for (auto& antenna : antennas_.getAntennas()) {
