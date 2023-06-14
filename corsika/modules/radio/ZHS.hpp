@@ -49,6 +49,8 @@ namespace corsika {
      */
     template <typename Particle>
     ProcessReturn simulate(Step<Particle> const& step) const;
+    static constexpr auto emConstant_{1.0 / (4.0 * M_PI) / (constants::epsilonZero) /
+                                      constants::c};
 
   private:
     using Base =
