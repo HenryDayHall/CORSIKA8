@@ -90,7 +90,8 @@ namespace corsika {
       }
 
       double const maxMagneticDeflectionAngle = 0.2; // maximally allowed deflection
-      LengthType const steplimit = 2 * cos(maxMagneticDeflectionAngle) * sin(maxMagneticDeflectionAngle) * gyroradius;
+      LengthType const steplimit = 2 * cos(maxMagneticDeflectionAngle) *
+                                   sin(maxMagneticDeflectionAngle) * gyroradius;
       TimeType const steplimit_time = steplimit / initialVelocity.getNorm();
       CORSIKA_LOG_DEBUG("gyroradius {}, steplimit: {} = {}", gyroradius, steplimit,
                         steplimit_time);
