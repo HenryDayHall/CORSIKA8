@@ -196,6 +196,11 @@ int main(int argc, char** argv) {
       ->default_val("SIBYLL-2.3d")
       ->check(CLI::IsMember({"SIBYLL-2.3d", "QGSJet-II.04", "EPOS-LHC"}))
       ->group("Misc.");
+  app.add_option("-T,--hadronModelTransitionEnergy",
+                 "Transition between high-/low-energy hadronic interaction model in GeV")
+      ->default_val(std::pow(10, 1.9)) // 79.4 GeV
+      ->check(CLI::NonNegativeNumber)
+      ->group("Misc.");
   app.add_option("--emthin",
                  "fraction of primary energy at which thinning of EM particles starts")
       ->default_val(1.e-6)
@@ -402,7 +407,8 @@ int main(int argc, char** argv) {
 
   // energy threshold for high energy hadronic model. Affects LE/HE switch for
   // hadron interactions and the hadronic photon model in proposal
-  HEPEnergyType heHadronModelThreshold = 63.1_GeV;
+  HEPEnergyType const heHadronModelThreshold =
+      1_GeV * app["--hadronModelTransitionEnergy"]->as<double>();
 
   corsika::proposal::Interaction emCascade(
       env, sophia, sibyll->getHadronInteractionModel(), heHadronModelThreshold);
