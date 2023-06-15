@@ -81,7 +81,7 @@ namespace corsika {
 
       if (gyroradius > 1e9_m) {
         // this cannot be really unit-tested. It is hidden. LCOV_EXCL_START
-        CORSIKA_LOG_WARN(
+        CORSIKA_LOG_TRACE(
             "CurvedLeapFrog is not very stable for extremely high gyroradius steps. "
             "Rg={} -> straight tracking.",
             gyroradius);

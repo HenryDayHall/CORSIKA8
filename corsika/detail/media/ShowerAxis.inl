@@ -65,7 +65,7 @@ namespace corsika {
     unsigned int const upper = lower + 1;
 
     if (fractionalBin < 0) {
-      CORSIKA_LOG_ERROR("cannot extrapolate to points behind point of injection l={} m",
+      CORSIKA_LOG_WARN("cannot extrapolate to points behind point of injection l={} m",
                         l / 1_m);
       if (throw_) {
         throw std::runtime_error(
@@ -75,7 +75,7 @@ namespace corsika {
     }
 
     if (upper >= X_.size()) {
-      CORSIKA_LOG_ERROR(
+      CORSIKA_LOG_WARN(
           "shower axis too short, cannot extrapolate (l / max_length_ = {} )",
           l / max_length_);
       if (throw_) {
