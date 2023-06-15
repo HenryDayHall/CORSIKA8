@@ -25,6 +25,7 @@ namespace corsika::proposal {
     auto p_cross = cross.find(code);
     if (p_cross == cross.end())
       throw std::runtime_error("PROPOSAL could not find corresponding builder");
+    if (code == Code::Photon) return; // no continuous builders needed for photons
 
     // interpolate the crosssection for given media and energy cut. These may
     // take some minutes if you have to build the tables and cannot read the
@@ -101,7 +102,8 @@ namespace corsika::proposal {
     if (!canInteract(step.getParticlePre().getPID())) return ProcessReturn::Ok;
     if (step.getDisplacement().getSquaredNorm() == static_pow<2>(0_m))
       return ProcessReturn::Ok;
-
+    if (step.getParticlePre().getPID() == Code::Photon)
+      return ProcessReturn::Ok; // no continuous energy losses, no scattering for photons
     // calculate passed grammage
     auto dX = step.getParticlePre().getNode()->getModelProperties().getIntegratedGrammage(
         step.getStraightTrack());
@@ -133,6 +135,9 @@ namespace corsika::proposal {
       TParticle const& vP, TTrajectory const& track) {
     auto const code = vP.getPID();
     if (!canInteract(code)) return meter * std::numeric_limits<double>::infinity();
+    if (code == Code::Photon)
+      return meter *
+             std::numeric_limits<double>::infinity(); // no step limitation for photons
 
     // Limit the step size of a conitnuous loss. The maximal continuous loss seems to be
     // a hyper parameter which must be adjusted.
