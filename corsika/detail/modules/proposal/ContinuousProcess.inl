@@ -36,7 +36,7 @@ namespace corsika::proposal {
 
     // Use higland multiple scattering and deactivate stochastic deflection by
     // passing an empty vector
-    static constexpr auto ms_type = PROPOSAL::MultipleScatteringType::Moliere;
+    static constexpr auto ms_type = PROPOSAL::MultipleScatteringType::MoliereInterpol;
     auto s_type = std::vector<PROPOSAL::InteractionType>();
 
     // Build displacement integral and scattering object and interpolate them too and
@@ -123,8 +123,8 @@ namespace corsika::proposal {
 
     // also send to output
     TOutput::write(step.getPositionPre(), step.getPositionPost(),
-                   step.getParticlePre().getPID(), 
-                   step.getParticlePre().getWeight()*dE);
+                   step.getParticlePre().getPID(),
+                   step.getParticlePre().getWeight() * dE);
 
     return ProcessReturn::Ok;
   }
