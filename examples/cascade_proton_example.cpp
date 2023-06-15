@@ -37,6 +37,7 @@
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/HadronicElasticModel.hpp>
 #include <corsika/modules/Pythia8.hpp>
+#include <corsika/modules/Sibyll.hpp>
 
 /*
   NOTE, WARNING, ATTENTION
@@ -123,7 +124,9 @@ int main() {
   StackInspector<setup::Stack<EnvType>> stackInspect(1000, true, E0);
 
   RNGManager<>::getInstance().registerRandomStream("pythia");
-  corsika::pythia8::Interaction pythia;
+  RNGManager<>::getInstance().registerRandomStream("sibyll");
+  corsika::sibyll::Interaction sibyll{env};
+  // corsika::pythia8::Interaction pythia;
   corsika::pythia8::Decay decay;
 
   ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
@@ -142,7 +145,7 @@ int main() {
   output.add("tracks", trackWriter); // register TrackWriter
 
   // assemble all processes into an ordered process list
-  auto sequence = make_sequence(pythia, decay, eLoss, trackWriter, stackInspect, cut);
+  auto sequence = make_sequence(sibyll, decay, eLoss, trackWriter, stackInspect, cut);
 
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);
