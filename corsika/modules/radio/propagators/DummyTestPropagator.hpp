@@ -46,7 +46,8 @@ namespace corsika {
      *
      */
     template <typename Particle>
-    SignalPathCollection propagate(Particle const& particle, Point const& source, Point const& destination);
+    SignalPathCollection propagate(Particle const& particle, Point const& source,
+                                   Point const& destination);
 
   private:
     std::deque<Point> points;

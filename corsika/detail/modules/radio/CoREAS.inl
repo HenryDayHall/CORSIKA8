@@ -58,10 +58,12 @@ namespace corsika {
       for (auto& antenna : antennas_.getAntennas()) {
 
         // get the SignalPathCollection (path1) from the start "endpoint" to the antenna.
-        auto paths1{this->propagator_.propagate(step.getParticlePre(), startPoint_, antenna.getLocation())};
+        auto paths1{this->propagator_.propagate(step.getParticlePre(), startPoint_,
+                                                antenna.getLocation())};
 
         // get the SignalPathCollection (path2) from the end "endpoint" to the antenna.
-        auto paths2{this->propagator_.propagate(step.getParticlePre(), endPoint_, antenna.getLocation())};
+        auto paths2{this->propagator_.propagate(step.getParticlePre(), endPoint_,
+                                                antenna.getLocation())};
 
         // LCOV_EXCL_START
         // This should never happen unless someone implements a bad propagator
@@ -164,7 +166,8 @@ namespace corsika {
 
             // get the SignalPathCollection (path3) from the middle "endpoint" to the
             // antenna.
-            auto paths3{this->propagator_.propagate(step.getParticlePre(), midPoint_, antenna.getLocation())};
+            auto paths3{this->propagator_.propagate(step.getParticlePre(), midPoint_,
+                                                    antenna.getLocation())};
 
             // now loop over the paths for endpoint that we got above
             for (auto const& path : paths3) {

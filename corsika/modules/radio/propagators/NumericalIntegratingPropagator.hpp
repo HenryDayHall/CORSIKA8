@@ -49,7 +49,8 @@ namespace corsika {
      * which is the location of the antenna
      */
     template <typename Particle>
-    SignalPathCollection propagate(Particle const& particle, Point const& source, Point const& destination) const;
+    SignalPathCollection propagate(Particle const& particle, Point const& source,
+                                   Point const& destination) const;
 
   private:
     LengthType const stepsize_;

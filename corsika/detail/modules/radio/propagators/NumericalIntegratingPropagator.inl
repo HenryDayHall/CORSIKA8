@@ -21,8 +21,8 @@ namespace corsika {
   template <typename TEnvironment>
   template <typename Particle>
   inline typename NumericalIntegratingPropagator<TEnvironment>::SignalPathCollection
-  NumericalIntegratingPropagator<TEnvironment>::propagate(Particle const& particle,
-      Point const& source, Point const& destination) const {
+  NumericalIntegratingPropagator<TEnvironment>::propagate(
+      Particle const& particle, Point const& source, Point const& destination) const {
 
     /*
      * get the normalized (unit) vector from `source` to `destination'.

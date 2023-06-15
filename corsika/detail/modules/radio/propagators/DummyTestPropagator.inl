@@ -20,7 +20,8 @@ namespace corsika {
   template <typename TEnvironment>
   template <typename Particle>
   inline typename DummyTestPropagator<TEnvironment>::SignalPathCollection
-  DummyTestPropagator<TEnvironment>::propagate(Particle const& particle, Point const& source,
+  DummyTestPropagator<TEnvironment>::propagate(Particle const& particle,
+                                               Point const& source,
                                                Point const& destination) {
 
     /**
