@@ -27,6 +27,12 @@ namespace corsika::proposal {
   };
 
   //!
+  //! Relative EnergyCut value for PROPOSAL. Is defines that PROPOSAL will treat energy
+  //! losses with a relative energy loss larger than v_cut stochastically.
+  //!
+  static constexpr double v_cut = 0.01;
+
+  //!
   //! Internal map from particle codes to particle properties required for
   //! crosssections, decay and scattering algorithms. In the future the
   //! particles may be created by reading out the Corsica constants.
@@ -48,7 +54,7 @@ namespace corsika::proposal {
                       //!< will be handeled continuously.
         auto particle_def = T();
         auto p_cut = std::make_shared<const PROPOSAL::EnergyCutSettings>(
-            particle_def.mass + emCut / 1_MeV, 1, false);
+            particle_def.mass + emCut / 1_MeV, v_cut, false);
         return PROPOSAL::GetStdCrossSections(particle_def, m, p_cut, true);
       };
 
