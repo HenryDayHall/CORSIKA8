@@ -56,7 +56,6 @@
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/Sophia.hpp>
 #include <corsika/modules/StackInspector.hpp>
-#include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/UrQMD.hpp>
 #include <corsika/modules/thinning/EMThinning.hpp>
 
@@ -340,10 +339,6 @@ int main(int argc, char** argv) {
   EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
   output.add("energyloss", dEdX);
 
-  // create a track writer and register it with the output manager
-  TrackWriter tracks;
-  output.add("tracks", tracks);
-
   DynamicInteractionProcess<setup::Stack<EnvType>> heModel;
 
   // have SIBYLL always for PROPOSAL photo-hadronic interactions
@@ -451,8 +446,7 @@ int main(int argc, char** argv) {
 
   // assemble the final process sequence
   auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emCascade,
-                                emContinuous, // trackWriter,
-                                longprof, observationLevel, thinning, cut);
+                                emContinuous, longprof, observationLevel, thinning, cut);
   /* === END: SETUP PROCESS LIST === */
 
   // create the cascade object using the default stack and tracking
