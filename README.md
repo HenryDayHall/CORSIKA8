@@ -132,7 +132,7 @@ mkdir build
 cd build
 ../corsika/conan-install.sh
 cmake ../corsika -DCMAKE_INSTALL_PREFIX=../corsika-install
-make -j8
+make -j4  #The number should match the number of available cores on your machine
 make install
 ```
 
