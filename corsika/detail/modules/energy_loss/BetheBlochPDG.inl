@@ -171,7 +171,7 @@ namespace corsika {
     // also send to output
     TOutput::write(step.getPositionPre(), step.getPositionPost(),
                    step.getParticlePre().getPID(),
-                   -step.getParticlePre().getWeight()*dE);
+                   -step.getParticlePre().getWeight() * dE);
     return ProcessReturn::Ok;
   }
 
