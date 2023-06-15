@@ -58,6 +58,7 @@
 #include <corsika/modules/StackInspector.hpp>
 #include <corsika/modules/UrQMD.hpp>
 #include <corsika/modules/thinning/EMThinning.hpp>
+//#include <corsika/modules/FLUKA.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -97,6 +98,7 @@ long registerRandomStreams(long seed) {
   RNGManager<>::getInstance().registerRandomStream("epos");
   RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("urqmd");
+//  RNGManager<>::getInstance().registerRandomStream("fluka");
   RNGManager<>::getInstance().registerRandomStream("proposal");
   RNGManager<>::getInstance().registerRandomStream("thinning");
   if (seed == 0) {
@@ -430,6 +432,9 @@ int main(int argc, char** argv) {
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted(urqmd);
+//  // until the CI containers have fluka, we keep urqmd. Switch to fluka by uncommenting accordingly.
+//  corsika::fluka::Interaction leInt{env};
+//  InteractionCounter leIntCounted{leInt};
   StackInspector<setup::Stack<EnvType>> stackInspect(10000, false, E0);
 
   // assemble all processes into an ordered process list
@@ -441,6 +446,9 @@ int main(int argc, char** argv) {
   };
   auto hadronSequence =
       make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, heCounted);
+//   // uncomment below and comment the above hadron sequence to use fluka
+//    auto hadronSequence =
+//            make_select(EnergySwitch(heHadronModelThreshold), leIntCounted, heCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   // observation plane
@@ -512,6 +520,8 @@ int main(int argc, char** argv) {
         observationLevel.getEnergyGround() / 1_GeV, (Efinal / E0 - 1) * 100);
 
     auto const hists = heCounted.getHistogram() + urqmdCounted.getHistogram();
+    // uncomment to use fluka
+//    auto const hists = heCounted.getHistogram() + leIntCounted.getHistogram();
 
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);
