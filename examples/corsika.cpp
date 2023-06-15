@@ -43,6 +43,7 @@
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/GladstoneDaleRefractiveIndex.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/Epos.hpp>
@@ -59,6 +60,14 @@
 #include <corsika/modules/UrQMD.hpp>
 #include <corsika/modules/thinning/EMThinning.hpp>
 //#include <corsika/modules/FLUKA.hpp>
+
+#include <corsika/modules/radio/RadioProcess.hpp>
+#include <corsika/modules/radio/CoREAS.hpp>
+#include <corsika/modules/radio/ZHS.hpp>
+#include <corsika/modules/radio/antennas/Antenna.hpp>
+#include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
+#include <corsika/modules/radio/detectors/AntennaCollection.hpp>
+#include <corsika/modules/radio/propagators/TabulatedFlatAtmospherePropagator.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -85,7 +94,7 @@
 using namespace corsika;
 using namespace std;
 
-using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using EnvironmentInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
 using EnvType = Environment<EnvironmentInterface>;
 
 using Particle = setup::Stack<EnvType>::particle_type;
@@ -113,7 +122,7 @@ long registerRandomStreams(long seed) {
 }
 
 template <typename T>
-using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
+using MyExtraEnv = GladstoneDaleRefractiveIndex<MediumPropertyModel<UniformMagneticField<T>>>;
 
 int main(int argc, char** argv) {
 
@@ -217,6 +226,11 @@ int main(int argc, char** argv) {
   bool multithin = false;
   app.add_flag("--multithin", multithin, "keep thinned particles (with weight=0)")
       ->group("Thinning");
+    app.add_option("--ring",
+                   "concentric ring of star shape pattern of antennas")
+      ->default_val(0)
+      ->check(CLI::Range(0, 20))
+      ->group("Radio");
 
   // parse the command line options into the variables
   CLI11_PARSE(app, argc, argv);
@@ -255,11 +269,12 @@ int main(int argc, char** argv) {
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
+  Point const surface_{rootCS, 0_m, 0_m, constants::EarthRadius::Mean};
   GeomagneticModel wmm(center, corsika_data("GeoMag/WMM.COF"));
 
   // build a Linsley US Standard atmosphere into `env`
   create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-      env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
+      env, AtmosphereId::LinsleyUSStd, center, 1.000327, surface_, Medium::AirDry1Atm,
       MagneticFieldVector{rootCS, 50_uT, 0_T, 0_T});
 
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
@@ -458,9 +473,83 @@ int main(int argc, char** argv) {
   // register ground particle output
   output.add("particles", observationLevel);
 
-  // assemble the final process sequence
-  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emCascade,
-                                emContinuous, longprof, observationLevel, thinning, cut);
+  int ring_number {app["--ring"]->as<int>()};
+//  std::cout << "Ring number : " << ring_number << std::endl;
+  auto const radius_ {ring_number * 25_m};
+//  std::cout << "Radius = " << radius_ << std::endl;
+  const int rr_ = static_cast<int>(radius_ / 1_m);
+
+  if (ring_number == 0) {
+      // assemble the final process sequence without radio
+      auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emCascade,
+                                    emContinuous, longprof, observationLevel, thinning, cut);
+  } else {
+
+      // Radio antennas and relevant information
+      // the antenna time variables
+      const TimeType duration_{4e-7_s};
+      const InverseTimeType sampleRate_{1e+9_Hz};
+
+      // the antenna collection for CoREAS and ZHS
+      AntennaCollection<TimeDomainAntenna> detectorCoREAS;
+      AntennaCollection<TimeDomainAntenna> detectorZHS;
+
+      auto const showerCoreX_{showerCore.getCoordinates().getX()};
+      auto const showerCoreY_{showerCore.getCoordinates().getY()};
+      auto const injectionPosX_{injectionPos.getCoordinates().getX()};
+      auto const injectionPosY_{injectionPos.getCoordinates().getY()};
+      auto const injectionPosZ_{injectionPos.getCoordinates().getZ()};
+      auto const triggerpoint_{Point(rootCS, injectionPosX_, injectionPosY_, injectionPosZ_)};
+      std::cout << "Trigger Point is: " << triggerpoint_ << std::endl;
+
+      // setup CoREAS antennas - use the for loop for star shape pattern
+      for (auto phi_1 = 0; phi_1 <= 315; phi_1 += 45) {
+          auto phiRad_1 = phi_1 / 180. * M_PI;
+          // auto phi_1 = 0;
+          // auto phiRad_1 = phi_1 / 180. * M_PI;
+          auto const point_1{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_1), showerCoreY_ + radius_ * sin(phiRad_1), constants::EarthRadius::Mean)};
+          std::cout << "Antenna point CoREAS: " << point_1 << std::endl;
+          auto triggertime_1{(triggerpoint_ - point_1).getNorm() / constants::c};
+          std::string name_1 = "CoREAS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_1) + "degrees";
+          TimeDomainAntenna antenna_1(name_1, point_1, rootCS, triggertime_1, duration_, sampleRate_, triggertime_1);
+          detectorCoREAS.addAntenna(antenna_1);
+      }
+
+      // setup ZHS antennas - use the for loop for star shape pattern
+      for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
+          auto phiRad_ = phi_ / 180. * M_PI;
+          // auto phi_ = 0; phi_;
+          // auto phiRad_ = phi_ / 180. * M_PI;
+          auto const point_{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), constants::EarthRadius::Mean)};
+          std::cout << "Antenna point ZHS: " << point_ << std::endl;
+          auto triggertime_{(triggerpoint_ - point_).getNorm() / constants::c};
+          std::string name_ = "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
+          TimeDomainAntenna antenna_(name_, point_, rootCS, triggertime_, duration_, sampleRate_, triggertime_);
+          detectorZHS.addAntenna(antenna_);
+      }
+
+      LengthType const step = 1_m;
+      auto TP = make_tabulated_flat_atmosphere_radio_propagator(env, injectionPos, surface_, step);
+
+      // initiate CoREAS
+      RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS), decltype(TP)>, decltype(TP)>
+                                                                                             coreas(detectorCoREAS, TP);
+
+      // register CoREAS with the output manager
+      output.add("CoREAS", coreas);
+
+      // initiate ZHS
+      RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS), decltype(TP)>, decltype(TP)>
+                                                                                    zhs(detectorZHS, TP);
+
+      // register ZHS with the output manager
+      output.add("ZHS", zhs);
+
+      // assemble the final process sequence with radio
+      auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emCascade,
+                                    emContinuous, coreas, zhs, longprof,
+                                    observationLevel, thinning, cut);
+  }
   /* === END: SETUP PROCESS LIST === */
 
   // create the cascade object using the default stack and tracking
