@@ -150,15 +150,15 @@ int main(int argc, char** argv) {
       ->group("Primary");
   app.add_option("--emcut",
                  "Min. kin. energy of photons, electrons and positrons in tracking (GeV)")
-      ->default_val(50.)
+      ->default_val(0.5e-3)
       ->check(CLI::Range(0.000001, 1.e13))
       ->group("Config");
   app.add_option("--hadcut", "Min. kin. energy of hadrons in tracking (GeV)")
-      ->default_val(50.)
+      ->default_val(0.3)
       ->check(CLI::Range(0.000001, 1.e13))
       ->group("Config");
   app.add_option("--mucut", "Min. kin. energy of muons in tracking (GeV)")
-      ->default_val(50.)
+      ->default_val(0.3)
       ->check(CLI::Range(0.000001, 1.e13))
       ->group("Config");
   app.add_option("--observation-level",
@@ -168,7 +168,7 @@ int main(int argc, char** argv) {
       ->group("Config");
   app.add_option("--injection-height",
                  "Height above earth radius of the injection point (in m)")
-      ->default_val(111.75e3)
+      ->default_val(112.75e3)
       ->check(CLI::Range(-1.e3, 1.e6))
       ->group("Config");
   app.add_option("-N,--nevent", nevent, "The number of events/showers to run.")
@@ -258,7 +258,7 @@ int main(int argc, char** argv) {
   // build a Linsley US Standard atmosphere into `env`
   create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
       env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
-      wmm.getField(2022.5, 10_km, 49, 8.4));
+      MagneticFieldVector{rootCS, 50_uT, 0_T, 0_T});
 
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
