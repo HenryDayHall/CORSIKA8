@@ -21,7 +21,6 @@ namespace corsika {
 
     // LCOV_EXCL_START
     if (startTime == endTime) {
-      CORSIKA_LOG_ERROR("Time at the start and end of the track coincides! - radio");
       return ProcessReturn::Ok;
       // LCOV_EXCL_STOP
     } else {
