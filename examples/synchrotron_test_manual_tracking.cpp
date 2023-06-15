@@ -29,7 +29,7 @@
 #include <corsika/modules/radio/ZHS.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
 #include <corsika/modules/radio/detectors/AntennaCollection.hpp>
-#include <corsika/modules/radio/propagators/SimplePropagator.hpp>
+#include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 
 /*
   NOTE, WARNING, ATTENTION
@@ -80,6 +80,7 @@ int main() {
                                                           density, Composition);
   // bind things together
   env.getUniverse()->addChild(std::move(Medium));
+  auto const& node_ = env.getUniverse()->getChildNodes().front();
 
   // the antennas location
   const auto point1{Point(rootCS, 30000_m, 0_m, 0_m)};
@@ -121,20 +122,20 @@ int main() {
   // construct the output manager
   OutputManager outputs("synchrotron_radiation_manual_tracking-output");
 
+  // the radio signal propagator
+  auto SP = make_dummy_test_radio_propagator(env);
+
   // create a radio process instance using CoREAS
-  RadioProcess<
-      AntennaCollection<TimeDomainAntenna>,
-      CoREAS<AntennaCollection<TimeDomainAntenna>, decltype(SimplePropagator(env))>,
-      decltype(SimplePropagator(env))>
-      coreas(detectorCoREAS, env);
+  RadioProcess<AntennaCollection<TimeDomainAntenna>,
+               CoREAS<AntennaCollection<TimeDomainAntenna>, decltype(SP)>, decltype(SP)>
+      coreas(detectorCoREAS, SP);
   // register CoREAS to the output manager
   outputs.add("CoREAS", coreas);
 
   // create a radio process instance using ZHS
   RadioProcess<AntennaCollection<TimeDomainAntenna>,
-               ZHS<AntennaCollection<TimeDomainAntenna>, decltype(SimplePropagator(env))>,
-               decltype(SimplePropagator(env))>
-      zhs(detectorZHS, env);
+               ZHS<AntennaCollection<TimeDomainAntenna>, decltype(SP)>, decltype(SP)>
+      zhs(detectorZHS, SP);
   // register ZHS to the output manager
   outputs.add("ZHS", zhs);
 
@@ -164,6 +165,7 @@ int main() {
     auto particle1{stack.addParticle(std::make_tuple(
         particle, calculate_kinetic_energy(plab.getNorm(), get_mass(particle)),
         plab.normalized(), point_1, timeCounter))};
+    particle1.setNode(node_.get());
     Step step(particle1, track);
     coreas.doContinuous(step, true);
     zhs.doContinuous(step, true);

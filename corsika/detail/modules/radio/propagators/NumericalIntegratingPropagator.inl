@@ -7,20 +7,22 @@
  */
 #pragma once
 
-#include <corsika/modules/radio/propagators/StraightPropagator.hpp>
+#include <corsika/modules/radio/propagators/NumericalIntegratingPropagator.hpp>
 
 namespace corsika {
 
   template <typename TEnvironment>
   // TODO: maybe the constructor doesn't take any arguments for the environment (?)
-  inline StraightPropagator<TEnvironment>::StraightPropagator(TEnvironment const& env)
-      : RadioPropagator<StraightPropagator, TEnvironment>(env) {}
+  inline NumericalIntegratingPropagator<TEnvironment>::NumericalIntegratingPropagator(
+      TEnvironment const& env, LengthType const stepsize)
+      : RadioPropagator<NumericalIntegratingPropagator, TEnvironment>(env)
+      , stepsize_(stepsize) {}
 
   template <typename TEnvironment>
-  inline typename StraightPropagator<TEnvironment>::SignalPathCollection
-  StraightPropagator<TEnvironment>::propagate(Point const& source,
-                                              Point const& destination,
-                                              LengthType const stepsize) const {
+  template <typename Particle>
+  inline typename NumericalIntegratingPropagator<TEnvironment>::SignalPathCollection
+  NumericalIntegratingPropagator<TEnvironment>::propagate(
+      Particle const& particle, Point const& source, Point const& destination) const {
 
     /*
      * get the normalized (unit) vector from `source` to `destination'.
@@ -37,13 +39,13 @@ namespace corsika {
     auto const distance{(destination - source).getNorm()};
 
     try {
-      if (stepsize <= 0.5 * distance) {
+      if (stepsize_ <= 0.5 * distance) {
 
         // "step" is the direction vector with length `stepsize`
-        auto const step{emit * stepsize};
+        auto const step{emit * stepsize_};
 
         // calculate the number of points (roughly) for the numerical integration
-        auto const n_points{(destination - source).getNorm() / stepsize};
+        auto const n_points{(destination - source).getNorm() / stepsize_};
 
         // get the universe for this environment
         auto const* const universe{Base::env_.getUniverse().get()};
@@ -56,15 +58,15 @@ namespace corsika {
         rindex.reserve(n_points);
 
         // get and store the refractive index of the first point 'source'
-        auto const* const nodeSource{universe->getContainingNode(source)};
+        auto const* const nodeSource{particle.getNode()};
         auto const ri_source{nodeSource->getModelProperties().getRefractiveIndex(source)};
         rindex.push_back(ri_source);
         points.push_back(source);
 
         // loop from `source` to `destination` to store values before Simpson's rule.
         // this loop skips the last point 'destination' and "misses" the extra point
-        for (auto point = source + step; (point - destination).getNorm() > 0.6 * stepsize;
-             point = point + step) {
+        for (auto point = source + step;
+             (point - destination).getNorm() > 0.6 * stepsize_; point = point + step) {
 
           // get the environment node at this specific 'point'
           auto const* const node{universe->getContainingNode(point)};
@@ -72,7 +74,6 @@ namespace corsika {
           // get the associated refractivity at 'point'
           auto const refractive_index{
               node->getModelProperties().getRefractiveIndex(point)};
-          //         auto const refractive_index{1.000327};
           rindex.push_back(refractive_index);
 
           // add this 'point' to our deque collection
@@ -86,7 +87,6 @@ namespace corsika {
         auto const* const node{universe->getContainingNode(destination)};
         auto const ri_destination{
             node->getModelProperties().getRefractiveIndex(destination)};
-        //      auto const ri_destination{1.000327};
         rindex.push_back(ri_destination);
         points.push_back(destination);
 
@@ -149,9 +149,6 @@ namespace corsika {
               (ri_extrapoint2 * ((extrapoint2_ - destination).getNorm()) / constants::c);
         }
 
-        // uncomment the following if you want to skip the integration for fast tests
-        // TimeType time = ri_destination * (distance / constants::c);
-
         // compute the average refractive index.
         auto const averageRefractiveIndex = refra / N;
 
@@ -159,7 +156,7 @@ namespace corsika {
             1, SignalPath(time, averageRefractiveIndex, ri_source, ri_destination, emit,
                           receive, distance, points));
       } else {
-        throw stepsize;
+        throw stepsize_;
       }
     } catch (const LengthType& s) {
       CORSIKA_LOG_ERROR("Please choose a smaller stepsize for the numerical integration");

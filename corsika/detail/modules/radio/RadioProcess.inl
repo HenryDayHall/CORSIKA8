@@ -24,11 +24,10 @@ namespace corsika {
   }
 
   template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
-  template <typename... TArgs>
   inline RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>::RadioProcess(
-      TAntennaCollection& antennas, TArgs&&... args)
+      TAntennaCollection& antennas, TPropagator& propagator)
       : antennas_(antennas)
-      , propagator_(args...) {}
+      , propagator_(propagator) {}
 
   template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
   template <typename Particle>
