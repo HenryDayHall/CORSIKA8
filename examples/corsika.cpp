@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
       ->group("Thinning");
   app.add_option(
          "--max-weight",
-         "maximum weight for thinning of EM particles (0 to select Kobal's optimum)")
+         "maximum weight for thinning of EM particles (0 to select Kobal's optimum times 0.5)")
       ->default_val(0)
       ->check(CLI::NonNegativeNumber)
       ->group("Thinning");
@@ -333,7 +333,7 @@ int main(int argc, char** argv) {
     if (auto const wm = app["--max-weight"]->as<double>(); wm > 0)
       return wm;
     else
-      return emthinfrac * E0 / 1_GeV;
+      return 0.5 * emthinfrac * E0 / 1_GeV;
   });
   EMThinning thinning{emthinfrac * E0, maxWeight, !multithin};
 
