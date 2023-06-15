@@ -153,7 +153,8 @@ public:
   }
 
   template <typename TView>
-  void doInteraction(TView& view, Code, Code, FourMomentum const&, FourMomentum const&) {
+  void doInteraction([[maybe_unused]] TView& view, Code, Code, FourMomentum const&,
+                     FourMomentum const&) {
     FAIL("doInteraction of ProcessZero has been called! This should never happen.");
   }
 };
@@ -166,7 +167,7 @@ public:
       : maxCalls_(maxCalls){};
 
   template <typename D>
-  ProcessReturn doContinuous(Step<D>& d, bool flag) {
+  ProcessReturn doContinuous([[maybe_unused]] Step<D>& d, [[maybe_unused]] bool flag) {
     if (++calls_ == maxCalls_) return ProcessReturn::ParticleAbsorbed;
     return ProcessReturn::Ok;
   }
