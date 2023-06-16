@@ -59,7 +59,7 @@
 #include <corsika/modules/StackInspector.hpp>
 #include <corsika/modules/UrQMD.hpp>
 #include <corsika/modules/thinning/EMThinning.hpp>
-//#include <corsika/modules/FLUKA.hpp>
+// #include <corsika/modules/FLUKA.hpp>
 
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
@@ -94,7 +94,8 @@
 using namespace corsika;
 using namespace std;
 
-using EnvironmentInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+using EnvironmentInterface =
+    IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
 using EnvType = Environment<EnvironmentInterface>;
 
 using Particle = setup::Stack<EnvType>::particle_type;
@@ -107,7 +108,7 @@ long registerRandomStreams(long seed) {
   RNGManager<>::getInstance().registerRandomStream("epos");
   RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("urqmd");
-//  RNGManager<>::getInstance().registerRandomStream("fluka");
+  //  RNGManager<>::getInstance().registerRandomStream("fluka");
   RNGManager<>::getInstance().registerRandomStream("proposal");
   RNGManager<>::getInstance().registerRandomStream("thinning");
   if (seed == 0) {
@@ -122,7 +123,8 @@ long registerRandomStreams(long seed) {
 }
 
 template <typename T>
-using MyExtraEnv = GladstoneDaleRefractiveIndex<MediumPropertyModel<UniformMagneticField<T>>>;
+using MyExtraEnv =
+    GladstoneDaleRefractiveIndex<MediumPropertyModel<UniformMagneticField<T>>>;
 
 int main(int argc, char** argv) {
 
@@ -217,17 +219,16 @@ int main(int argc, char** argv) {
       ->default_val(1.e-6)
       ->check(CLI::Range(0., 1.))
       ->group("Thinning");
-  app.add_option(
-         "--max-weight",
-         "maximum weight for thinning of EM particles (0 to select Kobal's optimum times 0.5)")
+  app.add_option("--max-weight",
+                 "maximum weight for thinning of EM particles (0 to select Kobal's "
+                 "optimum times 0.5)")
       ->default_val(0)
       ->check(CLI::NonNegativeNumber)
       ->group("Thinning");
   bool multithin = false;
   app.add_flag("--multithin", multithin, "keep thinned particles (with weight=0)")
       ->group("Thinning");
-    app.add_option("--ring",
-                   "concentric ring of star shape pattern of antennas")
+  app.add_option("--ring", "concentric ring of star shape pattern of antennas")
       ->default_val(0)
       ->check(CLI::Range(0, 20))
       ->group("Radio");
@@ -447,9 +448,9 @@ int main(int argc, char** argv) {
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted(urqmd);
-//  // until the CI containers have fluka, we keep urqmd. Switch to fluka by uncommenting accordingly.
-//  corsika::fluka::Interaction leInt{env};
-//  InteractionCounter leIntCounted{leInt};
+  //  // until the CI containers have fluka, we keep urqmd. Switch to fluka by
+  //  uncommenting accordingly. corsika::fluka::Interaction leInt{env}; InteractionCounter
+  //  leIntCounted{leInt};
   StackInspector<setup::Stack<EnvType>> stackInspect(10000, false, E0);
 
   // assemble all processes into an ordered process list
@@ -461,9 +462,10 @@ int main(int argc, char** argv) {
   };
   auto hadronSequence =
       make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, heCounted);
-//   // uncomment below and comment the above hadron sequence to use fluka
-//    auto hadronSequence =
-//            make_select(EnergySwitch(heHadronModelThreshold), leIntCounted, heCounted);
+  //   // uncomment below and comment the above hadron sequence to use fluka
+  //    auto hadronSequence =
+  //            make_select(EnergySwitch(heHadronModelThreshold), leIntCounted,
+  //            heCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   // observation plane
@@ -473,83 +475,97 @@ int main(int argc, char** argv) {
   // register ground particle output
   output.add("particles", observationLevel);
 
-  int ring_number {app["--ring"]->as<int>()};
-//  std::cout << "Ring number : " << ring_number << std::endl;
-  auto const radius_ {ring_number * 25_m};
-//  std::cout << "Radius = " << radius_ << std::endl;
+  int ring_number{app["--ring"]->as<int>()};
+  std::cout << "Ring number : " << ring_number << std::endl;
+  auto const radius_{ring_number * 25_m};
+  //  std::cout << "Radius = " << radius_ << std::endl;
   const int rr_ = static_cast<int>(radius_ / 1_m);
 
-  if (ring_number == 0) {
-      // assemble the final process sequence without radio
-      auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emCascade,
-                                    emContinuous, longprof, observationLevel, thinning, cut);
-  } else {
+  // if (ring_number == 0) {
+  //     // assemble the final process sequence without radio
+  //     auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence,
+  //     emCascade,
+  //                                   emContinuous, longprof, observationLevel, thinning,
+  //                                   cut);
+  // } else {
 
-      // Radio antennas and relevant information
-      // the antenna time variables
-      const TimeType duration_{4e-7_s};
-      const InverseTimeType sampleRate_{1e+9_Hz};
+  // Radio antennas and relevant information
+  // the antenna time variables
+  const TimeType duration_{4e-7_s};
+  const InverseTimeType sampleRate_{1e+9_Hz};
 
-      // the antenna collection for CoREAS and ZHS
-      AntennaCollection<TimeDomainAntenna> detectorCoREAS;
-      AntennaCollection<TimeDomainAntenna> detectorZHS;
+  // the antenna collection for CoREAS and ZHS
+  AntennaCollection<TimeDomainAntenna> detectorCoREAS;
+  AntennaCollection<TimeDomainAntenna> detectorZHS;
 
-      auto const showerCoreX_{showerCore.getCoordinates().getX()};
-      auto const showerCoreY_{showerCore.getCoordinates().getY()};
-      auto const injectionPosX_{injectionPos.getCoordinates().getX()};
-      auto const injectionPosY_{injectionPos.getCoordinates().getY()};
-      auto const injectionPosZ_{injectionPos.getCoordinates().getZ()};
-      auto const triggerpoint_{Point(rootCS, injectionPosX_, injectionPosY_, injectionPosZ_)};
-      std::cout << "Trigger Point is: " << triggerpoint_ << std::endl;
+  auto const showerCoreX_{showerCore.getCoordinates().getX()};
+  auto const showerCoreY_{showerCore.getCoordinates().getY()};
+  auto const injectionPosX_{injectionPos.getCoordinates().getX()};
+  auto const injectionPosY_{injectionPos.getCoordinates().getY()};
+  auto const injectionPosZ_{injectionPos.getCoordinates().getZ()};
+  auto const triggerpoint_{Point(rootCS, injectionPosX_, injectionPosY_, injectionPosZ_)};
+  std::cout << "Trigger Point is: " << triggerpoint_ << std::endl;
 
-      // setup CoREAS antennas - use the for loop for star shape pattern
-      for (auto phi_1 = 0; phi_1 <= 315; phi_1 += 45) {
-          auto phiRad_1 = phi_1 / 180. * M_PI;
-          // auto phi_1 = 0;
-          // auto phiRad_1 = phi_1 / 180. * M_PI;
-          auto const point_1{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_1), showerCoreY_ + radius_ * sin(phiRad_1), constants::EarthRadius::Mean)};
-          std::cout << "Antenna point CoREAS: " << point_1 << std::endl;
-          auto triggertime_1{(triggerpoint_ - point_1).getNorm() / constants::c};
-          std::string name_1 = "CoREAS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_1) + "degrees";
-          TimeDomainAntenna antenna_1(name_1, point_1, rootCS, triggertime_1, duration_, sampleRate_, triggertime_1);
-          detectorCoREAS.addAntenna(antenna_1);
-      }
+  if (ring_number != 0) {
+    // setup CoREAS antennas - use the for loop for star shape pattern
+    for (auto phi_1 = 0; phi_1 <= 315; phi_1 += 45) {
+      auto phiRad_1 = phi_1 / 180. * M_PI;
+      // auto phi_1 = 0;
+      // auto phiRad_1 = phi_1 / 180. * M_PI;
+      auto const point_1{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_1),
+                               showerCoreY_ + radius_ * sin(phiRad_1),
+                               constants::EarthRadius::Mean)};
+      std::cout << "Antenna point CoREAS: " << point_1 << std::endl;
+      auto triggertime_1{(triggerpoint_ - point_1).getNorm() / constants::c};
+      std::string name_1 = "CoREAS_R=" + std::to_string(rr_) +
+                           "_m--Phi=" + std::to_string(phi_1) + "degrees";
+      TimeDomainAntenna antenna_1(name_1, point_1, rootCS, triggertime_1, duration_,
+                                  sampleRate_, triggertime_1);
+      detectorCoREAS.addAntenna(antenna_1);
+    }
 
-      // setup ZHS antennas - use the for loop for star shape pattern
-      for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
-          auto phiRad_ = phi_ / 180. * M_PI;
-          // auto phi_ = 0; phi_;
-          // auto phiRad_ = phi_ / 180. * M_PI;
-          auto const point_{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), constants::EarthRadius::Mean)};
-          std::cout << "Antenna point ZHS: " << point_ << std::endl;
-          auto triggertime_{(triggerpoint_ - point_).getNorm() / constants::c};
-          std::string name_ = "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
-          TimeDomainAntenna antenna_(name_, point_, rootCS, triggertime_, duration_, sampleRate_, triggertime_);
-          detectorZHS.addAntenna(antenna_);
-      }
-
-      LengthType const step = 1_m;
-      auto TP = make_tabulated_flat_atmosphere_radio_propagator(env, injectionPos, surface_, step);
-
-      // initiate CoREAS
-      RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS), decltype(TP)>, decltype(TP)>
-                                                                                             coreas(detectorCoREAS, TP);
-
-      // register CoREAS with the output manager
-      output.add("CoREAS", coreas);
-
-      // initiate ZHS
-      RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS), decltype(TP)>, decltype(TP)>
-                                                                                    zhs(detectorZHS, TP);
-
-      // register ZHS with the output manager
-      output.add("ZHS", zhs);
-
-      // assemble the final process sequence with radio
-      auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emCascade,
-                                    emContinuous, coreas, zhs, longprof,
-                                    observationLevel, thinning, cut);
+    // setup ZHS antennas - use the for loop for star shape pattern
+    for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
+      auto phiRad_ = phi_ / 180. * M_PI;
+      // auto phi_ = 0; phi_;
+      // auto phiRad_ = phi_ / 180. * M_PI;
+      auto const point_{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_),
+                              showerCoreY_ + radius_ * sin(phiRad_),
+                              constants::EarthRadius::Mean)};
+      std::cout << "Antenna point ZHS: " << point_ << std::endl;
+      auto triggertime_{(triggerpoint_ - point_).getNorm() / constants::c};
+      std::string name_ =
+          "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
+      TimeDomainAntenna antenna_(name_, point_, rootCS, triggertime_, duration_,
+                                 sampleRate_, triggertime_);
+      detectorZHS.addAntenna(antenna_);
+    }
   }
+  LengthType const step = 1_m;
+  auto TP =
+      make_tabulated_flat_atmosphere_radio_propagator(env, injectionPos, surface_, step);
+
+  // initiate CoREAS
+  RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS), decltype(TP)>,
+               decltype(TP)>
+      coreas(detectorCoREAS, TP);
+
+  // register CoREAS with the output manager
+  output.add("CoREAS", coreas);
+
+  // initiate ZHS
+  RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS), decltype(TP)>,
+               decltype(TP)>
+      zhs(detectorZHS, TP);
+
+  // register ZHS with the output manager
+  output.add("ZHS", zhs);
+
+  // assemble the final process sequence with radio
+  auto sequence =
+      make_sequence(stackInspect, hadronSequence, decaySequence, emCascade, emContinuous,
+                    coreas, zhs, longprof, observationLevel, thinning, cut);
+
   /* === END: SETUP PROCESS LIST === */
 
   // create the cascade object using the default stack and tracking
@@ -610,7 +626,7 @@ int main(int argc, char** argv) {
 
     auto const hists = heCounted.getHistogram() + urqmdCounted.getHistogram();
     // uncomment to use fluka
-//    auto const hists = heCounted.getHistogram() + leIntCounted.getHistogram();
+    //    auto const hists = heCounted.getHistogram() + leIntCounted.getHistogram();
 
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);
