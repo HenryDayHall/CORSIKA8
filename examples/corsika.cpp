@@ -472,11 +472,7 @@ int main(int argc, char** argv) {
     bool operator()(const Particle& p) const { return (p.getKineticEnergy() < cutE_); }
   };
   auto hadronSequence =
-      make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, heCounted);
-  //   // uncomment below and comment the above hadron sequence to use fluka
-  //    auto hadronSequence =
-  //            make_select(EnergySwitch(heHadronModelThreshold), leIntCounted,
-  //            heCounted);
+      make_select(EnergySwitch(heHadronModelThreshold), leIntCounted, heCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   // observation plane
