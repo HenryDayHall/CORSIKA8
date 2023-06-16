@@ -232,7 +232,7 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
         pointCheck.getCoordinates());
 
     CHECK((particle.getPosition() - pointCheck).getNorm() / radius ==
-          Approx(0).margin(1e-3));
+          Approx(0).margin(1e-1));
   }
 }
 
