@@ -68,7 +68,7 @@ else()
   message("compiling corsika.cpp with UrQMD")
 endif()
 target_link_libraries (corsika CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (corsika RUN_OPTIONS --energy=100 --zenith=10 --nevent=2 --filename=corsika_test --pdg=2212)
+CORSIKA_REGISTER_EXAMPLE (corsika RUN_OPTIONS --energy=10 --zenith=10 --nevent=2 --filename=corsika_test --pdg=2212)
 
 add_executable (mars mars.cpp)
 target_link_libraries (mars CORSIKA8::CORSIKA8)
