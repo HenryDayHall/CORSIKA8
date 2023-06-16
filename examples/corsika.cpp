@@ -94,8 +94,8 @@
 using namespace corsika;
 using namespace std;
 
-using EnvironmentInterface = IRefractiveIndexModel<
-    IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+using EnvironmentInterface =
+    IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
 using EnvType = Environment<EnvironmentInterface>;
 
 using Particle = setup::Stack<EnvType>::particle_type;
@@ -126,7 +126,7 @@ template <typename T>
 using MyExtraEnv =
     GladstoneDaleRefractiveIndex<MediumPropertyModel<UniformMagneticField<T>>>;
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
 
   // the main command line description
   CLI::App app{"Simulate standard (downgoing) showers with CORSIKA 8."};
@@ -161,8 +161,9 @@ int main(int argc, char **argv) {
       ->default_val(0.)
       ->check(CLI::Range(0., 360.))
       ->group("Primary");
-  app.add_option("--emcut", "Min. kin. energy of photons, electrons and "
-                            "positrons in tracking (GeV)")
+  app.add_option("--emcut",
+                 "Min. kin. energy of photons, electrons and "
+                 "positrons in tracking (GeV)")
       ->default_val(0.5e-3)
       ->check(CLI::Range(0.000001, 1.e13))
       ->group("Config");
@@ -215,22 +216,19 @@ int main(int argc, char **argv) {
       ->default_val(std::pow(10, 1.9)) // 79.4 GeV
       ->check(CLI::NonNegativeNumber)
       ->group("Misc.");
-  app.add_option(
-         "--emthin",
-         "fraction of primary energy at which thinning of EM particles starts")
+  app.add_option("--emthin",
+                 "fraction of primary energy at which thinning of EM particles starts")
       ->default_val(1.e-6)
       ->check(CLI::Range(0., 1.))
       ->group("Thinning");
-  app.add_option(
-         "--max-weight",
-         "maximum weight for thinning of EM particles (0 to select Kobal's "
-         "optimum times 0.5)")
+  app.add_option("--max-weight",
+                 "maximum weight for thinning of EM particles (0 to select Kobal's "
+                 "optimum times 0.5)")
       ->default_val(0)
       ->check(CLI::NonNegativeNumber)
       ->group("Thinning");
   bool multithin = false;
-  app.add_flag("--multithin", multithin,
-               "keep thinned particles (with weight=0)")
+  app.add_flag("--multithin", multithin, "keep thinned particles (with weight=0)")
       ->group("Thinning");
   app.add_option("--ring", "concentric ring of star shape pattern of antennas")
       ->default_val(0)
@@ -262,8 +260,7 @@ int main(int argc, char **argv) {
   // gets all messed up
   if (app.count("--pdg") == 0) {
     if ((app.count("-A") == 0) || (app.count("-Z") == 0)) {
-      CORSIKA_LOG_ERROR(
-          "If --pdg is not provided, then both -A and -Z are required.");
+      CORSIKA_LOG_ERROR("If --pdg is not provided, then both -A and -Z are required.");
       return 1;
     }
   }
@@ -273,25 +270,24 @@ int main(int argc, char **argv) {
 
   /* === START: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
   EnvType env;
-  CoordinateSystemPtr const &rootCS = env.getCoordinateSystem();
+  CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
   Point const surface_{rootCS, 0_m, 0_m, constants::EarthRadius::Mean};
   GeomagneticModel wmm(center, corsika_data("GeoMag/WMM.COF"));
 
   // build a Linsley US Standard atmosphere into `env`
   create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-      env, AtmosphereId::LinsleyUSStd, center, 1.000327, surface_,
-      Medium::AirDry1Atm, MagneticFieldVector{rootCS, 50_uT, 0_T, 0_T});
+      env, AtmosphereId::LinsleyUSStd, center, 1.000327, surface_, Medium::AirDry1Atm,
+      MagneticFieldVector{rootCS, 50_uT, 0_T, 0_T});
 
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
   ofstream atmout("earth.dat");
   for (LengthType h = 0_m; h < 110_km; h += 100_m) {
     Point const ptest{rootCS, 0_m, 0_m, constants::EarthRadius::Mean + h};
-    auto rho = env.getUniverse()
-                   ->getContainingNode(ptest)
-                   ->getModelProperties()
-                   .getMassDensity(ptest);
+    auto rho =
+        env.getUniverse()->getContainingNode(ptest)->getModelProperties().getMassDensity(
+            ptest);
     atmout << h / 1_m << " " << rho / 1_kg * cube(1_m) << "\n";
   }
   atmout.close();
@@ -327,32 +323,29 @@ int main(int argc, char **argv) {
 
   // convert the momentum to the zenith and azimuth angle of the primary
   auto const [px, py, pz] =
-      std::make_tuple(P0 * sin(thetaRad) * cos(phiRad),
-                      P0 * sin(thetaRad) * sin(phiRad), -P0 * cos(thetaRad));
+      std::make_tuple(P0 * sin(thetaRad) * cos(phiRad), P0 * sin(thetaRad) * sin(phiRad),
+                      -P0 * cos(thetaRad));
   auto plab = MomentumVector(rootCS, {px, py, pz});
   /* === END: CONSTRUCT PRIMARY PARTICLE === */
 
   /* === START: CONSTRUCT GEOMETRY === */
   auto const observationHeight =
-      app["--observation-level"]->as<double>() * 1_m +
-      constants::EarthRadius::Mean;
-  auto const injectionHeight = app["--injection-height"]->as<double>() * 1_m +
-                               constants::EarthRadius::Mean;
+      app["--observation-level"]->as<double>() * 1_m + constants::EarthRadius::Mean;
+  auto const injectionHeight =
+      app["--injection-height"]->as<double>() * 1_m + constants::EarthRadius::Mean;
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =
-      showerCore +
-      DirectionVector{rootCS,
-                      {-sin(thetaRad) * cos(phiRad),
-                       -sin(thetaRad) * sin(phiRad), cos(thetaRad)}} *
-          t;
+      showerCore + DirectionVector{rootCS,
+                                   {-sin(thetaRad) * cos(phiRad),
+                                    -sin(thetaRad) * sin(phiRad), cos(thetaRad)}} *
+                       t;
 
   // we make the axis much longer than the inj-core distance since the
   // profile will go beyond the core, depending on zenith angle
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2,
-                              env};
+  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
   /* === END: CONSTRUCT GEOMETRY === */
 
   double const emthinfrac = app["--emthin"]->as<double>();
@@ -365,9 +358,7 @@ int main(int argc, char **argv) {
   EMThinning thinning{emthinfrac * E0, maxWeight, !multithin};
 
   std::stringstream args;
-  for (int i = 0; i < argc; ++i) {
-    args << argv[i] << " ";
-  }
+  for (int i = 0; i < argc; ++i) { args << argv[i] << " "; }
   // create the output manager that we then register outputs with
   OutputManager output(app["--filename"]->as<std::string>(), seed, args.str());
 
@@ -390,8 +381,7 @@ int main(int argc, char **argv) {
     heModel = DynamicInteractionProcess<setup::Stack<EnvType>>{
         std::make_shared<corsika::epos::Interaction>()};
   } else {
-    CORSIKA_LOG_CRITICAL("invalid choice \"{}\"; also check argument parser",
-                         modelStr);
+    CORSIKA_LOG_CRITICAL("invalid choice \"{}\"; also check argument parser", modelStr);
     return EXIT_FAILURE;
   }
 
@@ -428,8 +418,7 @@ int main(int argc, char **argv) {
   HEPEnergyType const emcut = 1_GeV * app["--emcut"]->as<double>();
   HEPEnergyType const hadcut = 1_GeV * app["--hadcut"]->as<double>();
   HEPEnergyType const mucut = 1_GeV * app["--mucut"]->as<double>();
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, mucut, true,
-                                             dEdX);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, mucut, true, dEdX);
 
   // tell proposal that we are interested in all energy losses above the emcut
   set_energy_production_threshold(Code::Electron, emcut);
@@ -447,12 +436,12 @@ int main(int argc, char **argv) {
       env, sophia, sibyll->getHadronInteractionModel(), heHadronModelThreshold);
 
   // use BetheBlochPDG for hadronic continuous losses, and proposal otherwise
-  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>>
-      emContinuousProposal(env, dEdX);
+  corsika::proposal::ContinuousProcess<SubWriter<decltype(dEdX)>> emContinuousProposal(
+      env, dEdX);
   BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuousBethe{dEdX};
   struct EMHadronSwitch {
     EMHadronSwitch() = default;
-    bool operator()(const Particle &p) const { return is_hadron(p.getPID()); }
+    bool operator()(const Particle& p) const { return is_hadron(p.getPID()); }
   };
   auto emContinuous =
       make_select(EMHadronSwitch(), emContinuousBethe, emContinuousProposal);
@@ -471,13 +460,12 @@ int main(int argc, char **argv) {
   // assemble all processes into an ordered process list
   struct EnergySwitch {
     HEPEnergyType cutE_;
-    EnergySwitch(HEPEnergyType cutE) : cutE_(cutE) {}
-    bool operator()(const Particle &p) const {
-      return (p.getKineticEnergy() < cutE_);
-    }
+    EnergySwitch(HEPEnergyType cutE)
+        : cutE_(cutE) {}
+    bool operator()(const Particle& p) const { return (p.getKineticEnergy() < cutE_); }
   };
-  auto hadronSequence = make_select(EnergySwitch(heHadronModelThreshold),
-                                    urqmdCounted, heCounted);
+  auto hadronSequence =
+      make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, heCounted);
   //   // uncomment below and comment the above hadron sequence to use fluka
   //    auto hadronSequence =
   //            make_select(EnergySwitch(heHadronModelThreshold), leIntCounted,
@@ -519,8 +507,7 @@ int main(int argc, char **argv) {
   auto const injectionPosX_{injectionPos.getCoordinates().getX()};
   auto const injectionPosY_{injectionPos.getCoordinates().getY()};
   auto const injectionPosZ_{injectionPos.getCoordinates().getZ()};
-  auto const triggerpoint_{
-      Point(rootCS, injectionPosX_, injectionPosY_, injectionPosZ_)};
+  auto const triggerpoint_{Point(rootCS, injectionPosX_, injectionPosY_, injectionPosZ_)};
   std::cout << "Trigger Point is: " << triggerpoint_ << std::endl;
 
   if (ring_number != 0) {
@@ -536,8 +523,8 @@ int main(int argc, char **argv) {
       auto triggertime_1{(triggerpoint_ - point_1).getNorm() / constants::c};
       std::string name_1 = "CoREAS_R=" + std::to_string(rr_) +
                            "_m--Phi=" + std::to_string(phi_1) + "degrees";
-      TimeDomainAntenna antenna_1(name_1, point_1, rootCS, triggertime_1,
-                                  duration_, sampleRate_, triggertime_1);
+      TimeDomainAntenna antenna_1(name_1, point_1, rootCS, triggertime_1, duration_,
+                                  sampleRate_, triggertime_1);
       detectorCoREAS.addAntenna(antenna_1);
     }
 
@@ -551,20 +538,20 @@ int main(int argc, char **argv) {
                               constants::EarthRadius::Mean)};
       std::cout << "Antenna point ZHS: " << point_ << std::endl;
       auto triggertime_{(triggerpoint_ - point_).getNorm() / constants::c};
-      std::string name_ = "ZHS_R=" + std::to_string(rr_) +
-                          "_m--Phi=" + std::to_string(phi_) + "degrees";
+      std::string name_ =
+          "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
       TimeDomainAntenna antenna_(name_, point_, rootCS, triggertime_, duration_,
                                  sampleRate_, triggertime_);
       detectorZHS.addAntenna(antenna_);
     }
   }
   LengthType const step = 1_m;
-  auto TP = make_tabulated_flat_atmosphere_radio_propagator(env, injectionPos,
-                                                            surface_, step);
+  auto TP =
+      make_tabulated_flat_atmosphere_radio_propagator(env, injectionPos, surface_, step);
 
   // initiate CoREAS
-  RadioProcess<decltype(detectorCoREAS),
-               CoREAS<decltype(detectorCoREAS), decltype(TP)>, decltype(TP)>
+  RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS), decltype(TP)>,
+               decltype(TP)>
       coreas(detectorCoREAS, TP);
 
   // register CoREAS with the output manager
@@ -579,9 +566,9 @@ int main(int argc, char **argv) {
   output.add("ZHS", zhs);
 
   // assemble the final process sequence with radio
-  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence,
-                                emCascade, emContinuous, coreas, zhs, longprof,
-                                observationLevel, thinning, cut);
+  auto sequence =
+      make_sequence(stackInspect, hadronSequence, decaySequence, emCascade, emContinuous,
+                    coreas, zhs, longprof, observationLevel, thinning, cut);
 
   /* === END: SETUP PROCESS LIST === */
 
@@ -600,8 +587,7 @@ int main(int argc, char **argv) {
   CORSIKA_LOG_INFO("Primary Energy: {}", E0);
   CORSIKA_LOG_INFO("Primary Momentum: {}", P0);
   CORSIKA_LOG_INFO("Point of Injection: {}", injectionPos.getCoordinates());
-  CORSIKA_LOG_INFO("Shower Axis Length: {}",
-                   (showerCore - injectionPos).getNorm() * 1.2);
+  CORSIKA_LOG_INFO("Shower Axis Length: {}", (showerCore - injectionPos).getNorm() * 1.2);
 
   // trigger the output manager to open the library for writing
   output.startOfLibrary();
@@ -613,10 +599,8 @@ int main(int argc, char **argv) {
 
     // directory for outputs
     string const outdir(app["--filename"]->as<std::string>());
-    string const labHist_file =
-        outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
-    string const cMSHist_file =
-        outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
+    string const labHist_file = outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
+    string const cMSHist_file = outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
 
     // setup particle stack, and add primary particle
     stack.clear();
@@ -638,11 +622,11 @@ int main(int argc, char **argv) {
     HEPEnergyType const Efinal =
         dEdX.getEnergyLost() + observationLevel.getEnergyGround();
 
-    CORSIKA_LOG_INFO("total energy budget (GeV): {} (dEdX={} ground={}), "
-                     "relative difference (%): {}",
-                     Efinal / 1_GeV, dEdX.getEnergyLost() / 1_GeV,
-                     observationLevel.getEnergyGround() / 1_GeV,
-                     (Efinal / E0 - 1) * 100);
+    CORSIKA_LOG_INFO(
+        "total energy budget (GeV): {} (dEdX={} ground={}), "
+        "relative difference (%): {}",
+        Efinal / 1_GeV, dEdX.getEnergyLost() / 1_GeV,
+        observationLevel.getEnergyGround() / 1_GeV, (Efinal / E0 - 1) * 100);
 
     auto const hists = heCounted.getHistogram() + urqmdCounted.getHistogram();
     // uncomment to use fluka
