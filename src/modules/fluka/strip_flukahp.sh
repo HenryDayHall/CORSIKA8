@@ -8,29 +8,33 @@
 # Licence version 3 (GPL Version 3). See file LICENSE for a full version of
 # the license.
 
-# This script strips off flrndm() from the libflukahp.a so that we can provide our own
-# implementation.
+# This script strips off flrndm() and flrnlp() from libflukahp.a so that
+# we can provide our own implementation.
 
 flukalibOrig=`realpath $1`
 target="$2"
+
+if [ -d "$flukalibOrig" ]; then
+    echo "\"$flukalibOrig\" is a directory. Please specify full path to libflukahp.a?" 1>&2
+    exit 1
+fi
+
+if [ ! -f "$flukalibOrig" ]; then
+    echo "\"$flukalibOrig\" is not a regular file. Did you specify the full path to libflukahp.a?" 1>&2
+    exit 1
+fi
 
 if [ ! -r "$flukalibOrig" ]; then
     echo "\"$flukalibOrig\" not readable" 1>&2
     exit 1
 fi
 
-tmpdir=`mktemp -d fluka_objectsXXXXXX`
-workdir=`pwd`
+# check if FLUKA has the required symbols. If not, it is an imcompatible
+# version (e.g. CERN FLUKA or too old)
+if ! ar t "$flukalibOrig" | grep ndmhep.o >/dev/null; then
+    echo "The provided libflukahp.a is incompatible." 1>&2
+    exit 1
+fi
 
-echo "extracting objects from $flukalibOrig into `realpath $tmpdir`..."
-cd "$tmpdir"
-ar x "$flukalibOrig"
-cd "$workdir"
-rm "$tmpdir/flrndm.o"
-
-[ -f "libflukahp-norndm.a" ] && rm "libflukahp-norndm.a"
-
-echo "creating libflukahp-norndm.a..."
-ar -rcs "$target/libflukahp-norndm.a" "$tmpdir"/*.o
-
-rm -r "$tmpdir"
+cp "${flukalibOrig}" "${target}/libflukahp-norndm.a" && \
+ar -d "${target}/libflukahp-norndm.a" flrndm.o flrnlp.o

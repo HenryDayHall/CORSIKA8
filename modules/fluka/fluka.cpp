@@ -13,6 +13,9 @@ namespace fluka {
 
   extern "C" {
   double flrndm_() { return ::fluka::rndmPtr(); }
+  void flrnlp_(double* array, int const* N) {
+    for (int i = 0; i < *N; ++i) { array[i] = ::fluka::rndmPtr(); }
+  }
 
   //! overwrite function pointer to be used as FLUKA RNG (flrndm_())
   void setFlukaRNG(double (*func)()) { ::fluka::rndmPtr = func; }
