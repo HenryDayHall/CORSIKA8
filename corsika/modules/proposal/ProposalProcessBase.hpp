@@ -46,37 +46,150 @@ namespace corsika::proposal {
   //!
   //! Crosssection factories for different particle types.
   //!
+
+  // Cross sections for muons and taus
   template <typename T>
-  auto cross_builder = [](PROPOSAL::Medium& m,
+  auto cross_builder = [](PROPOSAL::Medium& medium,
                           corsika::units::si::HEPEnergyType
                               emCut) { //!< Stochastic losses smaller than the given cut
                                        //!< will be handeled continuously.
     auto particle_def = T();
+    CORSIKA_LOG_DEBUG("PROPOSAL: Generate general cross sections for particle type {} ",
+                      particle_def.name);
+    auto interpolate = true;
+
     auto p_cut =
         std::make_shared<const PROPOSAL::EnergyCutSettings>(emCut / 1_MeV, v_cut, false);
-    return PROPOSAL::GetStdCrossSections(particle_def, m, p_cut, true);
+
+    // do not use v_cut for ionization due to numerical problems
+    auto p_cut_no_vcut =
+        std::make_shared<const PROPOSAL::EnergyCutSettings>(emCut / 1_MeV, 1, false);
+
+    auto cross_vec = std::vector<std::shared_ptr<PROPOSAL::CrossSectionBase>>();
+    cross_vec.push_back(PROPOSAL::make_crosssection(
+        PROPOSAL::crosssection::BremsKelnerKokoulinPetrukhin{false}, particle_def, medium,
+        p_cut, interpolate));
+    cross_vec.push_back(PROPOSAL::make_crosssection(
+        PROPOSAL::crosssection::EpairKelnerKokoulinPetrukhin{false}, particle_def, medium,
+        p_cut, interpolate));
+    cross_vec.push_back(PROPOSAL::make_crosssection(
+        PROPOSAL::crosssection::IonizBetheBlochRossi{*p_cut_no_vcut}, particle_def,
+        medium, p_cut_no_vcut, interpolate));
+    cross_vec.push_back(PROPOSAL::make_crosssection(
+        PROPOSAL::crosssection::PhotoAbramowiczLevinLevyMaor97{
+            std::make_unique<PROPOSAL::crosssection::ShadowButkevichMikheyev>()},
+        particle_def, medium, p_cut, interpolate));
+
+    return cross_vec;
   };
 
+  // cross sections for photons
   template <>
   auto cross_builder<PROPOSAL::GammaDef> =
-      [](PROPOSAL::Medium& m,
+      [](PROPOSAL::Medium& medium,
          corsika::units::si::HEPEnergyType) { //!< Only-stochastic propagation
-        auto p = PROPOSAL::GammaDef();
+        auto particle_def = PROPOSAL::GammaDef();
+        CORSIKA_LOG_DEBUG(
+            "PROPOSAL: Generate photon cross sections for particle type {} ",
+            particle_def.name);
+
         auto interpolate = true;
         auto cross_vec = std::vector<std::shared_ptr<PROPOSAL::CrossSectionBase>>();
-        auto photopair = PROPOSAL::make_crosssection(
-            PROPOSAL::crosssection::PhotoPairKochMotz{false}, p, m, nullptr, interpolate);
+        auto photopair =
+            PROPOSAL::make_crosssection(PROPOSAL::crosssection::PhotoPairKochMotz{false},
+                                        particle_def, medium, nullptr, interpolate);
         cross_vec.push_back(std::move(photopair));
-        auto compton = PROPOSAL::make_crosssection(
-            PROPOSAL::crosssection::ComptonKleinNishina{}, p, m, nullptr, interpolate);
+        auto compton =
+            PROPOSAL::make_crosssection(PROPOSAL::crosssection::ComptonKleinNishina{},
+                                        particle_def, medium, nullptr, interpolate);
         cross_vec.push_back(std::move(compton));
         auto photoproduction = PROPOSAL::make_crosssection(
-            PROPOSAL::crosssection::PhotoproductionHeckC7Shadowing{}, p, m, nullptr,
-            interpolate);
+            PROPOSAL::crosssection::PhotoproductionHeckC7Shadowing{}, particle_def,
+            medium, nullptr, interpolate);
         cross_vec.push_back(std::move(photoproduction));
-        auto photoeffect = PROPOSAL::make_crosssection(
-            PROPOSAL::crosssection::PhotoeffectSauter{}, p, m, nullptr, interpolate);
+        auto photoeffect =
+            PROPOSAL::make_crosssection(PROPOSAL::crosssection::PhotoeffectSauter{},
+                                        particle_def, medium, nullptr, interpolate);
         cross_vec.push_back(std::move(photoeffect));
+        return cross_vec;
+      };
+
+  // cross sections for electrons
+  template <>
+  auto cross_builder<PROPOSAL::EMinusDef> =
+      [](PROPOSAL::Medium& medium,
+         corsika::units::si::HEPEnergyType
+             emCut) { //!< Stochastic losses smaller than the given cut
+                      //!< will be handeled continuously.
+        auto particle_def = PROPOSAL::EMinusDef();
+        CORSIKA_LOG_DEBUG(
+            "PROPOSAL: Generate electron cross sections for particle type {} ",
+            particle_def.name);
+        auto interpolate = true;
+
+        auto p_cut = std::make_shared<const PROPOSAL::EnergyCutSettings>(emCut / 1_MeV,
+                                                                         v_cut, false);
+
+        // do not use v_cut for ionization due to numerical problems
+        auto p_cut_no_vcut =
+            std::make_shared<const PROPOSAL::EnergyCutSettings>(emCut / 1_MeV, 1, false);
+
+        auto cross_vec = std::vector<std::shared_ptr<PROPOSAL::CrossSectionBase>>();
+        cross_vec.push_back(PROPOSAL::make_crosssection(
+            PROPOSAL::crosssection::BremsElectronScreening{false}, particle_def, medium,
+            p_cut, interpolate));
+        cross_vec.push_back(PROPOSAL::make_crosssection(
+            PROPOSAL::crosssection::EpairForElectronPositron{false}, particle_def, medium,
+            p_cut, interpolate));
+        cross_vec.push_back(PROPOSAL::make_crosssection(
+            PROPOSAL::crosssection::IonizBergerSeltzerMoller{*p_cut_no_vcut},
+            particle_def, medium, p_cut_no_vcut, interpolate));
+        cross_vec.push_back(PROPOSAL::make_crosssection(
+            PROPOSAL::crosssection::PhotoAbramowiczLevinLevyMaor97{
+                std::make_unique<PROPOSAL::crosssection::ShadowButkevichMikheyev>()},
+            particle_def, medium, p_cut, interpolate));
+
+        return cross_vec;
+      };
+
+  // cross sections for positrons
+  template <>
+  auto cross_builder<PROPOSAL::EPlusDef> =
+      [](PROPOSAL::Medium& medium,
+         corsika::units::si::HEPEnergyType
+             emCut) { //!< Stochastic losses smaller than the given cut
+                      //!< will be handeled continuously.
+        auto particle_def = PROPOSAL::EPlusDef();
+        CORSIKA_LOG_DEBUG(
+            "PROPOSAL: Generate positron cross sections for particle type {} ",
+            particle_def.name);
+        auto interpolate = true;
+
+        auto p_cut = std::make_shared<const PROPOSAL::EnergyCutSettings>(emCut / 1_MeV,
+                                                                         v_cut, false);
+
+        // do not use v_cut for ionization due to numerical problems
+        auto p_cut_no_vcut =
+            std::make_shared<const PROPOSAL::EnergyCutSettings>(emCut / 1_MeV, 1, false);
+
+        auto cross_vec = std::vector<std::shared_ptr<PROPOSAL::CrossSectionBase>>();
+        cross_vec.push_back(PROPOSAL::make_crosssection(
+            PROPOSAL::crosssection::BremsElectronScreening{false}, particle_def, medium,
+            p_cut, interpolate));
+        cross_vec.push_back(PROPOSAL::make_crosssection(
+            PROPOSAL::crosssection::EpairForElectronPositron{false}, particle_def, medium,
+            p_cut, interpolate));
+        cross_vec.push_back(PROPOSAL::make_crosssection(
+            PROPOSAL::crosssection::IonizBergerSeltzerBhabha{*p_cut_no_vcut},
+            particle_def, medium, p_cut_no_vcut, interpolate));
+        cross_vec.push_back(PROPOSAL::make_crosssection(
+            PROPOSAL::crosssection::PhotoAbramowiczLevinLevyMaor97{
+                std::make_unique<PROPOSAL::crosssection::ShadowButkevichMikheyev>()},
+            particle_def, medium, p_cut, interpolate));
+        cross_vec.push_back(
+            PROPOSAL::make_crosssection(PROPOSAL::crosssection::AnnihilationHeitler{},
+                                        particle_def, medium, nullptr, interpolate));
+
         return cross_vec;
       };
 
