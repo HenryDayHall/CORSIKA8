@@ -66,7 +66,7 @@ namespace corsika {
 
     if (fractionalBin < 0) {
       CORSIKA_LOG_WARN("cannot extrapolate to points behind point of injection l={} m",
-                        l / 1_m);
+                       l / 1_m);
       if (throw_) {
         throw std::runtime_error(
             "cannot extrapolate to points behind point of injection");
