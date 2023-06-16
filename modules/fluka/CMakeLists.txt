@@ -50,7 +50,7 @@ else()
     
     install (
       FILES
-      fluka.hpp
+      FLUKA.hpp
       DESTINATION include/corsika_modules/fluka
       )
     
