@@ -57,9 +57,13 @@
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/Sophia.hpp>
 #include <corsika/modules/StackInspector.hpp>
-#include <corsika/modules/UrQMD.hpp>
 #include <corsika/modules/thinning/EMThinning.hpp>
-// #include <corsika/modules/FLUKA.hpp>
+// for ICRC2023
+#ifdef WITH_FLUKA
+#include <corsika/modules/FLUKA.hpp>
+#else
+#include <corsika/modules/UrQMD.hpp>
+#endif
 
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/RadioProcess.hpp>
@@ -108,7 +112,7 @@ long registerRandomStreams(long seed) {
   RNGManager<>::getInstance().registerRandomStream("epos");
   RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("urqmd");
-  //  RNGManager<>::getInstance().registerRandomStream("fluka");
+  RNGManager<>::getInstance().registerRandomStream("fluka");
   RNGManager<>::getInstance().registerRandomStream("proposal");
   RNGManager<>::getInstance().registerRandomStream("thinning");
   if (seed == 0) {
@@ -450,11 +454,14 @@ int main(int argc, char** argv) {
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
-  corsika::urqmd::UrQMD urqmd;
-  InteractionCounter urqmdCounted(urqmd);
-  //  // until the CI containers have fluka, we keep urqmd. Switch to fluka by
-  //  uncommenting accordingly. corsika::fluka::Interaction leInt{env};
-  //  InteractionCounter leIntCounted{leInt};
+// for ICRC2023
+#ifdef WITH_FLUKA
+  corsika::fluka::Interaction leIntModel{env};
+#else
+  corsika::urqmd::UrQMD leIntModel{};
+#endif
+  InteractionCounter leIntCounted{leIntModel};
+
   StackInspector<setup::Stack<EnvType>> stackInspect(10000, false, E0);
 
   // assemble all processes into an ordered process list
@@ -628,10 +635,7 @@ int main(int argc, char** argv) {
         Efinal / 1_GeV, dEdX.getEnergyLost() / 1_GeV,
         observationLevel.getEnergyGround() / 1_GeV, (Efinal / E0 - 1) * 100);
 
-    auto const hists = heCounted.getHistogram() + urqmdCounted.getHistogram();
-    // uncomment to use fluka
-    //    auto const hists = heCounted.getHistogram() +
-    //    leIntCounted.getHistogram();
+    auto const hists = heCounted.getHistogram() + leIntCounted.getHistogram();
 
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);
