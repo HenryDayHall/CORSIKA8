@@ -75,7 +75,7 @@ namespace corsika::proposal {
         grammage / 1_g * square(1_cm), E_i_total / 1_MeV, E_f_total / 1_MeV, distr(RNG_),
         distr(RNG_));
 
-    auto root = initial_particle_dir.getCoordinateSystem();
+    auto const& root = initial_particle_dir.getCoordinateSystem();
 
     // construct vector that is normal to initial direction.
     DirectionVector normal_vec{root, {0, 0, 0}};
