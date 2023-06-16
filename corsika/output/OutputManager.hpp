@@ -39,7 +39,7 @@ namespace corsika {
      * @param dir     The directory where the output directory will be stored.
      */
     OutputManager(std::string const& name, const long& vseed,
-                  boost::filesystem::path const& dir);
+                  std::string const& input_args, boost::filesystem::path const& dir);
 
     /**
      * Handle graceful closure of the outputs upon destruction.
@@ -107,7 +107,8 @@ namespace corsika {
     boost::filesystem::path root_;           ///< The unique output directory.
     OutputState state_{OutputState::NoInit}; ///< The current state of this manager.
     std::string const name_;                 ///< The name of this simulation file.
-    int count_{0};                           ///< The current ID of this shower.
+    std::string const cmnd_line_args_; ///< The command line arguments used in this run
+    int count_{0};                     ///< The current ID of this shower.
     long seed_{0};
     std::chrono::time_point<std::chrono::system_clock> const start_time{
         std::chrono::system_clock::now()}; ///< The time the manager is created.
