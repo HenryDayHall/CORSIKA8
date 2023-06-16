@@ -52,8 +52,8 @@ namespace corsika::proposal {
                               emCut) { //!< Stochastic losses smaller than the given cut
                                        //!< will be handeled continuously.
     auto particle_def = T();
-    auto p_cut = std::make_shared<const PROPOSAL::EnergyCutSettings>(
-        particle_def.mass + emCut / 1_MeV, v_cut, false);
+    auto p_cut =
+        std::make_shared<const PROPOSAL::EnergyCutSettings>(emCut / 1_MeV, v_cut, false);
     return PROPOSAL::GetStdCrossSections(particle_def, m, p_cut, true);
   };
 
