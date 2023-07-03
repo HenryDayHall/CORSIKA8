@@ -118,7 +118,7 @@ namespace corsika {
       Code pid = particle.getPID();
       HEPEnergyType Ekin = particle.getKineticEnergy();
       if (checkCutParticle(pid, Ekin, particle.getTime())) {
-        this->write(particle.getPosition(), pid, Ekin);
+        this->write(particle.getPosition(), pid, particle.getWeight() * Ekin);
         particle.erase();
       }
       ++particle; // next entry in SecondaryView
@@ -132,9 +132,11 @@ namespace corsika {
                                                           bool const) {
     if (checkCutParticle(step.getParticlePre().getPID(), step.getEkinPost(),
                          step.getTimePost())) {
-      this->write(step.getPositionPost(), step.getParticlePre().getPID(),
-                  step.getEkinPost()); // ToDO: should the cut happen at the start of the
-                                       // track? For now, I set it to happen at the start
+      this->write(
+          step.getPositionPost(), step.getParticlePre().getPID(),
+          step.getParticlePre().getWeight() *
+              step.getEkinPost()); // ToDO: should the cut happen at the start of the
+                                   // track? For now, I set it to happen at the start
       CORSIKA_LOG_TRACE("removing during continuous");
       // signal to upstream code that this particle was deleted
       return ProcessReturn::ParticleAbsorbed;

@@ -25,6 +25,7 @@ namespace corsika::proposal {
     auto p_cross = cross.find(code);
     if (p_cross == cross.end())
       throw std::runtime_error("PROPOSAL could not find corresponding builder");
+    if (code == Code::Photon) return; // no continuous builders needed for photons
 
     // interpolate the crosssection for given media and energy cut. These may
     // take some minutes if you have to build the tables and cannot read the
@@ -33,18 +34,15 @@ namespace corsika::proposal {
         code); //! energy resolutions globally defined for individual particles
     auto c = p_cross->second(media.at(comp.getHash()), emCut);
 
-    // Use higland multiple scattering and deactivate stochastic deflection by
-    // passing an empty vector
-    static constexpr auto ms_type = PROPOSAL::MultipleScatteringType::Moliere;
-    auto s_type = std::vector<PROPOSAL::InteractionType>();
+    // choose multiple scattering model
+    static constexpr auto ms_type = PROPOSAL::MultipleScatteringType::MoliereInterpol;
 
     // Build displacement integral and scattering object and interpolate them too and
     // saved in the calc map by a key build out of a hash of composed of the component and
     // particle code.
-    auto calculator =
-        Calculator{PROPOSAL::make_displacement(c, true),
-                   PROPOSAL::make_scattering(ms_type, s_type, particle[code],
-                                             media.at(comp.getHash()))};
+    auto calculator = Calculator{PROPOSAL::make_displacement(c, true),
+                                 PROPOSAL::make_multiple_scattering(
+                                     ms_type, particle[code], media.at(comp.getHash()))};
     calc[std::make_pair(comp.getHash(), code)] = std::move(calculator);
   }
 
@@ -64,33 +62,47 @@ namespace corsika::proposal {
     // get or build corresponding calculators
     auto c = getCalculator(step.getParticlePre(), calc);
 
-    // Cast corsika vector to proposal vector
-    auto particle_dir = step.getDirectionPre();
-    auto d = particle_dir.getComponents();
-    auto direction = PROPOSAL::Cartesian3D(d.getX().magnitude(), d.getY().magnitude(),
-                                           d.getZ().magnitude());
+    auto initial_particle_dir = step.getDirectionPre();
 
     auto E_i_total = step.getEkinPre() + step.getParticlePre().getMass();
     auto E_f_total = E_i_total - loss;
 
-    // draw random numbers required for scattering process
+    // sample scattering_angle, which is the combination sqrt(theta_x^2 + theta_y^2),
+    // where theta_x and theta_y itself are independent angles drawn from the multiple
+    // scattering distribution
     std::uniform_real_distribution<double> distr(0., 1.);
-    auto rnd = std::array<double, 4>();
-    for (auto& it : rnd) it = distr(RNG_);
+    auto scattering_angle = (c->second).scatter->CalculateScatteringAngle2D(
+        grammage / 1_g * square(1_cm), E_i_total / 1_MeV, E_f_total / 1_MeV, distr(RNG_),
+        distr(RNG_));
 
-    // calculate deflection based on particle energy, loss
-    auto deflection = (c->second).scatter->CalculateMultipleScattering(
-        grammage / 1_g * square(1_cm), E_i_total / 1_MeV, E_f_total / 1_MeV, rnd);
+    auto const& root = initial_particle_dir.getCoordinateSystem();
 
-    [[maybe_unused]] auto [unused1, final_direction] =
-        PROPOSAL::multiple_scattering::ScatterInitialDirection(direction, deflection);
+    // construct vector that is normal to initial direction.
+    DirectionVector normal_vec{root, {0, 0, 0}};
+    if (initial_particle_dir.getX(root) > 0.1) {
+      normal_vec = {
+          root, {-initial_particle_dir.getY(root), initial_particle_dir.getX(root), 0}};
+    } else {
+      // if x is small, use y and z to construct normal vector
+      normal_vec = {
+          root, {0, -initial_particle_dir.getZ(root), initial_particle_dir.getY(root)}};
+    }
+
+    // rotation of zenith by moliere_angle
+    CoordinateSystemPtr rotated1 =
+        make_rotation(root, normal_vec.getComponents(), scattering_angle);
+
+    // rotation of azimuth by random angle between 0 and 2*PI
+    std::uniform_real_distribution<double> distr_azimuth(0., 2 * M_PI);
+    CoordinateSystemPtr rotated2 = make_rotation(
+        rotated1, initial_particle_dir.getComponents(), distr_azimuth(RNG_));
+
+    DirectionVector scattered_particle_dir{root,
+                                           initial_particle_dir.getComponents(rotated2)};
 
     // update particle direction after continuous loss caused by multiple
     // scattering
-    DirectionVector dU_{
-        particle_dir.getCoordinateSystem(),
-        {final_direction.GetX(), final_direction.GetY(), final_direction.GetZ()}};
-    DirectionVector diff_dir_ = dU_ - particle_dir;
+    DirectionVector diff_dir_ = scattered_particle_dir - initial_particle_dir;
     step.add_dU(diff_dir_);
   }
 
@@ -101,7 +113,8 @@ namespace corsika::proposal {
     if (!canInteract(step.getParticlePre().getPID())) return ProcessReturn::Ok;
     if (step.getDisplacement().getSquaredNorm() == static_pow<2>(0_m))
       return ProcessReturn::Ok;
-
+    if (step.getParticlePre().getPID() == Code::Photon)
+      return ProcessReturn::Ok; // no continuous energy losses, no scattering for photons
     // calculate passed grammage
     auto dX = step.getParticlePre().getNode()->getModelProperties().getIntegratedGrammage(
         step.getStraightTrack());
@@ -121,7 +134,8 @@ namespace corsika::proposal {
 
     // also send to output
     TOutput::write(step.getPositionPre(), step.getPositionPost(),
-                   step.getParticlePre().getPID(), dE);
+                   step.getParticlePre().getPID(),
+                   step.getParticlePre().getWeight() * dE);
 
     return ProcessReturn::Ok;
   }
@@ -132,6 +146,9 @@ namespace corsika::proposal {
       TParticle const& vP, TTrajectory const& track) {
     auto const code = vP.getPID();
     if (!canInteract(code)) return meter * std::numeric_limits<double>::infinity();
+    if (code == Code::Photon)
+      return meter *
+             std::numeric_limits<double>::infinity(); // no step limitation for photons
 
     // Limit the step size of a conitnuous loss. The maximal continuous loss seems to be
     // a hyper parameter which must be adjusted.

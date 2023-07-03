@@ -16,9 +16,10 @@ set (test_modules_sources
   testEMThinning.cpp
   testSophia.cpp
 )
-  
-if (EXISTS "${C8_FLUKALIB}")
+
+if (NOT "$CACHE{C8_FLUKA_ENABLED}" STREQUAL "")
     list(APPEND test_modules_sources "testFluka.cpp")
+    message("testFluka enabled")
 endif()
 
 CORSIKA_ADD_TEST (testModules SOURCES ${test_modules_sources})

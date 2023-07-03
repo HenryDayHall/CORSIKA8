@@ -303,15 +303,11 @@ namespace corsika {
         false; // only erase original particle if it decayed or interacted
 
     if (distance_interact < distance_decay) {
-      CrossSectionType const total_cx_post = composition.getWeightedSum(xs_function);
       eraseParticle = isInteracted(
-          interaction(secondaries, projectileP4Post, composition, total_cx_post));
+          interaction(secondaries, projectileP4Post, composition, total_cx_pre));
     } else {
       [[maybe_unused]] auto projectile = secondaries.getProjectile();
-
-      InverseTimeType const total_inv_lifetime_post =
-          sequence_.getInverseLifetime(particle);
-      if (decay(secondaries, total_inv_lifetime_post) == ProcessReturn::Decayed) {
+      if (decay(secondaries, total_inv_lifetime_pre) == ProcessReturn::Decayed) {
         eraseParticle = true;
         if (secondaries.getSize() == 1 &&
             projectile.getPID() == secondaries.getNextParticle().getPID()) {
@@ -321,8 +317,11 @@ namespace corsika {
       }
     }
 
-    sequence_.doSecondaries(secondaries);
-    if (eraseParticle) particle.erase();
+    if (eraseParticle) {
+      // doSecondaries() makes sense only if there was an actual event
+      sequence_.doSecondaries(secondaries);
+      particle.erase();
+    }
   }
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>

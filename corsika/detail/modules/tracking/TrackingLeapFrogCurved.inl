@@ -81,7 +81,7 @@ namespace corsika {
 
       if (gyroradius > 1e9_m) {
         // this cannot be really unit-tested. It is hidden. LCOV_EXCL_START
-        CORSIKA_LOG_WARN(
+        CORSIKA_LOG_TRACE(
             "CurvedLeapFrog is not very stable for extremely high gyroradius steps. "
             "Rg={} -> straight tracking.",
             gyroradius);
@@ -89,8 +89,9 @@ namespace corsika {
         // LCOV_EXCL_STOP
       }
 
-      double const maxRadians = 0.01; // maximally allowed deflection
-      LengthType const steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
+      double const maxMagneticDeflectionAngle = 0.2; // maximally allowed deflection
+      LengthType const steplimit = 2 * cos(maxMagneticDeflectionAngle) *
+                                   sin(maxMagneticDeflectionAngle) * gyroradius;
       TimeType const steplimit_time = steplimit / initialVelocity.getNorm();
       CORSIKA_LOG_DEBUG("gyroradius {}, steplimit: {} = {}", gyroradius, steplimit,
                         steplimit_time);

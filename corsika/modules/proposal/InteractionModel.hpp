@@ -38,9 +38,11 @@ namespace corsika::proposal {
       : public ProposalProcessBase,
         public HadronicPhotonModel<THadronicLEModel, THadronicHEModel> {
 
-    enum { eSECONDARIES, eINTERACTION };
+    enum { eSECONDARIES, eINTERACTION, eLPM_SUPPRESSION };
+    struct LPM_calculator;
     using calculator_t = std::tuple<std::unique_ptr<PROPOSAL::SecondariesCalculator>,
-                                    std::unique_ptr<PROPOSAL::Interaction>>;
+                                    std::unique_ptr<PROPOSAL::Interaction>,
+                                    std::unique_ptr<LPM_calculator>>;
 
     std::unordered_map<calc_key_t, calculator_t, hash>
         calc_; //!< Stores the secondaries and interaction calculators.
@@ -51,6 +53,45 @@ namespace corsika::proposal {
     void buildCalculator(Code, NuclearComposition const&) final;
 
     inline static auto logger_{get_logger("corsika_proposal_InteractionModel")};
+
+    // Calculators for the LPM effect
+    struct LPM_calculator {
+      std::unique_ptr<PROPOSAL::crosssection::PhotoPairLPM> photo_pair_lpm_ = nullptr;
+      std::unique_ptr<PROPOSAL::crosssection::BremsLPM> brems_lpm_ = nullptr;
+      std::unique_ptr<PROPOSAL::crosssection::EpairLPM> epair_lpm_ = nullptr;
+
+      const double mass_density_baseline_; // base mass density, note PROPOSAL units
+      const double particle_mass_;         // particle mass, note PROPOSAL units
+
+      LPM_calculator(const PROPOSAL::Medium& medium, const Code code,
+                     std::vector<PROPOSAL::InteractionType> inter_types)
+          : mass_density_baseline_(medium.GetMassDensity())
+          , particle_mass_(particle[code].mass) {
+        // at the moment, we always calculate the LPM effect based on the default cross
+        // sections. one could check for the parametrizations used in the other
+        // calculators.
+        if (std::find(inter_types.begin(), inter_types.end(),
+                      PROPOSAL::InteractionType::Photopair) != inter_types.end())
+          photo_pair_lpm_ = std::make_unique<PROPOSAL::crosssection::PhotoPairLPM>(
+              particle[code], medium, PROPOSAL::crosssection::PhotoPairKochMotz());
+        if (std::find(inter_types.begin(), inter_types.end(),
+                      PROPOSAL::InteractionType::Brems) != inter_types.end())
+          brems_lpm_ = std::make_unique<PROPOSAL::crosssection::BremsLPM>(
+              particle[code], medium, PROPOSAL::crosssection::BremsElectronScreening());
+        if (std::find(inter_types.begin(), inter_types.end(),
+                      PROPOSAL::InteractionType::Epair) != inter_types.end())
+          epair_lpm_ =
+              std::make_unique<PROPOSAL::crosssection::EpairLPM>(particle[code], medium);
+      }
+    };
+
+    //!
+    //! Checks whether the interaction is suppressed by the LPM effect
+    //!
+    bool CheckForLPM(const LPM_calculator&, const HEPEnergyType,
+                     const PROPOSAL::InteractionType,
+                     const std::vector<PROPOSAL::ParticleState>&, const MassDensityType,
+                     const PROPOSAL::Component&, const double v);
 
   public:
     //!

@@ -23,11 +23,13 @@
 namespace corsika {
 
   inline OutputManager::OutputManager(
-      std::string const& name,
+      std::string const& name, const long& vseed = 0, std::string const& vargs = "",
       boost::filesystem::path const& dir = boost::filesystem::current_path())
       : root_(dir / name)
       , name_(name)
-      , count_(0) {
+      , cmnd_line_args_(vargs)
+      , count_(0)
+      , seed_(vseed) {
 
     // check if this directory already exists
     if (boost::filesystem::exists(root_)) {
@@ -101,7 +103,7 @@ namespace corsika {
     config["name"] = name_;               // the simulation name
     config["creator"] = "CORSIKA8";       // a tag to identify C8 libraries
     config["version"] = "8.0.0-prealpha"; // the current version
-
+    config["args"] = cmnd_line_args_;     // the command line parameters
     return config;
   }
 
@@ -111,6 +113,8 @@ namespace corsika {
 
     // the total number of showers contained in the library
     summary["showers"] = count_;
+
+    summary["seed"] = seed_;
 
     // this next section handles writing some time and duration information
 

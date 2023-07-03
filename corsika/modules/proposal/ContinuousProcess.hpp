@@ -39,7 +39,7 @@ namespace corsika::proposal {
 
     struct Calculator {
       std::unique_ptr<PROPOSAL::Displacement> disp;
-      std::unique_ptr<PROPOSAL::Scattering> scatter;
+      std::unique_ptr<PROPOSAL::multiple_scattering::Parametrization> scatter;
     };
 
     std::unordered_map<calc_key_t, Calculator, hash>

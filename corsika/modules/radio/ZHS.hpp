@@ -8,11 +8,8 @@
 #pragma once
 
 #include <corsika/modules/radio/RadioProcess.hpp>
-#include <corsika/modules/radio/propagators/StraightPropagator.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/modules/radio/propagators/SignalPath.hpp>
-#include <cmath>
 
 namespace corsika {
 
@@ -48,7 +45,9 @@ namespace corsika {
      *
      */
     template <typename Particle>
-    ProcessReturn simulate(Step<Particle> const& step) const;
+    ProcessReturn simulate(Step<Particle> const& step);
+    static constexpr auto emConstant_{1.0 / (4.0 * M_PI) / (constants::epsilonZero) /
+                                      constants::c};
 
   private:
     using Base =

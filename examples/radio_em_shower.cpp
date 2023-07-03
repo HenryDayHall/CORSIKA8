@@ -49,8 +49,8 @@
 #include <corsika/modules/radio/antennas/Antenna.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
 #include <corsika/modules/radio/detectors/AntennaCollection.hpp>
-#include <corsika/modules/radio/propagators/StraightPropagator.hpp>
-#include <corsika/modules/radio/propagators/SimplePropagator.hpp>
+#include <corsika/modules/radio/propagators/NumericalIntegratingPropagator.hpp>
+#include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -259,22 +259,23 @@ int main(int argc, char** argv) {
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
+  // the radio signal propagator
+  auto SP = make_dummy_test_radio_propagator(env);
+
   // initiate CoREAS
-  RadioProcess<decltype(detectorCoREAS),
-               CoREAS<decltype(detectorCoREAS), decltype(SimplePropagator(env))>,
-               decltype(SimplePropagator(env))>
-      coreas(detectorCoREAS, env);
+  RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS), decltype(SP)>,
+               decltype(SP)>
+      coreas(detectorCoREAS, SP);
 
   // register CoREAS with the output manager
   output.add("CoREAS", coreas);
 
   // initiate ZHS
-  RadioProcess<decltype(detectorZHS),
-               ZHS<decltype(detectorZHS), decltype(SimplePropagator(env))>,
-               decltype(SimplePropagator(env))>
-      zhs(detectorZHS, env);
+  RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS), decltype(SP)>,
+               decltype(SP)>
+      zhs(detectorZHS, SP);
 
-  // // register ZHS with the output manager
+  // register ZHS with the output manager
   output.add("ZHS", zhs);
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));

@@ -57,9 +57,18 @@ add_executable (hybrid_MC hybrid_MC.cpp)
 target_link_libraries (hybrid_MC  CORSIKA8::CORSIKA8)
 CORSIKA_REGISTER_EXAMPLE (hybrid_MC RUN_OPTIONS 4 2 10000.)
 
+
 add_executable (corsika corsika.cpp)
+# for ICRC 2023
+option(WITH_FLUKA "use FLUKA instead of UrQMD in corsika.cpp")
+if (WITH_FLUKA)
+  target_compile_definitions(corsika PRIVATE WITH_FLUKA)
+  message("compiling corsika.cpp with FLUKA")
+else()
+  message("compiling corsika.cpp with UrQMD")
+endif()
 target_link_libraries (corsika CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (corsika RUN_OPTIONS --energy=100 --zenith=10 --nevent=2 --filename=corsika_test --pdg=2212)
+CORSIKA_REGISTER_EXAMPLE (corsika RUN_OPTIONS --energy=10 --zenith=10 --nevent=2 --filename=corsika_test --pdg=2212)
 
 add_executable (mars mars.cpp)
 target_link_libraries (mars CORSIKA8::CORSIKA8)

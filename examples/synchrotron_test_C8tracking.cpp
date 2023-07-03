@@ -33,7 +33,7 @@
 #include <corsika/modules/radio/ZHS.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
 #include <corsika/modules/radio/detectors/AntennaCollection.hpp>
-#include <corsika/modules/radio/propagators/SimplePropagator.hpp>
+#include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 
 #include <corsika/modules/TimeCut.hpp>
 
@@ -140,17 +140,18 @@ int main() {
   // setup relevant processes
   setup::Tracking tracking;
 
+  // the radio signal propagator
+  auto SP = make_dummy_test_radio_propagator(env);
+
   // put radio processes here
-  RadioProcess<decltype(detectorCoREAS),
-               CoREAS<decltype(detectorCoREAS), decltype(SimplePropagator(env))>,
-               decltype(SimplePropagator(env))>
-      coreas(detectorCoREAS, env);
+  RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS), decltype(SP)>,
+               decltype(SP)>
+      coreas(detectorCoREAS, SP);
   output.add("CoREAS", coreas);
 
-  RadioProcess<decltype(detectorZHS),
-               ZHS<decltype(detectorZHS), decltype(SimplePropagator(env))>,
-               decltype(SimplePropagator(env))>
-      zhs(detectorZHS, env);
+  RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS), decltype(SP)>,
+               decltype(SP)>
+      zhs(detectorZHS, SP);
   output.add("ZHS", zhs);
 
   TimeCut cut(period);

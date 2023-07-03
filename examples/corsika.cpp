@@ -36,6 +36,7 @@
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/GeomagneticModel.hpp>
+#include <corsika/media/GladstoneDaleRefractiveIndex.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/IMagneticFieldModel.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
@@ -56,9 +57,21 @@
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/Sophia.hpp>
 #include <corsika/modules/StackInspector.hpp>
-#include <corsika/modules/TrackWriter.hpp>
-#include <corsika/modules/UrQMD.hpp>
 #include <corsika/modules/thinning/EMThinning.hpp>
+// for ICRC2023
+#ifdef WITH_FLUKA
+#include <corsika/modules/FLUKA.hpp>
+#else
+#include <corsika/modules/UrQMD.hpp>
+#endif
+
+#include <corsika/modules/radio/CoREAS.hpp>
+#include <corsika/modules/radio/RadioProcess.hpp>
+#include <corsika/modules/radio/ZHS.hpp>
+#include <corsika/modules/radio/antennas/Antenna.hpp>
+#include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
+#include <corsika/modules/radio/detectors/AntennaCollection.hpp>
+#include <corsika/modules/radio/propagators/TabulatedFlatAtmospherePropagator.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -85,12 +98,13 @@
 using namespace corsika;
 using namespace std;
 
-using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using EnvironmentInterface =
+    IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
 using EnvType = Environment<EnvironmentInterface>;
 
 using Particle = setup::Stack<EnvType>::particle_type;
 
-void registerRandomStreams(long seed) {
+long registerRandomStreams(long seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
@@ -98,20 +112,23 @@ void registerRandomStreams(long seed) {
   RNGManager<>::getInstance().registerRandomStream("epos");
   RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("urqmd");
+  RNGManager<>::getInstance().registerRandomStream("fluka");
   RNGManager<>::getInstance().registerRandomStream("proposal");
   RNGManager<>::getInstance().registerRandomStream("thinning");
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
-    CORSIKA_LOG_INFO("random seed (auto) {} ", seed);
+    std::cout << "random seed (auto)  " << seed << std::endl;
   } else {
-    CORSIKA_LOG_INFO("random seed {} ", seed);
+    std::cout << "random seed " << seed << std::endl;
   }
   RNGManager<>::getInstance().setSeed(seed);
+  return seed;
 }
 
 template <typename T>
-using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
+using MyExtraEnv =
+    GladstoneDaleRefractiveIndex<MediumPropertyModel<UniformMagneticField<T>>>;
 
 int main(int argc, char** argv) {
 
@@ -149,16 +166,17 @@ int main(int argc, char** argv) {
       ->check(CLI::Range(0., 360.))
       ->group("Primary");
   app.add_option("--emcut",
-                 "Min. kin. energy of photons, electrons and positrons in tracking (GeV)")
-      ->default_val(50.)
+                 "Min. kin. energy of photons, electrons and "
+                 "positrons in tracking (GeV)")
+      ->default_val(0.5e-3)
       ->check(CLI::Range(0.000001, 1.e13))
       ->group("Config");
   app.add_option("--hadcut", "Min. kin. energy of hadrons in tracking (GeV)")
-      ->default_val(50.)
+      ->default_val(0.3)
       ->check(CLI::Range(0.000001, 1.e13))
       ->group("Config");
   app.add_option("--mucut", "Min. kin. energy of muons in tracking (GeV)")
-      ->default_val(50.)
+      ->default_val(0.3)
       ->check(CLI::Range(0.000001, 1.e13))
       ->group("Config");
   app.add_option("--observation-level",
@@ -168,7 +186,7 @@ int main(int argc, char** argv) {
       ->group("Config");
   app.add_option("--injection-height",
                  "Height above earth radius of the injection point (in m)")
-      ->default_val(111.75e3)
+      ->default_val(112.75e3)
       ->check(CLI::Range(-1.e3, 1.e6))
       ->group("Config");
   app.add_option("-N,--nevent", nevent, "The number of events/showers to run.")
@@ -196,20 +214,30 @@ int main(int argc, char** argv) {
       ->default_val("SIBYLL-2.3d")
       ->check(CLI::IsMember({"SIBYLL-2.3d", "QGSJet-II.04", "EPOS-LHC"}))
       ->group("Misc.");
+  app.add_option("-T,--hadronModelTransitionEnergy",
+                 "Transition between high-/low-energy hadronic interaction "
+                 "model in GeV")
+      ->default_val(std::pow(10, 1.9)) // 79.4 GeV
+      ->check(CLI::NonNegativeNumber)
+      ->group("Misc.");
   app.add_option("--emthin",
                  "fraction of primary energy at which thinning of EM particles starts")
       ->default_val(1.e-6)
       ->check(CLI::Range(0., 1.))
       ->group("Thinning");
-  app.add_option(
-         "--max-weight",
-         "maximum weight for thinning of EM particles (0 to select Kobal's optimum)")
+  app.add_option("--max-weight",
+                 "maximum weight for thinning of EM particles (0 to select Kobal's "
+                 "optimum times 0.5)")
       ->default_val(0)
       ->check(CLI::NonNegativeNumber)
       ->group("Thinning");
   bool multithin = false;
   app.add_flag("--multithin", multithin, "keep thinned particles (with weight=0)")
       ->group("Thinning");
+  app.add_option("--ring", "concentric ring of star shape pattern of antennas")
+      ->default_val(0)
+      ->check(CLI::Range(0, 20))
+      ->group("Radio");
 
   // parse the command line options into the variables
   CLI11_PARSE(app, argc, argv);
@@ -242,18 +270,19 @@ int main(int argc, char** argv) {
   }
 
   // initialize random number sequence(s)
-  registerRandomStreams(app["--seed"]->as<long>());
+  auto seed = registerRandomStreams(app["--seed"]->as<long>());
 
   /* === START: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
+  Point const surface_{rootCS, 0_m, 0_m, constants::EarthRadius::Mean};
   GeomagneticModel wmm(center, corsika_data("GeoMag/WMM.COF"));
 
   // build a Linsley US Standard atmosphere into `env`
   create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-      env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
-      wmm.getField(2022.5, 10_km, 49, 8.4));
+      env, AtmosphereId::LinsleyUSStd, center, 1.000327, surface_, Medium::AirDry1Atm,
+      MagneticFieldVector{rootCS, 50_uT, 0_T, 0_T});
 
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
@@ -328,20 +357,18 @@ int main(int argc, char** argv) {
     if (auto const wm = app["--max-weight"]->as<double>(); wm > 0)
       return wm;
     else
-      return emthinfrac * E0 / 1_GeV;
+      return 0.5 * emthinfrac * E0 / 1_GeV;
   });
   EMThinning thinning{emthinfrac * E0, maxWeight, !multithin};
 
+  std::stringstream args;
+  for (int i = 0; i < argc; ++i) { args << argv[i] << " "; }
   // create the output manager that we then register outputs with
-  OutputManager output(app["--filename"]->as<std::string>());
+  OutputManager output(app["--filename"]->as<std::string>(), seed, args.str());
 
   // register energy losses as output
   EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
   output.add("energyloss", dEdX);
-
-  // create a track writer and register it with the output manager
-  TrackWriter tracks;
-  output.add("tracks", tracks);
 
   DynamicInteractionProcess<setup::Stack<EnvType>> heModel;
 
@@ -383,7 +410,8 @@ int main(int argc, char** argv) {
 
   // energy threshold for high energy hadronic model. Affects LE/HE switch for
   // hadron interactions and the hadronic photon model in proposal
-  HEPEnergyType heHadronModelThreshold = 63.1_GeV;
+  HEPEnergyType const heHadronModelThreshold =
+      1_GeV * app["--hadronModelTransitionEnergy"]->as<double>();
 
   corsika::proposal::Interaction emCascade(
       env, sophia, sibyll->getHadronInteractionModel(), heHadronModelThreshold);
@@ -403,8 +431,14 @@ int main(int argc, char** argv) {
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
-  corsika::urqmd::UrQMD urqmd;
-  InteractionCounter urqmdCounted(urqmd);
+// for ICRC2023
+#ifdef WITH_FLUKA
+  corsika::fluka::Interaction leIntModel{env};
+#else
+  corsika::urqmd::UrQMD leIntModel{};
+#endif
+  InteractionCounter leIntCounted{leIntModel};
+
   StackInspector<setup::Stack<EnvType>> stackInspect(10000, false, E0);
 
   // assemble all processes into an ordered process list
@@ -415,7 +449,7 @@ int main(int argc, char** argv) {
     bool operator()(const Particle& p) const { return (p.getKineticEnergy() < cutE_); }
   };
   auto hadronSequence =
-      make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, heCounted);
+      make_select(EnergySwitch(heHadronModelThreshold), leIntCounted, heCounted);
 
   // observation plane
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
@@ -424,10 +458,97 @@ int main(int argc, char** argv) {
   // register ground particle output
   output.add("particles", observationLevel);
 
-  // assemble the final process sequence
-  auto sequence = make_sequence(stackInspect, hadronSequence, decayPythia, cut, emCascade,
-                                emContinuous, // trackWriter,
-                                longprof, observationLevel, thinning, cut);
+  int ring_number{app["--ring"]->as<int>()};
+  std::cout << "Ring number : " << ring_number << std::endl;
+  auto const radius_{ring_number * 25_m};
+  //  std::cout << "Radius = " << radius_ << std::endl;
+  const int rr_ = static_cast<int>(radius_ / 1_m);
+
+  // if (ring_number == 0) {
+  //     // assemble the final process sequence without radio
+  //     auto sequence = make_sequence(stackInspect, hadronSequence,
+  //     decaySequence, emCascade,
+  //                                   emContinuous, longprof, observationLevel,
+  //                                   thinning, cut);
+  // } else {
+
+  // Radio antennas and relevant information
+  // the antenna time variables
+  const TimeType duration_{4e-7_s};
+  const InverseTimeType sampleRate_{1e+9_Hz};
+
+  // the antenna collection for CoREAS and ZHS
+  AntennaCollection<TimeDomainAntenna> detectorCoREAS;
+  AntennaCollection<TimeDomainAntenna> detectorZHS;
+
+  auto const showerCoreX_{showerCore.getCoordinates().getX()};
+  auto const showerCoreY_{showerCore.getCoordinates().getY()};
+  auto const injectionPosX_{injectionPos.getCoordinates().getX()};
+  auto const injectionPosY_{injectionPos.getCoordinates().getY()};
+  auto const injectionPosZ_{injectionPos.getCoordinates().getZ()};
+  auto const triggerpoint_{Point(rootCS, injectionPosX_, injectionPosY_, injectionPosZ_)};
+  std::cout << "Trigger Point is: " << triggerpoint_ << std::endl;
+
+  if (ring_number != 0) {
+    // setup CoREAS antennas - use the for loop for star shape pattern
+    for (auto phi_1 = 0; phi_1 <= 315; phi_1 += 45) {
+      auto phiRad_1 = phi_1 / 180. * M_PI;
+      // auto phi_1 = 0;
+      // auto phiRad_1 = phi_1 / 180. * M_PI;
+      auto const point_1{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_1),
+                               showerCoreY_ + radius_ * sin(phiRad_1),
+                               constants::EarthRadius::Mean)};
+      std::cout << "Antenna point CoREAS: " << point_1 << std::endl;
+      auto triggertime_1{(triggerpoint_ - point_1).getNorm() / constants::c};
+      std::string name_1 = "CoREAS_R=" + std::to_string(rr_) +
+                           "_m--Phi=" + std::to_string(phi_1) + "degrees";
+      TimeDomainAntenna antenna_1(name_1, point_1, rootCS, triggertime_1, duration_,
+                                  sampleRate_, triggertime_1);
+      detectorCoREAS.addAntenna(antenna_1);
+    }
+
+    // setup ZHS antennas - use the for loop for star shape pattern
+    for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
+      auto phiRad_ = phi_ / 180. * M_PI;
+      // auto phi_ = 0; phi_;
+      // auto phiRad_ = phi_ / 180. * M_PI;
+      auto const point_{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_),
+                              showerCoreY_ + radius_ * sin(phiRad_),
+                              constants::EarthRadius::Mean)};
+      std::cout << "Antenna point ZHS: " << point_ << std::endl;
+      auto triggertime_{(triggerpoint_ - point_).getNorm() / constants::c};
+      std::string name_ =
+          "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
+      TimeDomainAntenna antenna_(name_, point_, rootCS, triggertime_, duration_,
+                                 sampleRate_, triggertime_);
+      detectorZHS.addAntenna(antenna_);
+    }
+  }
+  LengthType const step = 1_m;
+  auto TP =
+      make_tabulated_flat_atmosphere_radio_propagator(env, injectionPos, surface_, step);
+
+  // initiate CoREAS
+  RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS), decltype(TP)>,
+               decltype(TP)>
+      coreas(detectorCoREAS, TP);
+
+  // register CoREAS with the output manager
+  output.add("CoREAS", coreas);
+
+  // initiate ZHS
+  RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS), decltype(TP)>,
+               decltype(TP)>
+      zhs(detectorZHS, TP);
+
+  // register ZHS with the output manager
+  output.add("ZHS", zhs);
+
+  // assemble the final process sequence with radio
+  auto sequence =
+      make_sequence(stackInspect, hadronSequence, decayPythia, emCascade, emContinuous,
+                    coreas, zhs, longprof, observationLevel, thinning, cut);
+
   /* === END: SETUP PROCESS LIST === */
 
   // create the cascade object using the default stack and tracking
@@ -486,7 +607,7 @@ int main(int argc, char** argv) {
         Efinal / 1_GeV, dEdX.getEnergyLost() / 1_GeV,
         observationLevel.getEnergyGround() / 1_GeV, (Efinal / E0 - 1) * 100);
 
-    auto const hists = heCounted.getHistogram() + urqmdCounted.getHistogram();
+    auto const hists = heCounted.getHistogram() + leIntCounted.getHistogram();
 
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);

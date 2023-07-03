@@ -31,7 +31,7 @@ setup(
     ],
     keywords=["cosmic ray", "physics", "air shower", "simulation"],
     packages=find_packages(),
-    python_requires=">=3.6*, <4",
+    python_requires=">=3.6, <4",
     install_requires=["numpy", "pyyaml", "pyarrow", "boost_histogram", "xarray"],
     extras_require={
         "test": [

@@ -54,8 +54,7 @@ namespace corsika {
     /**
      * Construct a new RadioProcess.
      */
-    template <typename... TArgs>
-    RadioProcess(TAntennaCollection& antennas, TArgs&&... args);
+    RadioProcess(TAntennaCollection& antennas, TPropagator& propagator);
 
     /**
      * Perform the continuous process (radio emission).

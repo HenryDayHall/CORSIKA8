@@ -225,5 +225,8 @@ namespace fluka {
 
   //! random-number generator called from within FLUKA
   double flrndm_();
+
+  //! random-number generator called from within FLUKA, fills entire array
+  void flrnlp_(double* array, int const* N);
   }
 } // namespace fluka

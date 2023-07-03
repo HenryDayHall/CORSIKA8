@@ -24,7 +24,6 @@ namespace corsika {
     auto const endTime_{step.getTimePost()}; // time at end point of track.
 
     if (startTime_ == endTime_) {
-      CORSIKA_LOG_ERROR("Time at the start and end of the track coincides! - radio");
       return ProcessReturn::Ok;
     } else {
 
@@ -46,9 +45,11 @@ namespace corsika {
       // get particle charge
       auto const charge_{get_charge(step.getParticlePre().getPID())};
 
+      // get thinning weight
+      auto const thinningWeight{step.getParticlePre().getWeight()};
+
       // constants for electric field vector calculation
-      auto const constants_{charge_ / (4 * M_PI) / (constants::epsilonZero) /
-                            constants::c};
+      auto const constants_{charge_ * emConstant_ * thinningWeight};
 
       // set threshold for application of ZHS-like approximation.
       const double approxThreshold_{1.0e-3};
@@ -57,12 +58,12 @@ namespace corsika {
       for (auto& antenna : antennas_.getAntennas()) {
 
         // get the SignalPathCollection (path1) from the start "endpoint" to the antenna.
-        auto paths1{this->propagator_.propagate(
-            startPoint_, antenna.getLocation(),
-            1_m)}; // TODO: Add the stepsize to .propagate() at some point
+        auto paths1{this->propagator_.propagate(step.getParticlePre(), startPoint_,
+                                                antenna.getLocation())};
 
         // get the SignalPathCollection (path2) from the end "endpoint" to the antenna.
-        auto paths2{this->propagator_.propagate(endPoint_, antenna.getLocation(), 1_m)};
+        auto paths2{this->propagator_.propagate(step.getParticlePre(), endPoint_,
+                                                antenna.getLocation())};
 
         // LCOV_EXCL_START
         // This should never happen unless someone implements a bad propagator
@@ -165,8 +166,8 @@ namespace corsika {
 
             // get the SignalPathCollection (path3) from the middle "endpoint" to the
             // antenna.
-            auto paths3{
-                this->propagator_.propagate(midPoint_, antenna.getLocation(), 1_m)};
+            auto paths3{this->propagator_.propagate(step.getParticlePre(), midPoint_,
+                                                    antenna.getLocation())};
 
             // now loop over the paths for endpoint that we got above
             for (auto const& path : paths3) {
