@@ -50,7 +50,7 @@ namespace corsika {
     if (uDotA == 0) {
       return length * rhoStart;
     } else {
-      return rhoStart * (lambda_ / uDotA) * (exp(uDotA * length * invLambda_) - 1);
+      return rhoStart * (lambda_ / uDotA) * expm1(uDotA * length * invLambda_);
     }
   }
 
