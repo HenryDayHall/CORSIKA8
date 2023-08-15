@@ -91,6 +91,7 @@ Once Conan is installed, follow these steps to download and install CORSIKA 8:
 
 ``` shell
 git clone --recursive https://gitlab.iap.kit.edu/AirShowerPhysics/corsika.git
+# Or for https: git clone --recursive git@gitlab.iap.kit.edu:AirShowerPhysics/corsika.git
 mkdir corsika-build
 cd corsika-build
 ../corsika/conan-install.sh
