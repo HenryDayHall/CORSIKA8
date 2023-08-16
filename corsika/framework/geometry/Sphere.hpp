@@ -38,6 +38,10 @@ namespace corsika {
 
     void setRadius(LengthType const);
 
+    CoordinateSystemPtr const getCoordinateSystem() const;
+
+    std::string asString() const;
+
   private:
     Point center_;
     LengthType radius_;
