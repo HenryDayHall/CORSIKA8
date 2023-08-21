@@ -151,7 +151,7 @@ def c_identifier_camel(name):
             break
         else:
             name = tmp
-    name.strip("_")
+    name = name.strip("_")
 
     # remove all "_", if this does not by accident concatenate two numbers
     istart = 0

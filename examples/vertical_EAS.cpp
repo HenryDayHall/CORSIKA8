@@ -248,29 +248,6 @@ int main(int argc, char** argv) {
 
   corsika::pythia8::Decay decayPythia;
 
-  // use sibyll decay routine for decays of particles unknown to pythia
-  corsika::sibyll::Decay decaySibyll{{
-      Code::N1440Plus,
-      Code::N1440MinusBar,
-      Code::N1440_0,
-      Code::N1440_0Bar,
-      Code::N1710Plus,
-      Code::N1710MinusBar,
-      Code::N1710_0,
-      Code::N1710_0Bar,
-
-      Code::Pi1300Plus,
-      Code::Pi1300Minus,
-      Code::Pi1300_0,
-
-      Code::KStar0_1430_0,
-      Code::KStar0_1430_0Bar,
-      Code::KStar0_1430_Plus,
-      Code::KStar0_1430_MinusBar,
-  }};
-
-  decaySibyll.printDecayConfig();
-
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
   StackInspector<setup::Stack<EnvType>> stackInspect(50000, false, E0);
@@ -283,7 +260,6 @@ int main(int argc, char** argv) {
     bool operator()(const Particle& p) const { return (p.getEnergy() < cutE_); }
   };
   auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted, sibyllCounted);
-  auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   // directory for outputs
   string const labHist_file = "inthist_lab_verticalEAS.npz";
@@ -302,7 +278,7 @@ int main(int argc, char** argv) {
       obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
   output.add("particles", observationLevel);
 
-  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emContinuous,
+  auto sequence = make_sequence(stackInspect, hadronSequence, decayPythia, emContinuous,
                                 profile, observationLevel, cut);
 
   // define air shower object, run simulation

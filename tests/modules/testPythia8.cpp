@@ -89,7 +89,7 @@ using namespace corsika;
 
 template <typename TStackView>
 auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
-  MomentumVector sum{vCS, 0_eV, 0_eV, 0_eV};
+  MomentumVector sum{vCS};
   for (auto const& p : view) { sum += p.getMomentum(); }
   return sum;
 }
@@ -126,43 +126,43 @@ TEST_CASE("Pythia8Interface", "modules") {
     CORSIKA_LOG_INFO("stack: {} {}", stack.asString(), particle.asString());
     [[maybe_unused]] const TimeType time = decay.getLifetime(particle);
     double const gamma = particle.getEnergy() / get_mass(Code::PiPlus);
-    CHECK(time == get_lifetime(Code::PiPlus) * gamma);
+    REQUIRE(time == get_lifetime(Code::PiPlus) * gamma);
     decay.doDecay(*secViewPtr);
     CORSIKA_LOG_INFO("piplus->{}", stack.asString());
-    CHECK(stack.getEntries() == 3); // piplus, muplu, numu
+    REQUIRE(stack.getEntries() == 3); // piplus, muplu, numu
     auto const pSum = sumMomentum(view, cs);
-    CHECK((pSum - plab).getNorm() / 1_GeV == Approx(0).margin(1e-4));
-    CHECK((pSum.getNorm() - plab.getNorm()) / 1_GeV == Approx(0).margin(1e-4));
+    REQUIRE((pSum - plab).getNorm() / 1_GeV == Approx(0).margin(1e-4));
+    REQUIRE((pSum.getNorm() - plab.getNorm()) / 1_GeV == Approx(0).margin(1e-4));
   }
 
   SECTION("pythia decay config") {
     corsika::pythia8::Decay decay({Code::PiPlus, Code::PiMinus});
-    CHECK(decay.isDecayHandled(Code::PiPlus));
-    CHECK(decay.isDecayHandled(Code::PiMinus));
-    CHECK_FALSE(decay.isDecayHandled(Code::KPlus));
+    REQUIRE(decay.isDecayHandled(Code::PiPlus));
+    REQUIRE(decay.isDecayHandled(Code::PiMinus));
+    REQUIRE_FALSE(decay.isDecayHandled(Code::KPlus));
 
     const std::vector<Code> particleTestList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
                                                 Code::Lambda0Bar, Code::D0Bar};
 
     // setup decays
     decay.setHandleDecay(particleTestList);
-    for (auto& pCode : particleTestList) CHECK(decay.isDecayHandled(pCode));
+    for (auto& pCode : particleTestList) REQUIRE(decay.isDecayHandled(pCode));
 
     // individually
     decay.setHandleDecay(Code::KMinus);
 
     // impossible
-    CHECK_THROWS(decay.setHandleDecay(Code::Photon));
+    REQUIRE_THROWS(decay.setHandleDecay(Code::Photon));
 
-    CHECK(decay.isDecayHandled(Code::PiPlus));
-    CHECK_FALSE(decay.isDecayHandled(Code::Photon));
+    REQUIRE(decay.isDecayHandled(Code::PiPlus));
+    REQUIRE_FALSE(decay.isDecayHandled(Code::Photon));
 
     // possible decays
-    CHECK_FALSE(decay.canHandleDecay(Code::Photon));
-    CHECK_FALSE(decay.canHandleDecay(Code::Proton));
-    CHECK_FALSE(decay.canHandleDecay(Code::Electron));
-    CHECK(decay.canHandleDecay(Code::PiPlus));
-    CHECK(decay.canHandleDecay(Code::MuPlus));
+    REQUIRE_FALSE(decay.canHandleDecay(Code::Photon));
+    REQUIRE_FALSE(decay.canHandleDecay(Code::Proton));
+    REQUIRE_FALSE(decay.canHandleDecay(Code::Electron));
+    REQUIRE(decay.canHandleDecay(Code::PiPlus));
+    REQUIRE(decay.canHandleDecay(Code::MuPlus));
   }
 
   SECTION("pythia interaction") {
@@ -174,29 +174,42 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     corsika::pythia8::Interaction collision;
 
-    CHECK(collision.canInteract(Code::Proton));
-    CHECK(collision.canInteract(Code::AntiProton));
-    CHECK(collision.canInteract(Code::Neutron));
-    CHECK(collision.canInteract(Code::AntiNeutron));
-    CHECK(collision.canInteract(Code::PiMinus));
-    CHECK(collision.canInteract(Code::PiPlus));
-    CHECK_FALSE(collision.canInteract(Code::Electron));
+    REQUIRE(collision.canInteract(Code::Proton));
+    REQUIRE(collision.canInteract(Code::AntiProton));
+    REQUIRE(collision.canInteract(Code::Neutron));
+    REQUIRE(collision.canInteract(Code::AntiNeutron));
+    REQUIRE(collision.canInteract(Code::PiMinus));
+    REQUIRE(collision.canInteract(Code::PiPlus));
+    REQUIRE_FALSE(collision.canInteract(Code::Electron));
 
-    // nuclei not supported
-    std::tuple<CrossSectionType, CrossSectionType> xs_test =
-        collision.getCrossSectionInelEla(
-            Code::Proton, Code::Hydrogen,
-            {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
-             {rootCS, {0_eV, 0_eV, 100_GeV}}},
-            {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}});
-    CHECK(std::get<0>(xs_test) / 1_mb == Approx(314).margin(2));
-    CHECK(std::get<1>(xs_test) / 1_mb == Approx(69).margin(2));
+    // pi+p
+    REQUIRE(collision.getCrossSection(
+                Code::PiPlus, Code::Proton,
+                {sqrt(static_pow<2>(PiPlus::mass) + static_pow<2>(100_GeV)),
+                 {rootCS, {0_eV, 0_eV, 100_GeV}}},
+                {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) > 0_mb);
 
-    collision.doInteraction(view, Code::Proton, Code::Hydrogen,
+    // pi+H
+    REQUIRE(collision.getCrossSection(
+                Code::PiPlus, Code::Hydrogen,
+                {sqrt(static_pow<2>(PiPlus::mass) + static_pow<2>(100_GeV)),
+                 {rootCS, {0_eV, 0_eV, 100_GeV}}},
+                {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) > 0_mb);
+
+    // K+{p,n,N,O,Ar}
+    Code const target =
+        GENERATE(Code::Proton, Code::Neutron, Code::Nitrogen, Code::Oxygen, Code::Argon);
+    REQUIRE(collision.getCrossSection(
+                Code::KPlus, target,
+                {sqrt(static_pow<2>(KPlus::mass) + static_pow<2>(100_GeV)),
+                 {rootCS, {0_eV, 0_eV, 100_GeV}}},
+                {get_mass(target), {rootCS, {0_eV, 0_eV, 0_eV}}}) > 0_mb);
+
+    collision.doInteraction(view, Code::Proton, target,
                             {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
                              {rootCS, {0_eV, 0_eV, 100_GeV}}},
-                            {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}});
-    CHECK(view.getSize() == 12);
+                            {get_mass(target), {rootCS, {0_eV, 0_eV, 0_eV}}});
+    REQUIRE(view.getSize() >= 2);
   }
 
   SECTION("pythia too low energy") {
@@ -208,11 +221,17 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     corsika::pythia8::Interaction collision;
 
-    CHECK_THROWS(collision.doInteraction(
-        view, Code::Neutron, Code::Hydrogen,
-        {sqrt(static_pow<2>(Neutron::mass) + static_pow<2>(1_GeV)),
-         {rootCS, {0_eV, 0_eV, 1_GeV}}},
-        {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
+    // 5 MeV lab is too low, 0 mb expected
+    REQUIRE(
+        collision.getCrossSectionInelEla(
+            Code::Proton, Code::Proton,
+            {calculate_total_energy(Proton::mass, 5_MeV), {rootCS, 0_eV, 0_eV, 5_MeV}},
+            {Proton::mass, {rootCS, 0_eV, 0_eV, 0_eV}}) == std::tuple{0_mb, 0_mb});
+
+    REQUIRE_THROWS(collision.doInteraction(
+        view, Code::Neutron, Code::Proton,
+        {calculate_total_energy(Neutron::mass, 5_MeV), {rootCS, 0_eV, 0_eV, 5_MeV}},
+        {Proton::mass, {rootCS, 0_eV, 0_eV, 0_eV}}));
   }
 
   SECTION("pythia wrong target") {
@@ -225,7 +244,7 @@ TEST_CASE("Pythia8Interface", "modules") {
       [[maybe_unused]] auto const& node_dummy_Fe = nodePtr_Fe;
     }
 
-    // resonable projectile, but tool low energy
+    // resonable projectile, but too low energy
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Proton, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr_Fe,
         *csPtr_Fe);
@@ -234,15 +253,19 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     corsika::pythia8::Interaction collision;
 
-    CHECK(collision.getCrossSection(
-              Code::Proton, Code::Iron,
-              {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
-               {rootCS, {0_eV, 0_eV, 100_GeV}}},
-              {Iron::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) /
-              1_mb ==
-          Approx(0));
+    REQUIRE(collision.getCrossSectionInelEla(
+                Code::Proton, Code::Iron,
+                {calculate_total_energy(Proton::mass, 100_GeV),
+                 {rootCS, {0_eV, 0_eV, 100_GeV}}},
+                {Iron::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) == std::tuple{0_mb, 0_mb});
 
-    CHECK_THROWS(collision.doInteraction(
+    REQUIRE(collision.getCrossSection(
+                Code::Proton, Code::Iron,
+                {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
+                 {rootCS, {0_eV, 0_eV, 100_GeV}}},
+                {Iron::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) == 0_mb);
+
+    REQUIRE_THROWS(collision.doInteraction(
         view, Code::Proton, Code::Iron,
         {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
          {rootCS, {0_eV, 0_eV, 100_GeV}}},
@@ -250,18 +273,33 @@ TEST_CASE("Pythia8Interface", "modules") {
   }
 
   SECTION("pythia wrong projectile") {
-
     // resonable projectile, but tool low energy
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Iron, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
     { [[maybe_unused]] auto const& dummy_StackPtr = stackPtr; }
 
     corsika::pythia8::Interaction collision;
+    REQUIRE(collision.getCrossSectionInelEla(
+                Code::Electron, Code::Electron,
+                {sqrt(static_pow<2>(Electron::mass) + static_pow<2>(100_GeV)),
+                 {rootCS, {0_eV, 0_eV, 100_GeV}}},
+                {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) == std::tuple{0_mb, 0_mb});
 
-    CHECK_THROWS(
-        collision.doInteraction(*secViewPtr, Code::Iron, Code::Hydrogen,
-                                {sqrt(static_pow<2>(Iron::mass) + static_pow<2>(100_GeV)),
-                                 {rootCS, {0_eV, 0_eV, 100_GeV}}},
-                                {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
+    REQUIRE_THROWS(collision.doInteraction(
+        *secViewPtr, Code::Helium, Code::Nitrogen,
+        {sqrt(static_pow<2>(Helium::mass) + static_pow<2>(100_GeV)),
+         {rootCS, {0_eV, 0_eV, 100_GeV}}},
+        {Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
+
+    // gamma+p not possible
+    REQUIRE(collision.getCrossSection(Code::Photon, Code::Proton,
+                                      {100_GeV, {rootCS, {0_eV, 0_eV, 100_GeV}}},
+                                      {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) ==
+            CrossSectionType::zero());
+
+    REQUIRE(collision.getCrossSectionInelEla(
+                Code::Photon, Code::Proton, {100_GeV, {rootCS, {0_eV, 0_eV, 100_GeV}}},
+                {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) ==
+            std::make_tuple(CrossSectionType::zero(), CrossSectionType::zero()));
   }
 }

@@ -27,7 +27,7 @@ def read_sibyll_codes(filename, particle_db):
     '''
     reads to sibyll codes data file
 
-    For particls known to sibyll, add 'sibyll_code' and 'sibyll_xsType' to particle_db
+    For particles known to sibyll, add 'sibyll_code' and 'sibyll_xsType' to particle_db
     '''
     with open(filename) as f:
         for line in f:
