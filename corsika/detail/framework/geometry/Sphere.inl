@@ -25,4 +25,14 @@ namespace corsika {
 
   inline void Sphere::setRadius(LengthType const r) { radius_ = r; }
 
+  inline CoordinateSystemPtr const Sphere::getCoordinateSystem() const {
+    return center_.getCoordinateSystem();
+  }
+
+  inline std::string Sphere::asString() const {
+    std::ostringstream txt;
+    txt << "center=" << center_ << ", radius=" << radius_;
+    return txt.str();
+  }
+
 } // namespace corsika

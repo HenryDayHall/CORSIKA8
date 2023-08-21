@@ -4,6 +4,7 @@ set (test_modules_sources
   testTracking.cpp
   ## testExecTime.cpp --> needs to be fixed, see #326
   testObservationPlane.cpp
+  testObservationVolume.cpp
   testQGSJetII.cpp
   testProposal.cpp
   testPythia8.cpp
