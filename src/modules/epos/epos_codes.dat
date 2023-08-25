@@ -54,6 +54,22 @@ DeltaPlusBar           -2221     0       CannotInteract
 DeltaPlusPlus           1111     0       CannotInteract
 DeltaMinusMinusBar     -1111     0       CannotInteract
 
+P1440Plus               1122     0       CannotInteract
+P1440MinusBar          -1122     0       CannotInteract
+P1700Plus               1127     0       CannotInteract
+P1700MinusBar          -1127     0       CannotInteract
+Delta1950Plus           1128     0       CannotInteract
+Delta1950_0             1228     0       CannotInteract
+Delta1700PlusPlus       1113     0       CannotInteract
+N1520_0                 1223     0       CannotInteract
+N1520_0Bar             -1223     0       CannotInteract
+N1440_0                 1222     0       CannotInteract
+N1440_0Bar             -1222     0       CannotInteract
+Lambda1520_0            1234     0       CannotInteract
+Lambda1520_0Bar        -1234     0       CannotInteract
+Sigma1750_0             1237     0       CannotInteract
+Sigma1750_0Bar         -1237     0       CannotInteract
+
 Xi0                     1330     0       CannotInteract
 XiMinus	                2330 	 0       CannotInteract
 Xi0Bar	               -1330	 0       CannotInteract
@@ -76,10 +92,40 @@ Rho0                     111     1       Pion
 RhoPlus                  121     0       CannotInteract
 RhoMinus                -121     0       CannotInteract
 
+A0_1450_Plus             122     0       CannotInteract
+A0_1450_Minus           -122     0       CannotInteract
+A0_1450_0                222     0       CannotInteract
+A1_1260_Plus             124     0       CannotInteract
+A1_1260_Minus           -124     0       CannotInteract
+A1_1260_0                224     0       CannotInteract
+B1_1235_Plus             123     0       CannotInteract
+B1_1235_Minus           -123     0       CannotInteract
+B1_1235_0                223     0       CannotInteract
+F0_1370                  112     0       CannotInteract
+F0_1710                  332     0       CannotInteract
+H1_1170                  113     0       CannotInteract
+H1_1380                  333     0       CannotInteract
+F1_1285                  114     0       CannotInteract
+F1_1420                  115     0       CannotInteract
+
 KStarPlus                131     0       CannotInteract
 KStarMinus              -131     0       CannotInteract
 KStar0                   231     0       CannotInteract
 KStar0Bar               -231     0       CannotInteract
+
+KStar0_1430_0            232     0       CannotInteract
+KStar0_1430_0Bar        -232     0       CannotInteract
+K1_1270_0                233     0       CannotInteract
+K1_1270_0Bar            -233     0       CannotInteract
+K1_1270_Plus             133     0       CannotInteract
+K1_1270_Minus           -133     0       CannotInteract
+K1_1400_0                234     0       CannotInteract
+K1_1400_0Bar            -234     0       CannotInteract
+K1_1400_Plus             134     0       CannotInteract
+K1_1400_Minus           -134     0       CannotInteract
+
+KStar0_1430_Plus         132     0       CannotInteract
+KStar0_1430_Minus       -132     0       CannotInteract
 
 NuE                       11     0       CannotInteract
 NuEBar                   -11     0       CannotInteract
