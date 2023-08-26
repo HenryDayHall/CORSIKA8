@@ -59,21 +59,78 @@ DeltaPlusBar           -2221     0       CannotInteract
 DeltaPlusPlus           1111     0       CannotInteract
 DeltaMinusMinusBar     -1111     0       CannotInteract
 
+Delta1600Plus           1124     0       CannotInteract
+Delta1600MinusBar      -1124     0       CannotInteract
+Delta1600_0             1224     0       CannotInteract
+Delta1600_0Bar         -1224     0       CannotInteract
+Delta1600Minus          2222     0       CannotInteract
+Delta1600PlusBar       -2222     0       CannotInteract
+Delta1600PlusPlus       1112     0       CannotInteract
+Delta1600MinusMinusBar -1112     0       CannotInteract
+
+Delta1700Plus           1126     0       CannotInteract
+Delta1700MinusBar      -1126     0       CannotInteract
+Delta1700_0             1226     0       CannotInteract
+Delta1700_0Bar         -1226     0       CannotInteract
+Delta1700Minus          2223     0       CannotInteract
+Delta1700PlusBar       -2223     0       CannotInteract
+Delta1700PlusPlus       1113     0       CannotInteract
+Delta1700MinusMinusBar -1113     0       CannotInteract
+
+Delta1905Plus           1128     0       CannotInteract
+Delta1905MinusBar      -1128     0       CannotInteract
+Delta1905_0             1228     0       CannotInteract
+Delta1905_0Bar         -1228     0       CannotInteract
+Delta1905Minus          2224     0       CannotInteract
+Delta1905PlusBar       -2224     0       CannotInteract
+Delta1905PlusPlus       1114     0       CannotInteract
+Delta1905MinusMinusBar -1114     0       CannotInteract
+
 P1440Plus               1122     0       CannotInteract
 P1440MinusBar          -1122     0       CannotInteract
+P1520Plus               1123     0       CannotInteract
+P1520MinusBar          -1123     0       CannotInteract
 P1700Plus               1127     0       CannotInteract
 P1700MinusBar          -1127     0       CannotInteract
-Delta1950Plus           1128     0       CannotInteract
-Delta1950_0             1228     0       CannotInteract
-Delta1700PlusPlus       1113     0       CannotInteract
-N1520_0                 1223     0       CannotInteract
-N1520_0Bar             -1223     0       CannotInteract
+
 N1440_0                 1222     0       CannotInteract
 N1440_0Bar             -1222     0       CannotInteract
+N1520_0                 1223     0       CannotInteract
+N1520_0Bar             -1223     0       CannotInteract
+N1700_0                 1227     0       CannotInteract
+N1700_0Bar             -1227     0       CannotInteract
+
+Lambda1405_0            1233     0       CannotInteract
+Lambda1405_0Bar        -1233     0       CannotInteract
 Lambda1520_0            1234     0       CannotInteract
 Lambda1520_0Bar        -1234     0       CannotInteract
+Lambda1600_0            1235     0       CannotInteract
+Lambda1600_0Bar        -1235     0       CannotInteract
+Lambda1820_0            1238     0       CannotInteract
+Lambda1820_0Bar        -1238     0       CannotInteract
+
+
+Sigma1660_0             1236     0       CannotInteract
+Sigma1660_0Bar         -1236     0       CannotInteract
 Sigma1750_0             1237     0       CannotInteract
 Sigma1750_0Bar         -1237     0       CannotInteract
+Sigma1915_0             1239     0       CannotInteract
+Sigma1915_0Bar         -1239     0       CannotInteract
+
+Sigma1660Plus           1132     0       CannotInteract
+Sigma1660MinusBar      -1132     0       CannotInteract
+Sigma1660Minus          2232     0       CannotInteract
+Sigma1660PlusBar       -2232     0       CannotInteract
+
+Sigma1750Plus           1133     0       CannotInteract
+Sigma1750MinusBar      -1133     0       CannotInteract
+Sigma1750Minus          2233     0       CannotInteract
+Sigma1750PlusBar       -2233     0       CannotInteract
+
+Sigma1915Plus           1134     0       CannotInteract
+Sigma1915MinusBar      -1134     0       CannotInteract
+Sigma1915Minus          2234     0       CannotInteract
+Sigma1915PlusBar       -2234     0       CannotInteract
 
 Xi0                     1330     0       CannotInteract
 XiMinus	                2330 	 0       CannotInteract
