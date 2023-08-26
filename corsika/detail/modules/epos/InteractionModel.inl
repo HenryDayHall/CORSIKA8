@@ -34,41 +34,7 @@ namespace corsika::epos {
         data_path_ = (std::string(corsika_data("EPOS").c_str()) + "/").c_str();
       }
       initialize();
-      setParticlesStable();
     }
-  }
-
-  inline void InteractionModel::setParticlesStable() const {
-    CORSIKA_LOGGER_DEBUG(logger_,
-                         "set all particles known to CORSIKA stable inside EPOS..");
-    for (auto& p : get_all_particles()) {
-      if (!is_hadron(p)) continue;
-      int const eid = convertToEposRaw(p);
-      if (eid != 0) {
-        // LCOV_EXCL_START
-        // this is only a safeguard against messing up the epos internals by initializing
-        // more than once.
-        unsigned int const n_particles_stable_epos =
-            ::epos::nodcy_.nrnody; // avoid waring -Wsign-compare
-        if (n_particles_stable_epos < ::epos::mxnody) {
-          CORSIKA_LOGGER_TRACE(logger_, "setting {} with EposId={} stable inside EPOS.",
-                               p, eid);
-          ::epos::nodcy_.nrnody = ::epos::nodcy_.nrnody + 1;
-          ::epos::nodcy_.nody[::epos::nodcy_.nrnody - 1] = eid;
-        } else {
-          CORSIKA_LOGGER_ERROR(logger_, "List of stable particles too long for Epos!");
-          throw std::runtime_error("Epos initialization error!");
-        }
-        // LCOV_EXCL_STOP
-      } else {
-        CORSIKA_LOG_TRACE(
-            "particle conversion Corsika-->Epos not known for {}. Using {}. Setting "
-            "unstable in Epos!",
-            p, eid);
-      }
-    }
-    CORSIKA_LOGGER_DEBUG(logger_, "set {} particles stable inside Epos",
-                         ::epos::nodcy_.nrnody);
   }
 
   inline bool InteractionModel::isValid(Code const projectileId, Code const targetId,
@@ -133,6 +99,9 @@ namespace corsika::epos {
         2; // 0: keep free nucleons in fragmentation,1: one fragment, 2: fragmentation
 
     ::epos::othe2_.iframe = 11; // cms frame
+
+    // decay settings
+    ::epos::othe2_.idecay = 0; // no decays in epos
 
     // set paths to tables in corsika data
     ::epos::datadir BASE(data_path_);
