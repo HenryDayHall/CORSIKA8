@@ -1,5 +1,10 @@
 # input file for particle conversion to/from EPOS
 # the format of this file is: "corsika-identifier" "epos-id" "can-interact-in-epos" "cross-section-type"
+# Some of the higher resonances in Epos are grouped into a single particle, 
+# e.g N(1520)0 and N(1535)0 are the same state (internal id: 1223) 
+# For these particles there is no unique conversion between Epos and Corsika.
+# Since we are only interested in particle production from Epos we map 
+# the effective states to the lightest resonance.
 
 # The unknown particle is to handle all particles that are not known to EPOS.
 # It is important that epos-id does not overlap with any existing epos particle!

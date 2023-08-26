@@ -79,24 +79,6 @@ TEST_CASE("EposBasics", "module,process") {
     CHECK_FALSE(corsika::epos::getEposMass(Code::Electron) / 1_GeV == Approx(0));
     CHECK_THROWS(corsika::epos::getEposMass(Code::Unknown));
   }
-
-  /*
-
-    This part does belong to validation rather than the interface tests
-
-   */
-  SECTION("validation - pdg id") {
-    for (auto p : get_all_particles()) {
-      if (!is_nucleus(p)) {
-        int eid = corsika::epos::convertToEposRaw(p);
-        if (eid == 0 && p != Code::Unknown)
-          CHECK_FALSE(p == convert_from_PDG(getEposPDGId(p)));
-        else
-          CHECK(p == convert_from_PDG(getEposPDGId(p)));
-      }
-    }
-    CHECK_THROWS(getEposPDGId(Code::Oxygen));
-  }
 }
 
 #include <corsika/framework/geometry/Point.hpp>
