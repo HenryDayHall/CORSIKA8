@@ -90,6 +90,8 @@ P1440Plus               1122     0       CannotInteract
 P1440MinusBar          -1122     0       CannotInteract
 P1520Plus               1123     0       CannotInteract
 P1520MinusBar          -1123     0       CannotInteract
+P1650Plus               1125     0       CannotInteract
+P1650MinusBar          -1125     0       CannotInteract
 P1700Plus               1127     0       CannotInteract
 P1700MinusBar          -1127     0       CannotInteract
 
@@ -97,6 +99,8 @@ N1440_0                 1222     0       CannotInteract
 N1440_0Bar             -1222     0       CannotInteract
 N1520_0                 1223     0       CannotInteract
 N1520_0Bar             -1223     0       CannotInteract
+N1650_0                 1225     0       CannotInteract
+N1650_0Bar             -1225     0       CannotInteract
 N1700_0                 1227     0       CannotInteract
 N1700_0Bar             -1227     0       CannotInteract
 
