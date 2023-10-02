@@ -25,4 +25,5 @@ fi
 
 mkdir -p "$target_dir" || exit 2
 cd "$target_dir" || exit 3
+conan remove -f arrow
 conan install -pr corsika8 --build=missing "${DIR}"
