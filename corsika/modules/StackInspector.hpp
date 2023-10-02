@@ -49,6 +49,8 @@ namespace corsika {
     HEPEnergyType E0_;
     const HEPEnergyType dE_threshold_ = 1_eV;
     std::chrono::system_clock::time_point StartTime_;
+    HEPEnergyType energyPostInit_;
+    std::chrono::system_clock::time_point timePostInit_;
   };
 
 } // namespace corsika
