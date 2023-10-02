@@ -27,7 +27,9 @@ namespace corsika {
       : StackProcess<StackInspector<TStack>>(vNStep)
       , ReportStack_(vReportStack)
       , E0_(vE0)
-      , StartTime_(std::chrono::system_clock::now()) {}
+      , StartTime_(std::chrono::system_clock::now())
+      , energyPostInit_(HEPEnergyType::zero())
+      , timePostInit_(std::chrono::system_clock::now()) {}
 
   template <typename TStack>
   inline StackInspector<TStack>::~StackInspector() {}
@@ -54,54 +56,53 @@ namespace corsika {
       }
     }
 
+    if ((E0_ - Etot) < dE_threshold_) return;
+
     std::chrono::system_clock::time_point const now = std::chrono::system_clock::now();
     std::chrono::duration<double> const elapsed_seconds = now - StartTime_; // seconds
-    auto const dE = E0_ - Etot;
-    if (dE < dE_threshold_) return;
-    double const progress = dE / E0_;
 
+    // Select reference times and energies using either the true start
+    // or the delayed start to avoid counting overhead in ETA
+    bool const usePostVals = (energyPostInit_ != HEPEnergyType::zero());
+    auto const dE = (usePostVals ? energyPostInit_ : E0_) - Etot;
+    std::chrono::duration<double> const usedSeconds = now - timePostInit_;
+    double const dT = usedSeconds.count();
+
+    double const progress = (E0_ - Etot) / E0_;
     // for printout
     std::time_t const now_time = std::chrono::system_clock::to_time_t(now);
-    std::time_t const start_time = std::chrono::system_clock::to_time_t(StartTime_);
 
-    if (progress > 0) {
+    double const ETA_seconds = (1.0 - progress) * dT * (E0_ / dE);
+    std::chrono::system_clock::time_point const ETA =
+        now + std::chrono::seconds((int)ETA_seconds);
 
-      double const eta_seconds = elapsed_seconds.count() / progress;
-      std::chrono::system_clock::time_point const eta =
-          StartTime_ + std::chrono::seconds((int)eta_seconds);
+    // for printout
+    std::time_t const ETA_time = std::chrono::system_clock::to_time_t(ETA);
 
-      // for printout
-      std::time_t const eta_time = std::chrono::system_clock::to_time_t(eta);
+    int const yday0 = std::localtime(&now_time)->tm_yday;
+    int const yday1 = std::localtime(&ETA_time)->tm_yday;
+    int const dyday = yday1 - yday0;
 
-      int const yday0 = std::localtime(&start_time)->tm_yday;
-      int const yday1 = std::localtime(&eta_time)->tm_yday;
-      int const dyday = yday1 - yday0;
+    std::stringstream ETA_string;
+    ETA_string << std::put_time(std::localtime(&ETA_time), "%T %Z");
 
-      CORSIKA_LOG_INFO(
-          "StackInspector: "
-          " time={}"
-          ", running={} seconds"
-          " ( {:.1f}%)"
-          ", nStep={}"
-          ", stackSize={}"
-          ", Estack={} GeV"
-          ", ETA={}{}",
-          std::put_time(std::localtime(&now_time), "%T"), elapsed_seconds.count(),
-          (progress * 100), getStep(), vS.getSize(), Etot / 1_GeV,
-          (dyday == 0 ? "" : fmt::format("+{}d ", dyday)),
-          std::put_time(std::localtime(&eta_time), "%T"));
-    } else {
-      CORSIKA_LOG_INFO(
-          "StackInspector: "
-          " time={}"
-          ", running={} seconds"
-          " ( {:.1f}%)"
-          ", nStep={}"
-          ", stackSize={}"
-          ", Estack={} GeV"
-          ", ETA={}{}",
-          std::put_time(std::localtime(&now_time), "%T"), elapsed_seconds.count(),
-          (progress * 100), getStep(), vS.getSize(), Etot / 1_GeV, "---", "---");
+    CORSIKA_LOG_INFO(
+        "StackInspector: "
+        " time={}"
+        ", running={:.1f} seconds"
+        " ( {:.1f}%)"
+        ", nStep={}"
+        ", stackSize={}"
+        ", Estack={:.1f} GeV"
+        ", ETA={}{}",
+        std::put_time(std::localtime(&now_time), "%T %Z"), elapsed_seconds.count(),
+        (progress * 100), getStep(), vS.getSize(), Etot / 1_GeV,
+        (dyday == 0 ? "" : fmt::format("+{}d ", dyday)), ETA_string.str());
+
+    // Change reference time once the shower has begin (avoid counting overhead time)
+    if (progress > 0.02 && energyPostInit_ == HEPEnergyType::zero()) {
+      energyPostInit_ = Etot;
+      timePostInit_ = std::chrono::system_clock::now();
     }
   }
 
