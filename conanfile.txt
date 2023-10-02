@@ -30,6 +30,7 @@ arrow:with_grpc=False
 arrow:with_utf8proc=False
 arrow:with_zstd=False
 arrow:with_bz2=False
+arrow:with_thrift=True
 
 boost:without_container=True
 boost:without_context=True
