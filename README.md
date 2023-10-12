@@ -47,12 +47,12 @@ guidelines](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/MCNE
     https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in
     touch with the project.
     
-  * Register on the corsika slack channel. 
+  * Register on the corsika slack channel: https://corsika.slack.com
 
 
 ## Installation
 
-CORSIKA 8 is tested regularly at least on gcc11.0.0 and clang-14.0.0. 
+CORSIKA 8 is tested regularly at least on `gcc11.0.0` and `clang-14.0.0`. 
 
 ### Prerequisites
 
@@ -90,16 +90,20 @@ pip install --user conan~=1.57.0
 Once Conan is installed, follow these steps to download and install CORSIKA 8:
 
 ``` shell
-git clone --recursive git@gitlab.iap.kit.edu:AirShowerPhysics/corsika.git
+git clone --recursive https://gitlab.iap.kit.edu/AirShowerPhysics/corsika.git
+# Or for https: git clone --recursive git@gitlab.iap.kit.edu:AirShowerPhysics/corsika.git
 mkdir corsika-build
 cd corsika-build
 ../corsika/conan-install.sh
 cmake ../corsika -DCMAKE_BUILD_TYPE="RelWithDebInfo" -DCMAKE_INSTALL_PREFIX=../corsika-install
-make -j8
+make -j4  #The number should match the number of available cores on your machine
 make install
 ```
 
 ### FLUKA support
+
+Warning: may only work when the next version of FLUKA is released (as of 2023.06.15)
+
 For legal reasons we do not distribute/bundle FLUKA together with CORSIKA 8.
 If you want to use FLUKA as low-energy hadronic interaction model, you have to download
 it separately from (http://www.fluka.org/), which requires registering there as FLUKA user.
@@ -129,7 +133,7 @@ mkdir build
 cd build
 ../corsika/conan-install.sh
 cmake ../corsika -DCMAKE_INSTALL_PREFIX=../corsika-install
-make -j8
+make -j4  #The number should match the number of available cores on your machine
 make install
 ```
 
@@ -140,34 +144,20 @@ To run the Unit Tests, just type `ctest` in your build area.
 
 ## Running examples
 
-To see how a relatively simple hadron cascade develops,
-see `examples/cascade_example.cpp` for a starting point.
+### Building the examples
 
-To run the cascade_example, or any other CORSIKA 8 application, you
-must first compile it wrt. to the CORSIKA 8 header-only framework.  This
-can be done best by copying
-e.g. `corsika-install/share/corsika/examples/` to your working place
-(e.g. `corsika-work`). 
+From your top corsika build directory, (the one that includes `corsika-build` and `corsika-install`) type
 ```shell
-cd corsika-work
+cmake -Dcorsika_DIR=$PWD/corsika-build -S ./corsika/examples -B ./corsika-build-examples
+cd corsika-build-examples
+make -j4 #The number should match the number of available cores on your machine
 ```
 
-Next, you need to define the environment variable `corsika_DIR` to point to, either, 
-your build, or your install area. Thus, e.g. 
+From any directory, run the program `corsika-build-examples/bin/corsika`. As an example, you can run with the following flags:
 ```shell
-export corsika_DIR=<dir where you installed CORSIKA 8 to, or where you build it>
+corsika-build-examples/bin/corsika  --pdg 2212 -E 1e5 -f my_shower
 ```
-
-You also need to define the environment variable `CORSIKA_DATA` to point to your modules/data folder where you cloned the corsika repository. Thus, e.g.
-```shell
-export CORSIKA_DATA=<modules/data dir where you cloned CORSIKA 8 to>
-```
-Then compile your example/application with
-```shell
-cmake .
-make
-bin/cascade_example 
-```
+This will run a vertical 100 TeV proton shower and will create and put the output into `./my_shower`.
 
 
 ### Generating doxygen documentation
