@@ -24,8 +24,8 @@ Pi0                      6       1       Pion
 #                        rho0    could interact but sibyll has no cross section/interaction length. was used for gamma had int
 Rho0                     27      1       Pion
 K0Long                   11      1       Kaon
-K0                       21      0       Kaon
-K0Bar                    22      0       Kaon
+K0                       21      0       CannotInteract
+K0Bar                    22      0       CannotInteract
 PiPlus                   7       1       Pion
 PiMinus                  8       1       Pion
 RhoPlus                  25      0       CannotInteract
