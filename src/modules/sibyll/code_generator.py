@@ -102,7 +102,7 @@ def generate_corsika2sibyll_xsType(particle_db):
         if 'sibyll_xsType' in pData:
             string += "  SibyllXSClass::{:s}, // {:s}\n".format(pData['sibyll_xsType'], identifier)
         else:
-            string += "  SibyllXSClass::CannotInteract, // {:s}\n".format(identifier + ' not implemented in SIBYLL')
+            string += "  SibyllXSClass::CrossSectionUnknown, // {:s}\n".format(identifier + ' not implemented in SIBYLL')
     string += "};\n"
     return string
 
