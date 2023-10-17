@@ -59,7 +59,10 @@ namespace corsika::sibyll {
         corsika2sibyllXStype[static_cast<CodeIntType>(code)]);
   }
 
-  bool constexpr canInteract(Code const pCode) { return getSibyllXSCode(pCode) > 0; }
+  bool constexpr canInteract(Code const pCode) {
+    if (is_nucleus(pCode)) return false;
+    return caninteract[static_cast<CodeIntType>(pCode)];
+  }
 
   HEPMassType getSibyllMass(Code const);
 
