@@ -24,7 +24,7 @@ namespace corsika::sibyll {
      These are the possible projectile for which Sibyll knows the cross section
    */
   enum class SibyllXSClass : int8_t {
-    CannotInteract = 0,
+    CrossSectionUnknown = 0,
     Baryon = 1,
     Pion = 2,
     Kaon = 3,
@@ -52,14 +52,20 @@ namespace corsika::sibyll {
     return static_cast<int>(convertToSibyll(code));
   }
 
+  // find which cross section to use for this particle. maps to either proton, pion or
+  // kaon or unknown
   int constexpr getSibyllXSCode(Code const code) {
     if (is_nucleus(code))
-      return static_cast<SibyllXSClassIntType>(SibyllXSClass::CannotInteract);
+      return static_cast<SibyllXSClassIntType>(SibyllXSClass::CrossSectionUnknown);
     return static_cast<SibyllXSClassIntType>(
         corsika2sibyllXStype[static_cast<CodeIntType>(code)]);
   }
 
-  bool constexpr canInteract(Code const pCode) { return getSibyllXSCode(pCode) > 0; }
+  // find if interaction can be generated.
+  bool constexpr canInteract(Code const pCode) {
+    if (is_nucleus(pCode)) return false;
+    return caninteract[static_cast<CodeIntType>(pCode)];
+  }
 
   HEPMassType getSibyllMass(Code const);
 

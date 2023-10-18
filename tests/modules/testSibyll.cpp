@@ -61,6 +61,7 @@ TEST_CASE("Sibyll", "modules") {
     CHECK_FALSE(corsika::sibyll::canInteract(Code::SigmaC0));
 
     CHECK_FALSE(corsika::sibyll::canInteract(Code::Iron));
+    CHECK_FALSE(corsika::sibyll::canInteract(Code::K0Bar));
     CHECK_FALSE(corsika::sibyll::canInteract(Code::Helium));
   }
 
@@ -68,6 +69,7 @@ TEST_CASE("Sibyll", "modules") {
     CHECK(corsika::sibyll::getSibyllXSCode(Code::Proton) == 1);
     CHECK(corsika::sibyll::getSibyllXSCode(Code::Electron) == 0);
     CHECK(corsika::sibyll::getSibyllXSCode(Code::K0Long) == 3);
+    CHECK(corsika::sibyll::getSibyllXSCode(Code::K0Bar) == 0);
     CHECK(corsika::sibyll::getSibyllXSCode(Code::SigmaPlus) == 1);
     CHECK(corsika::sibyll::getSibyllXSCode(Code::PiMinus) == 2);
     CHECK(corsika::sibyll::getSibyllXSCode(Code::Helium) == 0);
@@ -134,6 +136,7 @@ TEST_CASE("SibyllInterface", "modules") {
     // beam particles
     CHECK_FALSE(model.isValid(Code::Electron, Code::Oxygen, 100_GeV));
     CHECK_FALSE(model.isValid(Code::Iron, Code::Oxygen, 100_GeV));
+    CHECK_FALSE(model.isValid(Code::K0Bar, Code::Oxygen, 100_GeV));
     // energy too low
     CHECK_FALSE(model.isValid(Code::Proton, Code::Proton, 9_GeV));
     CHECK(model.isValid(Code::Proton, Code::Proton, 11_GeV));
