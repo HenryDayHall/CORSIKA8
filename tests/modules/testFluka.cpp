@@ -44,6 +44,12 @@ TEST_CASE("FLUKACodeConversion") {
   REQUIRE(corsika::fluka::convertToFlukaRaw(Code::Lambda0) == 17);
 
   REQUIRE_THROWS(corsika::fluka::convertToFluka(Code::WPlus));
+
+  SECTION("canInteractInFluka") {
+    CHECK(corsika::fluka::canInteract(Code::Proton));
+    CHECK_FALSE(corsika::fluka::canInteract(Code::Rho0));
+    CHECK_FALSE(corsika::fluka::canInteract(Code::N1520_0));
+  }
 }
 
 auto setupEnvironment() {
