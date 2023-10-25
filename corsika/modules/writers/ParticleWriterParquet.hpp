@@ -21,7 +21,7 @@ namespace corsika {
     /**
      * Construct an ObservationPlane.
      */
-    ParticleWriterParquet();
+    ParticleWriterParquet(bool const printZ = true);
 
     /**
      * Called at the start of each library.
@@ -51,8 +51,8 @@ namespace corsika {
      */
     void write(Code const pid, units::si::HEPEnergyType const energy,
                units::si::LengthType const x, units::si::LengthType const y,
-               units::si::LengthType const z, units::si::TimeType const time,
-               const double weight);
+               units::si::LengthType const z, double const nx, double const ny,
+               double const nz, units::si::TimeType const time, const double weight);
 
     /**
      * Return collected library-level summary for output.
@@ -74,6 +74,8 @@ namespace corsika {
     double countOthers_ = 0;  ///< count other types of particles hitting plane
 
     HEPEnergyType totalEnergy_; ///< energy absorbed in ground.
+
+    bool const printZ_; ///< flag to print the z coordinate
 
   }; // class ParticleWriterParquet
 

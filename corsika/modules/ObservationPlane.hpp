@@ -21,10 +21,10 @@ namespace corsika {
    * @ingroup Modules
    * @{
    *
-   * The ObservationPlane writes PDG codes, energies, and distances of particles to the
-   * central point of the plane into its output file. By default, the particles are
-   * considered "absorbed" afterwards. You can also set the ObservationPlane as
-   * non-absorbing.
+   * The ObservationPlane writes PDG codes, kinetic energies, locations and momentum unit
+   * vectors of particles with respect to the central point of the plane into its output
+   * file. By default, the particles are considered "absorbed" afterwards. You can also
+   * set the ObservationPlane as non-absorbing.
    *
    * The default output format is parquet.
    *

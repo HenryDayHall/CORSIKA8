@@ -454,7 +454,9 @@ int main(int argc, char** argv) {
   // observation plane
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane<setup::Tracking, ParticleWriterParquet> observationLevel{
-      obsPlane, DirectionVector(rootCS, {1., 0., 0.})};
+      obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
+      true,   // plane should "absorb" particles
+      false}; // do not print z-coordinate
   // register ground particle output
   output.add("particles", observationLevel);
 
