@@ -12,10 +12,11 @@
 
 namespace corsika {
 
-  inline ParticleWriterParquet::ParticleWriterParquet()
+  inline ParticleWriterParquet::ParticleWriterParquet(bool const printZ)
       : output_()
       , showerId_(0)
-      , totalEnergy_(0_eV) {}
+      , totalEnergy_(0_eV)
+      , printZ_(printZ) {}
 
   inline void ParticleWriterParquet::startOfLibrary(
       boost::filesystem::path const& directory) {
@@ -35,7 +36,15 @@ namespace corsika {
                      parquet::ConvertedType::NONE);
     output_.addField("y", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
-    output_.addField("z", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+    if (printZ_) {
+      output_.addField("z", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                       parquet::ConvertedType::NONE);
+    }
+    output_.addField("nx", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                     parquet::ConvertedType::NONE);
+    output_.addField("ny", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                     parquet::ConvertedType::NONE);
+    output_.addField("nz", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
     output_.addField("time", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
                      parquet::ConvertedType::NONE);
@@ -63,14 +72,18 @@ namespace corsika {
 
   inline void ParticleWriterParquet::write(Code const pid, HEPEnergyType const energy,
                                            LengthType const x, LengthType const y,
-                                           LengthType const z, TimeType const t,
-                                           double const weight) {
+                                           LengthType const z, double const nx,
+                                           double const ny, double const nz,
+                                           TimeType const t, double const weight) {
 
     // write the next row - we must write `shower_` first.
     *(output_.getWriter()) << showerId_ << static_cast<int>(get_PDG(pid))
                            << static_cast<float>(energy / 1_GeV)
-                           << static_cast<float>(x / 1_m) << static_cast<float>(y / 1_m)
-                           << static_cast<float>(z / 1_m) << static_cast<double>(t / 1_s)
+                           << static_cast<float>(x / 1_m) << static_cast<float>(y / 1_m);
+    if (printZ_) { *(output_.getWriter()) << static_cast<float>(z / 1_m); }
+
+    *(output_.getWriter()) << static_cast<float>(nx) << static_cast<float>(ny)
+                           << static_cast<float>(nz) << static_cast<double>(t / 1_s)
                            << static_cast<float>(weight) << parquet::EndRow;
 
     totalEnergy_ += energy;
