@@ -11,7 +11,8 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <corsika/media/WeightProvider.hpp>
+#include <boost/iterator/zip_iterator.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 
 #include <cassert>
 #include <functional>
@@ -108,9 +109,23 @@ namespace corsika {
       throw std::runtime_error("incompatible vector sigma as input");
     }
 
-    std::discrete_distribution channelDist(
-        WeightProviderIterator(numberFractions_.begin(), sigma.begin()),
-        WeightProviderIterator(numberFractions_.end(), sigma.end()));
+    auto zip_beg = boost::make_zip_iterator(
+        boost::make_tuple(numberFractions_.cbegin(), sigma.cbegin()));
+    auto zip_end = boost::make_zip_iterator(
+        boost::make_tuple(numberFractions_.cend(), sigma.cend()));
+    using zip_iter_type = decltype(zip_beg);
+
+    auto const mult_func = [](zip_iter_type::value_type const& zipit) -> double {
+      return zipit.get<0>() * zipit.get<1>().magnitude();
+    };
+
+    using transform_iter_type =
+        boost::transform_iterator<decltype(mult_func), zip_iter_type, double, double>;
+
+    auto trans_beg = transform_iter_type{zip_beg, mult_func};
+    auto trans_end = transform_iter_type{zip_end, mult_func};
+
+    std::discrete_distribution channelDist{trans_beg, trans_end};
 
     auto const iChannel = channelDist(randomStream);
     return components_[iChannel];
