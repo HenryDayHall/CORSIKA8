@@ -206,6 +206,8 @@ namespace corsika {
                                 Point const& center, TArgs... args);
 
   //! The standard/default air composition with fraction values based on CORSIKA 7
+  //! Composition (N2,O2,Ar) = (78.084, 20.946, 0.934)
+  //! Pfraction(Ar) = Ar/(2*N2 + 2*O2 + Ar) = 0.00469
   static inline NuclearComposition const standardAirComposition{
       {Code::Nitrogen, Code::Oxygen, Code::Argon}, {0.78479, .21052, 0.00469}};
 

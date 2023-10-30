@@ -32,6 +32,9 @@ namespace corsika {
      *  The constructore takes a list of elements and a list which describe the relative
      *  amount. Booth lists need to have the same length and the sum all of fractions
      *  should be 1. Otherwise an exception is thrown.
+     *  Example for air: Composition (N2,O2,Ar) = (78.084, 20.946, 0.934)
+     *  Pfraction(Ar) = Ar/(2*N2 + 2*O2 + Ar) = 0.00469
+     *  {Code::Nitrogen, Code::Oxygen, Code::Argon}, {0.78479, 0.21052, 0.00469}}
      *
      *  @param pComponents List of particle types.
      *  @param pFractions List of fractions how much each particle contributes. The sum
