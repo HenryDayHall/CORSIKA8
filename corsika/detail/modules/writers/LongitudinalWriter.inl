@@ -71,6 +71,10 @@ namespace corsika {
     GrammageType const grammageStart = showerAxis_.getProjectedX(p0);
     GrammageType const grammageEnd = showerAxis_.getProjectedX(p1);
 
+    // Avoid over counting in first bin when backscattered particle goes beyond the
+    // injection point.
+    if (grammageStart == grammageEnd) { return; }
+
     // Note: particle may go also "upward", thus, grammageEnd<grammageStart
     size_t const binStart = std::ceil(grammageStart / dX_);
     size_t const binEnd = std::floor(grammageEnd / dX_);
