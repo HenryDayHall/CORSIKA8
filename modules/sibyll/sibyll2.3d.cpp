@@ -7,10 +7,17 @@
  */
 
 #include <sibyll2.3d.hpp>
+#include <rng_impl.hpp> //from modules/common
 
 #include <cmath>
+#include <array>
+#include <functional>
+#include <iterator>
+#include <iostream>
 
 int get_nwounded() { return s_chist_.nwd; }
 double get_sibyll_mass2(int& id) { return s_mass1_.am2[std::abs(id) - 1]; }
 
-double s_rndm_(int&) { return ::sibyll::rndm_interface(); }
+IMPLEMENT_RNG(sibyll)
+
+double s_rndm_(int&) { return ::draw_std_rnd(); }
