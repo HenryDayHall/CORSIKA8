@@ -251,6 +251,7 @@ add_subdirectory (documentation)
 #
 set (CORSIKA_DATA_WITH_TEST ON) # we want to run the corsika-data unit test
 add_subdirectory (modules/data) # this is corsika-data (submodule)
+add_subdirectory (modules/common)
 add_subdirectory (modules/pythia8)
 add_subdirectory (modules/sibyll)
 add_subdirectory (modules/sophia)
