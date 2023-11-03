@@ -27,8 +27,13 @@ namespace epos {
     rng_ptr(rvec, lenv);
   }
 
-  float rangen_() { return  draw_std_rnd();}
-  double drangen_() { return  draw_std_rnd();}
+  float rangen_() {
+    float f{};
+    do { f = draw_std_rnd(); } while (f == 1.0f);
+    return f;
+  }
+
+  double drangen_() { return draw_std_rnd(); }
 
   datadir::datadir(const std::string& dir) {
     if (dir.length() > 500) { // we don't test this limitation: LCOV_EXCL_START
