@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <rng_decl.hpp>
+
 /**
  * \file sophia.hpp
  *
@@ -15,18 +17,7 @@
  *
  */
 
-namespace sophia {
-
-  /**
-   * \function sophia::rndm_interface
-   *
-   * this is the random number hook to external packages.
-   *
-   * CORSIKA8, for example, has to provide an implementation of this.
-   **/
-  double rndm_interface();
-
-} // namespace sophia
+DECLARE_RNG(sophia)
 
 //----------------------------------------------
 //  C++ interface for the SOPHIA event generator
@@ -58,7 +49,9 @@ extern struct {
 
 // additional particle stack for the mother particles of unstable particles
 // stable particles have entry zero
-extern struct { int llist1[2000]; } so_plist1_;
+extern struct {
+  int llist1[2000];
+} so_plist1_;
 
 // tables with particle properties
 // charge, strangeness and baryon number

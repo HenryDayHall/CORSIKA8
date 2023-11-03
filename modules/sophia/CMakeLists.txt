@@ -39,11 +39,13 @@ target_include_directories (
 target_link_libraries (
   Sophia_static
   PUBLIC
+  modules_common
   gfortran
   )
 target_link_libraries (
   Sophia
   PUBLIC
+  modules_common
   gfortran
   )
   
