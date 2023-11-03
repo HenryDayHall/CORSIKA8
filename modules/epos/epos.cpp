@@ -1,5 +1,9 @@
-#include <epos.hpp>
 #include <iostream>
+
+#include <epos.hpp>
+#include <rng_impl.hpp>
+
+IMPLEMENT_RNG(epos)
 
 namespace epos {
 
@@ -18,13 +22,13 @@ namespace epos {
   // this is needed as linker object, but it is not needed to do anything
   void ranfcv_(double&) {} // LCOV_EXCL_LINE
 
-  void rmmard_(double rvec[], int& lenv, int& /*iseq*/) {
+  void rmmard_(double rvec[], int const& lenv, int& /*iseq*/) {
     // we ignore iseq and draw all numbers from same C8 sequence
-    for (int i = 0; i < lenv; ++i) { rvec[i] = ::epos::double_rndm_interface(); }
+    rng_ptr(rvec, lenv);
   }
 
-  float rangen_() { return ::epos::rndm_interface(); }
-  double drangen_() { return ::epos::double_rndm_interface(); }
+  float rangen_() { return  draw_std_rnd();}
+  double drangen_() { return  draw_std_rnd();}
 
   datadir::datadir(const std::string& dir) {
     if (dir.length() > 500) { // we don't test this limitation: LCOV_EXCL_START

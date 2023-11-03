@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <array>
 #include <string>
+
+#include <rng_decl.hpp>
 
 /**
  * \file epos.hpp
@@ -17,26 +18,9 @@
  * Interface file for the EPOS library.
  */
 
+DECLARE_RNG(epos)
+
 namespace epos {
-  /**
-   * \function epos::rndm_interface
-   *
-   * this is the random number hook to external packages.
-   *
-   * CORSIKA8, for example, has to provide an implementation of this.
-   **/
-  extern float rndm_interface();
-
-  /**
-   * \function epos::double_rndm_interface
-   *
-   * this is the random number hook to external packages.
-   *
-   * CORSIKA8, for example, has to provide an implementation of this.
-   **/
-
-  extern double double_rndm_interface();
-
   extern "C" {
 
   // random number and seed functions

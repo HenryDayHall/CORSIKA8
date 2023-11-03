@@ -21,6 +21,8 @@ set (
 enable_language (Fortran)
 
 add_library (EPOS_static STATIC ${MODEL_SOURCES})
+target_link_libraries(EPOS_static PUBLIC modules_common)
+
 target_include_directories (EPOS_static PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include/corsika_modules/epos>
