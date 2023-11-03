@@ -8,17 +8,14 @@
 
 #include <FLUKA.hpp>
 
+#include <rng_impl.hpp>
+
+IMPLEMENT_RNG(fluka)
+
 namespace fluka {
-  double (*rndmPtr)() = &rndm_interface;
-
   extern "C" {
-  double flrndm_() { return ::fluka::rndmPtr(); }
-  void flrnlp_(double* array, int const* N) {
-    for (int i = 0; i < *N; ++i) { array[i] = ::fluka::rndmPtr(); }
-  }
-
-  //! overwrite function pointer to be used as FLUKA RNG (flrndm_())
-  void setFlukaRNG(double (*func)()) { ::fluka::rndmPtr = func; }
+  double flrndm_() { return ::draw_std_rnd(); }
+  void flrnlp_(double* array, int const* N) { rng_ptr(array, *N); }
 
   /**
    * The following (function) pointers make sure the corresponding objects in libflukahp.a

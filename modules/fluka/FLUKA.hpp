@@ -11,16 +11,11 @@
 #include <cstddef>
 #include <array>
 
-namespace fluka {
-  /**
-   * \fluka fluka::rndm_interface
-   *
-   * this is the random number hook to external packages.
-   *
-   * CORSIKA8, for example, has to provide an implementation of this.
-   **/
-  extern double rndm_interface();
+#include <rng_decl.hpp> // from modules/common
 
+DECLARE_RNG(fluka)
+
+namespace fluka {
   size_t constexpr nmxhep = 10000;
   template <typename T>
   using hepmc_array = std::array<T, nmxhep>;
