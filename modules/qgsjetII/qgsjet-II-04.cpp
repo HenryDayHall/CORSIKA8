@@ -1,4 +1,5 @@
 #include <qgsjet-II-04.hpp>
+#include <rng_impl.hpp>
 
 #include <iostream>
 
@@ -13,9 +14,11 @@ datadir::datadir(std::string const& dir) {
   data[i + 1] = '\0';
 }
 
+IMPLEMENT_RNG(qgsjetII)
+
 /**
    @function qgran
 
    link to random number generation
  */
-double qgran_(int&) { return qgsjetII::rndm_interface(); }
+double qgran_(int&) { return draw_std_rnd(); }
