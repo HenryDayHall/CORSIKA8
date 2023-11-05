@@ -10,22 +10,15 @@
 
 #include <array>
 
+#include <rng_decl.hpp>
+
 /**
  * \file urqmd.hpp
  *
  * Interface file for the urqmd library.
  */
 
-namespace urqmd {
-  /**
-   * \function urqmd::rndm_interface
-   *
-   * this is the random number hook to external packages.
-   *
-   * CORSIKA8, for example, has to provide an implementation of this.
-   **/
-  extern double rndm_interface();
-} // namespace urqmd
+DECLARE_RNG(urqmd)
 
 namespace urqmd {
 
@@ -109,7 +102,9 @@ namespace urqmd {
   } loptions_;
 
   // defined in urqmdInterface.F
-  extern struct { std::array<double, 3> xs, bim; } cxs_u2_;
+  extern struct {
+    std::array<double, 3> xs, bim;
+  } cxs_u2_;
   }
 
 } // namespace urqmd

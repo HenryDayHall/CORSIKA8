@@ -42,6 +42,8 @@ set (
 enable_language (Fortran)
 
 add_library (UrQMD_static STATIC ${MODEL_SOURCES})
+target_link_libraries(UrQMD_static PUBLIC modules_common)
+
 target_include_directories (UrQMD_static PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include/corsika_modules/urqmd>

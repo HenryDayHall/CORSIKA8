@@ -8,7 +8,10 @@
 
 #include <urqmd.hpp>
 
-namespace urqmd {
-  double ranf_(int&) { return ::urqmd::rndm_interface(); }
-}
+#include <rng_impl.hpp>
 
+IMPLEMENT_RNG(urqmd)
+
+namespace urqmd {
+  extern "C" double ranf_(int&) { return draw_std_rnd(); }
+} // namespace urqmd
