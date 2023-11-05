@@ -13,6 +13,7 @@
 #include <corsika/modules/sibyll/ParticleConversion.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/modules/sibyll/SibStack.hpp>
+#include <corsika/modules/Random.hpp>
 
 #include <sibyll2.3d.hpp>
 
@@ -27,6 +28,7 @@ namespace corsika::sibyll {
   inline HadronInteractionModel::HadronInteractionModel()
       : sibyll_listing_(false) {
     // initialize Sibyll
+    corsika::connect_random_stream("sibyll", ::sibyll::set_rng_function);
     static bool initialized = false;
     if (!initialized) {
       sibyll_ini_();

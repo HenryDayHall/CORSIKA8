@@ -113,8 +113,8 @@ namespace corsika::sibyll {
     static unsigned int constexpr maxTargetMassNumber_ = 18;
     static unsigned int constexpr minNuclearTargetA_ = 4;
 
-    default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("sibyll");
-    std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_sibyll_HadronInteractionModel");
+    std::shared_ptr<spdlog::logger> logger_ =
+        get_logger("corsika_sibyll_HadronInteractionModel");
 
     // data members
     int count_ = 0;

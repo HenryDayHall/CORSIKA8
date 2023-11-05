@@ -61,8 +61,8 @@ namespace corsika::sibyll {
 
     TNucleonModel& hadronicInteraction_;
     std::map<Code, int> targetComponentsIndex_;
-    default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("sibyll");
-    std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_sibyll_NuclearInteractionModel");
+    std::shared_ptr<spdlog::logger> logger_ =
+        get_logger("corsika_sibyll_NuclearInteractionModel");
     static unsigned int constexpr gNSample_ =
         500; // number of samples in MC estimation of cross section
     static unsigned int constexpr gMaxNucleusAProjectile_ = 56;

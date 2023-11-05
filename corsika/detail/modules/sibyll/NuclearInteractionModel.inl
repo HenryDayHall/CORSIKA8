@@ -10,7 +10,7 @@
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/NuclearComposition.hpp>
-
+#include <corsika/modules/Random.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/core/Logging.hpp>
@@ -27,6 +27,7 @@ namespace corsika::sibyll {
 
     // initialize nuclib
     // TODO: make sure this does not overlap with sibyll
+    corsika::connect_random_stream("sibyll", ::sibyll::set_rng_function);
     nuc_nuc_ini_();
 
     // initialize cross sections

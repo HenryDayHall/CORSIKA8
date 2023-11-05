@@ -13,6 +13,7 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
+#include <corsika/modules/Random.hpp>
 #include <corsika/framework/utility/CorsikaData.hpp>
 
 #include <epos.hpp>
@@ -28,6 +29,7 @@ namespace corsika::epos {
       : data_path_(dataPath)
       , epos_listing_(epos_printout_on) {
     // initialize Eposlhc
+    corsika::connect_random_stream(RNG_, ::epos::set_rng_function);
     if (!isInitialized_) {
       isInitialized_ = true;
       if (dataPath == "") {
