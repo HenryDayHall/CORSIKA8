@@ -3,6 +3,6 @@
     url = ../../AirShowerPhysics/corsika-data.git
     shallow = true
 [submodule "modules/conex"]
-	path = modules/conex
+	path = modules/conex/cxroot
 	url = ../../AirShowerPhysics/cxroot.git
 	shallow = true
