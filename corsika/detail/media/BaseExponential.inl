@@ -50,7 +50,7 @@ namespace corsika {
     if (uDotA == 0) {
       return length * rhoStart;
     } else {
-      return rhoStart * (lambda_ / uDotA) * (exp(uDotA * length * invLambda_) - 1);
+      return rhoStart * (lambda_ / uDotA) * expm1(uDotA * length * invLambda_);
     }
   }
 
@@ -66,9 +66,9 @@ namespace corsika {
     if (uDotA == 0) {
       return grammage / rhoStart;
     } else {
-      auto const logArg = grammage * invLambda_ * uDotA / rhoStart + 1;
-      if (logArg > 0) {
-        return lambda_ / uDotA * log(logArg);
+      auto const logArg = grammage * invLambda_ * uDotA / rhoStart;
+      if (logArg > -1) {
+        return lambda_ / uDotA * log1p(logArg);
       } else {
         return std::numeric_limits<typename decltype(grammage)::value_type>::infinity() *
                meter;
