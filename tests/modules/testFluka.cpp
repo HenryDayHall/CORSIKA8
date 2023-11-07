@@ -7,7 +7,6 @@
  */
 
 #include <corsika/modules/FLUKA.hpp>
-#include <corsika/modules/fluka/Random.hpp>
 
 #include <corsika/framework/core/EnergyMomentumOperations.hpp>
 
@@ -76,10 +75,6 @@ static corsika::fluka::InteractionModel flukaModel{env};
 static auto const& cs = env.getCoordinateSystem();
 
 TEST_CASE("FLUKA") {
-  //~ auto tup  = setupFluka();
-  //~ corsika::fluka::InteractionModel& flukaModel = std::get<0>(tup);
-  //~ auto const env = std::get<1>(tup);
-
   SECTION("getMaterialIndex") {
     REQUIRE(flukaModel.getMaterialIndex(Code::Hydrogen) > 0);
     REQUIRE(flukaModel.getMaterialIndex(Code::Oxygen) > 0);

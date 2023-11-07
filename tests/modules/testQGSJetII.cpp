@@ -21,16 +21,6 @@
 #include <cstdlib>
 #include <boost/filesystem.hpp>
 
-/*
-  NOTE, WARNING, ATTENTION
-
-  The sibyll/Random.hpp implements the hook of sibyll to the C8 random
-  number generator. It has to occur excatly ONCE per linked
-  executable. If you include the header below in multiple "tests" and
-  link them togehter, it will fail.
- */
-#include <corsika/modules/qgsjetII/Random.hpp>
-
 using namespace corsika;
 
 using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
