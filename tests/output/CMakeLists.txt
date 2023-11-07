@@ -8,6 +8,7 @@ set (test_output_sources
   testWriterEnergyLoss.cpp
   testWriterLongitudinal.cpp
   testWriterOff.cpp
+  testWritePrimary.cpp
   )
 
 CORSIKA_ADD_TEST (testOutput SOURCES ${test_output_sources})

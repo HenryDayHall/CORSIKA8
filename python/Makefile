@@ -10,7 +10,7 @@ PYTHON=`which python3`
 # our testing targets
 .PHONY: tests flake black isort all
 
-all: mypy isort black flake tests
+all: black flake isort mypy tests
 
 tests:
 	${PYTHON} -m pytest --cov=corsika tests

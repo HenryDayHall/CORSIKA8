@@ -63,6 +63,10 @@ namespace corsika {
     template <typename TParticle, typename TTrajectory>
     LengthType getMaxStepLength(TParticle const&, TTrajectory const& vTrajectory);
 
+    Plane getPlane() const { return plane_; }
+    DirectionVector getXAxis() const { return xAxis_; }
+    DirectionVector getYAxis() const { return yAxis_; }
+
     YAML::Node getConfig() const;
 
   private:
