@@ -102,7 +102,7 @@ namespace corsika {
   /**
    * Return collected library-level summary for output.
    */
-  YAML::Node ParticleWriterParquet::getSummary() const {
+  inline YAML::Node ParticleWriterParquet::getSummary() const {
     YAML::Node summary;
     summary["Eground"] = totalEnergy_ / 1_GeV;
     summary["hadrons"] = countHadrons_;

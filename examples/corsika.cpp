@@ -29,6 +29,7 @@
 
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
 #include <corsika/modules/writers/LongitudinalWriter.hpp>
+#include <corsika/modules/writers/PrimaryWriter.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/output/OutputManager.hpp>
 
@@ -460,6 +461,9 @@ int main(int argc, char** argv) {
   // register ground particle output
   output.add("particles", observationLevel);
 
+  PrimaryWriter<setup::Tracking, ParticleWriterParquet> primaryWriter(observationLevel);
+  output.add("primary", primaryWriter);
+
   int ring_number{app["--ring"]->as<int>()};
   std::cout << "Ring number : " << ring_number << std::endl;
   auto const radius_{ring_number * 25_m};
@@ -587,15 +591,18 @@ int main(int argc, char** argv) {
     stack.clear();
 
     // add the desired particle to the stack
-    stack.addParticle(std::make_tuple(
+    auto const primaryProperties = std::make_tuple(
         beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
-        plab.normalized(), injectionPos, 0_ns));
+        plab.normalized(), injectionPos, 0_ns);
+    stack.addParticle(primaryProperties);
 
     // if we want to fix the first location of the shower
     if (force_interaction) {
       CORSIKA_LOG_INFO("Fixing first interaction at injection point.");
       EAS.forceInteraction();
     }
+
+    primaryWriter.recordPrimary(primaryProperties);
 
     // run the shower
     EAS.run();

@@ -15,6 +15,8 @@ from .particle_cut import ParticleCut
 from .energy_loss import EnergyLoss
 from .output import Output
 from .radio_process import RadioProcess
+from .track_writer import TrackWriter
+from .primary import PrimaryParticle, Particle
 
 __all__ = [
     "Output",
@@ -23,6 +25,7 @@ __all__ = [
     "LongitudinalProfile",
     "BetheBlochPDG",
     "ParticleCut",
-    "EnergyLoss"
-    "RadioProcess",
+    "EnergyLoss" "RadioProcess",
+    "PrimaryParticle",
+    "Particle",
 ]
