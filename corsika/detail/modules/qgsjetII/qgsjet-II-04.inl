@@ -26,14 +26,6 @@ inline datadir::datadir(const std::string& dir) {
   data[i + 1] = '\0';
 }
 
-inline double qgran_(int&) {
-  static corsika::default_prng_type& rng =
-      corsika::RNGManager::getInstance().GetRandomStream("qgran");
-
-  std::uniform_real_distribution<double> dist;
-  return dist(rng);
-}
-
 inline void lzmaopenfile_(const char*, int) {}
 inline void lzmaclosefile_() {}
 inline void lzmafillarray_(const double&, const int&) {}
