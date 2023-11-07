@@ -178,7 +178,16 @@ namespace corsika::sibyll {
       Code const projectileId, Code const targetId, FourMomentum const& projectileP4,
       FourMomentum const& targetP4) const {
 
-    HEPEnergyType const sqrtSnn = (projectileP4 + targetP4).getNorm();
+    // check if projectile and target are nuclei!
+    if (!is_nucleus(projectileId) || !is_nucleus(targetId)) {
+      return CrossSectionType::zero();
+    }
+
+    // calculate sqrt(Snn) (only works if projectile and target are nuclei)
+    HEPEnergyType const sqrtSnn =
+        (projectileP4 / get_nucleus_A(projectileId) + targetP4 / get_nucleus_A(targetId))
+            .getNorm();
+
     if (!isValid(projectileId, targetId, sqrtSnn)) { return CrossSectionType::zero(); }
     HEPEnergyType const LabEnergyPerNuc =
         static_pow<2>(sqrtSnn) / (2 * constants::nucleonMass);
