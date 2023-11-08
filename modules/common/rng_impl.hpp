@@ -24,14 +24,24 @@ static std::function<void(double*, size_t)> rng_ptr = nullptr;
 // pointer to next number in buffer to be returned
 static double const* next_rand = std::next(random_buffer.data(), random_buffer.size());
 
-/** use this macro to implement a function set_rng_function() in namespace NAME together
+// macro for output only in debug mode
+#ifdef _C8_DEBUG_
+#define RNG_DEBUG(STR1, STR2) \
+  do { std::cout << __PRETTY_FUNCTION__ << STR1 << STR2 << std::endl; } while (0)
+#else
+#define RNG_DEBUG(STR1, STR2) \
+  do {                        \
+  } while (0)
+#endif
+
+/** Use this macro to implement a function set_rng_function() in namespace NAME together
  * with a C function set_NAME_rng_function(). While set_NAME_rng_function() expects a
  * function pointer as argument, NAME::set_rng_function() expects a std::function object
  */
 #define IMPLEMENT_RNG(NAME)                                                          \
   namespace NAME {                                                                   \
     void set_rng_function(std::function<void(double*, size_t)> rng_function) {       \
-      std::cout << __PRETTY_FUNCTION__ << " called" << std::endl;                    \
+      RNG_DEBUG("buffer location: ", random_buffer.data());                          \
       rng_ptr = rng_function;                                                        \
     }                                                                                \
   }                                                                                  \
@@ -39,16 +49,18 @@ static double const* next_rand = std::next(random_buffer.data(), random_buffer.s
     NAME::set_rng_function(std::function{rng_function});                             \
   }
 
-/** Draw one standard random number from the buffer. If exhausted, it will be refilled
- * with new numbers using the injected function.
+/** Draw one standard random number from the buffer. If exhausted, the buffer will be
+ * refilled with new numbers by calling the injected function.
  */
 static double draw_std_rnd() {
+#ifdef _C8_DEBUG_
   static bool printed = false;
   if (!printed) {
     std::cout << __PRETTY_FUNCTION__ << " called for the first time; using buffer at "
               << random_buffer.data() << std::endl;
     printed = true;
   }
+#endif
 
   if (next_rand == std::next(random_buffer.data(), random_buffer.size())) {
     // no more unused values in buffer, refill via injected RNG function
