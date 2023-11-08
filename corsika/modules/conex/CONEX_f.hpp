@@ -18,24 +18,6 @@
 #include <array>
 
 namespace conex {
-
-  // the CORSIKA 8 random number interface
-
-  /**
-   * This is the random number hook to external packages.
-   *
-   * CORSIKA8, for example, has to provide an implementation of this.
-   */
-  extern float rndm_interface();
-
-  /**
-   * This is the random number hook to external packages.
-   *
-   * CORSIKA8, for example, has to provide an implementation of this.
-   */
-
-  extern double double_rndm_interface();
-
   // the CONEX fortran interface
 
   extern "C" {
