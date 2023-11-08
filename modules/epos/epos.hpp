@@ -26,7 +26,7 @@ namespace epos {
   // random number and seed functions
   void ranfst_(int& seed);
   void ranfgt_(int& seed);
-  void rmmard_(double rvec[], int& lenv, int& /*iseq*/);
+  void rmmard_(double rvec[], int const* lenv, int const* /*iseq*/);
   void rmmaqd_(int seed[3], int&, char*, int);
 
   // additional random number functions
@@ -102,7 +102,9 @@ namespace epos {
   // common blocks as
   // defined in epos.inc
 
-  extern struct { int inicnt; } cicnt_;
+  extern struct {
+    int inicnt;
+  } cicnt_;
 
   extern struct {
     int intpol;
@@ -111,7 +113,9 @@ namespace epos {
     int isetcs;
   } hadr6_;
 
-  extern struct { int infragm; } nucl6_;
+  extern struct {
+    int infragm;
+  } nucl6_;
 
   extern struct {
     int iorsce;
@@ -168,7 +172,9 @@ namespace epos {
     int iremn;
   } othe2_;
 
-  extern struct { int ktnbod; } metr7_;
+  extern struct {
+    int ktnbod;
+  } metr7_;
 
   extern struct {
     float egylow;
@@ -366,7 +372,7 @@ namespace epos {
     int jwseed;
     int ixgeometry;
   } prnt3_;
-    
+
   unsigned int constexpr mmry = 1;
   unsigned int constexpr mxptl = 200000 / mmry;
   extern struct {

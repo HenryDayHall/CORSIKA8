@@ -22,18 +22,18 @@ namespace epos {
   // this is needed as linker object, but it is not needed to do anything
   void ranfcv_(double&) {} // LCOV_EXCL_LINE
 
-  void rmmard_(double rvec[], int const& lenv, int& /*iseq*/) {
+  extern "C" void rmmard_(double rvec[], int const* lenv, int const* /*iseq*/) {
     // we ignore iseq and draw all numbers from same C8 sequence
-    rng_ptr(rvec, lenv);
+    rng_ptr(rvec, *lenv);
   }
 
-  float rangen_() {
+  extern "C" float rangen_() {
     float f{};
     do { f = draw_std_rnd(); } while (f == 1.0f);
     return f;
   }
 
-  double drangen_() { return draw_std_rnd(); }
+  extern "C" double drangen_() { return draw_std_rnd(); }
 
   datadir::datadir(const std::string& dir) {
     if (dir.length() > 500) { // we don't test this limitation: LCOV_EXCL_START
