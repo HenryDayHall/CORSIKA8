@@ -11,16 +11,6 @@
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-/*
-  NOTE, WARNING, ATTENTION
-
-  The file Random.hpp implements the hooks of external modules to the C8 random
-  number generator. It has to occur excatly ONCE per linked
-  executable. If you include the header below multiple times and
-  link this togehter, it will fail.
- */
-#include <corsika/modules/Random.hpp>
-
 #include <iomanip>
 #include <string>
 
