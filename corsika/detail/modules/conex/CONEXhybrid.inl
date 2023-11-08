@@ -9,6 +9,8 @@
 #include <corsika/framework/core/Logging.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
 #include <corsika/modules/conex/CONEXhybrid.hpp>
+#include <corsika/modules/conex/CONEXrandom.hpp>
+#include <corsika/modules/Random.hpp>
 #include <corsika/modules/conex/CONEX_f.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/core/PhysicalConstants.hpp>
@@ -106,9 +108,9 @@ namespace corsika {
     // this is the CONEX default but actually unused there
     ::conex::cxair_.airi = {82.0e-09, 95.0e-09, 188.e-09};
 
-    int randomSeeds[3] = {1234, 0,
-                          0}; // SEEDS ARE NOT USED. All random numbers are obtained from
-                              // the CORSIKA 8 stream "conex" and "epos"!
+    int randomSeeds[3] = {1234, 0, 0}; // SEEDS ARE NOT USED. All random numbers are
+                                       // obtained from the CORSIKA 8 stream "conex"
+    corsika::connect_random_stream("conex", ::conex::set_rng_function);
     int heModel = eSibyll23;
 
     int nShower = 1; // large to avoid final stats.
