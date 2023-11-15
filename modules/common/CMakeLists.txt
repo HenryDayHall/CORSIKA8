@@ -10,7 +10,7 @@ target_include_directories (
 
 install (
   FILES
-  rng_decl.hpp rng_impl.gpp
+  rng_decl.hpp rng_impl.hpp
   DESTINATION include/corsika_modules/common
   )
 
