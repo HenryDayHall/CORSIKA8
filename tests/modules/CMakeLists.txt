@@ -16,6 +16,7 @@ set (test_modules_sources
   testRadio.cpp
   testEMThinning.cpp
   testSophia.cpp
+  testRandom.cpp
 )
 
 if (NOT "$CACHE{C8_FLUKA_ENABLED}" STREQUAL "")
