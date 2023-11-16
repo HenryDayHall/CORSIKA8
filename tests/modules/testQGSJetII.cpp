@@ -19,7 +19,6 @@
 
 #include <string>
 #include <cstdlib>
-#include <boost/filesystem.hpp>
 
 using namespace corsika;
 
