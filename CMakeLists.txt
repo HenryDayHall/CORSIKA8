@@ -159,8 +159,9 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
     COMMAND ${c8_lcov_bin} -q --remove raw-coverage.info "*/usr/*" "/usr/*" --output-file coverage2.info
     COMMAND ${c8_lcov_bin} --remove coverage2.info 
                         "*/externals/*" "*/tests/*" "*/sibyll2.3d.cpp" "*/.conan/*" 
-                        "*/include/Pythia8/*" "*/install/*" "${CMAKE_SOURCE_DIR}/modules/*" 
-                        "${CMAKE_BINARY_DIR}/modules/*" 
+                        "*/include/Pythia8/*" "*/install/*"
+                        "${CMAKE_SOURCE_DIR}/modules/*" "${CMAKE_BINARY_DIR}/modules/*" 
+                        "*/cxroot/*"
                         --output-file coverage.info
     COMMAND ${CMAKE_COMMAND} -E remove coverage2.info
     DEPENDS raw-coverage.info
