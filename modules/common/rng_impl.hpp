@@ -43,6 +43,7 @@ static double const* next_rand = std::next(random_buffer.data(), random_buffer.s
     void set_rng_function(std::function<void(double*, size_t)> rng_function) {       \
       RNG_DEBUG("buffer location: ", random_buffer.data());                          \
       rng_ptr = rng_function;                                                        \
+      next_rand = std::next(random_buffer.data(), random_buffer.size());             \
     }                                                                                \
   }                                                                                  \
   extern "C" void set_##NAME##_rng_function(void (*rng_function)(double*, size_t)) { \
