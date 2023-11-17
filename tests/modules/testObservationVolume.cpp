@@ -91,6 +91,7 @@ TEST_CASE("ObservationVolume", "interface") {
 
   SECTION("output") {
     Sphere sphere(center, 5_m);
+    // default writer will be used here
     ObservationVolume<tracking_line::Tracking, Sphere> obs(sphere);
     auto const cfg = obs.getConfig();
     CHECK(cfg["type"]);
