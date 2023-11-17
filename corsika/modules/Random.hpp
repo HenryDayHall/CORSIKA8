@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <algorithm>
+#include <iterator>
 #include <functional>
 #include <random>
 #include <string_view>
@@ -20,7 +22,7 @@ namespace corsika {
   namespace detail {
     inline void rng_func(corsika::default_prng_type& rng, double* dest, std::size_t N) {
       std::uniform_real_distribution<double> udist(0.0, 1.0);
-      for (size_t i = 0; i < N; ++i) { dest[i] = udist(rng); }
+      std::generate(dest, std::next(dest, N), std::bind(udist, std::ref(rng)));
     };
   } // namespace detail
 
