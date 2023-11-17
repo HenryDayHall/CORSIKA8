@@ -41,7 +41,7 @@ static double const* next_rand = std::next(random_buffer.data(), random_buffer.s
 #define IMPLEMENT_RNG(NAME)                                                          \
   namespace NAME {                                                                   \
     void set_rng_function(std::function<void(double*, size_t)> rng_function) {       \
-      RNG_DEBUG("buffer location: ", random_buffer.data());                          \
+      RNG_DEBUG(" buffer location: ", random_buffer.data());                         \
       rng_ptr = rng_function;                                                        \
       next_rand = std::next(random_buffer.data(), random_buffer.size());             \
     }                                                                                \
