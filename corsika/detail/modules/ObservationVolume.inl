@@ -24,20 +24,21 @@ namespace corsika {
      */
     if (!stepLimit) { return ProcessReturn::Ok; }
 
-    HEPEnergyType const energy = step.getEkinPost();
+    HEPEnergyType const kineticEnergy = step.getEkinPost();
     Point const pointOfIntersection = step.getPositionPost();
     DirectionVector const dirction = step.getDirectionPost();
+    double const weight = step.getParticlePre().getWeight();
 
     // add particles to the output file stream
     auto cs = vol_.getCoordinateSystem();
-    this->write(step.getParticlePre().getPID(), energy, pointOfIntersection.getX(cs),
-                pointOfIntersection.getY(cs), pointOfIntersection.getZ(cs),
-                dirction.getX(cs), dirction.getY(cs), dirction.getZ(cs),
-                step.getTimePost());
+    this->write(step.getParticlePre().getPID(), kineticEnergy,
+                pointOfIntersection.getX(cs), pointOfIntersection.getY(cs),
+                pointOfIntersection.getZ(cs), dirction.getX(cs), dirction.getY(cs),
+                dirction.getZ(cs), step.getTimePost(), weight);
 
     // always absorb particles
     count_++;
-    energy_ += energy;
+    energy_ += kineticEnergy + get_mass(step.getParticlePre().getPID());
     return ProcessReturn::ParticleAbsorbed;
   }
 
@@ -96,11 +97,10 @@ namespace corsika {
     YAML::Node node;
 
     // basic info
-    // TODO: At present, we are using the type ObservationPlane to
-    // share the same python reader package (io/outputs/observation_plane.py)
-    // though they have different data columns
-    node["type"] = "ObservationPlane";
-    node["units"] = "m"; // add default units for values
+    node["type"] = "ObservationVolume";
+    node["units"]["length"] = "m";
+    node["units"]["energy"] = "GeV";
+    node["units"]["time"] = "s";
 
     // save each component in its native coordinate system
     auto const root_cs = get_root_CoordinateSystem();

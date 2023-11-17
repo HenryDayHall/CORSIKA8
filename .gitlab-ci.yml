@@ -1,7 +1,7 @@
 variables:
   GIT_STRATEGY: $CORSIKA8_GIT_STRATEGY # clone: fresh clone, fetch: update
   GIT_SSL_NO_VERIFY: "1"
-  GIT_DEPTH: "1"
+  GIT_DEPTH: "2"
   # to re-use clones also in different forks
   GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/$CI_PROJECT_NAME
   ## Runtime options for sanitizers
@@ -14,7 +14,7 @@ variables:
   CORSIKA_DATA: "${CI_PROJECT_DIR}/modules/data" # the git submodule
   corsika_DIR: "${CI_PROJECT_DIR}/build/install" # for cmake to find corsikaConfig.cmake
   # _alternatively_ corsika-data can be downloaded as submodule:
-  GIT_SUBMODULE_STRATEGY: normal # none: we get the submodules in before_script,
+  GIT_SUBMODULE_STRATEGY: recursive # none: we get the submodules in before_script,
                                  # normal: get submodules automatically
   CTEST_OUTPUT_ON_FAILURE: 1
 

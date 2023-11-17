@@ -70,7 +70,7 @@ namespace corsika {
     slopeIntRefrUpper_ = (integratedRefractivityTable_.at(lastElement_) -
                           integratedRefractivityTable_.at(lastElement_ - 10)) /
                          10.;
-  };
+  }
 
   template <typename TEnvironment>
   template <typename Particle>

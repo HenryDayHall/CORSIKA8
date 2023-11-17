@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <corsika/modules/writers/ObservationVolumeWriterParquet.hpp>
+#include <corsika/modules/writers/ParticleWriterParquet.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
 #include <corsika/framework/core/Step.hpp>
 
@@ -23,7 +23,7 @@ namespace corsika {
      are considered "absorbed" afterwards.
    */
   template <typename TTracking, typename TVolume,
-            typename TOutputWriter = ObservationVolumeWriterParquet>
+            typename TOutputWriter = ParticleWriterParquet>
   class ObservationVolume
       : public ContinuousProcess<ObservationVolume<TTracking, TVolume, TOutputWriter>>,
         public TOutputWriter {
