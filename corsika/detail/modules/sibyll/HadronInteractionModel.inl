@@ -35,7 +35,7 @@ namespace corsika::sibyll {
   }
 
   inline HadronInteractionModel::~HadronInteractionModel() {
-    CORSIKA_LOG_DEBUG("Sibyll::Model n={}, Nnuc={}", count_, nucCount_);
+    CORSIKA_LOGGER_DEBUG(logger_, "Sibyll::Model n={}, Nnuc={}", count_, nucCount_);
   }
 
   inline bool constexpr HadronInteractionModel::isValid(
@@ -76,6 +76,12 @@ namespace corsika::sibyll {
     int const iBeam = corsika::sibyll::getSibyllXSCode(
         projectileId); // 0 (can not interact, 1: proton-like, 2: pion-like,
                        // 3:kaon-like)
+    if (!iBeam) {
+      CORSIKA_LOGGER_TRACE(
+          logger_, "The cross section for projectile {} and target {} is zero, E={}",
+          projectileId, targetId, sqrtSnn);
+      return {CrossSectionType::zero(), CrossSectionType::zero()};
+    }
 
     double const dEcm = sqrtSnn / 1_GeV;
     // single nucleon target (p,n, hydrogen) or 4<=A<=18
@@ -107,7 +113,8 @@ namespace corsika::sibyll {
 
     int targetSibCode = 1; // nucleon or particle count
     if (is_nucleus(targetId)) { targetSibCode = get_nucleus_A(targetId); }
-    CORSIKA_LOG_DEBUG("sibyll code: {} (nucleon/particle count)", targetSibCode);
+    CORSIKA_LOGGER_DEBUG(logger_, "sibyll code: {} (nucleon/particle count)",
+                         targetSibCode);
 
     // sqrtS per target nucleon
     HEPEnergyType const sqrtSnn = (projectileP4 + targetP4 / targetSibCode).getNorm();
@@ -117,7 +124,8 @@ namespace corsika::sibyll {
       throw std::runtime_error("Invalid target/projectile/energy combination");
     }
 
-    CORSIKA_LOG_DEBUG("pId={} tId={} sqrtSnn={}GeV", projectileId, targetId, sqrtSnn);
+    CORSIKA_LOGGER_DEBUG(logger_, "pId={} tId={} sqrtSnn={}GeV", projectileId, targetId,
+                         sqrtSnn);
 
     // beam id for sibyll
     int const projectileSibyllCode = corsika::sibyll::convertToSibyllRaw(projectileId);
@@ -175,17 +183,18 @@ namespace corsika::sibyll {
     { // just output
       [[maybe_unused]] HEPEnergyType const Elab_initial =
           static_pow<2>(sqrtSnn) / (2 * constants::nucleonMass);
-      CORSIKA_LOG_DEBUG(
-          "conservation (all GeV): "
-          "sqrtSnn={}, sqrtSnn_final={}, "
-          "Elab_initial={}, Elab_final={}, "
-          "diff(%)={}, "
-          "E in nucleons={}, "
-          "Plab_final={} ",
-          sqrtSnn / 1_GeV, Ecm_final * 2. / (get_nwounded() + 1) / 1_GeV, Elab_initial,
-          Elab_final / 1_GeV, (Elab_final - Elab_initial) / Elab_initial * 100,
-          constants::nucleonMass * get_nwounded() / 1_GeV,
-          (Plab_final / 1_GeV).getComponents());
+      CORSIKA_LOGGER_DEBUG(logger_,
+                           "conservation (all GeV): "
+                           "sqrtSnn={}, sqrtSnn_final={}, "
+                           "Elab_initial={}, Elab_final={}, "
+                           "diff(%)={}, "
+                           "E in nucleons={}, "
+                           "Plab_final={} ",
+                           sqrtSnn / 1_GeV, Ecm_final * 2. / (get_nwounded() + 1) / 1_GeV,
+                           Elab_initial, Elab_final / 1_GeV,
+                           (Elab_final - Elab_initial) / Elab_initial * 100,
+                           constants::nucleonMass * get_nwounded() / 1_GeV,
+                           (Plab_final / 1_GeV).getComponents());
     }
   }
 } // namespace corsika::sibyll

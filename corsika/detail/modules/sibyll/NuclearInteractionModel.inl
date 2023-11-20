@@ -35,7 +35,7 @@ namespace corsika::sibyll {
 
   template <typename TNucleonModel>
   inline NuclearInteractionModel<TNucleonModel>::~NuclearInteractionModel() {
-    CORSIKA_LOG_DEBUG("Nuclib::NuclearInteractionModel n={} Nnuc={}", count_, nucCount_);
+    CORSIKA_LOGGER_DEBUG(logger_, "nuclear interactions handled by Sibyll n={}", count_);
   }
 
   template <typename TNucleonModel>
@@ -56,7 +56,8 @@ namespace corsika::sibyll {
   inline void NuclearInteractionModel<TNucleonModel>::printCrossSectionTable(
       Code const pCode) const {
     if (!hadronicInteraction_.isValid(Code::Proton, pCode, 100_GeV)) { // LCOV_EXCL_START
-      CORSIKA_LOG_ERROR("Invalid target type {} for hadron interaction model.", pCode);
+      CORSIKA_LOGGER_ERROR(logger_,
+                           "Invalid target type {} for hadron interaction model.", pCode);
       return;
     } // LCOV_EXCL_STOP
 
@@ -80,7 +81,7 @@ namespace corsika::sibyll {
       }
       table << "\n";
     }
-    CORSIKA_LOG_DEBUG(table.str());
+    CORSIKA_LOGGER_DEBUG(logger_, table.str());
   }
 
   template <typename TNucleonModel>
@@ -104,16 +105,18 @@ namespace corsika::sibyll {
       return allElementsInUniverse;
     });
 
-    CORSIKA_LOG_DEBUG("initializing nuclear cross sections...");
+    CORSIKA_LOGGER_DEBUG(logger_, "initializing nuclear cross sections...");
 
     // loop over target components, at most 4!!
     int k = -1;
     for (Code const ptarg : allElementsInUniverse) {
       ++k;
-      CORSIKA_LOG_DEBUG("init target component: {} A={}", ptarg, get_nucleus_A(ptarg));
+      CORSIKA_LOGGER_DEBUG(logger_, "init target component: {} A={}", ptarg,
+                           get_nucleus_A(ptarg));
       int const ib = get_nucleus_A(ptarg);
       if (!hadronicInteraction_.isValid(Code::Proton, ptarg, 100_GeV)) {
-        CORSIKA_LOG_ERROR("Invalid target type {} for hadron interaction model.", ptarg);
+        CORSIKA_LOGGER_ERROR(
+            logger_, "Invalid target type {} for hadron interaction model.", ptarg);
         continue;
       }
       targetComponentsIndex_.insert(std::pair<Code, int>(ptarg, k));
@@ -131,14 +134,15 @@ namespace corsika::sibyll {
         FourMomentum targetP4(EcmHalve, {cs, -pcm, 0_eV, 0_eV});
         // get p-p cross sections
         if (!hadronicInteraction_.isValid(Code::Proton, Code::Proton, Ecm)) {
-          throw std::runtime_error("invalid projectile,target,ecm combination");
+          throw std::runtime_error("invalid (projectile,target,ecm) combination");
         }
         auto const [siginel, sigela] = hadronicInteraction_.getCrossSectionInelEla(
             Code::Proton, Code::Proton, projectileP4, targetP4);
         double const dsig = siginel / 1_mb;
         double const dsigela = sigela / 1_mb;
         // loop over projectiles, mass numbers from 2 to fMaxNucleusAProjectile
-        CORSIKA_LOG_TRACE("Ecm={} siginel={} sigela={}", Ecm / 1_GeV, dsig, dsigela);
+        CORSIKA_LOGGER_TRACE(logger_, "Ecm={} siginel={} sigela={}", Ecm / 1_GeV, dsig,
+                             dsigela);
         for (size_t j = 1; j < gMaxNucleusAProjectile_; ++j) {
           const int jj = j + 1;
           double sig_out, dsig_out, sigqe_out, dsigqe_out;
@@ -147,12 +151,12 @@ namespace corsika::sibyll {
           // write to table
           cnucsignuc_.sigma[j][k][i] = sig_out;
           cnucsignuc_.sigqe[j][k][i] = sigqe_out;
-          CORSIKA_LOG_TRACE("nuc A={} sig={} qe={}", j, sig_out, sigqe_out);
+          CORSIKA_LOGGER_TRACE(logger_, "nuc A={} sig={} qe={}", j, sig_out, sigqe_out);
         }
       }
     }
-    CORSIKA_LOG_DEBUG("cross sections for {} components initialized!",
-                      targetComponentsIndex_.size());
+    CORSIKA_LOGGER_DEBUG(logger_, "cross sections for {} components initialized!",
+                         targetComponentsIndex_.size());
     for (auto& ptarg : allElementsInUniverse) { printCrossSectionTable(ptarg); }
   }
 
@@ -167,9 +171,9 @@ namespace corsika::sibyll {
     }
     double const e0 = elabnuc / 1_GeV;
     double sig;
-    CORSIKA_LOG_DEBUG("ReadCrossSectionTable: {} {} {}", ia, ib, e0);
+    CORSIKA_LOGGER_DEBUG(logger_, "ReadCrossSectionTable: {} {} {}", ia, ib, e0);
     signuc2_(ia, ib, e0, sig);
-    CORSIKA_LOG_DEBUG("ReadCrossSectionTable: sig={}", sig);
+    CORSIKA_LOGGER_DEBUG(logger_, "ReadCrossSectionTable: sig={}", sig);
     return sig * 1_mb;
   }
 
@@ -193,7 +197,7 @@ namespace corsika::sibyll {
         static_pow<2>(sqrtSnn) / (2 * constants::nucleonMass);
     auto const sigProd =
         readCrossSectionTable(get_nucleus_A(projectileId), targetId, LabEnergyPerNuc);
-    CORSIKA_LOG_DEBUG("cross section (mb): {}", sigProd / 1_mb);
+    CORSIKA_LOGGER_DEBUG(logger_, "cross section (mb): {}", sigProd / 1_mb);
     return sigProd;
   }
 
@@ -220,8 +224,8 @@ namespace corsika::sibyll {
     // Elab corresponding to sqrtSnucleon -> fixed target projectile
     COMBoost const boost(nucleonP4, targetP4);
 
-    CORSIKA_LOG_DEBUG("pId={} tId={} sqrtSnucleon={}GeV Aproj={}", projectileId, targetId,
-                      sqrtSnucleon / 1_GeV, projectileA);
+    CORSIKA_LOGGER_DEBUG(logger_, "pId={} tId={} sqrtSnucleon={}GeV Aproj={}",
+                         projectileId, targetId, sqrtSnucleon / 1_GeV, projectileA);
     count_++;
 
     // lab. momentum per projectile nucleon
@@ -243,12 +247,12 @@ namespace corsika::sibyll {
                targetId == Code::Hydrogen) {
       kATarget = 1;
     }
-    CORSIKA_LOG_DEBUG("nuclib target code: {}", kATarget);
+    CORSIKA_LOGGER_DEBUG(logger_, "nuclib target code: {}", kATarget);
 
     // end of target sampling
 
     // superposition
-    CORSIKA_LOG_DEBUG("sampling nuc. multiple interaction structure.. ");
+    CORSIKA_LOGGER_DEBUG(logger_, "sampling nuc. multiple interaction structure.. ");
     // get nucleon-nucleon cross section
     // (needed to determine number of nucleon-nucleon scatterings)
     auto const protonId = Code::Proton;
@@ -262,20 +266,20 @@ namespace corsika::sibyll {
     // nuclear multiple scattering according to glauber (r.i.p.)
     int_nuc_(kATarget, projectileA, sigProd, sigEla);
 
-    CORSIKA_LOG_DEBUG(
-        "number of nucleons in target           : {}\n"
-        "number of wounded nucleons in target   : {}\n"
-        "number of nucleons in projectile       : {}\n"
-        "number of wounded nucleons in project. : {}\n"
-        "number of inel. nuc.-nuc. interactions : {}\n"
-        "number of elastic nucleons in target   : {}\n"
-        "number of elastic nucleons in project. : {}\n"
-        "impact parameter: {}",
-        kATarget, cnucms_.na, projectileA, cnucms_.nb, cnucms_.ni, cnucms_.nael,
-        cnucms_.nbel, cnucms_.b);
+    CORSIKA_LOGGER_DEBUG(logger_,
+                         "number of nucleons in target           : {}\n"
+                         "number of wounded nucleons in target   : {}\n"
+                         "number of nucleons in projectile       : {}\n"
+                         "number of wounded nucleons in project. : {}\n"
+                         "number of inel. nuc.-nuc. interactions : {}\n"
+                         "number of elastic nucleons in target   : {}\n"
+                         "number of elastic nucleons in project. : {}\n"
+                         "impact parameter: {}",
+                         kATarget, cnucms_.na, projectileA, cnucms_.nb, cnucms_.ni,
+                         cnucms_.nael, cnucms_.nbel, cnucms_.b);
 
     // calculate fragmentation
-    CORSIKA_LOG_DEBUG("calculating nuclear fragments..");
+    CORSIKA_LOGGER_DEBUG(logger_, "calculating nuclear fragments..");
     // number of interactions
     // include elastic
     int const nElasticNucleons = cnucms_.nbel;
@@ -297,12 +301,13 @@ namespace corsika::sibyll {
     }
     // (LCOV_EXCL_STOP)
 
-    CORSIKA_LOG_DEBUG("number of fragments: {}", nFragments);
-    CORSIKA_LOG_DEBUG("adding nuclear fragments to particle stack..");
+    CORSIKA_LOGGER_DEBUG(logger_, "number of fragments: {}", nFragments);
+    CORSIKA_LOGGER_DEBUG(logger_, "adding nuclear fragments to particle stack..");
     // put nuclear fragments on corsika stack
     for (int j = 0; j < nFragments; ++j) {
-      CORSIKA_LOG_DEBUG("fragment {}: A={} px={} py={} pz={}", j, AFragments[j],
-                        fragments_.ppp[j][0], fragments_.ppp[j][1], fragments_.ppp[j][2]);
+      CORSIKA_LOGGER_DEBUG(logger_, "fragment {}: A={} px={} py={} pz={}", j,
+                           AFragments[j], fragments_.ppp[j][0], fragments_.ppp[j][1],
+                           fragments_.ppp[j][2]);
       auto const nuclA = AFragments[j];
       // get Z from stability line
       auto const nuclZ = int(nuclA / 2.15 + 0.7);
@@ -314,9 +319,9 @@ namespace corsika::sibyll {
                                         : get_nucleus_code(nuclA, nuclZ));
       HEPMassType const mass = get_mass(specCode);
 
-      CORSIKA_LOG_DEBUG("adding fragment: {}", get_name(specCode));
-      CORSIKA_LOG_DEBUG("A,Z: {}, {}", nuclA, nuclZ);
-      CORSIKA_LOG_DEBUG("mass: {} GeV", mass / 1_GeV);
+      CORSIKA_LOGGER_DEBUG(logger_, "adding fragment: {}", get_name(specCode));
+      CORSIKA_LOGGER_DEBUG(logger_, "A,Z: {}, {}", nuclA, nuclZ);
+      CORSIKA_LOGGER_DEBUG(logger_, "mass: {} GeV", mass / 1_GeV);
 
       // CORSIKA 7 way
       // spectators inherit momentum from original projectile
@@ -324,14 +329,16 @@ namespace corsika::sibyll {
 
       HEPEnergyType const Ekin = sqrt(p3lab.getSquaredNorm() + mass * mass) - mass;
 
-      CORSIKA_LOG_DEBUG("fragment momentum {}", p3lab.getComponents() / 1_GeV);
+      CORSIKA_LOGGER_DEBUG(logger_, "fragment momentum {}",
+                           p3lab.getComponents() / 1_GeV);
       view.addSecondary(std::make_tuple(specCode, Ekin, p3lab.normalized()));
     }
 
     // add elastic nucleons to corsika stack
     // TODO: the elastic interaction could be external like the inelastic interaction,
     // e.g. use existing ElasticModel
-    CORSIKA_LOG_DEBUG("adding elastically scattered nucleons to particle stack..");
+    CORSIKA_LOGGER_DEBUG(logger_,
+                         "adding elastically scattered nucleons to particle stack..");
     for (int j = 0; j < nElasticNucleons; ++j) {
       // TODO: sample proton or neutron
       Code const elaNucCode = Code::Proton;
@@ -348,7 +355,7 @@ namespace corsika::sibyll {
     }
 
     // add inelastic interactions
-    CORSIKA_LOG_DEBUG("calculate inelastic nucleon-nucleon interactions..");
+    CORSIKA_LOGGER_DEBUG(logger_, "calculate inelastic nucleon-nucleon interactions..");
     for (int j = 0; j < nInelNucleons; ++j) {
       // TODO: sample neutron or proton
       auto const pCode = Code::Proton;
@@ -356,7 +363,7 @@ namespace corsika::sibyll {
       HEPEnergyType const Ekin = sqrt(p3NucleonLab.getSquaredNorm() + mass * mass) - mass;
 
       // temporarily add to stack, will be removed after interaction in DoInteraction
-      CORSIKA_LOG_DEBUG("inelastic interaction no. {}", j);
+      CORSIKA_LOGGER_DEBUG(logger_, "inelastic interaction no. {}", j);
       typename TSecondaryView::inner_stack_value_type nucleonStack;
       Point const pDummy(boost.getOriginalCS(), {0_m, 0_m, 0_m});
       TimeType const tDummy = 0_ns;
@@ -365,7 +372,7 @@ namespace corsika::sibyll {
       inelasticNucleon.setNode(view.getProjectile().getNode());
 
       // create inelastic interaction for each nucleon
-      CORSIKA_LOG_TRACE("calling HadronicInteraction...");
+      CORSIKA_LOGGER_TRACE(logger_, "calling HadronicInteraction...");
       // create new StackView for each of the nucleons
       TSecondaryView nucleon_secondaries(inelasticNucleon);
       // all inner hadronic event generator
