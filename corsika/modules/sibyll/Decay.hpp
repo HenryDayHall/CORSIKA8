@@ -75,6 +75,8 @@ namespace corsika::sibyll {
     bool handleAllDecays_ = true;
     bool sibyll_listing_ = false;
     std::set<Code> handledDecays_;
+
+    std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_sibyll_Decay");
   };
 
 } // namespace corsika::sibyll
