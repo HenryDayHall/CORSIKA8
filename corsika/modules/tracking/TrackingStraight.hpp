@@ -13,6 +13,7 @@
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/geometry/Box.hpp>
+#include <corsika/framework/geometry/SeparationPlane.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/geometry/StraightTrajectory.hpp>
 #include <corsika/framework/geometry/Intersections.hpp>
@@ -55,6 +56,11 @@ namespace corsika::tracking_line {
     //! find intersection of Plane with Track
     template <typename TParticle>
     static Intersections intersect(TParticle const& particle, Plane const& plane);
+
+    //! find intersection of SeparationPlane with Track
+    template <typename TParticle>
+    static Intersections intersect(TParticle const& particle,
+                                   SeparationPlane const& sepPlane);
 
     static std::string getName() { return "Tracking-Straight"; }
     static std::string getVersion() { return "1.0.0"; }

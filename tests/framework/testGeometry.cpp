@@ -11,6 +11,7 @@
 #include <cmath>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Box.hpp>
+#include <corsika/framework/geometry/SeparationPlane.hpp>
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
 #include <corsika/framework/geometry/Helix.hpp>
 #include <corsika/framework/geometry/LeapFrogTrajectory.hpp>
@@ -341,6 +342,41 @@ TEST_CASE("Geometry Box") {
     Box box(rotatedCS, 4_m, 5_m, 6_m);
     CHECK(box.contains(Point(rootCS, {4.5_m, 0_m, 0_m})));
     CHECK_FALSE(box.contains(Point(rootCS, {0_m, 4.5_m, 0_m})));
+  }
+}
+
+TEST_CASE("Geometry SeparationPlane") {
+  CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
+  Point const planeCenter = Point(rootCS, {0_m, 0_m, 0_m});
+
+  SECTION("constructor") {
+    DirectionVector const planeNorm{rootCS, {0, 0, 1}};
+    SeparationPlane const sepPlane{Plane(planeCenter, planeNorm)};
+    CHECK(sepPlane.asString() != "");
+  }
+
+  SECTION("isInside") {
+    DirectionVector const planeNorm{rootCS, {0, 0, 1}};
+    SeparationPlane const sepPlane{Plane(planeCenter, planeNorm)};
+
+    CHECK_FALSE(sepPlane.contains(Point(rootCS, {0_m, 0_m, 1_m})));
+    CHECK_FALSE(sepPlane.contains(Point(rootCS, {1_m, 0_m, 1_m})));
+    CHECK_FALSE(sepPlane.contains(Point(rootCS, {-1_m, 0_m, 1_m})));
+    CHECK_FALSE(sepPlane.contains(Point(rootCS, {0_m, 1_m, 1_m})));
+    CHECK_FALSE(sepPlane.contains(Point(rootCS, {0_m, -1_m, 1_m})));
+
+    CHECK(sepPlane.contains(Point(rootCS, {0_m, 0_m, -1_m})));
+    CHECK(sepPlane.contains(Point(rootCS, {1_m, 0_m, -1_m})));
+    CHECK(sepPlane.contains(Point(rootCS, {-1_m, 0_m, -1_m})));
+    CHECK(sepPlane.contains(Point(rootCS, {0_m, 1_m, -1_m})));
+    CHECK(sepPlane.contains(Point(rootCS, {0_m, -1_m, -1_m})));
+  }
+
+  SECTION("getPlane") {
+    DirectionVector const planeNorm{rootCS, {0, 0, 1}};
+    SeparationPlane const sepPlane{Plane(planeCenter, planeNorm)};
+
+    auto planeCheck = sepPlane.getPlane();
   }
 }
 

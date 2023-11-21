@@ -332,6 +332,75 @@ TEMPLATE_TEST_CASE("TrackingFail", "doesntwork", tracking_leapfrog_curved::Track
   CHECK_THROWS(tracking.intersect(particle, dummy));
 }
 
+TEMPLATE_TEST_CASE("TrackingSeparationPlane", "separation_plane",
+                   tracking_leapfrog_curved::Tracking,
+                   tracking_leapfrog_straight::Tracking, tracking_line::Tracking) {
+
+  logging::set_level(logging::level::info);
+
+  const HEPEnergyType P0 = 10_GeV;
+
+  auto PID = GENERATE(as<Code>{}, Code::MuPlus, Code::MuPlus, Code::Photon);
+  // for algorithms that know magnetic deflections choose: +-50uT, 0uT
+  // otherwise just 0uT
+  auto Bfield = GENERATE(filter(
+      []([[maybe_unused]] MagneticFluxType v) {
+        if constexpr (std::is_same_v<TestType, tracking_line::Tracking>)
+          return v == 0_uT;
+        else
+          return true;
+      },
+      values<MagneticFluxType>({50_uT, 0_uT, -50_uT})));
+
+  SECTION(fmt::format("Tracking PID={}, Bfield={} uT", PID, Bfield / 1_uT)) {
+
+    CORSIKA_LOG_DEBUG(
+        "********************\n                          TEST algo={} section PID={}, "
+        "Bfield={}uT ",
+        boost::typeindex::type_id<TestType>().pretty_name(), PID, Bfield / 1_uT);
+
+    const int chargeNumber = get_charge_number(PID);
+    LengthType radius = 10_m;
+    int deflect = 0;
+    if (chargeNumber != 0 and Bfield != 0_T) {
+      deflect = 1;
+      LengthType const gyroradius = (convert_HEP_to_SI<MassType::dimension_type>(P0) *
+                                     constants::c / (abs(get_charge(PID)) * abs(Bfield)));
+      CORSIKA_LOG_DEBUG("Rg={} deflect={}", gyroradius, deflect);
+      radius = gyroradius;
+    }
+
+    auto [env, csPtr, worldPtr] =
+        corsika::setup::testing::setup_environment(Code::Oxygen, Bfield);
+    { [[maybe_unused]] const auto& env_dummy = env; }
+    auto const& cs = *csPtr;
+
+    TestType tracking;
+    Point const center(cs, {0_m, 0_m, 0_m});
+
+    auto [stack, viewPtr] = setup::testing::setup_stack(PID, P0, worldPtr, cs);
+    { [[maybe_unused]] auto& viewPtr_dum = viewPtr; }
+    auto particle = stack->first();
+    // Note: momentum in X-direction
+    //       magnetic field in Z-direction
+
+    particle.setPosition(Point(cs, -radius, 0_m, 0_m));
+
+    // put plane where we expect deflection by radius/2
+    Plane const plane(Point(cs, radius * (1 - sqrt(3. / 4.)), 0_m, 0_m),
+                      DirectionVector(cs, {-1., 0., 0.}));
+    SeparationPlane const sepPlane{plane};
+
+    Intersections const hit = tracking.intersect(particle, sepPlane);
+
+    CORSIKA_LOG_DEBUG("entry={} exit={}", hit.getEntry(), hit.getExit());
+
+    CHECK(hit.hasIntersections());
+    CHECK(hit.getEntry() / 1_s == Approx(0.00275 * deflect).margin(0.0003));
+    CHECK(hit.getExit() == 1_s * std::numeric_limits<double>::infinity());
+  }
+}
+
 TEMPLATE_TEST_CASE("TrackingPlane", "plane", tracking_leapfrog_curved::Tracking,
                    tracking_leapfrog_straight::Tracking, tracking_line::Tracking) {
 
