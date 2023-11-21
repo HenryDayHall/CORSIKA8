@@ -345,13 +345,23 @@ namespace corsika {
       return tracking_line::Tracking::intersect(particle, plane);
     }
 
+    template <typename TParticle>
+    inline Intersections Tracking::intersect(TParticle const& particle,
+                                             SeparationPlane const& sepPlane) {
+      return intersect(particle, sepPlane.getPlane());
+    }
+
     template <typename TParticle, typename TBaseNodeType>
     inline Intersections Tracking::intersect(TParticle const& particle,
                                              TBaseNodeType const& volumeNode) {
       Sphere const* sphere = dynamic_cast<Sphere const*>(&volumeNode.getVolume());
       if (sphere) { return intersect(particle, *sphere); }
+      SeparationPlane const* sepPlane =
+          dynamic_cast<SeparationPlane const*>(&volumeNode.getVolume());
+      if (sepPlane) { return intersect(particle, *sepPlane); }
       throw std::runtime_error(
-          "The Volume type provided is not supported in intersect(particle, node)");
+          "The Volume type provided is not supported in "
+          "TrackingLeapFrogCurved::intersect(particle, node)");
     }
 
     template <typename TParticle>

@@ -12,6 +12,7 @@
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
+#include <corsika/framework/geometry/SeparationPlane.hpp>
 #include <corsika/framework/geometry/LeapFrogTrajectory.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/geometry/Intersections.hpp>
@@ -93,6 +94,21 @@ namespace corsika {
        */
       template <typename TParticle>
       static Intersections intersect(TParticle const& particle, Plane const& plane);
+
+      /**
+       *  find intersection of Separation with Track
+       *
+       * Intersection times of particle are caculated by
+       * and using the intersect-with-plane routine
+       *
+       * @tparam TParticle Type of particle object on stack.
+       * @param particle Particle initial state.
+       * @param sepPlane Separation.
+       * @return Intersections in time units.
+       */
+      template <typename TParticle>
+      static Intersections intersect(TParticle const& particle,
+                                     SeparationPlane const& sepPlane);
 
       static std::string getName() { return "LeapFrog-curved"; }
       static std::string getVersion() { return "1.0.0"; }

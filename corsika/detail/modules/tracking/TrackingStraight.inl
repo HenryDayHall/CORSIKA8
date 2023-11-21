@@ -125,10 +125,14 @@ namespace corsika::tracking_line {
       return Tracking::intersect<TParticle>(particle, *sphere);
     } else if (Box const* box = dynamic_cast<Box const*>(&volumeNode.getVolume()); box) {
       return Tracking::intersect<TParticle>(particle, *box);
+    } else if (SeparationPlane const* sepPlane =
+                   dynamic_cast<SeparationPlane const*>(&volumeNode.getVolume());
+               sepPlane) {
+      return Tracking::intersect<TParticle>(particle, *sepPlane);
     } else {
       throw std::runtime_error(
           "The Volume type provided is not supported in "
-          "Intersect(particle, node)");
+          "TrackingStraight::intersect(particle, node)");
     }
   }
 
@@ -147,6 +151,12 @@ namespace corsika::tracking_line {
       return Intersections();
     else
       return Intersections(n.dot(delta) / n_dot_v);
+  }
+
+  template <typename TParticle>
+  inline Intersections Tracking::intersect(TParticle const& particle,
+                                           SeparationPlane const& sepPlane) {
+    return intersect(particle, sepPlane.getPlane());
   }
 
 } // namespace corsika::tracking_line

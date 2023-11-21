@@ -16,10 +16,11 @@
 namespace corsika {
 
   /**
-   * Describes a sphere in space
+   * Describes a box in space
    *
    *  The center point and the orintation of the Box is set by
-   *  a CoordinateSystemPtr at construction.
+   *  a CoordinateSystemPtr at construction and the sides extend
+   *  by x, y, z in both directions.
    **/
   class Box : public IVolume {
 
