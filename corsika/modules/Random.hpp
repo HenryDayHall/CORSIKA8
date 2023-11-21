@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2021 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2023 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -8,18 +8,33 @@
 
 #pragma once
 
-/*
-  NOTE, WARNING, ATTENTION
+#include <algorithm>
+#include <iterator>
+#include <functional>
+#include <random>
+#include <string_view>
 
-  The .../Random.hpp implement the hooks of external modules to the C8 random
-  number generator. It has to occur excatly ONCE per linked
-  executable. If you include the header below multiple times and
-  link this togehter, it will fail.
- */
-#include <corsika/modules/sibyll/Random.hpp>
-#include <corsika/modules/sophia/Random.hpp>
-#include <corsika/modules/epos/Random.hpp>
-#include <corsika/modules/urqmd/Random.hpp>
-#include <corsika/modules/qgsjetII/Random.hpp>
-#include <corsika/modules/conex/Random.hpp>
-#include <corsika/modules/fluka/Random.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
+
+namespace corsika {
+  using rng_function_type = std::function<void(double*, std::size_t)>;
+
+  namespace detail {
+    inline void rng_func(corsika::default_prng_type& rng, double* dest, std::size_t N) {
+      std::uniform_real_distribution<double> udist(0.0, 1.0);
+      std::generate(dest, std::next(dest, N), std::bind(udist, std::ref(rng)));
+    };
+  } // namespace detail
+
+  inline void connect_random_stream(corsika::default_prng_type& rng,
+                                    void (*injection_func)(rng_function_type)) {
+    using namespace std::placeholders;
+    injection_func(std::bind(detail::rng_func, rng, _1, _2));
+  }
+
+  inline void connect_random_stream(std::string_view stream_name,
+                                    void (*injection_func)(rng_function_type)) {
+    auto& rng = RNGManager<>::getInstance().getRandomStream(std::string{stream_name});
+    connect_random_stream(rng, injection_func);
+  }
+} // namespace corsika

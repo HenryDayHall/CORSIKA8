@@ -8,11 +8,12 @@
 
 #pragma once
 
+#include <tuple>
+
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <tuple>
 
 namespace corsika::epos {
 

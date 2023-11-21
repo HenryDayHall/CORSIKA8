@@ -25,6 +25,7 @@ target_include_directories (
   $<INSTALL_INTERFACE:include/corsika_modules/qgsjetII>
   )
 target_link_libraries (QGSJetII_static CorsikaData)
+target_link_libraries (QGSJetII_static modules_common)
 
 install (
   FILES

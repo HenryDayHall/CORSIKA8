@@ -31,17 +31,6 @@
 #include <corsika/modules/radio/detectors/AntennaCollection.hpp>
 #include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 
-/*
-  NOTE, WARNING, ATTENTION
-
-  The .../Random.hpppp implement the hooks of external modules to the C8 random
-  number generator. It has to occur excatly ONCE per linked
-  executable. If you include the header below multiple times and
-  link this together, it will fail.
- */
-#include <corsika/modules/sibyll/Random.hpp>
-#include <corsika/modules/urqmd/Random.hpp>
-
 #include <iomanip>
 #include <iostream>
 #include <limits>

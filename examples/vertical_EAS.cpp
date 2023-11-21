@@ -65,16 +65,6 @@
 #include <limits>
 #include <string>
 
-/*
- NOTE, WARNING, ATTENTION
-
- The .../Random.hpppp implement the hooks of external modules to the C8 random
- number generator. It has to occur exactly ONCE per linked
- executable. If you include the header below multiple times and
- link this together, it will fail.
-*/
-#include <corsika/modules/Random.hpp>
-
 using namespace corsika;
 using namespace std;
 

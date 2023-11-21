@@ -6,6 +6,7 @@
  * the license.
  */
 
+#include <corsika/modules/Random.hpp>
 #include <corsika/modules/qgsjetII/InteractionModel.hpp>
 #include <corsika/modules/qgsjetII/ParticleConversion.hpp>
 #include <corsika/modules/qgsjetII/QGSJetIIFragmentsStack.hpp>
@@ -26,6 +27,8 @@ namespace corsika::qgsjetII {
 
   inline InteractionModel::InteractionModel(boost::filesystem::path const dataPath) {
     // initialize QgsjetII
+    corsika::connect_random_stream(rng_, ::qgsjetII::set_rng_function);
+
     static bool initialized = false;
     if (!initialized) {
       CORSIKA_LOG_DEBUG("Reading QGSJetII data tables from {}", dataPath);

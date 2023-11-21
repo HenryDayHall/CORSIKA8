@@ -23,8 +23,8 @@
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/EnergyMomentumOperations.hpp>
-
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/modules/Random.hpp>
 #include <corsika/modules/fluka/ParticleConversion.hpp>
 
 #include <FLUKA.hpp>
@@ -44,6 +44,8 @@ namespace corsika::fluka {
                               ndmhep);
       throw std::runtime_error{"FLUKA HEPEVT dimension mismatch"};
     }
+
+    corsika::connect_random_stream(RNG_, ::fluka::set_rng_function);
   }
 
   inline bool InteractionModel::isValid(Code projectileID, int material,

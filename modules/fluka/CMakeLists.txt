@@ -42,6 +42,7 @@ else()
     # you can't load it at runtime
     add_library(fluka SHARED fluka.cpp)
     target_link_libraries(fluka PRIVATE flukahp-norndm)
+    target_link_libraries(fluka PUBLIC modules_common)
 
     target_include_directories (fluka PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

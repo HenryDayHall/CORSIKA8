@@ -40,11 +40,13 @@ target_link_libraries (
   Sibyll_static
   PUBLIC
   gfortran
+  modules_common
   )
 target_link_libraries (
   Sibyll
   PUBLIC
   gfortran
+  modules_common
   )
   
 install (

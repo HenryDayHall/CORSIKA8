@@ -10,22 +10,15 @@
 
 #include <string>
 
+#include <rng_decl.hpp>
+
 /**
  * @file qgsjet-II.04.hpp
  *
  * The interface to the fortran code.
  */
 
-namespace qgsjetII {
-
-  /**
-   * This is the random number hook to external packages.
-   *
-   * CORSIKA8, for example, has to provide an implementation of this.
-   */
-  extern double rndm_interface();
-
-} // namespace qgsjetII
+DECLARE_RNG(qgsjetII)
 
 //----------------------------------------------
 //  C++ interface for the QGSJetII event generator
@@ -36,7 +29,9 @@ extern "C" {
 
 // data memory layout
 
-extern struct { int nsp; } qgarr12_;
+extern struct {
+  int nsp;
+} qgarr12_;
 
 const int nptmax = 95000;
 const int iapmax = 208;

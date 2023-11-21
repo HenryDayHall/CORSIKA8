@@ -10,6 +10,7 @@
 #include <corsika/modules/sophia/ParticleConversion.hpp>
 
 #include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/PhysicalConstants.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
@@ -18,17 +19,6 @@
 #include <SetupTestEnvironment.hpp>
 #include <catch2/catch.hpp>
 #include <tuple>
-
-/*
-  NOTE, WARNING, ATTENTION
-
-  The sibyll/Random.hpp implements the hook of sibyll to the C8 random
-  number generator. It has to occur excatly ONCE per linked
-  executable. If you include the header below in multiple "tests" and
-  link them togehter, it will fail.
- */
-#include <corsika/modules/sophia/Random.hpp>
-#include <corsika/framework/core/PhysicalConstants.hpp>
 
 using namespace corsika;
 using namespace corsika::sophia;

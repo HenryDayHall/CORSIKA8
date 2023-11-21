@@ -9,9 +9,9 @@
 #pragma once
 
 #include <corsika/framework/geometry/Point.hpp>
-
 #include <corsika/modules/sophia/ParticleConversion.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
+#include <corsika/modules/Random.hpp>
 #include <corsika/modules/sophia/SophiaStack.hpp>
 #include <corsika/framework/core/EnergyMomentumOperations.hpp>
 
@@ -23,6 +23,7 @@ namespace corsika::sophia {
 
   inline InteractionModel::InteractionModel()
       : sophia_listing_(false) {
+    corsika::connect_random_stream(RNG_, ::sophia::set_rng_function);
     // set all particles stable in SOPHIA
     for (int i = 0; i < 49; ++i) so_csydec_.idb[i] = -abs(so_csydec_.idb[i]);
   }

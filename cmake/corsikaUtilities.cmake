@@ -58,7 +58,6 @@ function (CORSIKA_ADD_TEST)
 
   add_executable (${name} ${sources})
   target_link_libraries (${name} CORSIKA8 CONAN_PKG::catch2 CorsikaTestingCommon)
-  target_link_options (${name} PRIVATE "LINKER:--unresolved-symbols=ignore-in-shared-libs")
   target_compile_options (${name} PRIVATE -g) # do not skip asserts
   target_include_directories (${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   file (MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/test_outputs/)

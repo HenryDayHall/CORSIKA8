@@ -7,6 +7,9 @@
  */
 
 #pragma once
+#include <functional>
+
+#include <rng_decl.hpp> // from modules/common
 
 /**
  * \file sibyll2.3d.hpp
@@ -15,18 +18,17 @@
  *
  */
 
-namespace sibyll {
-
-  /**
-   * \function sibyll::rndm_interface
-   *
-   * this is the random number hook to external packages.
-   *
-   * CORSIKA8, for example, has to provide an implementation of this.
-   **/
-  double rndm_interface();
-
-} // namespace sibyll
+/**
+ * \function sibyll::set_rng_function
+ *
+ * This provides an interface for external packages to inject their own RNG to be used
+ *SIBYLL. The function is expected to fill a buffer of doubles, passed as pointer and size
+ *with standard random numbers. It will be called whenever the numbers in the buffer are
+ *exhausted and new ones are to be drawn.
+ *
+ * CORSIKA 8, for example, has to call this function before starting to use SIBYLL.
+ **/
+DECLARE_RNG(sibyll)
 
 //----------------------------------------------
 //  C++ interface for the SIBYLL event generator
@@ -53,18 +55,22 @@ extern struct {
 
 // additional information about interactions.
 // number of wounded nucleons, number of hard and soft scatterings etc.
-extern struct { int nnsof[20], nnjet[20], jdif[20], nwd, njet, nsof; } s_chist_;
+extern struct {
+  int nnsof[20], nnjet[20], jdif[20], nwd, njet, nsof;
+} s_chist_;
 
- extern struct {
-   double cbr[223 + 16 + 12 + 8];
-   int kdec[1338 + 6 * (16 + 12 + 8)];
-   int lbarp[99];
-   int idb[99];
- } s_csydec_;
+extern struct {
+  double cbr[223 + 16 + 12 + 8];
+  int kdec[1338 + 6 * (16 + 12 + 8)];
+  int lbarp[99];
+  int idb[99];
+} s_csydec_;
 
 // additional particle stack for the mother particles of unstable particles
 // stable particles have entry zero
-extern struct { int llist1[8000]; } s_plist1_;
+extern struct {
+  int llist1[8000];
+} s_plist1_;
 
 // tables with particle properties
 // charge, strangeness and baryon number
@@ -82,7 +88,9 @@ extern struct {
 } s_mass1_;
 
 // table with particle names
-extern struct { char namp[6][99]; } s_cnam_;
+extern struct {
+  char namp[6][99];
+} s_cnam_;
 
 // debug info
 extern struct {

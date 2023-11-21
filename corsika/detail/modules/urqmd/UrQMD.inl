@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <corsika/modules/Random.hpp>
 #include <corsika/modules/urqmd/UrQMD.hpp>
 #include <corsika/modules/urqmd/ParticleConversion.hpp>
 
@@ -36,6 +37,7 @@ namespace corsika::urqmd {
   inline UrQMD::UrQMD(boost::filesystem::path xs_file, int const retryFlag)
       : iflb_(retryFlag) {
     readXSFile(xs_file);
+    corsika::connect_random_stream(RNG_, ::urqmd::set_rng_function);
     ::urqmd::iniurqmdc8_();
   }
 
