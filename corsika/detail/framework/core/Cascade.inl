@@ -47,6 +47,10 @@ namespace corsika {
     CORSIKA_LOG_INFO(c8_ascii_);
     CORSIKA_LOG_INFO("This is CORSIKA {}.{}.{}.{}", CORSIKA_RELEASE_NUMBER,
                      CORSIKA_MAJOR_NUMBER, CORSIKA_MINOR_NUMBER, CORSIKA_PATCH_NUMBER);
+    CORSIKA_LOG_INFO(
+        "The C8 author list can be found at: "
+        "https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/wikis/"
+        "Current-CORSIKA-8-author-list");
     CORSIKA_LOG_INFO("Tracking algorithm: {} (version {})", TTracking::getName(),
                      TTracking::getVersion());
     if constexpr (stack_view_type::has_event) {
