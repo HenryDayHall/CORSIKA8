@@ -77,6 +77,8 @@
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
+#include <boost/filesystem.hpp>
+
 #include <CLI/App.hpp>
 #include <CLI/Config.hpp>
 #include <CLI/Formatter.hpp>
@@ -188,6 +190,9 @@ int main(int argc, char** argv) {
       ->required()
       ->default_val("corsika_library")
       ->check(CLI::NonexistentPath)
+      ->group("Library/Output");
+  app.add_option("-d,--dir", "Directory for output library.")
+      ->default_val(".")
       ->group("Library/Output");
   app.add_option("-s,--seed", "The random number seed.")
       ->default_val(0)
@@ -355,7 +360,8 @@ int main(int argc, char** argv) {
   std::stringstream args;
   for (int i = 0; i < argc; ++i) { args << argv[i] << " "; }
   // create the output manager that we then register outputs with
-  OutputManager output(app["--filename"]->as<std::string>(), seed, args.str());
+  auto const outputDir = boost::filesystem::path(app["--dir"]->as<std::string>());
+  OutputManager output(app["--filename"]->as<std::string>(), seed, args.str(), outputDir);
 
   // register energy losses as output
   EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
