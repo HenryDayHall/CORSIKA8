@@ -25,5 +25,11 @@ fi
 
 mkdir -p "$target_dir" || exit 2
 cd "$target_dir" || exit 3
-conan remove -f arrow
+
+
+
+if [ "${CI_JOB_ID}" ]; then
+  # Temporary fix for the CI which has a broken arrow install
+  conan remove -f arrow
+fi
 conan install -pr corsika8 --build=missing "${DIR}"
