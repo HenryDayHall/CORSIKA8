@@ -111,6 +111,10 @@ namespace corsika::proposal {
             PROPOSAL::make_crosssection(PROPOSAL::crosssection::PhotoeffectSauter{},
                                         particle_def, medium, nullptr, interpolate);
         cross_vec.push_back(std::move(photoeffect));
+        auto muonpair = PROPOSAL::make_crosssection(
+            PROPOSAL::crosssection::PhotoMuPairBurkhardtKelnerKokoulin{}, particle_def,
+            medium, nullptr, interpolate);
+        cross_vec.push_back(std::move(muonpair));
         return cross_vec;
       };
 
