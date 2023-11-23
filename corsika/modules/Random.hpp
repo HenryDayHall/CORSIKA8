@@ -23,7 +23,7 @@ namespace corsika {
     inline void rng_func(corsika::default_prng_type& rng, double* dest, std::size_t N) {
       std::uniform_real_distribution<double> udist(0.0, 1.0);
       std::generate(dest, std::next(dest, N), std::bind(udist, std::ref(rng)));
-    }
+    };
   } // namespace detail
 
   inline void connect_random_stream(corsika::default_prng_type& rng,
