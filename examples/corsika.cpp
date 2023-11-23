@@ -192,7 +192,7 @@ int main(int argc, char** argv) {
       ->check(CLI::NonexistentPath)
       ->group("Library/Output");
   app.add_option("-d,--dir", "Directory for output library.")
-      ->default_val(".")
+      ->default_val(boost::filesystem::current_path().string())
       ->group("Library/Output");
   app.add_option("-s,--seed", "The random number seed.")
       ->default_val(0)
