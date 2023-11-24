@@ -27,6 +27,27 @@ namespace corsika::proposal {
     return false;
   }
 
+  inline HEPEnergyType ProposalProcessBase::getOptimizedEmCut(Code code) const {
+    // get energy above which energy losses need to be considered
+    auto const production_threshold = get_energy_production_threshold(code);
+
+    HEPEnergyType lowest_table_value = 0_GeV;
+
+    // find tables for EnergyCuts closest (but still smaller than) production_threshold
+    for (auto table_energy : energycut_table_values) {
+      if (table_energy <= production_threshold && table_energy > lowest_table_value) {
+        lowest_table_value = table_energy;
+      }
+    }
+
+    if (lowest_table_value == 0_GeV) {
+      // no appropriate table available
+      return production_threshold;
+    }
+
+    return lowest_table_value;
+  };
+
   template <typename TEnvironment>
   inline ProposalProcessBase::ProposalProcessBase(TEnvironment const& _env) {
     _env.getUniverse()->walk([&](auto& vtn) {
@@ -54,6 +75,34 @@ namespace corsika::proposal {
     //! path, otherwise interpolation tables would only stored in main memory if
     //! no explicit intrpolation def is specified.
     PROPOSAL::InterpolationSettings::TABLES_PATH = corsika_data("PROPOSAL").c_str();
+
+    //! Initialize EnergyCutSettings
+    for (auto particle_code : tracked) {
+      if (particle_code == Code::Photon) {
+        // no EnergyCut for photon, only-stochastic propagation
+        continue;
+      }
+      // use optimized emcut for which tables should be available
+      auto optimized_ecut = getOptimizedEmCut(particle_code);
+      CORSIKA_LOG_INFO("PROPOSAL: Use tables with EnergyCut of {} for particle {}.",
+                       optimized_ecut, particle_code);
+      proposal_energycutsettings[particle_code] = optimized_ecut;
+    }
+
+    //! Initialize PROPOSAL tables for all media and all particles
+    for (auto medium : media) {
+      for (auto particle_code : tracked) {
+        buildTables(medium.second, particle_code,
+                    proposal_energycutsettings[particle_code]);
+      }
+    }
+  }
+
+  void ProposalProcessBase::buildTables(PROPOSAL::Medium medium, Code particle_code,
+                                        HEPEnergyType emcut) {
+    CORSIKA_LOG_DEBUG("PROPOSAL: Initialize tables for particle {} in {}", particle_code,
+                      medium.GetName());
+    cross[particle_code](medium, emcut);
   }
 
   inline size_t ProposalProcessBase::hash::operator()(const calc_key_t& p) const
