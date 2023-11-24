@@ -1,60 +1,61 @@
 # FLUKA particle code conversion table
 # C8 identifier, FLUKA code, has cross-section/can interact
-Proton	1	yes
-AntiProton	2	yes
-Electron	3
-Positron	4
-NuE	5
-NuEBar	6
-Photon	7   yes
-Neutron	8	yes
-AntiNeutron	9	yes
-MuPlus	10
-MuMinus	11
-K0Long	12	yes
-PiPlus	13	yes
-PiMinus	14	yes
-KPlus	15	yes
-KMinus	16	yes
-Lambda0	17	yes
-Lambda0Bar	18	yes
-K0Short	19	yes
-SigmaMinus	20 yes
-SigmaPlus	21  yes
-Sigma0	22  yes
-Pi0	23  yes
-K0 24
-K0Bar 25
-NuMu	27
-NuMuBar	28
-SigmaMinusBar	31  yes
-Sigma0Bar	32  yes
-SigmaPlusBar	33  yes
-Xi0	34  yes
-Xi0Bar	35  yes
-XiMinus	36  yes
-XiPlusBar	37  yes
-OmegaMinus	38  yes
-OmegaPlusBar	39  yes
-TauPlus	41
-TauMinus	42
-NuTau	43
-NuTauBar	44
-DPlus	45
-DMinus	46
-D0	47
-D0Bar	48
-DsPlus	49
-DsMinus	50
-LambdaCPlus	51
-XiCPlus	52
-XiC0	53
-XiPrimeCPlus	54
-XiPrimeC0	55
-OmegaC0	56
-LambdaCMinusBar	57
-XiCMinusBar	58
-XiC0Bar	59
+# NOTE: FLUKA can handle photons, were deactivated here in favor of PROPOSAL
+Proton	            1	yes
+AntiProton	        2	yes
+Electron	        3
+Positron	        4
+NuE	                5
+NuEBar	            6
+Photon	            7
+Neutron	            8	yes
+AntiNeutron	        9	yes
+MuPlus	            10
+MuMinus	            11
+K0Long	            12	yes
+PiPlus	            13	yes
+PiMinus	            14	yes
+KPlus	            15	yes
+KMinus	            16	yes
+Lambda0	            17	yes
+Lambda0Bar	        18	yes
+K0Short	            19	yes
+SigmaMinus	        20  yes
+SigmaPlus	        21  yes
+Sigma0	            22  yes
+Pi0	                23  yes
+K0                  24
+K0Bar               25
+NuMu	            27
+NuMuBar	            28
+SigmaMinusBar	    31  yes
+Sigma0Bar	        32  yes
+SigmaPlusBar	    33  yes
+Xi0	                34  yes
+Xi0Bar	            35  yes
+XiMinus	            36  yes
+XiPlusBar	        37  yes
+OmegaMinus	        38  yes
+OmegaPlusBar	    39  yes
+TauPlus	            41
+TauMinus	        42
+NuTau	            43
+NuTauBar	        44
+DPlus	            45
+DMinus	            46
+D0	                47
+D0Bar	            48
+DsPlus	            49
+DsMinus	            50
+LambdaCPlus	        51
+XiCPlus	            52
+XiC0	            53
+XiPrimeCPlus	    54
+XiPrimeC0	        55
+OmegaC0	            56
+LambdaCMinusBar	    57
+XiCMinusBar	        58
+XiC0Bar	            59
 XiPrimeCMinusBar	60
-XiPrimeC0Bar	61
-OmegaC0Bar	62
+XiPrimeC0Bar	    61
+OmegaC0Bar	        62
