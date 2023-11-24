@@ -93,7 +93,7 @@ TEST_CASE("FLUKA") {
         Code::PiMinus, Code::PiMinus, Code::PiMinus, Code::KMinus, Code::K0Long,
         Code::K0Short, Code::Lambda0, Code::SigmaPlus, Code::Proton, Code::AntiProton,
         Code::KMinus, Code::K0Long, Code::K0Short, Code::Lambda0, Code::SigmaPlus,
-        Code::Proton, Code::AntiProton, Code::Photon);
+        Code::Proton, Code::AntiProton);
 
     auto const targetCode = GENERATE(Code::Oxygen, Code::Hydrogen);
 
@@ -129,7 +129,7 @@ TEST_CASE("FLUKA") {
 
     auto const projectileCode =
         GENERATE(Code::PiPlus, Code::PiMinus, Code::KPlus, Code::K0Long, Code::Lambda0,
-                 Code::SigmaPlus, Code::Photon);
+                 Code::SigmaPlus);
     auto const p = GENERATE(1_GeV, 20_GeV, 100_GeV, 1_TeV);
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Hydrogen, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
@@ -156,7 +156,7 @@ TEST_CASE("FLUKA") {
     auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Proton);
     auto const& cs = *csPtr;
 
-    auto const projectileCode = GENERATE(Code::Electron, Code::MuPlus);
+    auto const projectileCode = GENERATE(Code::Electron, Code::MuPlus, Code::Photon);
     auto const p = 50_GeV;
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Hydrogen, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
