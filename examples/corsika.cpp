@@ -398,12 +398,14 @@ int main(int argc, char** argv) {
   HEPEnergyType const mucut = 1_GeV * app["--mucut"]->as<double>();
   ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, mucut, true, dEdX);
 
-  // tell proposal that we are interested in all energy losses above the emcut
-  set_energy_production_threshold(Code::Electron, emcut);
-  set_energy_production_threshold(Code::Positron, emcut);
-  set_energy_production_threshold(Code::Photon, emcut);
-  set_energy_production_threshold(Code::MuMinus, mucut);
-  set_energy_production_threshold(Code::MuPlus, mucut);
+  // tell proposal that we are interested in all energy losses above the particle cut
+  set_energy_production_threshold(Code::Electron, std::min({emcut, hadcut, mucut}));
+  set_energy_production_threshold(Code::Positron, std::min({emcut, hadcut, mucut}));
+  set_energy_production_threshold(Code::Photon, std::min({emcut, hadcut, mucut}));
+  set_energy_production_threshold(Code::MuMinus, std::min({emcut, hadcut, mucut}));
+  set_energy_production_threshold(Code::MuPlus, std::min({emcut, hadcut, mucut}));
+  set_energy_production_threshold(Code::TauMinus, std::min({emcut, hadcut, mucut}));
+  set_energy_production_threshold(Code::TauPlus, std::min({emcut, hadcut, mucut}));
 
   // energy threshold for high energy hadronic model. Affects LE/HE switch for
   // hadron interactions and the hadronic photon model in proposal

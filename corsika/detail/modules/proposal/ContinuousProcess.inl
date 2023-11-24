@@ -28,11 +28,9 @@ namespace corsika::proposal {
     if (code == Code::Photon) return; // no continuous builders needed for photons
 
     // interpolate the crosssection for given media and energy cut. These may
-    // take some minutes if you have to build the tables and cannot read the
+    // take some minutes if you have to build the tables and cannot read the tables
     // from disk
-    auto const emCut = get_energy_production_threshold(
-        code); //! energy resolutions globally defined for individual particles
-    auto c = p_cross->second(media.at(comp.getHash()), emCut);
+    auto c = p_cross->second(media.at(comp.getHash()), proposal_energycutsettings[code]);
 
     // choose multiple scattering model
     static constexpr auto ms_type = PROPOSAL::MultipleScatteringType::MoliereInterpol;

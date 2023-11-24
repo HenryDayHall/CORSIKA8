@@ -33,6 +33,14 @@ namespace corsika::proposal {
   static constexpr double v_cut = 0.01;
 
   //!
+  //! List of EnergyCut values for which CORSIKA will, by default, create and provide
+  //! PROPOSAL tables.
+  //!
+  static constexpr std::array<HEPEnergyType, 10> energycut_table_values{
+      1000_MeV, 100_MeV, 20_MeV,   10_MeV,   3_MeV,
+      1_MeV,    0.4_MeV, 0.25_MeV, 0.15_MeV, 0.05_MeV};
+
+  //!
   //! Internal map from particle codes to particle properties required for
   //! crosssections, decay and scattering algorithms. In the future the
   //! particles may be created by reading out the Corsica constants.
@@ -223,6 +231,10 @@ namespace corsika::proposal {
         media; //!< maps nuclear composition from univers to media to produce
                //!< crosssections, which requires further ionization constants.
 
+    //!< save emcut for tracked particles
+    std::unordered_map<Code, corsika::units::si::HEPEnergyType>
+        proposal_energycutsettings;
+
     //!
     //! Store cut and  nuclear composition of the whole universe in media which are
     //! required for creating crosssections by proposal.
@@ -234,6 +246,12 @@ namespace corsika::proposal {
     //! Checks if a particle can be processed by proposal
     //!
     bool canInteract(Code pcode) const;
+
+    //!
+    //! Finds the optimal EnergyCut for which PROPOSAL tables should (by default) be
+    //! available.
+    //!
+    HEPEnergyType getOptimizedEmCut(Code code) const;
 
     using calc_key_t = std::pair<std::size_t, Code>;
 
@@ -249,6 +267,11 @@ namespace corsika::proposal {
     //! Builds the calculator to the corresponding class
     //!
     virtual void buildCalculator(Code, NuclearComposition const&) = 0;
+
+    //!
+    //! Initialize PROPOSAL tables for given medium, code, and energy cut
+    //!
+    void buildTables(PROPOSAL::Medium, Code, HEPEnergyType);
 
     //!
     //! Searches the particle dependet calculator dependent of actuall medium composition
