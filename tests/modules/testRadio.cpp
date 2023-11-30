@@ -951,15 +951,15 @@ TEST_CASE("Antennas") {
     // Check the YAML file output
     auto const configC = antennaC.getConfig();
     CHECK(configC["type"].as<std::string>() == "TimeDomainAntenna");
-    CHECK(configC["start_time"].as<double>() == tStart / 1_ns);
+    CHECK(configC["start time"].as<double>() == tStart / 1_ns);
     CHECK(configC["duration"].as<double>() == duration / 1_ns);
-    CHECK(configC["sample_rate"].as<double>() == sampleRate / 1_GHz);
+    CHECK(configC["sampling frequency"].as<double>() == sampleRate / 1_GHz);
 
     auto const configZ = antennaZ.getConfig();
     CHECK(configZ["type"].as<std::string>() == "TimeDomainAntenna");
-    CHECK(configZ["start_time"].as<double>() == tStart / 1_ns);
+    CHECK(configZ["start time"].as<double>() == tStart / 1_ns);
     CHECK(configZ["duration"].as<double>() == duration / 1_ns);
-    CHECK(configZ["sample_rate"].as<double>() == sampleRate / 1_GHz);
+    CHECK(configZ["sampling frequency"].as<double>() == sampleRate / 1_GHz);
   } // END: SECTION("TimeDomainAntenna Config File")
 
 } // END: TEST_CASE("Antennas")
