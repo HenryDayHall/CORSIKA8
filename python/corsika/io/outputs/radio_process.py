@@ -10,9 +10,8 @@
 import logging
 import os.path as op
 from typing import Any
-
-import numpy as np
-import xarray as xr
+import pyarrow.parquet as pq
+import pandas as pd
 
 from .output import Output
 
@@ -29,9 +28,9 @@ class RadioProcess(Output):
         """
         Initialize this radio process reader (and load the data).
 
-        Since each antenna can have a different sample rate and duration,
-        we can't load them into a shared array. Therefore, we load each
-        of the antennas into an XArray dataset.
+        We load each antenna in a shared multidimensional pandas
+        dataframe . Every antenna can be accessed via the number
+        of the shower and the antenna name.
 
         Parameters
         ----------
@@ -48,7 +47,8 @@ class RadioProcess(Output):
                 f"An error occured loading a RadioProcess: {e}"
             )
 
-    def load_data(self, path: str) -> xr.Dataset:
+
+    def load_data(self, path: str):
         """
         Load the data associated with this radio process.
 
@@ -58,61 +58,37 @@ class RadioProcess(Output):
             The path to the directory containing this output.
 
         """
-
-        # get the list of antenna names
+        data = pq.read_table(op.join(path, "antennas.parquet"))
+        nshowers = data.to_pandas()['shower'].iloc[-1] + 1
         antennas = list(self.config["antennas"].keys())
+
+        # check that we got some events
+        if nshowers == 0:
+            logging.warn(f"Radio Process {self.config['name']} contains 0 showers.")
 
         # if there are no antennas,
         if len(antennas) == 0:
             logging.warn(f"No antennas were found for {self.config['name']}")
 
-        # we build up the XArray Dataset in this dictionary
+        ant_nr = 0
+        dictionary = {}
         dataset = {}
+        # loop over all showers
+        for i in range(nshowers):
+            # loop over each of the antennas
+            for name in antennas:
+                sampling_period = self.config["antennas"][name]["number of bins"]
+                antenna_data = data[ant_nr*sampling_period:(ant_nr+1)*sampling_period].to_pandas()
+                times = antenna_data["Time"]
+                Ex = antenna_data["Ex"]
+                Ey = antenna_data["Ey"]
+                Ez = antenna_data["Ez"]
+                dictionary[name] = pd.DataFrame({'time': times, 'Ex': Ex, 'Ey': Ey, 'Ez': Ez})
+                ant_nr = ant_nr+ 1
 
-        # loop over each of the antennas
-        for iant, name in enumerate(antennas):
+            dataset[str(i)] = dictionary
 
-            # load the data file associated with this antenna
-            try:
-                data = np.load(f"{op.join(path, name)}.npz")
-            except Exception as e:
-                raise RuntimeError(
-                    (
-                        f"Unable to open file for antenna {name}"
-                        f"in {self.config['name']} as {e}"
-                    )
-                )
-
-            # if we get here, we have successfully loaded the antennas data file
-
-            # extract the sample times (in ns)
-            times = data["Time"]
-
-            # calculate the number of showers for this antenna
-            nshowers = len(list(data.keys())) - 1
-
-            # check that we got some events
-            if nshowers == 0:
-                logging.warn(f"Antenna {name} contains data for 0 showers.")
-
-            # create the array to store the waveforms for all the events
-            waveforms = np.zeros((nshowers, *data["0"].shape), dtype=np.float32)
-
-            # fill in the 'waveforms' array
-            for iev in np.arange(nshowers):
-                waveforms[iev, ...] = data[str(iev)]
-
-            # create the  data array
-            showers = xr.DataArray(
-                waveforms,
-                coords=(np.arange(nshowers), ["x", "y", "z"], times),  # type: ignore
-                dims=["shower", "pol", "time"],
-            )
-
-            # save this data array
-            dataset[name] = showers
-
-        return xr.Dataset(dataset)
+        return dataset
 
     def is_good(self) -> bool:
         """
@@ -126,7 +102,7 @@ class RadioProcess(Output):
         """
         return self.__data is not None
 
-    def astype(self, dtype: str = "xarray", **kwargs: Any) -> Any:
+    def astype(self, dtype: str = "pandas", **kwargs: Any) -> Any:
         """
         Load the antenna data from this process.
 
@@ -140,15 +116,51 @@ class RadioProcess(Output):
         Any:
             The return type of this method is determined by `dtype`.
         """
-        if dtype == "xarray":
+        if dtype == "pandas":
             return self.__data
         else:
             raise ValueError(
                 (
                     f"Unknown format '{dtype}' for RadioProcess. "
-                    "We currently only support ['xarray']."
+                    "We currently only support ['pandas']."
                 )
             )
+
+    def get_antenna_list(self):
+        """
+        Return a list with the names of the antennas of this RadioProcess.
+        """
+        antennas = list(self.config["antennas"].keys())
+        return antennas
+
+    def get_antennas(self):
+        """
+        Return a pandas dataframe with all the information for the antennas
+        of this RadioProcess. This information is shower number, antenna
+        type, start time of detection, detection duration, number of bins,
+        sampling frequency, location x, location y, location z.
+        """
+        antennas = list(self.config["antennas"].keys())
+        dictionary = {}
+        # loop over each of the antennas
+        for name in antennas:
+            type = self.config["antennas"][name]["type"]
+            start_time = self.config["antennas"][name]["start time"]
+            duration = self.config["antennas"][name]["duration"]
+            nr_bins = self.config["antennas"][name]["number of bins"]
+            sampling_frequency = self.config["antennas"][name]["sampling frequency"]
+            location = self.config["antennas"][name]["location"]
+            dictionary[name] = pd.DataFrame({'type': type, 'start time': start_time, 'duration': duration,
+                                             'number of bins': nr_bins, 'sampling frequency': sampling_frequency,
+                                             'x': [location[0]], 'y': [location[1]], 'z': [location[2]]})
+
+        return dictionary
+
+    def get_units(self):
+        """
+        Return the units of the antennas of this RadioProcess.
+        """
+        return self.config["units"]
 
     def __repr__(self) -> str:
         """

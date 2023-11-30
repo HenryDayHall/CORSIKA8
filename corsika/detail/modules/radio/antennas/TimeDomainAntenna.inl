@@ -137,9 +137,10 @@ namespace corsika {
     YAML::Node config;
 
     config["type"] = "TimeDomainAntenna";
-    config["start_time"] = start_time_ / 1_ns;
+    config["start time"] = start_time_ / 1_ns;
     config["duration"] = duration_ / 1_ns;
-    config["sample_rate"] = sample_rate_ / 1_GHz;
+    config["number of bins"] = duration_ * sample_rate_;
+    config["sampling frequency"] = sample_rate_ / 1_GHz;
 
     return config;
   }
