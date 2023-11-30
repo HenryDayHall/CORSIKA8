@@ -62,7 +62,7 @@ namespace corsika {
     static bool const is_stack_process = true;
 
     //! return the current Cascade step counter
-    int getStep() const { return iStep_; }
+    auto getStep() const { return iStep_; }
 
     //! check if current step is where StackProcess should be executed, this also
     //! increases the internal step counter implicitly
