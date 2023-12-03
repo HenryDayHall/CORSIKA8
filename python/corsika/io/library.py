@@ -58,13 +58,6 @@ class Library(object):
         """
         return list(self.__outputs.keys())
 
-    @property
-    def modules(self) -> Dict[str, str]:
-        """
-        Return the list of registered outputs.
-        """
-        pass
-
     def get(self, name: str) -> Optional[outputs.Output]:
         """
         Return the output with a given name.
@@ -73,7 +66,7 @@ class Library(object):
             return self.__outputs[name]
         else:
             msg = f"Output with name '{name}' not available in this library."
-            logging.getLogger("corsika").warn(msg)
+            logging.getLogger("corsika").warning(msg)
             return None
 
     @staticmethod
@@ -181,7 +174,6 @@ class Library(object):
 
         # loop over the subdirectories
         for subdir in dirs:
-
             # read the config file for this output
             config = Library.load_config(op.join(path, subdir))
 
@@ -197,13 +189,12 @@ class Library(object):
                     f"'{subdir}' does not contain a valid config."
                     "Missing 'type' or 'name' keyword."
                 )
-                logging.getLogger("corsika").warn(msg)
+                logging.getLogger("corsika").warning(msg)
                 continue  # skip to the next output, don't error
 
             # we now have a valid component type, get the corresponding
             # type from the proccesses subdirectory
             try:
-
                 # instantiate the output and store it in our dict
                 component = getattr(outputs, out_type)(op.join(path, subdir))
 
@@ -213,7 +204,7 @@ class Library(object):
                         f"'{name}' encountered an error while reading. "
                         "This process will be not be loaded."
                     )
-                    logging.getLogger("corsika").warn(msg)
+                    logging.getLogger("corsika").warning(msg)
                 else:
                     components[name] = component
 
@@ -222,8 +213,8 @@ class Library(object):
                     f"Unable to instantiate an instance of '{out_type}' "
                     f"for a process called '{name}'"
                 )
-                logging.getLogger("corsika").warn(msg)
-                logging.getLogger("corsika").warn(e)
+                logging.getLogger("corsika").warning(msg)
+                logging.getLogger("corsika").warning(e)
                 continue  # skip to the next output, don't error
 
         # and we are done building - return the constructed outputs

@@ -13,6 +13,7 @@ from typing import Any
 
 import pyarrow.parquet as pq
 
+from ..converters import arrow_to_numpy
 from .output import Output
 
 
@@ -72,11 +73,13 @@ class EnergyLoss(Output):
             return self.__data
         elif dtype == "pandas":
             return self.__data.to_pandas()
+        elif dtype == "numpy":
+            return arrow_to_numpy.convert_to_numpy(self.__data)
         else:
             raise ValueError(
                 (
                     f"Unknown format '{dtype}' for EnergyLoss. "
-                    "We currently only support ['arrow', 'pandas']."
+                    "We currently only support ['arrow', 'pandas', 'numpy']."
                 )
             )
 
@@ -84,4 +87,4 @@ class EnergyLoss(Output):
         """
         Return a string representation of this class.
         """
-        return f"EnergyLess('{self.config['name']}')"
+        return f"EnergyLoss('{self.config['name']}')"

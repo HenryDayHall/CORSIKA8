@@ -7,16 +7,15 @@
  the license.
 """
 
-from .observation_plane import ObservationPlane
-from .track_writer import TrackWriter
-from .longitudinal_profile import LongitudinalProfile
 from .bethe_bloch import BetheBlochPDG
-from .particle_cut import ParticleCut
 from .energy_loss import EnergyLoss
+from .longitudinal_profile import LongitudinalProfile
+from .observation_plane import ObservationPlane
 from .output import Output
+from .particle_cut import ParticleCut
+from .primary import Particle, PrimaryParticle
 from .radio_process import RadioProcess
 from .track_writer import TrackWriter
-from .primary import PrimaryParticle, Particle
 
 __all__ = [
     "Output",
@@ -25,7 +24,8 @@ __all__ = [
     "LongitudinalProfile",
     "BetheBlochPDG",
     "ParticleCut",
-    "EnergyLoss" "RadioProcess",
+    "EnergyLoss",
+    "RadioProcess",
     "PrimaryParticle",
     "Particle",
 ]

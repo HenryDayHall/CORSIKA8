@@ -13,6 +13,7 @@ from typing import Any
 
 import pyarrow.parquet as pq
 
+from ..converters import arrow_to_numpy
 from .output import Output
 
 
@@ -72,11 +73,13 @@ class ParticleCut(Output):
             return self.__data
         elif dtype == "pandas":
             return self.__data.to_pandas()
+        elif dtype == "numpy":
+            return arrow_to_numpy.convert_to_numpy(self.__data)
         else:
             raise ValueError(
                 (
                     f"Unknown format '{dtype}' for ParticleCut. "
-                    "We currently only support ['arrow', 'pandas']."
+                    "We currently only support ['arrow', 'pandas', 'numpy']."
                 )
             )
 
