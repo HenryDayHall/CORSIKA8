@@ -10,8 +10,9 @@
 import logging
 import os.path as op
 from typing import Any
-import pyarrow.parquet as pq
+
 import pandas as pd
+import pyarrow.parquet as pq
 
 from .output import Output
 
@@ -47,8 +48,7 @@ class RadioProcess(Output):
                 f"An error occured loading a RadioProcess: {e}"
             )
 
-
-    def load_data(self, path: str):
+    def load_data(self, path: str) -> dict:
         """
         Load the data associated with this radio process.
 
@@ -59,7 +59,7 @@ class RadioProcess(Output):
 
         """
         data = pq.read_table(op.join(path, "antennas.parquet"))
-        nshowers = data.to_pandas()['shower'].iloc[-1] + 1
+        nshowers = data.to_pandas()["shower"].iloc[-1] + 1
         antennas = list(self.config["antennas"].keys())
 
         # check that we got some events
@@ -78,13 +78,17 @@ class RadioProcess(Output):
             # loop over each of the antennas
             for name in antennas:
                 sampling_period = self.config["antennas"][name]["number of bins"]
-                antenna_data = data[ant_nr*sampling_period:(ant_nr+1)*sampling_period].to_pandas()
+                start = ant_nr * sampling_period
+                stop = (ant_nr + 1) * sampling_period
+                antenna_data = data[start:stop].to_pandas()
                 times = antenna_data["Time"]
                 Ex = antenna_data["Ex"]
                 Ey = antenna_data["Ey"]
                 Ez = antenna_data["Ez"]
-                dictionary[name] = pd.DataFrame({'time': times, 'Ex': Ex, 'Ey': Ey, 'Ez': Ez})
-                ant_nr = ant_nr+ 1
+                dictionary[name] = pd.DataFrame(
+                    {"time": times, "Ex": Ex, "Ey": Ey, "Ez": Ez}
+                )
+                ant_nr = ant_nr + 1
 
             dataset[str(i)] = dictionary
 
@@ -126,14 +130,14 @@ class RadioProcess(Output):
                 )
             )
 
-    def get_antenna_list(self):
+    def get_antenna_list(self) -> list:
         """
         Return a list with the names of the antennas of this RadioProcess.
         """
         antennas = list(self.config["antennas"].keys())
         return antennas
 
-    def get_antennas(self):
+    def get_antennas(self) -> dict:
         """
         Return a pandas dataframe with all the information for the antennas
         of this RadioProcess. This information is shower number, antenna
@@ -150,13 +154,22 @@ class RadioProcess(Output):
             nr_bins = self.config["antennas"][name]["number of bins"]
             sampling_frequency = self.config["antennas"][name]["sampling frequency"]
             location = self.config["antennas"][name]["location"]
-            dictionary[name] = pd.DataFrame({'type': type, 'start time': start_time, 'duration': duration,
-                                             'number of bins': nr_bins, 'sampling frequency': sampling_frequency,
-                                             'x': [location[0]], 'y': [location[1]], 'z': [location[2]]})
+            dictionary[name] = pd.DataFrame(
+                {
+                    "type": type,
+                    "start time": start_time,
+                    "duration": duration,
+                    "number of bins": nr_bins,
+                    "sampling frequency": sampling_frequency,
+                    "x": [location[0]],
+                    "y": [location[1]],
+                    "z": [location[2]],
+                }
+            )
 
         return dictionary
 
-    def get_units(self):
+    def get_units(self) -> dict:
         """
         Return the units of the antennas of this RadioProcess.
         """

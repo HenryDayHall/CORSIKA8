@@ -7,8 +7,3 @@
  Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  the license.
 """
-
-from .library import Library
-
-# all exported objects
-__all__ = ["Library"]

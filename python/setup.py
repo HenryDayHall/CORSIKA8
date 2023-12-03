@@ -32,7 +32,7 @@ setup(
     keywords=["cosmic ray", "physics", "air shower", "simulation"],
     packages=find_packages(),
     python_requires=">=3.6, <4",
-    install_requires=["numpy", "pyyaml", "pyarrow", "boost_histogram", "xarray"],
+    install_requires=["numpy", "pyyaml", "pyarrow", "pandas"],
     extras_require={
         "test": [
             "pytest",
@@ -42,8 +42,9 @@ setup(
             "coverage",
             "pytest-cov",
             "flake8",
+            "types-PyYAML",
+            "pandas-stubs",
         ],
-        "pandas": ["pandas"],
     },
     scripts=[],
     project_urls={"code": "https://gitlab.iap.kit.edu/AirShowerPhysics/corsika"},

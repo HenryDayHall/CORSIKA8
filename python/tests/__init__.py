@@ -29,25 +29,34 @@ def find_build_directory() -> str:
         If the build directory cannot be found or it is empty.
     """
 
-    # check if we are running on Gitlab
-    gitlab_build_dir = os.getenv("CI_BUILDS_DIR")
-
     # if we are running on Gitlab
-    if gitlab_build_dir is not None:
-        build_dir = op.abspath(gitlab_build_dir)
+    is_on_CI = os.getenv("CI_PROJECT_DIR") is not None
+    if is_on_CI:
+        build_dir = op.abspath(op.join(os.getenv("CI_PROJECT_DIR"), "build"))
+
     else:  # otherwise, we are running locally
-        build_dir = op.abspath(
-            op.join(
-                op.dirname(__file__),
-                op.pardir,
-                op.pardir,
-                "build",
+        here = op.dirname(os.path.realpath(__file__))
+        for name in ["build", "corsika-build"]:
+            build_dir = op.realpath(
+                op.join(
+                    here,
+                    op.pardir,
+                    op.pardir,
+                    op.pardir,
+                    "corsika-build",
+                )
             )
-        )
+            if op.isdir(build_dir):
+                break
 
     # check that the build directory contains 'CMakeCache.txt'
     if not op.exists(op.join(build_dir, "CMakeCache.txt")):
-        raise RuntimeError("Python tests cannot find C8 build directory.")
+        msg = "Python tests cannot find C8 build dir.\n"
+        msg += f"Is on CI: {is_on_CI}\n"
+        msg += f"Path for CI: {os.getenv('CI_PROJECT_DIR')}\n"
+        msg += f"Checked in {build_dir}\n"
+        msg += f"Contents: {os.listdir(build_dir)}"
+        raise RuntimeError(msg)
 
     return build_dir
 
