@@ -24,7 +24,6 @@
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
-#include <corsika/media/ShowerAxis.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -35,14 +34,10 @@
 #include <corsika/modules/radio/antennas/Antenna.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
 #include <corsika/modules/radio/detectors/AntennaCollection.hpp>
-#include <corsika/modules/radio/propagators/NumericalIntegratingPropagator.hpp>
 #include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
-#include <corsika/modules/TrackWriter.hpp>
+#include <corsika/modules/writers/PrimaryWriter.hpp>
 
-#include <corsika/modules/StackInspector.hpp>
-#include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/TimeCut.hpp>
-// #include <corsika/modules/TrackWriter.hpp>
 
 #include <iomanip>
 #include <iostream>
@@ -57,6 +52,7 @@ using namespace std;
 // A simple shower to get the electric field trace of an electron (& a positron)
 // in order to reveal the "clover leaf" pattern of energy fluence to the ground.
 //
+
 int main() {
 
   logging::set_level(logging::level::info);
@@ -70,7 +66,7 @@ int main() {
   auto seed = rd();
   RNGManager<>::getInstance().setSeed(seed);
 
-  OutputManager output("1 electron - 1 positron");
+  OutputManager output("clover_leaf_outputs");
 
   // create a suitable environment
   using IModelInterface =
@@ -105,7 +101,6 @@ int main() {
   auto const injectionPosY_{injectionPos.getCoordinates().getY()};
   auto const injectionPosZ_{injectionPos.getCoordinates().getZ()};
   auto const triggerpoint_{Point(rootCS, injectionPosX_, injectionPosY_, injectionPosZ_)};
-  std::cout << "Trigger Point is: " << triggerpoint_ << std::endl;
 
   // the antenna characteristics
   const TimeType duration_{2e-6_s};            // 0.8e-4_s
@@ -113,7 +108,6 @@ int main() {
 
   // the detectors
   AntennaCollection<TimeDomainAntenna> detectorCoREAS;
-  // AntennaCollection<TimeDomainAntenna> detectorZHS;
 
   std::string name_center = "CoREAS_R=0_m--Phi=0degrees";
   auto triggertime_center{((triggerpoint_ - center).getNorm() / constants::c) - 500_ns};
@@ -127,7 +121,7 @@ int main() {
       auto rr_1 = static_cast<int>(radius_1 / 1_m);
       auto const point_1{Point(rootCS, centerX + radius_1 * cos(phiRad_1),
                                centerY + radius_1 * sin(phiRad_1), centerZ)};
-      std::cout << "Antenna point: " << point_1 << std::endl;
+      CORSIKA_LOG_INFO("Antenna point: {}", point_1);
       auto triggertime_1{((triggerpoint_ - point_1).getNorm() / constants::c) - 500_ns};
       std::string name_1 = "CoREAS_R=" + std::to_string(rr_1) +
                            "_m--Phi=" + std::to_string(phi_1) + "degrees";
@@ -186,15 +180,7 @@ int main() {
       coreas(detectorCoREAS, SP);
   output.add("CoREAS", coreas);
 
-  // RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS),
-  //         decltype(SP)>, decltype(SP)>
-  //                                           zhs(detectorZHS, SP);
-  // output.add("ZHS", zhs);
-
   TimeCut cut(period / 4);
-
-  // TrackWriter trackWriter;
-  // output.add("tracks", trackWriter); // register TrackWriter
 
   // assemble all processes into an ordered process list
   auto sequence = make_sequence(coreas, cut);

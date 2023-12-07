@@ -37,6 +37,13 @@
 using namespace corsika;
 using namespace std;
 
+//
+// This example shows how to make a custom process which deletes particles that
+// cross a particular boundary (a sphere in this case)
+// For a plane boundary, this can be implemented by adding an ObservationPlane
+// or Observation Volume object instead (the standard "absorbing" geometry objects)
+//
+
 template <bool deleteParticle>
 struct MyBoundaryCrossingProcess
     : public BoundaryCrossingProcess<MyBoundaryCrossingProcess<deleteParticle>> {
@@ -65,9 +72,6 @@ private:
   std::ofstream file_;
 };
 
-//
-// The example main program for a particle cascade
-//
 int main() {
 
   logging::set_level(logging::level::warn);

@@ -20,7 +20,6 @@
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/process/DynamicInteractionProcess.hpp>
-#include <corsika/framework/process/InteractionCounter.hpp>
 #include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/process/SwitchProcessSequence.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
@@ -35,7 +34,6 @@
 
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/GeomagneticModel.hpp>
 #include <corsika/media/GladstoneDaleRefractiveIndex.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -50,7 +48,6 @@
 #include <corsika/modules/Epos.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
-#include <corsika/modules/OnShellCheck.hpp>
 #include <corsika/modules/PROPOSAL.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/Pythia8.hpp>
@@ -94,8 +91,17 @@ using namespace std;
 using EnvironmentInterface =
     IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
 using EnvType = Environment<EnvironmentInterface>;
+using StackType = setup::Stack<EnvType>;
+using TrackingType = setup::Tracking;
+using Particle = StackType::particle_type;
 
-using Particle = setup::Stack<EnvType>::particle_type;
+//
+// This is the main example script which runs EAS with fairly standard settings
+// w.r.t. what was implemented in CORSIKA 7. Users may want to change some of the
+// specifics (observation altitude, magnetic field, energy cuts, etc.), but this
+// example is the most physics-complete one and should be used for full simulations
+// of particle cascades in air
+//
 
 long registerRandomStreams(long seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
@@ -111,9 +117,9 @@ long registerRandomStreams(long seed) {
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
-    std::cout << "random seed (auto)  " << seed << std::endl;
+    CORSIKA_LOG_INFO("random seed (auto) {}", seed);
   } else {
-    std::cout << "random seed " << seed << std::endl;
+    CORSIKA_LOG_INFO("random seed {}", seed);
   }
   RNGManager<>::getInstance().setSeed(seed);
   return seed;
@@ -346,6 +352,8 @@ int main(int argc, char** argv) {
   // we make the axis much longer than the inj-core distance since the
   // profile will go beyond the core, depending on zenith angle
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
+  auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
+  uint const nAxisBins = showerAxis.getMaximumX() / dX + 1; // Get maximum number of bins
   /* === END: CONSTRUCT GEOMETRY === */
 
   double const emthinfrac = app["--emthin"]->as<double>();
@@ -364,22 +372,22 @@ int main(int argc, char** argv) {
   OutputManager output(app["--filename"]->as<std::string>(), seed, args.str(), outputDir);
 
   // register energy losses as output
-  EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
+  EnergyLossWriter dEdX{showerAxis, dX, nAxisBins};
   output.add("energyloss", dEdX);
 
-  DynamicInteractionProcess<setup::Stack<EnvType>> heModel;
+  DynamicInteractionProcess<StackType> heModel;
 
   // have SIBYLL always for PROPOSAL photo-hadronic interactions
   auto sibyll = std::make_shared<corsika::sibyll::Interaction>(env);
 
   if (auto const modelStr = app["--hadronModel"]->as<std::string>();
       modelStr == "SIBYLL-2.3d") {
-    heModel = DynamicInteractionProcess<setup::Stack<EnvType>>{sibyll};
+    heModel = DynamicInteractionProcess<StackType>{sibyll};
   } else if (modelStr == "QGSJet-II.04") {
-    heModel = DynamicInteractionProcess<setup::Stack<EnvType>>{
+    heModel = DynamicInteractionProcess<StackType>{
         std::make_shared<corsika::qgsjetII::Interaction>()};
   } else if (modelStr == "EPOS-LHC") {
-    heModel = DynamicInteractionProcess<setup::Stack<EnvType>>{
+    heModel = DynamicInteractionProcess<StackType>{
         std::make_shared<corsika::epos::Interaction>()};
   } else {
     CORSIKA_LOG_CRITICAL("invalid choice \"{}\"; also check argument parser", modelStr);
@@ -426,7 +434,7 @@ int main(int argc, char** argv) {
   auto emContinuous =
       make_select(EMHadronSwitch(), emContinuousBethe, emContinuousProposal);
 
-  LongitudinalWriter profile{showerAxis, 200, 10_g / square(1_cm)};
+  LongitudinalWriter profile{showerAxis, nAxisBins, dX};
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
@@ -438,7 +446,7 @@ int main(int argc, char** argv) {
 #endif
   InteractionCounter leIntCounted{leIntModel};
 
-  StackInspector<setup::Stack<EnvType>> stackInspect(10000, false, E0);
+  StackInspector<StackType> stackInspect(10000, false, E0);
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {
@@ -452,29 +460,19 @@ int main(int argc, char** argv) {
 
   // observation plane
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane<setup::Tracking, ParticleWriterParquet> observationLevel{
+  ObservationPlane<TrackingType, ParticleWriterParquet> observationLevel{
       obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
       true,   // plane should "absorb" particles
       false}; // do not print z-coordinate
   // register ground particle output
   output.add("particles", observationLevel);
 
-  PrimaryWriter<setup::Tracking, ParticleWriterParquet> primaryWriter(observationLevel);
+  PrimaryWriter<TrackingType, ParticleWriterParquet> primaryWriter(observationLevel);
   output.add("primary", primaryWriter);
 
   int ring_number{app["--ring"]->as<int>()};
-  std::cout << "Ring number : " << ring_number << std::endl;
   auto const radius_{ring_number * 25_m};
-  //  std::cout << "Radius = " << radius_ << std::endl;
   const int rr_ = static_cast<int>(radius_ / 1_m);
-
-  // if (ring_number == 0) {
-  //     // assemble the final process sequence without radio
-  //     auto sequence = make_sequence(stackInspect, hadronSequence,
-  //     decaySequence, emCascade,
-  //                                   emContinuous, longprof, observationLevel,
-  //                                   thinning, cut);
-  // } else {
 
   // Radio antennas and relevant information
   // the antenna time variables
@@ -491,14 +489,11 @@ int main(int argc, char** argv) {
   auto const injectionPosY_{injectionPos.getCoordinates().getY()};
   auto const injectionPosZ_{injectionPos.getCoordinates().getZ()};
   auto const triggerpoint_{Point(rootCS, injectionPosX_, injectionPosY_, injectionPosZ_)};
-  std::cout << "Trigger Point is: " << triggerpoint_ << std::endl;
 
   if (ring_number != 0) {
     // setup CoREAS antennas - use the for loop for star shape pattern
     for (auto phi_1 = 0; phi_1 <= 315; phi_1 += 45) {
       auto phiRad_1 = phi_1 / 180. * M_PI;
-      // auto phi_1 = 0;
-      // auto phiRad_1 = phi_1 / 180. * M_PI;
       auto const point_1{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_1),
                                showerCoreY_ + radius_ * sin(phiRad_1),
                                constants::EarthRadius::Mean)};
@@ -514,8 +509,6 @@ int main(int argc, char** argv) {
     // setup ZHS antennas - use the for loop for star shape pattern
     for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
       auto phiRad_ = phi_ / 180. * M_PI;
-      // auto phi_ = 0; phi_;
-      // auto phiRad_ = phi_ / 180. * M_PI;
       auto const point_{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_),
                               showerCoreY_ + radius_ * sin(phiRad_),
                               constants::EarthRadius::Mean)};
@@ -557,18 +550,19 @@ int main(int argc, char** argv) {
 
   // create the cascade object using the default stack and tracking
   // implementation
-  setup::Tracking tracking;
-  setup::Stack<EnvType> stack;
+  TrackingType tracking;
+  StackType stack;
   Cascade EAS(env, tracking, sequence, output, stack);
 
   // print our primary parameters all in one place
   if (app["--pdg"]->count() > 0) {
-    CORSIKA_LOG_INFO("Primary PDG ID: {}", app["--pdg"]->as<int>());
+    CORSIKA_LOG_INFO("Primary PDG ID:     {}", app["--pdg"]->as<int>());
   } else {
-    CORSIKA_LOG_INFO("Primary Z/A: {}/{}", Z, A);
+    CORSIKA_LOG_INFO("Primary Z/A:        {}/{}", Z, A);
   }
-  CORSIKA_LOG_INFO("Primary Energy: {}", E0);
-  CORSIKA_LOG_INFO("Primary Momentum: {}", P0);
+  CORSIKA_LOG_INFO("Primary Energy:     {}", E0);
+  CORSIKA_LOG_INFO("Primary Momentum:   {}", P0);
+  CORSIKA_LOG_INFO("Primary Direction:  {}", plab.getNorm());
   CORSIKA_LOG_INFO("Point of Injection: {}", injectionPos.getCoordinates());
   CORSIKA_LOG_INFO("Shower Axis Length: {}", (showerCore - injectionPos).getNorm() * 1.2);
 

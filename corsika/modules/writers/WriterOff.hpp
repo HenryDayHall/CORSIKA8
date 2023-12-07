@@ -43,7 +43,7 @@ namespace corsika {
     template <typename... TArgs>
     void write(TArgs&&...) {}
 
-    virtual YAML::Node getConfig() const { return YAML::Node(); }
+    virtual YAML::Node getConfig() const override { return YAML::Node(); }
 
   }; // class WriterOff
 

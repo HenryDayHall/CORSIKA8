@@ -9,88 +9,88 @@ find_package (corsika CONFIG REQUIRED)
 # this is only for CORSIKA_REGISTER_EXAMPLE
 include ("${CMAKE_CURRENT_SOURCE_DIR}/corsikaExamples.cmake")
 
-add_executable (helix_example helix_example.cpp)
-target_link_libraries (helix_example CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (helix_example)
 
-add_executable (geometry_example geometry_example.cpp)
-target_link_libraries (geometry_example CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (geometry_example)
+###################
+## cascade_examples
+###################
 
-add_executable (stack_example stack_example.cpp)
-target_link_libraries (stack_example CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (stack_example)
-
-add_executable (cascade_example cascade_example.cpp)
-target_link_libraries (cascade_example CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (cascade_example)
-
-add_executable (boundary_example boundary_example.cpp)
-target_link_libraries (boundary_example CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (boundary_example)
-
-add_executable (cascade_proton_example cascade_proton_example.cpp)
-target_link_libraries (cascade_proton_example CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (cascade_proton_example)
-
-add_executable (vertical_EAS vertical_EAS.cpp)
-target_link_libraries (vertical_EAS CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (vertical_EAS RUN_OPTIONS 4 2 10000.)
-
-add_executable (stopping_power stopping_power.cpp)
-target_link_libraries (stopping_power CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (stopping_power)
-
-add_executable (staticsequence_example staticsequence_example.cpp)
-target_link_libraries (staticsequence_example CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (staticsequence_example)
-
-add_executable (particle_list_example particle_list_example.cpp)
-target_link_libraries (particle_list_example CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (particle_list_example)
-
-add_executable (em_shower em_shower.cpp)
+add_executable (em_shower cascade_examples/em_shower.cpp)
 target_link_libraries (em_shower CORSIKA8::CORSIKA8)
 CORSIKA_REGISTER_EXAMPLE (em_shower RUN_OPTIONS 100 8472)
 
-add_executable (hybrid_MC hybrid_MC.cpp)
-target_link_libraries (hybrid_MC  CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (hybrid_MC RUN_OPTIONS 4 2 10000.)
-
-
-add_executable (corsika corsika.cpp)
-# for ICRC 2023
-option(WITH_FLUKA "use FLUKA instead of UrQMD in corsika.cpp")
 if (WITH_FLUKA)
-  target_compile_definitions(corsika PRIVATE WITH_FLUKA)
-  message("compiling corsika.cpp with FLUKA")
+  add_executable (mars cascade_examples/mars.cpp)
+  target_link_libraries (mars CORSIKA8::CORSIKA8)
+  message("FLUKA found, will make 'mars' example")
 else()
-  message("compiling corsika.cpp with UrQMD")
+  message("FLUKA not found, will not make 'mars' example")
 endif()
-target_link_libraries (corsika CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (corsika RUN_OPTIONS --energy=10 --zenith=10 --nevent=2 --filename=corsika_test --pdg=2212)
 
-add_executable (mars mars.cpp)
-target_link_libraries (mars CORSIKA8::CORSIKA8)
+add_executable (mc_conex cascade_examples/mc_conex.cpp)
+target_link_libraries (mc_conex  CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (mc_conex RUN_OPTIONS 4 2 10000.)
 
-add_executable (water water.cpp)
-target_link_libraries (water CORSIKA8::CORSIKA8)
+add_executable (radio_em_shower cascade_examples/radio_em_shower.cpp)
+target_link_libraries (radio_em_shower CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (radio_em_shower RUN_OPTIONS 10 1121673489)
 
-add_executable (environment environment.cpp)
+if (WITH_FLUKA)
+  add_executable (water cascade_examples/water.cpp)
+  target_link_libraries (water CORSIKA8::CORSIKA8)
+  message("FLUKA found, will make 'water' example")
+else()
+  message("FLUKA not found, will not make 'water' example")
+endif()
 
+
+#####################
+## framework_examples
+#####################
+
+add_executable (boundary_crossing framework_examples/boundary_crossing.cpp)
+target_link_libraries (boundary_crossing CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (boundary_crossing)
+
+add_executable (environment framework_examples/environment.cpp)
 target_link_libraries (environment CORSIKA8::CORSIKA8)
-add_executable (synchrotron_test_manual_tracking synchrotron_test_manual_tracking.cpp)
-target_link_libraries (synchrotron_test_manual_tracking CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (synchrotron_test_manual_tracking)
 
-add_executable (synchrotron_test_C8tracking synchrotron_test_C8tracking.cpp)
+add_executable (geometry framework_examples/geometry.cpp)
+target_link_libraries (geometry CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (geometry)
+
+add_executable (helix_trajectory framework_examples/helix_trajectory.cpp)
+target_link_libraries (helix_trajectory CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (helix_trajectory)
+
+add_executable (known_particles framework_examples/known_particles.cpp)
+target_link_libraries (known_particles CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (known_particles)
+
+add_executable (stack framework_examples/stack.cpp)
+target_link_libraries (stack CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (stack)
+
+add_executable (static_sequence framework_examples/static_sequence.cpp)
+target_link_libraries (static_sequence CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (static_sequence)
+
+
+###################
+## physics_examples
+###################
+
+add_executable (stopping_power physics_examples/stopping_power.cpp)
+target_link_libraries (stopping_power CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (stopping_power)
+
+add_executable (synchrotron_clover_leaf physics_examples/synchrotron_clover_leaf.cpp)
+target_link_libraries (synchrotron_clover_leaf CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (synchrotron_clover_leaf)
+
+add_executable (synchrotron_test_C8tracking physics_examples/synchrotron_test_C8tracking.cpp)
 target_link_libraries (synchrotron_test_C8tracking CORSIKA8::CORSIKA8)
 CORSIKA_REGISTER_EXAMPLE (synchrotron_test_C8tracking)
 
-add_executable (clover_leaf clover_leaf.cpp)
-target_link_libraries (clover_leaf CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (clover_leaf)
-
-add_executable (radio_em_shower radio_em_shower.cpp)
-target_link_libraries (radio_em_shower CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (radio_em_shower RUN_OPTIONS 10 1121673489)
+add_executable (synchrotron_test_manual_tracking physics_examples/synchrotron_test_manual_tracking.cpp)
+target_link_libraries (synchrotron_test_manual_tracking CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (synchrotron_test_manual_tracking)

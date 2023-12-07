@@ -46,7 +46,7 @@ namespace corsika::proposal {
     }
 
     return lowest_table_value;
-  };
+  }
 
   template <typename TEnvironment>
   inline ProposalProcessBase::ProposalProcessBase(TEnvironment const& _env) {

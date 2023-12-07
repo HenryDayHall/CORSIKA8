@@ -9,7 +9,6 @@
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/ShowerAxis.hpp>
 
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/modules/BetheBlochPDG.hpp>
@@ -30,7 +29,7 @@ using namespace std;
 //
 int main() {
 
-  logging::set_level(logging::level::warn);
+  logging::set_level(logging::level::info);
 
   CORSIKA_LOG_INFO("stopping_power");
 
@@ -52,7 +51,9 @@ int main() {
 
   setup::Stack<EnvType> stack;
 
-  std::ofstream file("dEdX.dat");
+  std::string fileName = "dEdX.dat";
+  CORSIKA_LOG_INFO("Writing to file {}", fileName);
+  std::ofstream file(fileName);
   file << "# beta*gamma, dE/dX / MeV/(g/cm²)" << std::endl;
 
   for (HEPEnergyType E0 = 200_MeV; E0 < 1_PeV; E0 *= 1.05) {
@@ -79,5 +80,5 @@ int main() {
     HEPEnergyType dE = eLoss.getTotalEnergyLoss(p, 1_g / square(1_cm));
     file << P0 / mass << "\t" << -dE / 1_MeV << std::endl;
   }
-  CORSIKA_LOG_INFO("finished writing dEdX.dat");
+  CORSIKA_LOG_INFO("finished writing {}", fileName);
 }

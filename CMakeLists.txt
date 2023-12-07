@@ -262,6 +262,13 @@ add_subdirectory (modules/conex)
 add_subdirectory (modules/epos)
 add_subdirectory (modules/fluka)
 
+#
+#+++++++++++++++++++++++++++++++
+# standard applications
+#
+
+add_subdirectory(applications)
+
 #+++++++++++++++++++++++++++++++
 # unit testing
 #

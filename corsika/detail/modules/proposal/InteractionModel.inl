@@ -56,7 +56,8 @@ namespace corsika::proposal {
   template <typename TStackView>
   inline ProcessReturn
   InteractionModel<THadronicLEModel, THadronicHEModel>::doInteraction(
-      TStackView& view, Code const projectileId, FourMomentum const& projectileP4) {
+      TStackView& view, Code const projectileId,
+      [[maybe_unused]] FourMomentum const& projectileP4) {
 
     auto const projectile = view.getProjectile();
 

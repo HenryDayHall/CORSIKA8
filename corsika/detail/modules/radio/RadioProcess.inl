@@ -57,7 +57,8 @@ namespace corsika {
   template <typename Particle, typename Track>
   inline LengthType
   RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>::getMaxStepLength(
-      const Particle& vParticle, const Track& vTrack) const {
+      [[maybe_unused]] const Particle& vParticle,
+      [[maybe_unused]] const Track& vTrack) const {
     return meter * std::numeric_limits<double>::infinity();
   }
 
