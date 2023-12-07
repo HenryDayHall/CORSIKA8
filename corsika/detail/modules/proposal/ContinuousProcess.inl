@@ -48,8 +48,8 @@ namespace corsika::proposal {
   template <typename TEnvironment, typename... TOutputArgs>
   inline ContinuousProcess<TOutput>::ContinuousProcess(TEnvironment const& _env,
                                                        TOutputArgs&&... args)
-      : TOutput(args...)
-      , ProposalProcessBase(_env) {}
+      : ProposalProcessBase(_env)
+      , TOutput(args...) {}
 
   template <typename TOutput>
   template <typename TParticle>

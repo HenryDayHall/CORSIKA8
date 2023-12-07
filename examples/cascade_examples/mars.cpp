@@ -30,6 +30,7 @@
 
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
 #include <corsika/modules/writers/LongitudinalWriter.hpp>
+#include <corsika/modules/writers/PrimaryWriter.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/output/OutputManager.hpp>
 
@@ -55,7 +56,7 @@
 #include <corsika/modules/Sophia.hpp>
 #include <corsika/modules/StackInspector.hpp>
 #include <corsika/modules/TrackWriter.hpp>
-#include <corsika/modules/UrQMD.hpp>
+#include <corsika/modules/FLUKA.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -74,8 +75,9 @@ using namespace std;
 
 using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
 using EnvType = Environment<EnvironmentInterface>;
-
-using Particle = setup::Stack<EnvType>::particle_type;
+using StackType = setup::Stack<EnvType>;
+using TrackingType = setup::Tracking;
+using Particle = StackType::particle_type;
 
 typedef decltype(1 * pascal) PressureType;
 typedef decltype(1 * degree_celsius) TemperatureType;
@@ -111,7 +113,7 @@ void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().registerRandomStream("sibyll");
   RNGManager<>::getInstance().registerRandomStream("sophia");
   RNGManager<>::getInstance().registerRandomStream("pythia");
-  RNGManager<>::getInstance().registerRandomStream("urqmd");
+  RNGManager<>::getInstance().registerRandomStream("fluka");
   RNGManager<>::getInstance().registerRandomStream("proposal");
   if (seed == 0) {
     std::random_device rd;
@@ -200,8 +202,6 @@ int main(int argc, char** argv) {
   }
 
   // check that we got either PDG or A/Z
-  // this can be done with option_groups but the ordering
-  // gets all messed up
   if (app.count("--pdg") == 0) {
     if ((app.count("-A") == 0) || (app.count("-Z") == 0)) {
       CORSIKA_LOG_ERROR("If --pdg is not provided, then both -A and -Z are required.");
@@ -224,12 +224,10 @@ int main(int argc, char** argv) {
           Medium::AirDry1Atm,                           // Mars, close enough
           MagneticFieldVector{rootCS, 0_T, 0_uT, 0_T}); // Mars
 
-  builder.setNuclearComposition(                             // Mars
-      {{Code::Nitrogen, Code::Oxygen}, {1. / 3., 2. / 3.}}); // simplified
-  //{{Code::Carbon, Code::Oxygen, // 95.97 CO2
-  //          Code::Nitrogen},            // 1.89 N2 + 1.93 Argon + 0.146 O2
-  //       {0.9597 / 3, 0.9597 * 2 / 3,
-  //      1 - 0.9597}}); // values taken from AIRES manual, Ar removed for now
+  builder.setNuclearComposition(                   // Mars
+      {{Code::Carbon, Code::Oxygen,                // 95.97 CO2
+        Code::Nitrogen},                           // 1.89 N2 + 1.93 Argon + 0.146 O2
+       {0.9597 / 3, 0.9597 * 2 / 3, 1 - 0.9597}}); // values taken from AIRES manual
 
   MarsAtmModel layer1(0.699e3 * pascal, 0.00009 / 1_m, 31.0 * degree_celsius,
                       0.000998 * 1 * degree_celsius / 1_m);
@@ -305,8 +303,10 @@ int main(int argc, char** argv) {
   OutputManager output(app["--filename"]->as<std::string>());
 
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
+  auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
+  uint const nAxisBins = showerAxis.getMaximumX() / dX + 1; // Get maximum number of bins
 
-  EnergyLossWriter dEdX{showerAxis};
+  EnergyLossWriter dEdX{showerAxis, dX, nAxisBins};
   output.add("energyloss", dEdX);
 
   HEPEnergyType const emcut = 1_GeV;
@@ -338,13 +338,13 @@ int main(int argc, char** argv) {
   auto emContinuous =
       make_select(EMHadronSwitch(), emContinuousBethe, emContinuousProposal);
 
-  LongitudinalWriter longprof{showerAxis};
+  LongitudinalWriter longprof{showerAxis, nAxisBins, dX};
   output.add("profile", longprof);
   LongitudinalProfile<SubWriter<decltype(longprof)>> profile{longprof};
 
-  corsika::urqmd::UrQMD urqmd;
-  InteractionCounter urqmdCounted{urqmd};
-  StackInspector<setup::Stack<EnvType>> stackInspect(5000, false, E0);
+  corsika::fluka::Interaction leIntModel{env};
+  InteractionCounter leIntCounted{leIntModel};
+  StackInspector<StackType> stackInspect(5000, false, E0);
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {
@@ -354,7 +354,7 @@ int main(int argc, char** argv) {
     bool operator()(Particle const& p) const { return (p.getKineticEnergy() < cutE_); }
   };
   auto hadronSequence =
-      make_select(EnergySwitch(heHadronModelThreshold), urqmdCounted, sibyllCounted);
+      make_select(EnergySwitch(heHadronModelThreshold), leIntCounted, sibyllCounted);
 
   // track writer
   TrackWriter trackWriter;
@@ -362,10 +362,13 @@ int main(int argc, char** argv) {
 
   // observation plane
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane<setup::Tracking> observationLevel(
-      obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
+  ObservationPlane<TrackingType> observationLevel(obsPlane,
+                                                  DirectionVector(rootCS, {1., 0., 0.}));
   // register the observation plane with the output
   output.add("particles", observationLevel);
+
+  PrimaryWriter<TrackingType, ParticleWriterParquet> primaryWriter(observationLevel);
+  output.add("primary", primaryWriter);
 
   // assemble the final process sequence
   auto sequence =
@@ -375,18 +378,19 @@ int main(int argc, char** argv) {
 
   // create the cascade object using the default stack and tracking
   // implementation
-  setup::Tracking tracking;
-  setup::Stack<EnvType> stack;
+  TrackingType tracking;
+  StackType stack;
   Cascade EAS(env, tracking, sequence, output, stack);
 
   // print our primary parameters all in one place
   if (app["--pdg"]->count() > 0) {
-    CORSIKA_LOG_INFO("Primary PDG ID: {}", app["--pdg"]->as<int>());
+    CORSIKA_LOG_INFO("Primary PDG ID:     {}", app["--pdg"]->as<int>());
   } else {
-    CORSIKA_LOG_INFO("Primary Z/A: {}/{}", Z, A);
+    CORSIKA_LOG_INFO("Primary Z/A:        {}/{}", Z, A);
   }
-  CORSIKA_LOG_INFO("Primary Energy: {}", E0);
-  CORSIKA_LOG_INFO("Primary Momentum: {}", P0);
+  CORSIKA_LOG_INFO("Primary Energy:     {}", E0);
+  CORSIKA_LOG_INFO("Primary Momentum:   {}", P0);
+  CORSIKA_LOG_INFO("Primary Direction:  {}", plab.getNorm());
   CORSIKA_LOG_INFO("Point of Injection: {}", injectionPos.getCoordinates());
   CORSIKA_LOG_INFO("Shower Axis Length: {}", (showerCore - injectionPos).getNorm() * 1.2);
 
@@ -409,9 +413,12 @@ int main(int argc, char** argv) {
     stack.clear();
 
     // add the desired particle to the stack
-    stack.addParticle(std::make_tuple(
+    auto const primaryProperties = std::make_tuple(
         beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
-        plab.normalized(), injectionPos, 0_ns));
+        plab.normalized(), injectionPos, 0_ns);
+    stack.addParticle(primaryProperties);
+
+    primaryWriter.recordPrimary(primaryProperties);
 
     // run the shower
     EAS.run();
@@ -423,11 +430,6 @@ int main(int argc, char** argv) {
         "total energy budget (GeV): {}, "
         "relative difference (%): {}",
         Efinal / 1_GeV, (Efinal / E0 - 1) * 100);
-
-    auto const hists = sibyllCounted.getHistogram() + urqmdCounted.getHistogram();
-
-    save_hist(hists.labHist(), labHist_file, true);
-    save_hist(hists.CMSHist(), cMSHist_file, true);
 
     // trigger the output manager to save this shower to disk
     output.endOfShower();

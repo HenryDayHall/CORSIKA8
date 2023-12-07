@@ -122,12 +122,12 @@ namespace corsika {
     /**
      * Return a summary.
      */
-    YAML::Node getSummary() const;
+    YAML::Node getSummary() const override;
 
     /**
      * Return the configuration of this output.
      */
-    YAML::Node getConfig() const;
+    YAML::Node getConfig() const override;
 
     number_profile::ProfileData const& getProfile(
         number_profile::ProfileIndex index) const {

@@ -18,11 +18,14 @@ using namespace corsika;
 using namespace std;
 
 //
-// The example main program for a particle list
+// This example prints out all of the particles that are
+// known to CORSIKA 8 and the corresponding IDs in the
+// hadronic model codes.
 //
+
 int main() {
 
-  logging::set_level(logging::level::warn);
+  logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] %v");
 
   logging::info(
@@ -30,7 +33,7 @@ int main() {
       "------------------------------------------\n"
       "        particles in CORSIKA\n"
       "------------------------------------------\n");
-  int const width = 20 + 10 + 10 + 10 + 15 + 15 + 17;
+  int const width = 20 + 10 + 10 + 10 + 16 + 16 + 17;
   logging::info(
       "Name                 | "
       "PDG-id     | "
@@ -46,7 +49,7 @@ int main() {
                                  ? to_string(corsika::sibyll::getSibyllMass(p) / 1_GeV)
                                  : "");
       auto const qgs_id = corsika::qgsjetII::convertToQgsjetII(p);
-      logging::info("{:20} | {:10} | {:10} | {:10} | {:>15.5} | {:>15.5} |", p,
+      logging::info("{:20} | {:10} | {:10} | {:10} | {:>16.5} | {:>16.5} |", p,
                     static_cast<int>(get_PDG(p)),
                     (sib_id != corsika::sibyll::SibyllCode::Unknown
                          ? to_string(static_cast<int>(sib_id))

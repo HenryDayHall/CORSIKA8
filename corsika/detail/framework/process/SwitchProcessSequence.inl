@@ -77,10 +77,10 @@ namespace corsika {
   template <typename TCondition, typename TSequence, typename USequence, int IndexStart,
             int IndexProcess1, int IndexProcess2>
   template <typename TParticle>
-  inline ProcessReturn SwitchProcessSequence<
-      TCondition, TSequence, USequence, IndexStart, IndexProcess1,
-      IndexProcess2>::doContinuous(Step<TParticle>& step,
-                                   ContinuousProcessIndex const idLimit) {
+  inline ProcessReturn SwitchProcessSequence<TCondition, TSequence, USequence, IndexStart,
+                                             IndexProcess1, IndexProcess2>::
+      doContinuous(Step<TParticle>& step,
+                   [[maybe_unused]] ContinuousProcessIndex const idLimit) {
     if (select_(step.getParticlePre())) {
       if constexpr (process1_type::is_process_sequence) {
         return A_.doContinuous(step, idLimit);
@@ -218,10 +218,10 @@ namespace corsika {
   template <typename TCondition, typename TSequence, typename USequence, int IndexStart,
             int IndexProcess1, int IndexProcess2>
   template <typename TParticle>
-  CrossSectionType SwitchProcessSequence<
-      TCondition, TSequence, USequence, IndexStart, IndexProcess1,
-      IndexProcess2>::getCrossSection(TParticle const& projectile, Code const targetId,
-                                      FourMomentum const& targetP4) const {
+  CrossSectionType SwitchProcessSequence<TCondition, TSequence, USequence, IndexStart,
+                                         IndexProcess1, IndexProcess2>::
+      getCrossSection(TParticle const& projectile, [[maybe_unused]] Code const targetId,
+                      [[maybe_unused]] FourMomentum const& targetP4) const {
 
     if (select_(projectile)) {
       if constexpr (is_interaction_process_v<process1_type>) {

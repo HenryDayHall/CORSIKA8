@@ -162,10 +162,8 @@ namespace corsika {
     HEPEnergyType const dE = getTotalEnergyLoss(step.getParticlePre(), dX);
     //    if (dE > HEPEnergyType::zero())
     //      dE = -dE;
-    [[maybe_unused]] const auto Ekin = step.getEkinPre();
-    auto EkinNew = Ekin + dE;
     CORSIKA_LOG_TRACE("EnergyLoss  dE={} MeV, Ekin={} GeV, EkinNew={} GeV", dE / 1_MeV,
-                      Ekin / 1_GeV, EkinNew / 1_GeV);
+                      step.getEkinPre() / 1_GeV, (step.getEkinPre() + dE) / 1_GeV);
     step.add_dEkin(dE);
 
     // also send to output

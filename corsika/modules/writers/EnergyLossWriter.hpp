@@ -156,7 +156,7 @@ namespace corsika {
     /**
      * Return the configuration of this output.
      */
-    YAML::Node getConfig() const;
+    YAML::Node getConfig() const override;
 
   private:
     ShowerAxis const& showerAxis_; ///< conversion between geometry and grammage

@@ -6,50 +6,43 @@
  * the license.
  */
 
-/* clang-format off */
-// InteractionCounter used boost/histogram, which
-// fails if boost/type_traits have been included before. Thus, we have
-// to include it first...
-#include <corsika/framework/process/InteractionCounter.hpp>
-/* clang-format on */
-#include <corsika/framework/process/ProcessSequence.hpp>
-#include <corsika/framework/process/SwitchProcessSequence.hpp>
-#include <corsika/framework/process/InteractionCounter.hpp>
-#include <corsika/framework/geometry/Plane.hpp>
-#include <corsika/framework/geometry/Sphere.hpp>
-#include <corsika/framework/geometry/PhysicalGeometry.hpp>
-#include <corsika/framework/utility/SaveBoostHistogram.hpp>
-#include <corsika/framework/utility/CorsikaFenv.hpp>
+#include <corsika/framework/core/Cascade.hpp>
+#include <corsika/framework/core/EnergyMomentumOperations.hpp>
 #include <corsika/framework/core/Logging.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/core/Cascade.hpp>
 #include <corsika/framework/core/Step.hpp>
-#include <corsika/framework/core/EnergyMomentumOperations.hpp>
+#include <corsika/framework/geometry/PhysicalGeometry.hpp>
+#include <corsika/framework/geometry/Plane.hpp>
+#include <corsika/framework/geometry/Sphere.hpp>
+#include <corsika/framework/process/InteractionCounter.hpp>
+#include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/process/SwitchProcessSequence.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/utility/SaveBoostHistogram.hpp>
+// #include <corsika/framework/utility/CorsikaFenv.hpp>
 
-#include <corsika/output/OutputManager.hpp>
-#include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
 #include <corsika/modules/writers/LongitudinalWriter.hpp>
+#include <corsika/modules/writers/PrimaryWriter.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/output/OutputManager.hpp>
 
-#include <corsika/media/Environment.hpp>
-#include <corsika/media/FlatExponential.hpp>
-#include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
-#include <corsika/media/NuclearComposition.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
-#include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
+#include <corsika/media/Environment.hpp>
+#include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
+#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/ShowerAxis.hpp>
+#include <corsika/media/UniformMagneticField.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
-#include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/ParticleCut.hpp>
+#include <corsika/modules/PROPOSAL.hpp>
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Sibyll.hpp>
+#include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/UrQMD.hpp>
-#include <corsika/modules/PROPOSAL.hpp>
 #include <corsika/modules/CONEX.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
@@ -63,6 +56,12 @@
 using namespace corsika;
 using namespace std;
 
+//
+// An example of running an EAS where the hadronic cascade is
+// handled by sibyll+URQMD and the EM cascade is treated with
+// CONEX + Bethe Bloch (as opposed to PROPOSAL).
+//
+
 /**
  * Random number stream initialization
  *
@@ -70,17 +69,19 @@ using namespace std;
  */
 void registerRandomStreams(uint64_t seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
+  RNGManager<>::getInstance().registerRandomStream("conex");
+  RNGManager<>::getInstance().registerRandomStream("epos");
+  RNGManager<>::getInstance().registerRandomStream("proposal");
+  RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
-  RNGManager<>::getInstance().registerRandomStream("epos");
-  RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("urqmd");
-  RNGManager<>::getInstance().registerRandomStream("proposal");
-  RNGManager<>::getInstance().registerRandomStream("conex");
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
-    CORSIKA_LOG_INFO("new random seed (auto) {}", seed);
+    CORSIKA_LOG_INFO("random seed (auto) {} ", seed);
+  } else {
+    CORSIKA_LOG_INFO("random seed {} ", seed);
   }
   RNGManager<>::getInstance().setSeed(seed);
 }
@@ -141,8 +142,12 @@ private:
 /**
  * Selection of environment interface implementation:
  */
+using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using EnvType = Environment<EnvironmentInterface>;
 template <typename T>
 using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
+using StackType = setup::Stack<EnvType>;
+using TrackingType = setup::Tracking;
 
 int main(int argc, char** argv) {
 
@@ -157,7 +162,6 @@ int main(int argc, char** argv) {
         "       if no seed is given, a random seed is chosen");
     return 1;
   }
-  feenableexcept(FE_INVALID);
 
   uint64_t seed = 0;
   if (argc > 4) seed = std::stol(std::string(argv[4]));
@@ -165,20 +169,15 @@ int main(int argc, char** argv) {
   registerRandomStreams(seed);
 
   // setup environment, geometry
-  using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-  using EnvType = Environment<EnvironmentInterface>;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
 
   // build a Linsley US Standard atmosphere into `env`
+  MagneticFieldVector bField{rootCS, 50_uT, 0_T, 0_T};
   create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-      env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm,
-      MagneticFieldVector{rootCS, 0_T, 50_uT, 0_T});
+      env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm, bField);
 
-  // setup particle stack, and add primary particle
-  setup::Stack<EnvType> stack;
-  stack.clear();
   unsigned short const A = std::stoi(std::string(argv[1]));
   unsigned short const Z = std::stoi(std::string(argv[2]));
   Code const beamCode = get_nucleus_code(A, Z);
@@ -194,12 +193,6 @@ int main(int argc, char** argv) {
 
   auto const [px, py, pz] = momentumComponents(thetaRad, P0);
   auto plab = MomentumVector(rootCS, {px, py, pz});
-  CORSIKA_LOG_INFO(
-      "input particle: {}, "
-      "input angles: theta={}, "
-      "input momentum: {} GeV, "
-      ", norm={}",
-      beamCode, theta, plab.getComponents() / 1_GeV, plab.getNorm());
 
   auto const observationHeight = 0_km + constants::EarthRadius::Mean;
   auto const injectionHeight = 112.75_km + constants::EarthRadius::Mean;
@@ -211,28 +204,25 @@ int main(int argc, char** argv) {
       showerCore +
       Vector<dimensionless_d>{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
-  CORSIKA_LOG_INFO("point of injection: {} ", injectionPos.getCoordinates());
-
-  stack.addParticle(std::make_tuple(
-      Code::Proton, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
-      plab.normalized(), injectionPos, 0_ns));
-
-  CORSIKA_LOG_INFO("shower axis length: {} m",
-                   (showerCore - injectionPos).getNorm() * 1.02);
-
-  OutputManager output("hybrid_MC_outputs");
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
                               false, 1000};
+  auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
+  uint const nAxisBins = showerAxis.getMaximumX() / dX + 1; // Get maximum number of bins
 
-  // setup processes, decays and interactions
+  CORSIKA_LOG_INFO("Primary particle:   {}", beamCode);
+  CORSIKA_LOG_INFO("Zenith angle:       {} (rad)", theta);
+  CORSIKA_LOG_INFO("Momentum:           {} (GeV)", plab.getComponents() / 1_GeV);
+  CORSIKA_LOG_INFO("Propagation dir:    {}", plab.getNorm());
+  CORSIKA_LOG_INFO("Injection point:    {}", injectionPos.getCoordinates());
+  CORSIKA_LOG_INFO("shower axis length: {} ",
+                   (showerCore - injectionPos).getNorm() * 1.02);
 
-  corsika::sibyll::Interaction sibyll{env};
-  InteractionCounter sibyllCounted{sibyll};
+  // SETUP WRITERS
 
-  corsika::pythia8::Decay decayPythia;
+  OutputManager output("hybrid_MC_outputs");
 
   // register energy losses as output
-  EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
+  EnergyLossWriter dEdX{showerAxis, dX, nAxisBins};
   output.add("energyloss", dEdX);
 
   // create a track writer and register it with the output manager
@@ -242,18 +232,28 @@ int main(int argc, char** argv) {
   ParticleCut<SubWriter<decltype(dEdX)>> cut(3_GeV, false, dEdX);
   BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss(dEdX);
 
-  LongitudinalWriter profile{showerAxis, 10_g / square(1_cm)};
+  LongitudinalWriter profile{showerAxis, nAxisBins, dX};
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
+
+  Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
+  ObservationPlane<TrackingType> observationLevel(obsPlane,
+                                                  DirectionVector(rootCS, {1., 0., 0.}));
+  output.add("particles", observationLevel);
+
+  PrimaryWriter<TrackingType, ParticleWriterParquet> primaryWriter(observationLevel);
+  output.add("primary", primaryWriter);
+
+  // SETUP PROCESSES, DECAYS, INTERACTIONS
+
+  corsika::sibyll::Interaction sibyll{env};
+  InteractionCounter sibyllCounted{sibyll};
+
+  corsika::pythia8::Decay decayPythia;
 
   CONEXhybrid // SubWriter<decltype(dEdX>, SubWriter<decltype(profile)>>
       conex_model(center, showerAxis, t, injectionHeight, E0, get_PDG(Code::Proton), dEdX,
                   profile);
-
-  Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane<setup::Tracking> observationLevel(
-      obsPlane, DirectionVector(rootCS, {1., 0., 0.}), "particles.dat");
-  output.add("obsplane", observationLevel);
 
   corsika::urqmd::UrQMD urqmd_model;
   InteractionCounter urqmdCounted{urqmd_model};
@@ -265,7 +265,7 @@ int main(int argc, char** argv) {
     HEPEnergyType cutE_;
     EnergySwitch(HEPEnergyType cutE)
         : cutE_(cutE) {}
-    bool operator()(const setup::Stack<EnvType>::particle_type& p) const {
+    bool operator()(const StackType::particle_type& p) const {
       return (p.getEnergy() < cutE_);
     }
   };
@@ -273,17 +273,27 @@ int main(int argc, char** argv) {
   auto sequence = make_sequence(hadronSequence, decayPythia, eLoss, cut, conex_model,
                                 longprof, observationLevel, trackCheck);
 
+  StackType stack;
+  stack.clear();
+
   // define air shower object, run simulation
-  setup::Tracking tracking;
+  TrackingType tracking;
   Cascade EAS(env, tracking, sequence, output, stack);
+
+  output.startOfLibrary();
+
+  auto const primaryProperties = std::make_tuple(
+      Code::Proton, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
+      plab.normalized(), injectionPos, 0_ns);
+
+  stack.addParticle(primaryProperties);
+  primaryWriter.recordPrimary(primaryProperties);
 
   // to fix the point of first interaction, uncomment the following two lines:
   //  EAS.SetNodes();
   //  EAS.forceInteraction();
 
-  output.startOfLibrary();
   EAS.run();
-  output.endOfLibrary();
 
   const HEPEnergyType Efinal = dEdX.getEnergyLost() + observationLevel.getEnergyGround();
   CORSIKA_LOG_INFO(
@@ -295,6 +305,8 @@ int main(int argc, char** argv) {
 
   save_hist(hists.labHist(), "inthist_lab_hybrid.npz", true);
   save_hist(hists.CMSHist(), "inthist_cms_hybrid.npz", true);
+
+  output.endOfLibrary();
 
   CORSIKA_LOG_INFO("done");
 }

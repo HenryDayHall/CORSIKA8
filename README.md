@@ -102,8 +102,6 @@ make install
 
 ### FLUKA support
 
-Warning: may only work when the next version of FLUKA is released (as of 2023.06.15)
-
 For legal reasons we do not distribute/bundle FLUKA together with CORSIKA 8.
 If you want to use FLUKA as low-energy hadronic interaction model, you have to download
 it separately from (http://www.fluka.org/), which requires registering there as FLUKA user.
@@ -142,22 +140,40 @@ make install
 To run the Unit Tests, just type `ctest` in your build area.
 
 
-## Running examples
+## Running applications and examples
+
+### Standard applications
+
+Applications for standard use-cases are located in the `applications` directory.
+These are example scripts that can be used directly or slightly modified for your use case.
+See [applications/README.md] for more.
+The applications are compiled automatically after running `make` and will appear your `corsika-build/bin` directory.
+After running `make install` the binaries will also be copied into your `corsika-install/bin` directory as well.
+
+
+For example, from inside your `corsika-install/bin` directory, run 
+```shell
+c8_air_shower --pdg 2212 -E 1e5 -f my_shower
+```
+This will run a vertical 100 TeV proton shower and will create and put the output into `./my_shower`.
+
 
 ### Building the examples
 
-From your top corsika build directory, (the one that includes `corsika-build` and `corsika-install`) type
+Unlike the applications, the examples must be compiled as a second step.
+From your top corsika directory, (the one that includes `corsika-build` and `corsika-install`) run
 ```shell
 cmake -Dcorsika_DIR=$PWD/corsika-build -S ./corsika/examples -B ./corsika-build-examples
 cd corsika-build-examples
 make -j4 #The number should match the number of available cores on your machine
 ```
 
-From any directory, run the program `corsika-build-examples/bin/corsika`. As an example, you can run with the following flags:
+You can run the examples by using the binaries in `corsika-build-examples/bin/`.
+For example:
 ```shell
-corsika-build-examples/bin/corsika  --pdg 2212 -E 1e5 -f my_shower
+corsika-build-examples/bin/known_particles
 ```
-This will run a vertical 100 TeV proton shower and will create and put the output into `./my_shower`.
+This will print out all of the particles that are known by CORSIKA.
 
 
 ### Generating doxygen documentation
