@@ -48,23 +48,26 @@ TEST_CASE("ObservationPlaneWriterParquet") {
 
     TestWriterPlane test(true);
     test.startOfLibrary(file_dir);
+
     test.startOfShower(0);
-
-    // write a few particles
     test.checkWrite();
-
     test.endOfShower(0);
+
     test.endOfLibrary();
 
     CHECK(boost::filesystem::exists(file_dir + "/particles.parquet"));
 
     auto const summary = test.getSummary();
 
-    CHECK(summary["Eground"].as<double>() == Approx(5));
-    CHECK(summary["hadrons"].as<int>() == Approx(1));
-    CHECK(summary["muons"].as<int>() == Approx(2));
-    CHECK(summary["em"].as<int>() == Approx(1));
-    CHECK(summary["others"].as<int>() == Approx(1));
+    CHECK(summary["shower_0"]["hadron"]["count"].as<double>() == Approx(1));
+    CHECK(summary["shower_0"]["muon"]["count"].as<double>() == Approx(2));
+    CHECK(summary["shower_0"]["em"]["count"].as<double>() == Approx(1));
+    CHECK(summary["shower_0"]["other"]["count"].as<double>() == Approx(1));
+
+    CHECK(summary["shower_0"]["hadron"]["kinetic_energy"].as<double>() == Approx(1));
+    CHECK(summary["shower_0"]["muon"]["kinetic_energy"].as<double>() == Approx(2));
+    CHECK(summary["shower_0"]["em"]["kinetic_energy"].as<double>() == Approx(1));
+    CHECK(summary["shower_0"]["other"]["kinetic_energy"].as<double>() == Approx(1));
 
     // clean things up
     if (boost::filesystem::exists(file_dir)) { boost::filesystem::remove_all(file_dir); }
@@ -80,23 +83,65 @@ TEST_CASE("ObservationPlaneWriterParquet") {
 
     TestWriterPlane test(false); // do not print the z-coord
     test.startOfLibrary(file_dir);
+
     test.startOfShower(0);
-
-    // write a few particles
     test.checkWrite();
-
     test.endOfShower(0);
+
     test.endOfLibrary();
 
     CHECK(boost::filesystem::exists(file_dir + "/particles.parquet"));
 
     auto const summary = test.getSummary();
 
-    CHECK(summary["Eground"].as<double>() == Approx(5));
-    CHECK(summary["hadrons"].as<int>() == Approx(1));
-    CHECK(summary["muons"].as<int>() == Approx(2));
-    CHECK(summary["em"].as<int>() == Approx(1));
-    CHECK(summary["others"].as<int>() == Approx(1));
+    CHECK(summary["shower_0"]["hadron"]["count"].as<double>() == Approx(1));
+    CHECK(summary["shower_0"]["muon"]["count"].as<double>() == Approx(2));
+    CHECK(summary["shower_0"]["em"]["count"].as<double>() == Approx(1));
+    CHECK(summary["shower_0"]["other"]["count"].as<double>() == Approx(1));
+
+    CHECK(summary["shower_0"]["hadron"]["kinetic_energy"].as<double>() == Approx(1));
+    CHECK(summary["shower_0"]["muon"]["kinetic_energy"].as<double>() == Approx(2));
+    CHECK(summary["shower_0"]["em"]["kinetic_energy"].as<double>() == Approx(1));
+    CHECK(summary["shower_0"]["other"]["kinetic_energy"].as<double>() == Approx(1));
+
+    // clean things up
+    if (boost::filesystem::exists(file_dir)) { boost::filesystem::remove_all(file_dir); }
+  }
+
+  SECTION("reset_between_showers") {
+    // Check that the counters are reset between showers
+
+    std::string const file_dir = "./output_dir_obs_plane_reset";
+
+    // preparation
+    if (boost::filesystem::exists(file_dir)) { boost::filesystem::remove_all(file_dir); }
+    boost::filesystem::create_directory(file_dir);
+
+    TestWriterPlane test(false); // do not print the z-coord
+    test.startOfLibrary(file_dir);
+
+    test.startOfShower(0);
+    test.checkWrite();
+    test.endOfShower(0);
+
+    test.startOfShower(1);
+    test.checkWrite();
+    test.endOfShower(1);
+
+    auto const summary = test.getSummary();
+
+    CHECK(summary["shower_0"]["hadron"]["count"].as<double>() ==
+          summary["shower_1"]["hadron"]["count"].as<double>());
+    CHECK(summary["shower_0"]["muon"]["count"].as<double>() ==
+          summary["shower_1"]["muon"]["count"].as<double>());
+    CHECK(summary["shower_0"]["em"]["count"].as<double>() ==
+          summary["shower_1"]["em"]["count"].as<double>());
+    CHECK(summary["shower_0"]["other"]["count"].as<double>() ==
+          summary["shower_1"]["other"]["count"].as<double>());
+
+    CHECK(boost::filesystem::exists(file_dir + "/particles.parquet"));
+
+    test.endOfLibrary();
 
     // clean things up
     if (boost::filesystem::exists(file_dir)) { boost::filesystem::remove_all(file_dir); }
