@@ -207,7 +207,6 @@ int main(int argc, char** argv) {
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
                               false, 1000};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
-  uint const nAxisBins = showerAxis.getMaximumX() / dX + 1; // Get maximum number of bins
 
   CORSIKA_LOG_INFO("Primary particle:   {}", beamCode);
   CORSIKA_LOG_INFO("Zenith angle:       {} (rad)", theta);
@@ -222,7 +221,7 @@ int main(int argc, char** argv) {
   OutputManager output("hybrid_MC_outputs");
 
   // register energy losses as output
-  EnergyLossWriter dEdX{showerAxis, dX, nAxisBins};
+  EnergyLossWriter dEdX{showerAxis, dX};
   output.add("energyloss", dEdX);
 
   // create a track writer and register it with the output manager
@@ -232,7 +231,7 @@ int main(int argc, char** argv) {
   ParticleCut<SubWriter<decltype(dEdX)>> cut(3_GeV, false, dEdX);
   BetheBlochPDG<SubWriter<decltype(dEdX)>> eLoss(dEdX);
 
-  LongitudinalWriter profile{showerAxis, nAxisBins, dX};
+  LongitudinalWriter profile{showerAxis, dX};
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 

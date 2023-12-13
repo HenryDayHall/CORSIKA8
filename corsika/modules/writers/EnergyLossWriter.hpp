@@ -111,9 +111,17 @@ namespace corsika {
     /**
      * Construct a new writer.
      */
+
+    // Number of bins defined explicitly
     EnergyLossWriter(ShowerAxis const& axis,
                      GrammageType dX = 10_g / square(1_cm), // profile binning
-                     unsigned int const nBins = 200,        // number of bins
+                     GrammageType dX_threshold = 0.0001_g /
+                                                 square(1_cm)); // ignore too short tracks
+
+    // Number of bins defined explicitly
+    EnergyLossWriter(ShowerAxis const& axis,
+                     unsigned int const nBins,              // number of bins
+                     GrammageType dX = 10_g / square(1_cm), // profile binning
                      GrammageType dX_threshold = 0.0001_g /
                                                  square(1_cm)); // ignore too short tracks
 
@@ -140,6 +148,8 @@ namespace corsika {
      */
     void write(GrammageType const Xstart, GrammageType const Xend, Code const PID,
                HEPEnergyType const dE);
+
+    auto GetNBins() const { return nBins_; }
 
     /**
      * Get total observed energy loss.

@@ -304,9 +304,8 @@ int main(int argc, char** argv) {
 
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
-  uint const nAxisBins = showerAxis.getMaximumX() / dX + 1; // Get maximum number of bins
 
-  EnergyLossWriter dEdX{showerAxis, dX, nAxisBins};
+  EnergyLossWriter dEdX{showerAxis, dX};
   output.add("energyloss", dEdX);
 
   HEPEnergyType const emcut = 1_GeV;
@@ -338,7 +337,7 @@ int main(int argc, char** argv) {
   auto emContinuous =
       make_select(EMHadronSwitch(), emContinuousBethe, emContinuousProposal);
 
-  LongitudinalWriter longprof{showerAxis, nAxisBins, dX};
+  LongitudinalWriter longprof{showerAxis, dX};
   output.add("profile", longprof);
   LongitudinalProfile<SubWriter<decltype(longprof)>> profile{longprof};
 

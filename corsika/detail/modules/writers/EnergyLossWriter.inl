@@ -21,7 +21,15 @@ namespace corsika {
   template <typename TOutput>
   inline EnergyLossWriter<TOutput>::EnergyLossWriter(ShowerAxis const& axis,
                                                      GrammageType dX,
+                                                     GrammageType dX_threshold)
+      : EnergyLossWriter<TOutput>{axis,
+                                  static_cast<unsigned int>(axis.getMaximumX() / dX) + 1,
+                                  dX, dX_threshold} {}
+
+  template <typename TOutput>
+  inline EnergyLossWriter<TOutput>::EnergyLossWriter(ShowerAxis const& axis,
                                                      unsigned int const nBins,
+                                                     GrammageType dX,
                                                      GrammageType dX_threshold)
       : TOutput(dEdX_output::ProfileIndexNames)
       , showerAxis_(axis)

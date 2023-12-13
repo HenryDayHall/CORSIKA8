@@ -134,7 +134,6 @@ int main(int argc, char** argv) {
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
                               false, 1000};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
-  uint const nAxisBins = showerAxis.getMaximumX() / dX + 1; // Get maximum number of bins
 
   CORSIKA_LOG_INFO("Primary particle:   {}", beamCode);
   CORSIKA_LOG_INFO("Zenith angle:       {} (rad)", theta);
@@ -145,7 +144,7 @@ int main(int argc, char** argv) {
                    (showerCore - injectionPos).getNorm() * 1.02);
 
   // setup processes, decays and interactions
-  EnergyLossWriter energyloss{showerAxis, dX, nAxisBins};
+  EnergyLossWriter energyloss{showerAxis, dX};
   ParticleCut<SubWriter<decltype(energyloss)>> cut(5_MeV, 5_MeV, 100_GeV, 100_GeV, true,
                                                    energyloss);
 
@@ -167,7 +166,7 @@ int main(int argc, char** argv) {
   TrackWriter tracks;
   output.add("tracks", tracks);
 
-  LongitudinalWriter profile{showerAxis, nAxisBins, dX};
+  LongitudinalWriter profile{showerAxis, dX};
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
