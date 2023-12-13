@@ -15,7 +15,6 @@ namespace corsika {
   inline ParticleWriterParquet::ParticleWriterParquet(bool const printZ)
       : output_()
       , showerId_(0)
-      , totalEnergy_(0_eV)
       , printZ_(printZ) {}
 
   inline void ParticleWriterParquet::startOfLibrary(
@@ -59,18 +58,57 @@ namespace corsika {
 
   inline void ParticleWriterParquet::startOfShower(unsigned int const showerId) {
     showerId_ = showerId;
-    totalEnergy_ = 0_eV;
+
     countHadrons_ = 0;
     countOthers_ = 0;
     countEM_ = 0;
     countMuons_ = 0;
+
+    kineticEnergyHadrons_ = 0_eV;
+    kineticEnergyMuons_ = 0_eV;
+    kineticEnergyEM_ = 0_eV;
+    kineticEnergyOthers_ = 0_eV;
+
+    totalEnergyHadrons_ = 0_eV;
+    totalEnergyMuons_ = 0_eV;
+    totalEnergyEM_ = 0_eV;
+    totalEnergyOthers_ = 0_eV;
   }
 
-  inline void ParticleWriterParquet::endOfShower(unsigned int const) {}
+  inline void ParticleWriterParquet::endOfShower(unsigned int const) {
+    summary_["shower_" + std::to_string(showerId_)]["hadron"]["count"] = countHadrons_;
+    summary_["shower_" + std::to_string(showerId_)]["hadron"]["kinetic_energy"] =
+        kineticEnergyHadrons_ / 1_GeV;
+    summary_["shower_" + std::to_string(showerId_)]["hadron"]["total_energy"] =
+        totalEnergyHadrons_ / 1_GeV;
+
+    summary_["shower_" + std::to_string(showerId_)]["muon"]["count"] = countMuons_;
+    summary_["shower_" + std::to_string(showerId_)]["muon"]["kinetic_energy"] =
+        kineticEnergyMuons_ / 1_GeV;
+    summary_["shower_" + std::to_string(showerId_)]["muon"]["total_energy"] =
+        totalEnergyMuons_ / 1_GeV;
+
+    summary_["shower_" + std::to_string(showerId_)]["em"]["count"] = countEM_;
+    summary_["shower_" + std::to_string(showerId_)]["em"]["kinetic_energy"] =
+        kineticEnergyEM_ / 1_GeV;
+    summary_["shower_" + std::to_string(showerId_)]["em"]["total_energy"] =
+        totalEnergyEM_ / 1_GeV;
+
+    summary_["shower_" + std::to_string(showerId_)]["other"]["count"] = countOthers_;
+    summary_["shower_" + std::to_string(showerId_)]["other"]["kinetic_energy"] =
+        kineticEnergyOthers_ / 1_GeV;
+    summary_["shower_" + std::to_string(showerId_)]["other"]["total_energy"] =
+        totalEnergyOthers_ / 1_GeV;
+  }
 
   inline void ParticleWriterParquet::endOfLibrary() { output_.closeStreamer(); }
 
-  inline void ParticleWriterParquet::write(Code const pid, HEPEnergyType const energy,
+  inline HEPEnergyType ParticleWriterParquet::getEnergyGround() const {
+    return totalEnergyHadrons_ + totalEnergyMuons_ + totalEnergyEM_ + totalEnergyOthers_;
+  }
+
+  inline void ParticleWriterParquet::write(Code const pid,
+                                           HEPEnergyType const kineticEnergy,
                                            LengthType const x, LengthType const y,
                                            LengthType const z, double const nx,
                                            double const ny, double const nz,
@@ -78,7 +116,7 @@ namespace corsika {
 
     // write the next row - we must write `shower_` first.
     *(output_.getWriter()) << showerId_ << static_cast<int>(get_PDG(pid))
-                           << static_cast<float>(energy / 1_GeV)
+                           << static_cast<float>(kineticEnergy / 1_GeV)
                            << static_cast<float>(x / 1_m) << static_cast<float>(y / 1_m);
     if (printZ_) { *(output_.getWriter()) << static_cast<float>(z / 1_m); }
 
@@ -86,30 +124,28 @@ namespace corsika {
                            << static_cast<float>(nz) << static_cast<double>(t / 1_s)
                            << static_cast<float>(weight) << parquet::EndRow;
 
-    totalEnergy_ += energy;
-
     if (is_hadron(pid)) {
       ++countHadrons_;
+      kineticEnergyHadrons_ += kineticEnergy;
+      totalEnergyHadrons_ += kineticEnergy + get_mass(pid);
     } else if (is_muon(pid)) {
       ++countMuons_;
+      kineticEnergyMuons_ += kineticEnergy;
+      totalEnergyMuons_ += kineticEnergy + get_mass(pid);
     } else if (is_em(pid)) {
       ++countEM_;
+      kineticEnergyEM_ += kineticEnergy;
+      totalEnergyEM_ += kineticEnergy + get_mass(pid);
     } else {
       ++countOthers_;
+      kineticEnergyOthers_ += kineticEnergy;
+      totalEnergyOthers_ += kineticEnergy + get_mass(pid);
     }
   }
 
   /**
    * Return collected library-level summary for output.
    */
-  inline YAML::Node ParticleWriterParquet::getSummary() const {
-    YAML::Node summary;
-    summary["Eground"] = totalEnergy_ / 1_GeV;
-    summary["hadrons"] = countHadrons_;
-    summary["muons"] = countMuons_;
-    summary["em"] = countEM_;
-    summary["others"] = countOthers_;
-    return summary;
-  }
+  inline YAML::Node ParticleWriterParquet::getSummary() const { return summary_; }
 
 } // namespace corsika
