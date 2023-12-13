@@ -200,12 +200,11 @@ int main(int argc, char** argv) {
   // * longitutional profile
   ShowerAxis const showerAxis{injectionPos, 1.2 * injectorLength * downVec, env};
   auto const dX = 1_g / square(1_cm); // Binning of the writers along the shower axis
-  uint const nAxisBins = showerAxis.getMaximumX() / dX + 1; // Get maximum number of bins
-  LongitudinalWriter longiWriter{showerAxis, nAxisBins, dX};
+  LongitudinalWriter longiWriter{showerAxis, dX};
   LongitudinalProfile<SubWriter<decltype(longiWriter)>> longprof{longiWriter};
 
   // * energy loss profile
-  EnergyLossWriter dEdX{showerAxis, dX, nAxisBins};
+  EnergyLossWriter dEdX{showerAxis, dX};
 
   // * physical process list
   // particle production threshold

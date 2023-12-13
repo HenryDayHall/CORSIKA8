@@ -353,7 +353,6 @@ int main(int argc, char** argv) {
   // profile will go beyond the core, depending on zenith angle
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
-  uint const nAxisBins = showerAxis.getMaximumX() / dX + 1; // Get maximum number of bins
   /* === END: CONSTRUCT GEOMETRY === */
 
   double const emthinfrac = app["--emthin"]->as<double>();
@@ -372,7 +371,7 @@ int main(int argc, char** argv) {
   OutputManager output(app["--filename"]->as<std::string>(), seed, args.str(), outputDir);
 
   // register energy losses as output
-  EnergyLossWriter dEdX{showerAxis, dX, nAxisBins};
+  EnergyLossWriter dEdX{showerAxis, dX};
   output.add("energyloss", dEdX);
 
   DynamicInteractionProcess<StackType> heModel;
@@ -434,7 +433,7 @@ int main(int argc, char** argv) {
   auto emContinuous =
       make_select(EMHadronSwitch(), emContinuousBethe, emContinuousProposal);
 
-  LongitudinalWriter profile{showerAxis, nAxisBins, dX};
+  LongitudinalWriter profile{showerAxis, dX};
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 

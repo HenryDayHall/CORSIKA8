@@ -62,7 +62,7 @@ TEST_CASE("EnergyLossWriter") {
   [[maybe_unused]] auto const& node_dummy = nodePtr;
 
   auto const observationHeight = 0_km;
-  auto const injectionHeight = 10_km;
+  auto const injectionHeight = 20_km;
   auto const t = -observationHeight + injectionHeight;
   Point const showerCore{cs, 0_m, 0_m, observationHeight};
   Point const injectionPos = showerCore + DirectionVector{cs, {0, 0, 1}} * t;
@@ -71,14 +71,14 @@ TEST_CASE("EnergyLossWriter") {
                               false, // -> throw exceptions
                               1000}; // -> number of bins
 
+  std::string const outputDir = "./output_dir_eloss";
+
   // preparation
-  if (boost::filesystem::exists("./output_dir_eloss")) {
-    boost::filesystem::remove_all("./output_dir_eloss");
-  }
-  boost::filesystem::create_directory("./output_dir_eloss");
+  if (boost::filesystem::exists(outputDir)) { boost::filesystem::remove_all(outputDir); }
+  boost::filesystem::create_directory(outputDir);
 
   TestEnergyLoss test(showerAxis);
-  test.startOfLibrary("./output_dir_eloss");
+  test.startOfLibrary(outputDir);
   test.startOfShower(0);
 
   CHECK(test.getEnergyLost() / 1_GeV == Approx(0));
@@ -116,7 +116,7 @@ TEST_CASE("EnergyLossWriter") {
   test.endOfShower(0);
   test.endOfLibrary();
 
-  CHECK(boost::filesystem::exists("./output_dir_eloss/dEdX.parquet"));
+  CHECK(boost::filesystem::exists(outputDir + "/dEdX.parquet"));
 
   auto const config = test.getConfig();
   CHECK(config["type"].as<std::string>() == "EnergyLoss");
@@ -128,7 +128,7 @@ TEST_CASE("EnergyLossWriter") {
 
   auto const summary = test.getSummary();
   CHECK(summary["sum_dEdX"].as<double>() == 600);
-  // makes not yet sense:
-  // CHECK(summary["Xmax"].as<double>() == 200);
-  // CHECK(summary["dEdXmax"].as<double>() == 200);
+
+  // clean up
+  if (boost::filesystem::exists(outputDir)) { boost::filesystem::remove_all(outputDir); }
 }
