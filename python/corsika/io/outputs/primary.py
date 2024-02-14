@@ -7,6 +7,7 @@
  Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  the license.
 """
+
 import logging
 import os.path as op
 from typing import Any
