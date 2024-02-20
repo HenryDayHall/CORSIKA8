@@ -33,8 +33,7 @@ namespace corsika::pythia8 {
     // run this only once during construction
 
     // link random number generator in pythia to CORSIKA8
-    Pythia8::RndmEngine* rndm = new corsika::pythia8::Random();
-    Pythia8::Pythia::setRndmEnginePtr(rndm);
+    Pythia8::Pythia::setRndmEnginePtr(std::make_shared<corsika::pythia8::Random>());
 
     Pythia8::Pythia::readString("Next:numberShowInfo = 0");
     Pythia8::Pythia::readString("Next:numberShowProcess = 0");

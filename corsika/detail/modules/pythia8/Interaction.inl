@@ -33,7 +33,7 @@ namespace corsika::pythia8 {
       : print_listing_(print_listing)
       , pythiaMain_{CORSIKA_Pythia8_XML_DIR, false}
       , pythiaColl_{CORSIKA_Pythia8_XML_DIR, false} {
-    Pythia8::RndmEngine* rndm = new corsika::pythia8::Random();
+    auto rndm = std::make_shared<corsika::pythia8::Random>();
     pythiaColl_.setRndmEnginePtr(rndm);
     pythiaMain_.setRndmEnginePtr(rndm);
 
