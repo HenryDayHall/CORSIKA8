@@ -60,10 +60,11 @@ You will also need:
 
 - Python 3 (supported versions are Python >= 3.6), with pip
 - conan (via pip)
-- cmake 
+- cmake > 3.4
 - git
 - g++, gfortran, binutils, make
 - optional: FLUKA (see below)
+
 
 On a bare Ubuntu 20.04, just add:
 ``` shell
@@ -76,13 +77,26 @@ Also initialize devtools, before building CORSIKA 8:
 source /opt/rh/devtoolset-9/enable
 ```
 
+### Creating a virtual environment and Conan
+
+It is recommended that you install CORSIKA 8 and its dependencies within a python3 virtual environment.
+To do so, you can run the following.
+``` shell
+# Create the environment using your native python3 binary
+python3 -m venv /path/to/new/virtual/environment/corsika-8
+# Load the environment (should be run each time you open a new terminal)
+source /path/to/new/virtual/environment/corsika-8/bin/activate
+
+```
+
+You will need to load the environment each time that you open a new terminal.
+
 CORSIKA 8 uses the [conan](https://conan.io/) package manager to
-manage our dependencies. Currently, version 1.55.0 or higher is required.
-If you do not have Conan installed, it can be
-installed with:
+manage our dependencies. Currently, version 1.57.0 or higher is required.  
+**Note**: if you are NOT using a virtual environment, you may want to use the `pip install --user` flag.
 
 ``` shell
-pip install --user conan~=1.57.0
+pip install conan~=1.57.0
 ```
 
 ### Compiling
@@ -90,6 +104,7 @@ pip install --user conan~=1.57.0
 Once Conan is installed, follow these steps to download and install CORSIKA 8:
 
 ``` shell
+cd ./top/directory/for/corsika/installation
 git clone --recursive https://gitlab.iap.kit.edu/AirShowerPhysics/corsika.git
 # Or for https: git clone --recursive git@gitlab.iap.kit.edu:AirShowerPhysics/corsika.git
 mkdir corsika-build
@@ -121,10 +136,11 @@ There are docker containers prepared that bring all the environment and packages
 
 You only need docker, e.g. on Ubunut: `sudo apt-get install docker` and of course root access.
 
-## Compiling
+### Compiling
 
 Follow these steps to download and install CORSIKA 8, master development version
 ```shell
+cd ./top/directory/for/corsika/installation
 git clone --recursive https://gitlab.iap.kit.edu/AirShowerPhysics/corsika.git
 sudo docker run -v $PWD:/corsika -it corsika/devel:clang-8 /bin/bash
 mkdir build
@@ -137,8 +153,12 @@ make install
 
 ## Runing Unit Tests
 
-To run the Unit Tests, just type `ctest` in your build area.
+To run the unit tests, do the following.
 
+```shell
+cd ./corsika-build
+ctest
+```
 
 ## Running applications and examples
 
