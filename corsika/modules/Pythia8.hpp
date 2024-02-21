@@ -9,4 +9,4 @@
 #pragma once
 
 #include <corsika/modules/pythia8/Decay.hpp>
-#include <corsika/modules/pythia8/Interaction.hpp>
+#include <corsika/modules/pythia8/NeutrinoInteraction.hpp>
