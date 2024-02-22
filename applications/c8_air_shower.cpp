@@ -218,6 +218,10 @@ int main(int argc, char** argv) {
   app.add_flag("--force-interaction", force_interaction,
                "Force the location of the first interaction.")
       ->group("Misc.");
+  bool disable_interaction_hists = false;
+  app.add_flag("--disable-interaction-histograms", disable_interaction_hists,
+               "Store interaction histograms")
+      ->group("Misc.");
   app.add_option("-v,--verbosity", "Verbosity level: warn, info, debug, trace.")
       ->default_val("info")
       ->check(CLI::IsMember({"warn", "info", "debug", "trace"}))
@@ -600,8 +604,10 @@ int main(int argc, char** argv) {
 
     CORSIKA_LOG_INFO("Shower {} / {} ", i_shower, nevent);
 
-    // directory for outputs
-    string const outdir(app["--filename"]->as<std::string>());
+    // directory for output of interaction histograms
+    string const outdir(app["--filename"]->as<std::string>() + "/interaction_hist");
+    // construct the directory
+    boost::filesystem::create_directories(outdir);
     string const labHist_file = outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
     string const cMSHist_file = outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
 
@@ -636,8 +642,10 @@ int main(int argc, char** argv) {
 
     auto const hists = heCounted.getHistogram() + leIntCounted.getHistogram();
 
-    save_hist(hists.labHist(), labHist_file, true);
-    save_hist(hists.CMSHist(), cMSHist_file, true);
+    if (!disable_interaction_hists) {
+      save_hist(hists.labHist(), labHist_file, true);
+      save_hist(hists.CMSHist(), cMSHist_file, true);
+    }
   }
 
   // and finalize the output on disk
