@@ -42,12 +42,12 @@ guidelines](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/MCNE
 
 
 ## Get in contact
-  * Connect to https://gitlab.iap.kit.edu register yourself and join the "Air Shower Physics" group. Write to one of the steering comittee members (https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/wikis/Steering-Committee) in case there are problems with that. 
+  * Join our chat threads using Mattermost via this [invite link](https://mattermost.hzdr.de/signup_user_complete/?id=xtdd8jyt6trbiezt71gaz3z4ge&md=link&sbr=su). Click the `GitLab` button, then `Sign in with Helmholtz ID`. You will be able to make an account by either finding your institution, or using your e.g. ORCID, GitHub, or Google account.
+
+  * Connect to https://gitlab.iap.kit.edu, register yourself and join the "Air Shower Physics" group. Write to us on Mattermost (in the User Questions channel), or directly contact one of the [steering comittee members](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/wikis/Steering-Committee) in case there are problems with that. 
   * Connect to corsika-devel@lists.kit.edu (self-register at
     https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in
     touch with the project.
-    
-  * Register on the corsika slack channel: https://corsika.slack.com
 
 
 ## Installation
@@ -120,12 +120,22 @@ make install
 For legal reasons we do not distribute/bundle FLUKA together with CORSIKA 8.
 If you want to use FLUKA as low-energy hadronic interaction model, you have to download
 it separately from (http://www.fluka.org/), which requires registering there as FLUKA user.
-You need to download binaries suitable for your system (check compiler and glibc versions)
-and unpack the binaries into a directory of your choice. You also need the data archive
-(fluka20xy.z-data.tar.gz) unpacked in the same directory. To compile CORSIKA 8 with FLUKA,
-you need to specify the path of libflukahp.a when invoking cmake with the option
-`-DC8_FLUKALIB=<path>`. CMake will print a status message indicating whether FLUKA support
-is enabled or disabled when the library is (not) found.
+The following should be done *before* compiling CORSIKA 8:
+
+ 1. Note your system's version of gcc (`gcc --version`) and glibc (`ldd --version`)
+ 2. Download the FLUKA __binary__, ensuring that it matches the versions you found above
+ 3. Download the FLUKA __data file__ (will be named something similar to __fluka20xy.z-data.tar.gz__).
+ 4. Un-tar the files that you downloaded using `tar -xf <filename>`
+ 5. Set environmental variables `export FLUFOR=gfortran` and `export FLUPRO=<path to where you unzipped the files>`. Note that the `FLUPRO` directory should contain __libflukahp.a__. Both of these variables will have to be set every time you open a new terminal.
+ 6. Go to the `FLUPRO` directory and run `make`. This will compile an exe, __flukahp__, in your current directory.
+ 7. Follow the normal steps to compile CORSIKA 8 (see above). However, during the `cmake` step, append the additional flag `-DWITH_FLUKA=ON`
+
+When you install CORSIKA 8, you should see a message during the __cmake__ step indicating the FLUKA was correctly found.
+
+``` shell
+libflukahp.a found in directory <some location here> via FLUPRO environment variable
+FLUKA support is enabled.
+```
 
 
 ## Installation (using docker containers)
