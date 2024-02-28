@@ -212,6 +212,15 @@ int main(int argc, char** argv) {
   HEPEnergyType const hadCut = eCut;
   ParticleCut<SubWriter<decltype(dEdX)>> cut(emCut, emCut, hadCut, hadCut, true, dEdX);
 
+  // tell proposal that we are interested in all energy losses above the particle cut
+  set_energy_production_threshold(Code::Electron, std::min({emcut, hadcut}));
+  set_energy_production_threshold(Code::Positron, std::min({emcut, hadcut}));
+  set_energy_production_threshold(Code::Photon, std::min({emcut, hadcut}));
+  set_energy_production_threshold(Code::MuMinus, std::min({emcut, hadcut}));
+  set_energy_production_threshold(Code::MuPlus, std::min({emcut, hadcut}));
+  set_energy_production_threshold(Code::TauMinus, std::min({emcut, hadcut}));
+  set_energy_production_threshold(Code::TauPlus, std::min({emcut, hadcut}));
+
   // hadronic interactions
   HEPEnergyType heHadronModelThreshold = std::pow(10, 1.9) * 1_GeV;
   corsika::sibyll::Interaction sibyll(env);
