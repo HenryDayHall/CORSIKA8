@@ -48,7 +48,7 @@ namespace corsika::proposal {
     //!
     //! Build the displacement and scattering calculators and add it to calc.
     //!
-    void buildCalculator(Code, NuclearComposition const&) final;
+    void buildCalculator(Code, size_t const&) final;
 
   public:
     //!
