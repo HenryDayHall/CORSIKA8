@@ -16,6 +16,7 @@
 #include <random>
 #include <tuple>
 #include <PROPOSAL/particle/Particle.h>
+#include <corsika/modules/proposal/InteractionModel.hpp>
 
 namespace corsika::proposal {
 
@@ -26,11 +27,16 @@ namespace corsika::proposal {
       HEPEnergyType const& _enthreshold)
       : ProposalProcessBase(_env)
       , HadronicPhotonModel<THadronicLEModel, THadronicHEModel>(_hadintLE, _hadintHE,
-                                                                _enthreshold) {}
+                                                                _enthreshold) {
+    //! Initialize PROPOSAL tables for all media and all particles
+    for (auto medium : media) {
+      for (auto particle_code : tracked) { buildCalculator(particle_code, medium.first); }
+    }
+  }
 
   template <typename THadronicLEModel, typename THadronicHEModel>
   inline void InteractionModel<THadronicLEModel, THadronicHEModel>::buildCalculator(
-      Code code, NuclearComposition const& comp) {
+      Code code, size_t const& component_hash) {
     // search crosssection builder for given particle
     auto p_cross = cross.find(code);
     if (p_cross == cross.end())
@@ -39,17 +45,17 @@ namespace corsika::proposal {
     // interpolate the crosssection for given media and energy cut. These may
     // take some minutes if you have to build the tables and cannot read the tables
     // from disk
-    auto c = p_cross->second(media.at(comp.getHash()), proposal_energycutsettings[code]);
+    auto c = p_cross->second(media.at(component_hash), proposal_energycutsettings[code]);
 
     // Look which interactions take place and build the corresponding
     // interaction and secondary builder. The interaction integral will
     // interpolated too and saved in the calc map by a key build out of a hash
     // of composed of the component and particle code.
     auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(c);
-    calc_[std::make_pair(comp.getHash(), code)] = std::make_tuple(
-        PROPOSAL::make_secondaries(inter_types, particle[code], media.at(comp.getHash())),
+    calc_[std::make_pair(component_hash, code)] = std::make_tuple(
+        PROPOSAL::make_secondaries(inter_types, particle[code], media.at(component_hash)),
         PROPOSAL::make_interaction(c, true, true),
-        std::make_unique<LPM_calculator>(media.at(comp.getHash()), code, inter_types));
+        std::make_unique<LPM_calculator>(media.at(component_hash), code, inter_types));
   }
 
   template <typename THadronicLEModel, typename THadronicHEModel>

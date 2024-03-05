@@ -50,7 +50,7 @@ namespace corsika::proposal {
     //!
     //! Build the secondaries and interaction calculators and add it to calc.
     //!
-    void buildCalculator(Code, NuclearComposition const&) final;
+    void buildCalculator(Code, size_t const&) final;
 
     inline static auto logger_{get_logger("corsika_proposal_InteractionModel")};
 

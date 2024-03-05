@@ -19,8 +19,8 @@
 namespace corsika::proposal {
 
   template <typename TOutput>
-  inline void ContinuousProcess<TOutput>::buildCalculator(
-      Code code, NuclearComposition const& comp) {
+  inline void ContinuousProcess<TOutput>::buildCalculator(Code code,
+                                                          size_t const& component_hash) {
     // search crosssection builder for given particle
     auto p_cross = cross.find(code);
     if (p_cross == cross.end())
@@ -30,7 +30,7 @@ namespace corsika::proposal {
     // interpolate the crosssection for given media and energy cut. These may
     // take some minutes if you have to build the tables and cannot read the tables
     // from disk
-    auto c = p_cross->second(media.at(comp.getHash()), proposal_energycutsettings[code]);
+    auto c = p_cross->second(media.at(component_hash), proposal_energycutsettings[code]);
 
     // choose multiple scattering model
     static constexpr auto ms_type = PROPOSAL::MultipleScatteringType::MoliereInterpol;
@@ -40,8 +40,8 @@ namespace corsika::proposal {
     // particle code.
     auto calculator = Calculator{PROPOSAL::make_displacement(c, true),
                                  PROPOSAL::make_multiple_scattering(
-                                     ms_type, particle[code], media.at(comp.getHash()))};
-    calc[std::make_pair(comp.getHash(), code)] = std::move(calculator);
+                                     ms_type, particle[code], media.at(component_hash))};
+    calc[std::make_pair(component_hash, code)] = std::move(calculator);
   }
 
   template <typename TOutput>
@@ -49,7 +49,12 @@ namespace corsika::proposal {
   inline ContinuousProcess<TOutput>::ContinuousProcess(TEnvironment const& _env,
                                                        TOutputArgs&&... args)
       : ProposalProcessBase(_env)
-      , TOutput(args...) {}
+      , TOutput(args...) {
+    //! Initialize PROPOSAL tables for all media and all particles
+    for (auto medium : media) {
+      for (auto particle_code : tracked) { buildCalculator(particle_code, medium.first); }
+    }
+  }
 
   template <typename TOutput>
   template <typename TParticle>

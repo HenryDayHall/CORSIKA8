@@ -266,7 +266,7 @@ namespace corsika::proposal {
     //!
     //! Builds the calculator to the corresponding class
     //!
-    virtual void buildCalculator(Code, NuclearComposition const&) = 0;
+    virtual void buildCalculator(Code, size_t const&) = 0;
 
     //!
     //! Initialize PROPOSAL tables for given medium, code, and energy cut
@@ -283,7 +283,7 @@ namespace corsika::proposal {
       const auto& comp = vP.getNode()->getModelProperties().getNuclearComposition();
       auto calc_it = calc.find(std::make_pair(comp.getHash(), vP.getPID()));
       if (calc_it != calc.end()) return calc_it;
-      buildCalculator(vP.getPID(), comp);
+      buildCalculator(vP.getPID(), comp.getHash());
       return getCalculator(vP, calc);
     }
   };
