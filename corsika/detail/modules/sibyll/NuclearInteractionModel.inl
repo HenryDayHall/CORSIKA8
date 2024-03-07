@@ -12,6 +12,7 @@
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/modules/Random.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/EnergyMomentumOperations.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
@@ -20,9 +21,8 @@
 namespace corsika::sibyll {
 
   template <typename TNucleonModel>
-  template <typename TEnvironment>
   inline NuclearInteractionModel<TNucleonModel>::NuclearInteractionModel(
-      TNucleonModel& hadint, TEnvironment const& env)
+      TNucleonModel& hadint, std::set<Code> const& nuccomp)
       : hadronicInteraction_(hadint) {
 
     // initialize nuclib
@@ -31,7 +31,7 @@ namespace corsika::sibyll {
     nuc_nuc_ini_();
 
     // initialize cross sections
-    initializeNuclearCrossSections(env);
+    initializeNuclearCrossSections(nuccomp);
   }
 
   template <typename TNucleonModel>
@@ -57,8 +57,8 @@ namespace corsika::sibyll {
   inline void NuclearInteractionModel<TNucleonModel>::printCrossSectionTable(
       Code const pCode) const {
     if (!hadronicInteraction_.isValid(Code::Proton, pCode, 100_GeV)) { // LCOV_EXCL_START
-      CORSIKA_LOGGER_ERROR(logger_,
-                           "Invalid target type {} for hadron interaction model.", pCode);
+      CORSIKA_LOGGER_WARN(logger_, "Invalid target type {} for hadron interaction model.",
+                          pCode);
       return;
     } // LCOV_EXCL_STOP
 
@@ -86,25 +86,8 @@ namespace corsika::sibyll {
   }
 
   template <typename TNucleonModel>
-  template <typename TEnvironment>
   inline void NuclearInteractionModel<TNucleonModel>::initializeNuclearCrossSections(
-      TEnvironment const& environment) {
-
-    auto const& universe = *(environment.getUniverse());
-    // generate complete list of all nuclei types in universe
-
-    auto const allElementsInUniverse = std::invoke([&]() {
-      std::set<Code> allElementsInUniverse;
-      auto collectElements = [&](auto& vtn) {
-        if (vtn.hasModelProperties()) {
-          auto const& comp =
-              vtn.getModelProperties().getNuclearComposition().getComponents();
-          for (auto const c : comp) allElementsInUniverse.insert(c);
-        }
-      };
-      universe.walk(collectElements);
-      return allElementsInUniverse;
-    });
+      std::set<Code> const& allElementsInUniverse) {
 
     CORSIKA_LOGGER_DEBUG(logger_, "initializing nuclear cross sections...");
 
@@ -116,7 +99,7 @@ namespace corsika::sibyll {
                            get_nucleus_A(ptarg));
       int const ib = get_nucleus_A(ptarg);
       if (!hadronicInteraction_.isValid(Code::Proton, ptarg, 100_GeV)) {
-        CORSIKA_LOGGER_ERROR(
+        CORSIKA_LOGGER_WARN(
             logger_, "Invalid target type {} for hadron interaction model.", ptarg);
         continue;
       }
@@ -164,11 +147,18 @@ namespace corsika::sibyll {
   template <typename TNucleonModel>
   inline CrossSectionType NuclearInteractionModel<TNucleonModel>::readCrossSectionTable(
       int const ia, Code const pTarget, HEPEnergyType const elabnuc) const {
-
+    CORSIKA_LOGGER_DEBUG(logger_, "ia={}, target={}, ElabNuc={} GeV", ia, pTarget,
+                         elabnuc / 1_GeV);
     int const ib = targetComponentsIndex_.at(pTarget) + 1; // table index in fortran
     auto const ECoMNuc = sqrt(2. * constants::nucleonMass * elabnuc);
+    CORSIKA_LOGGER_DEBUG(logger_, "sqrtSnn= {} GeV", ECoMNuc / 1_GeV);
     if (ECoMNuc < getMinEnergyPerNucleonCoM() || ECoMNuc > getMaxEnergyPerNucleonCoM()) {
-      throw std::runtime_error("energy outside tabulated range!");
+      CORSIKA_LOGGER_WARN(
+          logger_,
+          "nucleon-nucleon energy outside range! sqrtSnn={}GeV (limits: {} .. {} GeV)",
+          ECoMNuc / 1_GeV, getMinEnergyPerNucleonCoM() / 1_GeV,
+          getMaxEnergyPerNucleonCoM() / 1_GeV);
+      // throw std::runtime_error("energy outside tabulated range!");
     }
     double const e0 = elabnuc / 1_GeV;
     double sig;
@@ -182,7 +172,11 @@ namespace corsika::sibyll {
   CrossSectionType inline NuclearInteractionModel<TNucleonModel>::getCrossSection(
       Code const projectileId, Code const targetId, FourMomentum const& projectileP4,
       FourMomentum const& targetP4) const {
-
+    CORSIKA_LOGGER_DEBUG(logger_, "projectile: E={}, p3={} \n target: E={}, p3={}",
+                         projectileP4.getTimeLikeComponent() / 1_GeV,
+                         projectileP4.getSpaceLikeComponents() / 1_GeV,
+                         targetP4.getTimeLikeComponent() / 1_GeV,
+                         targetP4.getSpaceLikeComponents() / 1_GeV);
     // check if projectile and target are nuclei!
     if (!is_nucleus(projectileId) || !is_nucleus(targetId)) {
       return CrossSectionType::zero();
@@ -193,12 +187,18 @@ namespace corsika::sibyll {
         (projectileP4 / get_nucleus_A(projectileId) + targetP4 / get_nucleus_A(targetId))
             .getNorm();
 
+    CORSIKA_LOG_DEBUG("proj={}, targ={}, sqrtSNN={}GeV", projectileId, targetId,
+                      sqrtSnn / 1_GeV);
     if (!isValid(projectileId, targetId, sqrtSnn)) { return CrossSectionType::zero(); }
-    HEPEnergyType const LabEnergyPerNuc =
-        static_pow<2>(sqrtSnn) / (2 * constants::nucleonMass);
+
+    // lab-frame energy per projectile nucleon as required by signuc2()
+    HEPEnergyType const LabEnergyPerNuc = calculate_lab_energy(
+        static_pow<2>(sqrtSnn), get_mass(projectileId) / get_nucleus_A(projectileId),
+        get_mass(targetId) / get_nucleus_A(targetId));
     auto const sigProd =
         readCrossSectionTable(get_nucleus_A(projectileId), targetId, LabEnergyPerNuc);
-    CORSIKA_LOGGER_DEBUG(logger_, "cross section (mb): {}", sigProd / 1_mb);
+    CORSIKA_LOGGER_DEBUG(logger_, "cross section (mb): sqrtSnn={} sig={}",
+                         sqrtSnn / 1_GeV, sigProd / 1_mb);
     return sigProd;
   }
 

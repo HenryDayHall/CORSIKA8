@@ -324,7 +324,7 @@ int main(int argc, char** argv) {
   set_energy_production_threshold(Code::TauPlus, std::min({emcut, hadcut}));
 
   /* === START: SETUP PROCESS LIST === */
-  corsika::sibyll::Interaction sibyll{env};
+  corsika::sibyll::Interaction sibyll(corsika::get_all_elements_in_universe(env));
   InteractionCounter sibyllCounted(sibyll);
 
   corsika::pythia8::Decay decayPythia;

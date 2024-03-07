@@ -34,8 +34,7 @@ namespace corsika::fluka {
      * present in the environment. Each element is its own FLUKA material, no FLUKA
      * compounds are used.
      */
-    template <typename TEnvironment>
-    InteractionModel(TEnvironment const&);
+    InteractionModel(std::set<Code> const&);
 
     //! Return the cross-section of a given combination of projectile/target.
     CrossSectionType getCrossSection(Code projectileId, Code targetId,
@@ -63,8 +62,7 @@ namespace corsika::fluka {
     std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_FLUKA_Interaction");
     std::unique_ptr<double[]> cumsgx_; //!< dump for evtxyz cumsg*, never read again
 
-    template <typename TEnvironment>
-    static std::vector<std::pair<Code, int>> genFlukaMaterials(TEnvironment const&);
+    static std::vector<std::pair<Code, int>> genFlukaMaterials(std::set<Code> const&);
   };
 
   inline static int const iflxyz_ = 1;

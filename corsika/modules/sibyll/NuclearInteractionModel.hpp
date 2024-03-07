@@ -11,6 +11,7 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
+#include <set>
 
 namespace corsika::sibyll {
 
@@ -20,22 +21,22 @@ namespace corsika::sibyll {
    * can transform a proton-nucleus interaction model into a nucleus-nucleus interaction
    * model.
    *
+   * pass list of nuclei in the environment
+   *
    * @tparam TNucleonModel
    */
   template <class TNucleonModel>
   class NuclearInteractionModel {
 
   public:
-    template <class TEnvironment>
-    NuclearInteractionModel(TNucleonModel&, TEnvironment const&);
+    NuclearInteractionModel(TNucleonModel&, std::set<Code> const&);
 
     ~NuclearInteractionModel();
 
     bool constexpr isValid(Code const projectileId, Code const targetId,
                            HEPEnergyType const sqrtSnn) const;
 
-    template <class TEnvironment>
-    void initializeNuclearCrossSections(TEnvironment const&);
+    void initializeNuclearCrossSections(std::set<Code> const&);
 
     void printCrossSectionTable(Code) const;
     CrossSectionType readCrossSectionTable(int const, Code const,

@@ -111,6 +111,8 @@ TEST_CASE("SibyllInterface", "modules") {
 
   RNGManager<>::getInstance().registerRandomStream("sibyll");
 
+  std::set<Code> const nuclearcomp = {Code::Hydrogen, Code::Nitrogen, Code::Oxygen,
+                                      Code::Carbon};
   SECTION("InteractionInterface - valid targets") {
 
     corsika::sibyll::HadronInteractionModel model;
@@ -246,7 +248,8 @@ TEST_CASE("SibyllInterface", "modules") {
     HEPMomentumType const P0 = 50_TeV;
     MomentumVector const plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
     corsika::sibyll::HadronInteractionModel hmodel;
-    NuclearInteractionModel nuclearModel(hmodel, *env);
+
+    NuclearInteractionModel nuclearModel(hmodel, nuclearcomp);
 
     CHECK(nuclearModel.isValid(Code::Helium, Code::Oxygen, 100_GeV));
     CHECK_FALSE(nuclearModel.isValid(Code::PiPlus, Code::Oxygen, 100_GeV));
@@ -276,7 +279,7 @@ TEST_CASE("SibyllInterface", "modules") {
   }
 
   SECTION("CombinedInterface") {
-    corsika::sibyll::InteractionModel combinedModel{*env};
+    corsika::sibyll::InteractionModel combinedModel{nuclearcomp};
     corsika::sibyll::HadronInteractionModel const& hmodel =
         combinedModel.getHadronInteractionModel();
     auto const& nuclearModel = combinedModel.getNuclearInteractionModel();

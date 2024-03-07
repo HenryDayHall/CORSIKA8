@@ -28,6 +28,8 @@ namespace corsika {
     virtual LengthType getArclengthFromGrammage(BaseTrajectory const&,
                                                 GrammageType) const = 0;
 
+    virtual NuclearComposition const& getNuclearComposition() const = 0;
+
     virtual ~IEmpty() {}
   };
 
@@ -37,6 +39,9 @@ namespace corsika {
     LengthType getArclengthFromGrammage(BaseTrajectory const&, GrammageType) const {
       return 0. * meter;
     }
+    NuclearComposition const& getNuclearComposition() const {
+      return NuclearComposition(std::vector<Code>{}, {});
+    };
   };
 
 } // namespace corsika

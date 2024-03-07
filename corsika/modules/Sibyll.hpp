@@ -32,9 +32,8 @@ namespace corsika::sibyll {
    * to provide all the functions for ProcessSequence.
    */
   struct Interaction : public InteractionModel, public InteractionProcess<Interaction> {
-    template <typename TEnvironment>
-    Interaction(TEnvironment const& env)
-        : InteractionModel{env} {}
+    Interaction(std::set<Code> const& nuccomp)
+        : InteractionModel{nuccomp} {}
   };
 
   /**
@@ -48,9 +47,8 @@ namespace corsika::sibyll {
       : public NuclearInteractionModel<TNucleonModel>,
         public InteractionProcess<NuclearInteraction<TNucleonModel>> {
   public:
-    template <typename TEnvironment>
-    NuclearInteraction(TNucleonModel& model, TEnvironment const& env)
-        : NuclearInteractionModel<TNucleonModel>{model, env} {}
+    NuclearInteraction(TNucleonModel& model, std::set<Code> const& nuccomp)
+        : NuclearInteractionModel<TNucleonModel>{model, nuccomp} {}
   };
 
 } // namespace corsika::sibyll

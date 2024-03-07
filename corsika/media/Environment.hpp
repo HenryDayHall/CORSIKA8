@@ -17,8 +17,17 @@
 #include <corsika/media/Universe.hpp>
 
 #include <limits>
+#include <set>
 
 namespace corsika {
+
+  // fwd decl
+  template <typename IEnvironmentModel>
+  class Environment;
+
+  template <typename IEnvironmentModel>
+  std::set<Code> const get_all_elements_in_universe(
+      Environment<IEnvironmentModel> const& env);
 
   /**
    * Base Environment class.

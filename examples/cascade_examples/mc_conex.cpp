@@ -245,7 +245,7 @@ int main(int argc, char** argv) {
 
   // SETUP PROCESSES, DECAYS, INTERACTIONS
 
-  corsika::sibyll::Interaction sibyll{env};
+  corsika::sibyll::Interaction sibyll(corsika::get_all_elements_in_universe(env));
   InteractionCounter sibyllCounted{sibyll};
 
   corsika::pythia8::Decay decayPythia;

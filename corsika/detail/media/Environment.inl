@@ -49,4 +49,24 @@ namespace corsika {
         std::make_unique<TVolumeType>(std::forward<TVolumeArgs>(args)...));
   }
 
+  template <typename IEnvironmentModel>
+  std::set<Code> const get_all_elements_in_universe(
+      Environment<IEnvironmentModel> const& env) {
+
+    auto const& universe = *(env.getUniverse());
+    auto const allElementsInUniverse = std::invoke([&]() {
+      std::set<Code> allElementsInUniverse;
+      auto collectElements = [&](auto& vtn) {
+        if (vtn.hasModelProperties()) {
+          auto const& comp =
+              vtn.getModelProperties().getNuclearComposition().getComponents();
+          for (auto const c : comp) allElementsInUniverse.insert(c);
+        }
+      };
+      universe.walk(collectElements);
+      return allElementsInUniverse;
+    });
+    return allElementsInUniverse;
+  }
+
 } // namespace corsika
