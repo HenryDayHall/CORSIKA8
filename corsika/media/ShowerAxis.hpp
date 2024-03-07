@@ -54,9 +54,26 @@ namespace corsika {
 
     GrammageType getMinimumX() const;
 
+    /**
+     * Returns the grammage along the shower axis of the projection of a point p
+     * onto the shower axis.
+     * Will return either getMinimumX() or getMaximumX() in case the projection is outside
+     * the shower axis.
+     *
+     *  @param p Point to project onto the shower axis.
+     *  @retval Grammage along shower axis for projection of point p.
+     */
     GrammageType getProjectedX(Point const& p) const;
 
-    GrammageType getX(LengthType) const;
+    /**
+     * Returns the grammage along the shower axis for a given length along the shower
+     * axis. Will return either getMinimumX() or getMaximumX() in case the length is
+     * outside the shower axis.
+     *
+     *  @param l Length along shower axis.
+     *  @retval Grammage along shower axis for length l.
+     */
+    GrammageType getX(LengthType l) const;
 
     DirectionVector const& getDirection() const;
 
