@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
   ParticleCut<SubWriter<decltype(energyloss)>> cut(5_MeV, 5_MeV, 100_GeV, 100_GeV, true,
                                                    energyloss);
 
-  corsika::sibyll::Interaction sibyll{env};
+  corsika::sibyll::Interaction sibyll(corsika::get_all_elements_in_universe(env));
   corsika::sophia::InteractionModel sophia;
   HEPEnergyType heThresholdNN = 80_GeV;
   corsika::proposal::Interaction emCascade(

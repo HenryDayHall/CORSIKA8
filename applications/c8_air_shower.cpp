@@ -389,8 +389,9 @@ int main(int argc, char** argv) {
 
   DynamicInteractionProcess<StackType> heModel;
 
+  auto const all_elements = corsika::get_all_elements_in_universe(env);
   // have SIBYLL always for PROPOSAL photo-hadronic interactions
-  auto sibyll = std::make_shared<corsika::sibyll::Interaction>(env);
+  auto sibyll = std::make_shared<corsika::sibyll::Interaction>(all_elements);
 
   if (auto const modelStr = app["--hadronModel"]->as<std::string>();
       modelStr == "SIBYLL-2.3d") {
@@ -469,7 +470,7 @@ int main(int argc, char** argv) {
 
 // for ICRC2023
 #ifdef WITH_FLUKA
-  corsika::fluka::Interaction leIntModel{env};
+  corsika::fluka::Interaction leIntModel{all_elements};
 #else
   corsika::urqmd::UrQMD leIntModel{};
 #endif

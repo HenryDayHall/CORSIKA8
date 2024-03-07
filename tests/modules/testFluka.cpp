@@ -73,9 +73,10 @@ auto setupEnvironment() {
 static auto const env = setupEnvironment();
 static auto const& cs = env.getCoordinateSystem();
 
+auto nuccomp = corsika::get_all_elements_in_universe(env);
 // Unfortunately FLUKA can be initialized only once during a run. If instantiated
 // inside a test case, this would happend multiple times, causing crashes.
-static corsika::fluka::InteractionModel flukaModel{env};
+static corsika::fluka::InteractionModel flukaModel{nuccomp};
 
 TEST_CASE("FLUKA") {
   SECTION("getMaterialIndex") {

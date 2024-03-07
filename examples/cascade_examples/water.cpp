@@ -223,7 +223,7 @@ int main(int argc, char** argv) {
 
   // hadronic interactions
   HEPEnergyType heHadronModelThreshold = std::pow(10, 1.9) * 1_GeV;
-  corsika::sibyll::Interaction sibyll(env);
+  corsika::sibyll::Interaction sibyll(corsika::get_all_elements_in_universe(env));
 
   corsika::fluka::Interaction leIntModel{env};
   InteractionCounter leIntCounted{leIntModel};

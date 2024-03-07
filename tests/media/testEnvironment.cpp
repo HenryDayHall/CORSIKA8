@@ -587,6 +587,8 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
   CHECK(dynamic_cast<Sphere const&>(
             univ->getContainingNode(Point(gCS, 0_m, 0_m, R + 24_km))->getVolume())
             .getRadius() == R + 30_km);
+
+  CHECK(corsika::get_all_elements_in_universe(builtEnv).size() > 0);
 }
 
 TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {

@@ -30,9 +30,8 @@
 #include <FLUKA.hpp>
 
 namespace corsika::fluka {
-  template <typename TEnvironment>
-  inline InteractionModel::InteractionModel(TEnvironment const& env)
-      : materials_{genFlukaMaterials(env)}
+  inline InteractionModel::InteractionModel(std::set<Code> const& nuccomp)
+      : materials_{genFlukaMaterials(nuccomp)}
       , cumsgx_{std::make_unique<double[]>(materials_.size() * 3)} {
     for (auto const& [code, matno] : materials_) {
       CORSIKA_LOGGER_DEBUG(logger_, "FLUKA material initialization: {} -> {}",
@@ -168,24 +167,8 @@ namespace corsika::fluka {
     }
   }
 
-  template <typename TEnvironment>
   inline std::vector<std::pair<Code, int>> InteractionModel::genFlukaMaterials(
-      TEnvironment const& env) {
-    auto const& universe = *(env.getUniverse());
-
-    // generate complete list of all nuclei types in universe
-    auto const allElementsInUniverse = std::invoke([&]() {
-      std::set<Code> allElementsInUniverse;
-      auto collectElements = [&](auto& vtn) {
-        if (vtn.hasModelProperties()) {
-          auto const& comp =
-              vtn.getModelProperties().getNuclearComposition().getComponents();
-          for (auto const c : comp) allElementsInUniverse.insert(c);
-        }
-      };
-      universe.walk(collectElements);
-      return allElementsInUniverse;
-    });
+      std::set<Code> const& allElementsInUniverse) {
 
     /*
      * We define one material per element/isotope we have in C8. Cross-section averaging

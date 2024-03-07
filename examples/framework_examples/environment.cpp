@@ -50,9 +50,9 @@ int main() {
   node->setModelProperties(medium);
 
   // put our node into universe
-  // node: this has to be down after setting node model properties, since
+  // note: this has to be done after setting node model properties, since
   // std::move will make our previous defined node, which is a unique pointer
-  // un-referencable in the context
+  // un-referenceable in the context
   VolumeTreeNode<MyMediumInterface>* const universe = env.getUniverse().get();
   universe->addChild(std::move(node));
 
