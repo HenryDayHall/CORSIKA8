@@ -182,6 +182,8 @@ int main(int argc, char** argv) {
   // define air shower object, run simulation
   TrackingType tracking;
 
+  output.startOfLibrary();
+
   auto const primaryProperties = std::make_tuple(
       beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
       plab.normalized(), injectionPos, 0_ns);
@@ -192,7 +194,6 @@ int main(int argc, char** argv) {
   stack.addParticle(primaryProperties);
   primaryWriter.recordPrimary(primaryProperties);
 
-  output.startOfLibrary();
   Cascade EAS(env, tracking, sequence, output, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:

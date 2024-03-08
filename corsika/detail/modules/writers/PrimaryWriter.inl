@@ -41,6 +41,8 @@ namespace corsika {
         static_cast<int>(get_PDG(pID));
     output_["shower_" + std::to_string(showerId_)]["name"] =
         static_cast<std::string>(get_name(pID));
+    output_["shower_" + std::to_string(showerId_)]["total_energy"] =
+        (kineticEnergy + get_mass(pID)) / 1_GeV;
     output_["shower_" + std::to_string(showerId_)]["kinetic_energy"] =
         kineticEnergy / 1_GeV;
     output_["shower_" + std::to_string(showerId_)]["x"] = x / 1_m;

@@ -45,6 +45,11 @@ setup(
             "types-PyYAML",
             "pandas-stubs",
         ],
+        "examples": [
+            "argparse",
+            "matplotlib",
+            "particle",
+        ],
     },
     scripts=[],
     project_urls={"code": "https://gitlab.iap.kit.edu/AirShowerPhysics/corsika"},

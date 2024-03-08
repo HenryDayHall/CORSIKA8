@@ -52,3 +52,9 @@ The example scripts require additional dependencies that can be installed.
 ```shell
 pip install argparse matplotlib particle
 ```
+
+Examples can be run like this:
+
+```shell
+python examples/shower_profile.py --input-dir <path-to-C8-output>
+```

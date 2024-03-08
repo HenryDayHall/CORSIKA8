@@ -290,13 +290,14 @@ int main(int argc, char** argv) {
       beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
       plab.normalized(), injectionPos, 0_ns);
 
+  output.startOfLibrary();
+
   // setup particle stack, and add primary particle
   StackType stack;
   stack.clear();
   stack.addParticle(primaryProperties);
   primaryWriter.recordPrimary(primaryProperties);
 
-  output.startOfLibrary();
   Cascade EAS(env, tracking, sequence, output, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
