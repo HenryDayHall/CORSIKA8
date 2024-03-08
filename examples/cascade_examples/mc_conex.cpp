@@ -272,14 +272,14 @@ int main(int argc, char** argv) {
   auto sequence = make_sequence(hadronSequence, decayPythia, eLoss, cut, conex_model,
                                 longprof, observationLevel, trackCheck);
 
+  output.startOfLibrary();
+
   StackType stack;
   stack.clear();
 
   // define air shower object, run simulation
   TrackingType tracking;
   Cascade EAS(env, tracking, sequence, output, stack);
-
-  output.startOfLibrary();
 
   auto const primaryProperties = std::make_tuple(
       Code::Proton, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),

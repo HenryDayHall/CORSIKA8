@@ -222,7 +222,7 @@ build_test-clang-14:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
-      - ${CI_PROJECT_DIR}/build/build_examples/example_outputs #python tests need this
+      - ${CI_PROJECT_DIR}/build/build_examples/example_outputs/radio_em_shower_outputs #python examples need this
       - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
       - ${CI_PROJECT_DIR}/build/CMakeCache.txt #python tests need this
       - ${CI_PROJECT_DIR}/build/bin #python tests need this
@@ -409,3 +409,26 @@ python-tests:
     paths:
       - ${CI_PROJECT_DIR}/python/python-test.log
   allow_failure: false
+
+python-examples:
+  stage: python
+  tags:
+    - corsika
+  image: corsika/devel:u-22.04
+  needs:
+    - job: build_test_example-u-22_04
+      artifacts: true
+  artifacts:
+    when: always
+    expire_in: 1 month
+    paths:
+      - ${CI_PROJECT_DIR}/python/examples/example_plots
+  script:
+    - export EXAMPLE_SHOWER_DIR=${CI_PROJECT_DIR}/build/build_examples/example_outputs/radio_em_shower_outputs
+    - echo "Example dir is @EXAMPLE_SHOWER_DIR"
+    - cd ${CI_PROJECT_DIR}/python
+    - pip3 install --user -e '.[test,examples]'
+    - cd ${CI_PROJECT_DIR}/python/examples
+    - python3 particle_distribution.py --input-dir $EXAMPLE_SHOWER_DIR
+    - python3 shower_profile.py --input-dir $EXAMPLE_SHOWER_DIR
+    - python3 radio_emission.py --input-dir $EXAMPLE_SHOWER_DIR

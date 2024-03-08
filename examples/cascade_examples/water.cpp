@@ -213,13 +213,13 @@ int main(int argc, char** argv) {
   ParticleCut<SubWriter<decltype(dEdX)>> cut(emCut, emCut, hadCut, hadCut, true, dEdX);
 
   // tell proposal that we are interested in all energy losses above the particle cut
-  set_energy_production_threshold(Code::Electron, std::min({emcut, hadcut}));
-  set_energy_production_threshold(Code::Positron, std::min({emcut, hadcut}));
-  set_energy_production_threshold(Code::Photon, std::min({emcut, hadcut}));
-  set_energy_production_threshold(Code::MuMinus, std::min({emcut, hadcut}));
-  set_energy_production_threshold(Code::MuPlus, std::min({emcut, hadcut}));
-  set_energy_production_threshold(Code::TauMinus, std::min({emcut, hadcut}));
-  set_energy_production_threshold(Code::TauPlus, std::min({emcut, hadcut}));
+  set_energy_production_threshold(Code::Electron, std::min({emCut, hadCut}));
+  set_energy_production_threshold(Code::Positron, std::min({emCut, hadCut}));
+  set_energy_production_threshold(Code::Photon, std::min({emCut, hadCut}));
+  set_energy_production_threshold(Code::MuMinus, std::min({emCut, hadCut}));
+  set_energy_production_threshold(Code::MuPlus, std::min({emCut, hadCut}));
+  set_energy_production_threshold(Code::TauMinus, std::min({emCut, hadCut}));
+  set_energy_production_threshold(Code::TauPlus, std::min({emCut, hadCut}));
 
   // hadronic interactions
   HEPEnergyType heHadronModelThreshold = std::pow(10, 1.9) * 1_GeV;
