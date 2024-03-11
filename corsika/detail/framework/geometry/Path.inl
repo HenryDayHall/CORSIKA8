@@ -10,14 +10,11 @@
 
 #include <deque>
 
-#include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
-
 namespace corsika {
 
-  Path::Path(Point const& point) { points_.push_front(point); }
+  inline Path::Path(Point const& point) { points_.push_front(point); }
 
-  Path::Path(std::deque<Point> const& points)
+  inline Path::Path(std::deque<Point> const& points)
       : points_(points) {
     int dequesize_ = points.size();
     if (dequesize_ == 0 || dequesize_ == 1) {
