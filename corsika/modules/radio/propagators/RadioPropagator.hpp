@@ -20,9 +20,9 @@ namespace corsika {
    * to be used as a RadioPropagator must implement the
    * following methods:
    *
-   *  SignalPathCollection Propagate(Point const& start,
-   *                                 Point const& end,
-   *                                 LengthType const stepsize);
+   *  SignalPathCollection Propagate(Particle const& particle,
+   *                                 Point const& source,
+                                     Point const& destination) const
    */
   template <typename TImpl, typename TEnvironment>
   class RadioPropagator {

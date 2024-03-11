@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <corsika/modules/radio/propagators/SignalPath.hpp>
-
 namespace corsika {
 
   inline SignalPath::SignalPath(
