@@ -184,6 +184,32 @@ private:
   int calls_ = 0;
 };
 
+class DummyDecay : public DecayProcess<DummyDecay> {
+  // Dummy decay process that puts pre-predefined particles on stack
+public:
+  DummyDecay(Code code, HEPEnergyType ek, DirectionVector dir)
+      : code_(code)
+      , e0_(ek)
+      , dir_(dir) {}
+
+  Code code_;
+  HEPEnergyType e0_;
+  DirectionVector dir_;
+
+  template <typename Particle>
+  TimeType getLifetime(Particle&) const {
+    return 1_s;
+  }
+
+  template <typename TView>
+  void doDecay(TView& view) const {
+    auto projectile = view.getProjectile();
+    auto const dir = projectile.getMomentum().normalized();
+    projectile.addSecondary(std::make_tuple(code_, e0_, dir_));
+    CORSIKA_LOG_INFO("Particle stack size {}", view.getSize());
+  }
+};
+
 TEST_CASE("Cascade", "[Cascade]") {
 
   logging::set_level(logging::level::info);
@@ -196,19 +222,24 @@ TEST_CASE("Cascade", "[Cascade]") {
   auto env = make_dummy_env();
   auto const& rootCS = env.getCoordinateSystem();
 
+  // Properties of primary particle
+  auto const primCode = Code::Electron;
+  auto const primEk = E0 - get_mass(Code::Electron);
+  auto const primDir = DirectionVector(rootCS, {0, 0, -1});
+
   StackInspector<TestCascadeStack> stackInspect(100, true, E0);
   NullModel nullModel;
+  DummyDecay decay(primCode, primEk, primDir); // decay product will be primary
 
   HEPEnergyType const Ecrit = 85_MeV;
   ProcessSplit split;
   ProcessCut cut(Ecrit);
-  auto sequence = make_sequence(nullModel, stackInspect, split, cut);
+  auto sequence = make_sequence(nullModel, decay, stackInspect, split, cut);
   TestCascadeStack stack;
+
   stack.clear();
-  stack.addParticle(std::make_tuple(Code::Electron,
-                                    E0 - get_mass(Code::Electron), // Ekin
-                                    DirectionVector(rootCS, {0, 0, -1}),
-                                    Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
+  stack.addParticle(
+      std::make_tuple(primCode, primEk, primDir, Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
   DummyTracking tracking;
   DummyOutputManager output;
@@ -233,6 +264,36 @@ TEST_CASE("Cascade", "[Cascade]") {
     CHECK(tracking.getCalls() == 2046); // one LESS than without forceInteraction
     CHECK(stack.getEntries() == 0);
     CHECK(stack.getSize() == 13);
+    CHECK(split.getCalls() == 2047);
+  }
+
+  SECTION("double_forcing_1") {
+    EAS.forceInteraction();
+    REQUIRE_THROWS(EAS.forceDecay());
+  }
+
+  SECTION("double_forcing_2") {
+    EAS.forceDecay();
+    REQUIRE_THROWS(EAS.forceInteraction());
+  }
+
+  SECTION("forced decay") {
+    // Put anything new so that it won't trigger "decays into self" error
+    stack.clear();
+    stack.addParticle(std::make_tuple(Code::PiPlus,
+                                      0.5_GeV, // Ekin
+                                      DirectionVector(rootCS, {0, 0, -1}),
+                                      Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
+
+    CHECK(tracking.getCalls() == 0);
+    EAS.forceDecay();
+    CHECK(tracking.getCalls() == 0);
+    CHECK(stack.getEntries() == 1);
+    CHECK(stack.getSize() == 1);
+    EAS.run();
+    CHECK(tracking.getCalls() == 2047);
+    CHECK(stack.getEntries() == 0);
+    CHECK(stack.getSize() == 14);
     CHECK(split.getCalls() == 2047);
   }
 }

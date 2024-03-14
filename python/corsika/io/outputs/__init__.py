@@ -9,6 +9,7 @@
 
 from .bethe_bloch import BetheBlochPDG
 from .energy_loss import EnergyLoss
+from .interaction import Interactions
 from .longitudinal_profile import LongitudinalProfile
 from .observation_plane import ObservationPlane
 from .output import Output
@@ -28,4 +29,5 @@ __all__ = [
     "RadioProcess",
     "PrimaryParticle",
     "Particle",
+    "Interactions",
 ]

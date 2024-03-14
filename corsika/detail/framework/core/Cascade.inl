@@ -43,7 +43,8 @@ namespace corsika {
       , sequence_(pl)
       , output_(out)
       , stack_(stack)
-      , forceInteraction_(false) {
+      , forceInteraction_(false)
+      , forceDecay_(false) {
     CORSIKA_LOG_INFO(c8_ascii_);
     CORSIKA_LOG_INFO("This is CORSIKA {}.{}.{}.{}", CORSIKA_RELEASE_NUMBER,
                      CORSIKA_MAJOR_NUMBER, CORSIKA_MINOR_NUMBER, CORSIKA_PATCH_NUMBER);
@@ -97,6 +98,21 @@ namespace corsika {
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   inline void Cascade<TTracking, TProcessList, TOutput, TStack>::forceInteraction() {
     forceInteraction_ = true;
+    if (forceDecay_) {
+      CORSIKA_LOG_ERROR("Cannot set forceInteraction when forceDecay is already set");
+      throw std::runtime_error(
+          "Cannot set forceInteraction when forceDecay is already set");
+    }
+  }
+
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
+  inline void Cascade<TTracking, TProcessList, TOutput, TStack>::forceDecay() {
+    forceDecay_ = true;
+    if (forceInteraction_) {
+      CORSIKA_LOG_ERROR("Cannot set forceDecay when forceInteraction is already set");
+      throw std::runtime_error(
+          "Cannot set forceDecay when forceInteraction is already set");
+    }
   }
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
@@ -135,6 +151,22 @@ namespace corsika {
       forceInteraction_ = false; // just one (first) interaction
       stack_view_type secondaries(particle);
       interaction(secondaries, projectileP4, composition, total_cx_pre);
+      sequence_.doSecondaries(secondaries);
+      particle.erase(); // primary particle is done
+      return;
+    }
+
+    if (forceDecay_) {
+      CORSIKA_LOG_TRACE("forced decay!");
+      forceDecay_ = false; // just one decay
+      stack_view_type secondaries(particle);
+      decay(secondaries, sequence_.getInverseLifetime(particle));
+      if (secondaries.getSize() == 1 && secondaries.getProjectile().getPID() ==
+                                            secondaries.getNextParticle().getPID()) {
+        throw std::runtime_error(
+            fmt::format("Particle {} decays into itself!",
+                        get_name(secondaries.getProjectile().getPID())));
+      }
       sequence_.doSecondaries(secondaries);
       particle.erase(); // primary particle is done
       return;

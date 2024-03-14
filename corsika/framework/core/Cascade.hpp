@@ -92,8 +92,17 @@ namespace corsika {
      * Force an interaction of the top particle of the stack at its current position.
      * Note that setNodes() or an equivalent procedure needs to be called first if you
      * want to call forceInteraction() for the primary interaction.
+     * Incompatible with forceDecay()
      */
     void forceInteraction();
+
+    /**
+     * Force an decay of the top particle of the stack at its current position.
+     * Note that setNodes() or an equivalent procedure needs to be called first if you
+     * want to call forceDecay() for the primary interaction.
+     * Incompatible with forceInteraction()
+     */
+    void forceDecay();
 
   private:
     /**
@@ -122,6 +131,7 @@ namespace corsika {
     TStack& stack_;
     default_prng_type& rng_ = RNGManager<>::getInstance().getRandomStream("cascade");
     bool forceInteraction_;
+    bool forceDecay_;
     unsigned int count_ = 0;
 
     // but this here temporarily. Should go into dedicated file later:

@@ -161,7 +161,7 @@ namespace corsika {
     /**
      * Return a summary.
      */
-    YAML::Node getSummary() const;
+    YAML::Node getSummary() const override;
 
     /**
      * Return the configuration of this output.
