@@ -1,7 +1,8 @@
 set (test_output_sources
+  testDummyOutputManager.cpp
+  testInteractionWriter.cpp
   TestMain.cpp
   testOutputManager.cpp
-  testDummyOutputManager.cpp
   testParquetStreamer.cpp
   testWriterObservationPlane.cpp
   testWriterTracks.cpp

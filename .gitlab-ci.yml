@@ -222,7 +222,7 @@ build_test-clang-14:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
-      - ${CI_PROJECT_DIR}/build/build_examples/example_outputs/radio_em_shower_outputs #python examples need this
+      - ${CI_PROJECT_DIR}/build/build_examples/example_outputs/radio_em_shower_outputs #python tests/examples need this
       - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
       - ${CI_PROJECT_DIR}/build/CMakeCache.txt #python tests need this
       - ${CI_PROJECT_DIR}/build/bin #python tests need this
@@ -411,9 +411,7 @@ python-tests:
   allow_failure: false
 
 python-examples:
-  stage: python
-  tags:
-    - corsika
+  extends: .python
   image: corsika/devel:u-22.04
   needs:
     - job: build_test_example-u-22_04

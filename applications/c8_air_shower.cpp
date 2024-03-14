@@ -27,6 +27,7 @@
 #include <corsika/framework/utility/SaveBoostHistogram.hpp>
 
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
+#include <corsika/modules/writers/InteractionWriter.hpp>
 #include <corsika/modules/writers/LongitudinalWriter.hpp>
 #include <corsika/modules/writers/PrimaryWriter.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
@@ -217,6 +218,9 @@ int main(int argc, char** argv) {
   bool force_interaction = false;
   app.add_flag("--force-interaction", force_interaction,
                "Force the location of the first interaction.")
+      ->group("Misc.");
+  bool force_decay = false;
+  app.add_flag("--force-decay", force_decay, "Force the primary to immediately decay")
       ->group("Misc.");
   bool disable_interaction_hists = false;
   app.add_flag("--disable-interaction-histograms", disable_interaction_hists,
@@ -571,10 +575,15 @@ int main(int argc, char** argv) {
   // register ZHS with the output manager
   output.add("ZHS", zhs);
 
+  // make and register the first interaction writer
+  InteractionWriter<setup::Tracking, ParticleWriterParquet> inter_writer(
+      showerAxis, observationLevel);
+  output.add("interactions", inter_writer);
+
   // assemble the final process sequence with radio
   auto sequence = make_sequence(stackInspect, neutrinoPrimaryPythia, hadronSequence,
                                 decayPythia, emCascade, emContinuous, coreas, zhs,
-                                longprof, observationLevel, thinning, cut);
+                                longprof, observationLevel, inter_writer, thinning, cut);
 
   /* === END: SETUP PROCESS LIST === */
 
@@ -625,6 +634,11 @@ int main(int argc, char** argv) {
     if (force_interaction) {
       CORSIKA_LOG_INFO("Fixing first interaction at injection point.");
       EAS.forceInteraction();
+    }
+
+    if (force_decay) {
+      CORSIKA_LOG_INFO("Forcing the primary to decay");
+      EAS.forceDecay();
     }
 
     primaryWriter.recordPrimary(primaryProperties);
