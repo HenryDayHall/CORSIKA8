@@ -23,6 +23,7 @@
 #include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/process/SwitchProcessSequence.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/random/PowerLawDistribution.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/framework/utility/SaveBoostHistogram.hpp>
 
@@ -115,6 +116,7 @@ long registerRandomStreams(long seed) {
   RNGManager<>::getInstance().registerRandomStream("fluka");
   RNGManager<>::getInstance().registerRandomStream("proposal");
   RNGManager<>::getInstance().registerRandomStream("thinning");
+  RNGManager<>::getInstance().registerRandomStream("primary_particle");
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
@@ -135,8 +137,11 @@ int main(int argc, char** argv) {
   // the main command line description
   CLI::App app{"Simulate standard (downgoing) showers with CORSIKA 8."};
 
+  //////// Primary options ////////
+
   // some options that we want to fill in
   int A, Z, nevent = 0;
+  std::vector<double> cli_energy_range;
 
   // the following section adds the options to the parser
 
@@ -154,10 +159,14 @@ int main(int argc, char** argv) {
       ->excludes(opt_A)
       ->excludes(opt_Z)
       ->group("Primary");
-  // the remainding options
-  app.add_option("-E,--energy", "Primary energy in GeV")
-      ->required()
+  app.add_option("-E,--energy", "Primary energy in GeV")->default_val(0);
+  app.add_option("--energy_range", cli_energy_range,
+                 "Low and high values that define the range of the primary energy in GeV")
+      ->expected(2)
       ->check(CLI::PositiveNumber)
+      ->group("Primary");
+  app.add_option("--eslope", "Spectral index for sampling energies, dN/dE = E^eSlope")
+      ->default_val(-1.0)
       ->group("Primary");
   app.add_option("-z,--zenith", "Primary zenith angle (deg)")
       ->default_val(0.)
@@ -167,6 +176,9 @@ int main(int argc, char** argv) {
       ->default_val(0.)
       ->check(CLI::Range(0., 360.))
       ->group("Primary");
+
+  //////// Config options ////////
+
   app.add_option("--emcut",
                  "Min. kin. energy of photons, electrons and "
                  "positrons in tracking (GeV)")
@@ -184,6 +196,9 @@ int main(int argc, char** argv) {
   bool track_neutrinos = false;
   app.add_flag("--track-neutrinos", track_neutrinos, "switch on tracking of neutrinos")
       ->group("Config");
+
+  //////// Misc options ////////
+
   app.add_option("--neutrino-interaction-type",
                  "charged (CC) or neutral current (NC) or both")
       ->default_val("both")
@@ -240,6 +255,9 @@ int main(int argc, char** argv) {
       ->default_val(std::pow(10, 1.9)) // 79.4 GeV
       ->check(CLI::NonNegativeNumber)
       ->group("Misc.");
+
+  //////// Thinning options ////////
+
   app.add_option("--emthin",
                  "fraction of primary energy at which thinning of EM particles starts")
       ->default_val(1.e-6)
@@ -332,23 +350,37 @@ int main(int argc, char** argv) {
     else
       beamCode = get_nucleus_code(A, Z);
   }
-  HEPEnergyType mass = get_mass(beamCode);
 
-  // particle energy
-  HEPEnergyType const E0 = 1_GeV * app["--energy"]->as<double>();
+  HEPEnergyType eMin = 0_GeV;
+  HEPEnergyType eMax = 0_GeV;
+  // check the particle energy parameters
+  if (app["--energy"]->as<double>() > 0.0) {
+    eMin = app["--energy"]->as<double>() * 1_GeV;
+    eMax = app["--energy"]->as<double>() * 1_GeV;
+  } else if (cli_energy_range.size()) {
+    if (cli_energy_range[0] > cli_energy_range[1]) {
+      CORSIKA_LOG_WARN(
+          "Energy range lower bound is greater than upper bound. swapping...");
+      eMin = cli_energy_range[1] * 1_GeV;
+      eMax = cli_energy_range[0] * 1_GeV;
+    } else {
+      eMin = cli_energy_range[0] * 1_GeV;
+      eMax = cli_energy_range[1] * 1_GeV;
+    }
+  } else {
+    CORSIKA_LOG_CRITICAL(
+        "Must set either the (--energy) flag or the (--energy_range) flag to "
+        "positive value(s)");
+    return 0;
+  }
 
   // direction of the shower in (theta, phi) space
   auto const thetaRad = app["--zenith"]->as<double>() / 180. * M_PI;
   auto const phiRad = app["--azimuth"]->as<double>() / 180. * M_PI;
 
-  // convert Elab to Plab
-  HEPMomentumType P0 = calculate_momentum(E0, mass);
-
-  // convert the momentum to the zenith and azimuth angle of the primary
-  auto const [px, py, pz] =
-      std::make_tuple(P0 * sin(thetaRad) * cos(phiRad), P0 * sin(thetaRad) * sin(phiRad),
-                      -P0 * cos(thetaRad));
-  auto plab = MomentumVector(rootCS, {px, py, pz});
+  auto const [nx, ny, nz] = std::make_tuple(sin(thetaRad) * cos(phiRad),
+                                            sin(thetaRad) * sin(phiRad), -cos(thetaRad));
+  auto propDir = DirectionVector(rootCS, {nx, ny, nz});
   /* === END: CONSTRUCT PRIMARY PARTICLE === */
 
   /* === START: CONSTRUCT GEOMETRY === */
@@ -371,15 +403,6 @@ int main(int argc, char** argv) {
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
   /* === END: CONSTRUCT GEOMETRY === */
-
-  double const emthinfrac = app["--emthin"]->as<double>();
-  double const maxWeight = std::invoke([&]() {
-    if (auto const wm = app["--max-weight"]->as<double>(); wm > 0)
-      return wm;
-    else
-      return 0.5 * emthinfrac * E0 / 1_GeV;
-  });
-  EMThinning thinning{emthinfrac * E0, maxWeight, !multithin};
 
   std::stringstream args;
   for (int i = 0; i < argc; ++i) { args << argv[i] << " "; }
@@ -480,8 +503,6 @@ int main(int argc, char** argv) {
 #endif
   InteractionCounter leIntCounted{leIntModel};
 
-  StackInspector<StackType> stackInspect(10000, false, E0);
-
   // assemble all processes into an ordered process list
   struct EnergySwitch {
     HEPEnergyType cutE_;
@@ -580,31 +601,7 @@ int main(int argc, char** argv) {
       showerAxis, observationLevel);
   output.add("interactions", inter_writer);
 
-  // assemble the final process sequence with radio
-  auto sequence = make_sequence(stackInspect, neutrinoPrimaryPythia, hadronSequence,
-                                decayPythia, emCascade, emContinuous, coreas, zhs,
-                                longprof, observationLevel, inter_writer, thinning, cut);
-
   /* === END: SETUP PROCESS LIST === */
-
-  // create the cascade object using the default stack and tracking
-  // implementation
-  TrackingType tracking;
-  StackType stack;
-  Cascade EAS(env, tracking, sequence, output, stack);
-
-  // print our primary parameters all in one place
-  CORSIKA_LOG_INFO("Primary name: {}", beamCode);
-  if (app["--pdg"]->count() > 0) {
-    CORSIKA_LOG_INFO("Primary PDG ID:     {}", app["--pdg"]->as<int>());
-  } else {
-    CORSIKA_LOG_INFO("Primary Z/A:        {}/{}", Z, A);
-  }
-  CORSIKA_LOG_INFO("Primary Energy:     {}", E0);
-  CORSIKA_LOG_INFO("Primary Momentum:   {}", P0);
-  CORSIKA_LOG_INFO("Primary Direction:  {}", plab.getNorm());
-  CORSIKA_LOG_INFO("Point of Injection: {}", injectionPos.getCoordinates());
-  CORSIKA_LOG_INFO("Shower Axis Length: {}", (showerCore - injectionPos).getNorm() * 1.2);
 
   // trigger the output manager to open the library for writing
   output.startOfLibrary();
@@ -614,9 +611,43 @@ int main(int argc, char** argv) {
 
     CORSIKA_LOG_INFO("Shower {} / {} ", i_shower, nevent);
 
+    // randomize the primary energy
+    double const eSlope = app["--eslope"]->as<double>();
+    PowerLawDistribution<HEPEnergyType> powerLawRng(eSlope, eMin, eMax);
+    HEPEnergyType const primaryTotalEnergy =
+        (eMax == eMin) ? eMin
+                       : powerLawRng(RNGManager<>::getInstance().getRandomStream(
+                             "primary_particle"));
+
+    auto const eKin = primaryTotalEnergy - get_mass(beamCode);
+
+    // set up thinning based on primary parameters
+    double const emthinfrac = app["--emthin"]->as<double>();
+    double const maxWeight = std::invoke([&]() {
+      if (auto const wm = app["--max-weight"]->as<double>(); wm > 0)
+        return wm;
+      else
+        return 0.5 * emthinfrac * primaryTotalEnergy / 1_GeV;
+    });
+    EMThinning thinning{emthinfrac * primaryTotalEnergy, maxWeight, !multithin};
+
+    // set up the stack inspector
+    StackInspector<StackType> stackInspect(10000, false, primaryTotalEnergy);
+
+    // assemble the final process sequence
+    auto sequence =
+        make_sequence(stackInspect, neutrinoPrimaryPythia, hadronSequence, decayPythia,
+                      emCascade, emContinuous, coreas, zhs, longprof, observationLevel,
+                      inter_writer, thinning, cut);
+
+    // create the cascade object using the default stack and tracking
+    // implementation
+    TrackingType tracking;
+    StackType stack;
+    Cascade EAS(env, tracking, sequence, output, stack);
+
     // directory for output of interaction histograms
     string const outdir(app["--filename"]->as<std::string>() + "/interaction_hist");
-    // construct the directory
     boost::filesystem::create_directories(outdir);
     string const labHist_file = outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
     string const cMSHist_file = outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
@@ -624,10 +655,24 @@ int main(int argc, char** argv) {
     // setup particle stack, and add primary particle
     stack.clear();
 
+    // print our primary parameters all in one place
+    CORSIKA_LOG_INFO("Primary name:         {}", beamCode);
+    if (app["--pdg"]->count() > 0) {
+      CORSIKA_LOG_INFO("Primary PDG ID:       {}", app["--pdg"]->as<int>());
+    } else {
+      CORSIKA_LOG_INFO("Primary Z/A:          {}/{}", Z, A);
+    }
+    CORSIKA_LOG_INFO("Primary Total Energy: {}", primaryTotalEnergy);
+    CORSIKA_LOG_INFO("Primary Momentum:     {}",
+                     calculate_momentum(primaryTotalEnergy, get_mass(beamCode)));
+    CORSIKA_LOG_INFO("Primary Direction:    {}", propDir.getNorm());
+    CORSIKA_LOG_INFO("Point of Injection:   {}", injectionPos.getCoordinates());
+    CORSIKA_LOG_INFO("Shower Axis Length:   {}",
+                     (showerCore - injectionPos).getNorm() * 1.2);
+
     // add the desired particle to the stack
-    auto const primaryProperties = std::make_tuple(
-        beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
-        plab.normalized(), injectionPos, 0_ns);
+    auto const primaryProperties =
+        std::make_tuple(beamCode, eKin, propDir.normalized(), injectionPos, 0_ns);
     stack.addParticle(primaryProperties);
 
     // if we want to fix the first location of the shower
@@ -653,7 +698,8 @@ int main(int argc, char** argv) {
         "total energy budget (GeV): {} (dEdX={} ground={}), "
         "relative difference (%): {}",
         Efinal / 1_GeV, dEdX.getEnergyLost() / 1_GeV,
-        observationLevel.getEnergyGround() / 1_GeV, (Efinal / E0 - 1) * 100);
+        observationLevel.getEnergyGround() / 1_GeV,
+        (Efinal / primaryTotalEnergy - 1) * 100);
 
     auto const hists = heCounted.getHistogram() + leIntCounted.getHistogram();
 
