@@ -210,7 +210,7 @@ build_test-clang-14:
     - cmake --build . --target run_examples -- -j2
     - export EXE=${CI_PROJECT_DIR}/build/install/bin/c8_air_shower  # Run the example scripts
     - export OUTPUT_DIR=${CI_PROJECT_DIR}/build/build_examples/example_outputs/
-    - export CMD="$EXE --seed 1234 --energy 1e3 -p 2212 --dir $OUTPUT_DIR --filename c8_air_shower_output"
+    - export CMD="$EXE --seed 1234 --energy 1e3 -p 2212 --disable-interaction-histograms --filename $OUTPUT_DIR/c8_air_shower_output"
     - echo "Running...  $CMD"
     - $CMD
   rules:

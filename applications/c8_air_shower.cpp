@@ -223,9 +223,6 @@ int main(int argc, char** argv) {
       ->default_val("corsika_library")
       ->check(CLI::NonexistentPath)
       ->group("Library/Output");
-  app.add_option("-d,--dir", "Directory for output library.")
-      ->default_val(boost::filesystem::current_path().string())
-      ->group("Library/Output");
   app.add_option("-s,--seed", "The random number seed.")
       ->default_val(0)
       ->check(CLI::NonNegativeNumber)
@@ -407,8 +404,7 @@ int main(int argc, char** argv) {
   std::stringstream args;
   for (int i = 0; i < argc; ++i) { args << argv[i] << " "; }
   // create the output manager that we then register outputs with
-  auto const outputDir = boost::filesystem::path(app["--dir"]->as<std::string>());
-  OutputManager output(app["--filename"]->as<std::string>(), seed, args.str(), outputDir);
+  OutputManager output(app["--filename"]->as<std::string>(), seed, args.str());
 
   // register energy losses as output
   EnergyLossWriter dEdX{showerAxis, dX};
@@ -646,12 +642,6 @@ int main(int argc, char** argv) {
     StackType stack;
     Cascade EAS(env, tracking, sequence, output, stack);
 
-    // directory for output of interaction histograms
-    string const outdir(app["--filename"]->as<std::string>() + "/interaction_hist");
-    boost::filesystem::create_directories(outdir);
-    string const labHist_file = outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
-    string const cMSHist_file = outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
-
     // setup particle stack, and add primary particle
     stack.clear();
 
@@ -701,9 +691,16 @@ int main(int argc, char** argv) {
         observationLevel.getEnergyGround() / 1_GeV,
         (Efinal / primaryTotalEnergy - 1) * 100);
 
-    auto const hists = heCounted.getHistogram() + leIntCounted.getHistogram();
-
     if (!disable_interaction_hists) {
+      CORSIKA_LOG_INFO("Saving interaction histograms");
+      auto const hists = heCounted.getHistogram() + leIntCounted.getHistogram();
+
+      // directory for output of interaction histograms
+      string const outdir(app["--filename"]->as<std::string>() + "/interaction_hist");
+      boost::filesystem::create_directories(outdir);
+
+      string const labHist_file = outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
+      string const cMSHist_file = outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
       save_hist(hists.labHist(), labHist_file, true);
       save_hist(hists.CMSHist(), cMSHist_file, true);
     }

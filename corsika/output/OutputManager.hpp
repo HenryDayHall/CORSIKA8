@@ -35,13 +35,12 @@ namespace corsika {
     /**
      * Construct an OutputManager instance with a name in a given directory.
      *
-     * @param name        The name of this output collection.
+     * @param dir_path    The name of this output collection.
      * @param vseed       The seed for the simulation (written to summary file)
      * @param input_args  The command line arguments at runtime (written to summary file)
-     * @param dir         The directory where the output directory will be stored.
      */
-    OutputManager(std::string const& name, const long& vseed,
-                  std::string const& input_args, boost::filesystem::path const& dir);
+    OutputManager(std::string const& dir_path, const long& vseed,
+                  std::string const& input_args);
 
     /**
      * Handle graceful closure of the outputs upon destruction.
@@ -108,7 +107,6 @@ namespace corsika {
   private:
     boost::filesystem::path root_;           ///< The unique output directory.
     OutputState state_{OutputState::NoInit}; ///< The current state of this manager.
-    std::string const name_;                 ///< The name of this simulation file.
     std::string const cmnd_line_args_; ///< The command line arguments used in this run
     int count_{0};                     ///< The current ID of this shower.
     long seed_{0};

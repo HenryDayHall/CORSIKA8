@@ -22,11 +22,9 @@
 
 namespace corsika {
 
-  inline OutputManager::OutputManager(
-      std::string const& name, const long& vseed = 0, std::string const& vargs = "",
-      boost::filesystem::path const& dir = boost::filesystem::current_path())
-      : root_(dir / name)
-      , name_(name)
+  inline OutputManager::OutputManager(std::string const& dir_path, const long& vseed = 0,
+                                      std::string const& vargs = "")
+      : root_(dir_path)
       , cmnd_line_args_(vargs)
       , count_(0)
       , seed_(vseed) {
@@ -100,7 +98,7 @@ namespace corsika {
     YAML::Node config;
 
     // some basic info
-    config["name"] = name_;               // the simulation name
+    config["path"] = root_.string();      // the simulation name
     config["creator"] = "CORSIKA8";       // a tag to identify C8 libraries
     config["version"] = "8.0.0-prealpha"; // the current version
     config["args"] = cmnd_line_args_;     // the command line parameters
