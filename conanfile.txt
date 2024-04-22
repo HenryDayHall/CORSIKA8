@@ -21,6 +21,7 @@ readline:shared=True
 arrow:shared=False
 arrow:parquet=True
 arrow:fPIC=False
+arrow:with_boost=True
 arrow:with_re2=True
 arrow:with_protobuf=False
 arrow:with_openssl=False
