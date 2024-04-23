@@ -50,8 +50,8 @@ namespace corsika {
       using Intersect<Tracking>::nextIntersect;
 
     public:
-      Tracking()
-          : straightTracking_{tracking_line::Tracking()} {}
+      Tracking(double maxDeflection = 0.2)
+          : maxMagneticDeflectionAngle_(maxDeflection), straightTracking_{tracking_line::Tracking()} {}
 
       template <typename TParticle>
       auto getTrack(TParticle const& particle);
@@ -122,6 +122,7 @@ namespace corsika {
       auto getLinearTrajectory(TParticle& particle);
 
     protected:
+        double maxMagneticDeflectionAngle_;
       tracking_line::Tracking
           straightTracking_; ///! we want this for neutral and B=0T tracks
 
