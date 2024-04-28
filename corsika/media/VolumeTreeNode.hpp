@@ -48,6 +48,11 @@ namespace corsika {
 
     void addChild(VTNUPtr pChild);
 
+    /**
+     * Adds a child to the node containing \p using the same logic as getContainingNode
+     */
+    void addChildToContainingNode(Point const& p, VTNUPtr pChild);
+
     void excludeOverlapWith(VTNUPtr const& pNode);
 
     VTN_type const* getParent() const { return parentNode_; };

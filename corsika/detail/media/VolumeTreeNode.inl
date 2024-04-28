@@ -53,6 +53,17 @@ namespace corsika {
   }
 
   template <typename IModelProperties>
+  inline void VolumeTreeNode<IModelProperties>::addChildToContainingNode(Point const& p,
+                                                                         VTNUPtr pChild) {
+    VolumeTreeNode<IModelProperties> const* node = getContainingNode(p);
+    if (!node) {
+      CORSIKA_LOG_WARN("Adding child at {} failed!. No containing node", p);
+      return;
+    }
+    const_cast<VolumeTreeNode<IModelProperties>*>(node)->addChild(std::move(pChild));
+  }
+
+  template <typename IModelProperties>
   template <typename TCallable, bool preorder>
   inline void VolumeTreeNode<IModelProperties>::walk(TCallable func) const {
     if constexpr (preorder) { func(*this); }

@@ -51,6 +51,7 @@ TEST_CASE("VolumeTree") {
       Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 140_km}, 20_km);
   // partly overlap with "vol1"
   auto vol2 = Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 120_km}, 5_km);
+
   vol1->excludeOverlapWith(vol2);
   world->addChild(std::move(vol1));
   world->addChild(std::move(vol2));
@@ -72,6 +73,35 @@ TEST_CASE("VolumeTree") {
   CHECK(dynamic_cast<Sphere const&>(
             world->getContainingNode(Point(gCS, 0_m, 0_km, 121_km))->getVolume())
             .getRadius() == 5_km);
+
+  // contained in world
+  auto nestingPoint = Point{gCS, 0_m, 0_m, -50_km};
+  auto r3 = 3_km;
+  auto vol3 = Environment<IEmpty>::createNode<Sphere>(nestingPoint, r3);
+  world->addChildToContainingNode(nestingPoint, std::move(vol3));
+  // check that vol3 has been added correctly
+  CHECK(dynamic_cast<Sphere const&>(world->getContainingNode(nestingPoint)->getVolume())
+            .getRadius() == r3);
+  // check nesting of vol3 inside world
+  CHECK(dynamic_cast<Sphere const&>(
+            world->getContainingNode(nestingPoint)->getParent()->getVolume())
+            .getRadius() == 150_km);
+
+  auto r4 = 1_km;
+  auto vol4 = Environment<IEmpty>::createNode<Sphere>(nestingPoint, r4);
+  world->addChildToContainingNode(nestingPoint, std::move(vol4));
+  // check that vol4 has been added correctly
+  CHECK(dynamic_cast<Sphere const&>(world->getContainingNode(nestingPoint)->getVolume())
+            .getRadius() == r4);
+  // check nesting of vol4 inside vol3
+  CHECK(dynamic_cast<Sphere const&>(
+            world->getContainingNode(nestingPoint)->getParent()->getVolume())
+            .getRadius() == r3);
+
+  // don't crash on adding outside the world
+  world->addChildToContainingNode(Point(gCS, 0_m, 151_km, 0_m), std::move(vol3));
+  CHECK(world->getContainingNode(Point(gCS, 0_m, 151_km, 0_m)) == nullptr);
+
   universe.addChild(std::move(world));
 }
 
