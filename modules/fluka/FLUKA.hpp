@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <array>
+#include <string_view>
 
 #include <rng_decl.hpp> // from modules/common
 
@@ -224,4 +225,6 @@ namespace fluka {
   //! random-number generator called from within FLUKA, fills entire array
   void flrnlp_(double* array, int const* N);
   }
+
+  std::string_view get_version();
 } // namespace fluka

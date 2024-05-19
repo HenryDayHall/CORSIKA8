@@ -35,7 +35,12 @@ else()
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include/corsika_modules/fluka>
     )
-    
+
+    try_compile(fluka_have_flkavr
+        SOURCES ${input_dir}/try_flkavr.c
+        LINK_LIBRARIES flukahp-norndm
+    )
+
     # build shared library containing FLUKA + our own implementation of flrndm_()
     # Note: This apparently works only when built as shared lib, not possible so easily as static lib
     # Note also that this lib is not self-contained as it doesn't contain fluka::rndm_interface(), so
@@ -43,6 +48,12 @@ else()
     add_library(fluka SHARED fluka.cpp)
     target_link_libraries(fluka PRIVATE flukahp-norndm)
     target_link_libraries(fluka PUBLIC modules_common)
+    if (fluka_have_flkavr)
+        message("FLUKA supports flkavr; version info available")
+        target_compile_definitions(fluka PRIVATE FLUKA_HAS_FLKAVR)
+    else()
+        message("FLUKA does not support flkavr; cannot read version info")
+    endif()
 
     target_include_directories (fluka PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

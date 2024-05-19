@@ -10,6 +10,13 @@
 
 #include <rng_impl.hpp>
 
+#include <cctype>
+#include <string_view>
+#include <string>
+#include <functional>
+
+#undef FLUKA_HAS_FLKAVR
+
 IMPLEMENT_RNG(fluka)
 
 namespace fluka {
@@ -27,6 +34,32 @@ namespace fluka {
   [[maybe_unused]] extern auto* const evtxyz_ptr = &evtxyz_;
   [[maybe_unused]] extern auto* const sgmxyz_ptr = &sgmxyz_;
   [[maybe_unused]] extern auto* const ndmhep_ptr = &ndmhep_;
+
+#ifdef FLUKA_HAS_FLKAVR
+  //! support for querying (INFN-) FLUKA version was added in 2024.1.0
+  extern struct {
+    int mjflvr, mnflvr, mrflvr;
+  } flkavr_;
+
+  extern struct {
+    char chflvr;
+  } flkavc_;
+#endif
+  }
+
+  std::string_view get_version() {
+#ifdef FLUKA_HAS_FLKAVR
+    static auto const str = std::invoke([]() -> std::string {
+      std::string const dot = ".";
+      return std::to_string(flkavr_.mjflvr) + dot + std::to_string(flkavr_.mnflvr) + dot +
+             std::to_string(flkavr_.mrflvr) +
+             (std::isalnum(flkavc_.chflvr) ? std::string{flkavc_.chflvr} : std::string{});
+    });
+
+    return str;
+#else
+    return "undefined";
+#endif
   }
 
 } // namespace fluka
