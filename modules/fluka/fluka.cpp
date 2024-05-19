@@ -15,8 +15,6 @@
 #include <string>
 #include <functional>
 
-#undef FLUKA_HAS_FLKAVR
-
 IMPLEMENT_RNG(fluka)
 
 namespace fluka {
@@ -47,7 +45,7 @@ namespace fluka {
 #endif
   }
 
-  std::string_view get_version() {
+  char const* get_version() {
 #ifdef FLUKA_HAS_FLKAVR
     static auto const str = std::invoke([]() -> std::string {
       std::string const dot = ".";
@@ -56,7 +54,7 @@ namespace fluka {
              (std::isalnum(flkavc_.chflvr) ? std::string{flkavc_.chflvr} : std::string{});
     });
 
-    return str;
+    return str.data();
 #else
     return "undefined";
 #endif

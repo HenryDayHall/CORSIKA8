@@ -224,7 +224,8 @@ namespace fluka {
 
   //! random-number generator called from within FLUKA, fills entire array
   void flrnlp_(double* array, int const* N);
-  }
 
-  std::string_view get_version();
+  //! version string (added by us, not in distribution)
+  char const* get_version();
+  }
 } // namespace fluka
