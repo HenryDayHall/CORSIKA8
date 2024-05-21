@@ -11,7 +11,6 @@
 #include <rng_impl.hpp>
 
 #include <cctype>
-#include <string_view>
 #include <string>
 #include <functional>
 
