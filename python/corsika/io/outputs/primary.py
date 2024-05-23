@@ -55,7 +55,7 @@ class Particle(object):
 
     @property
     def direction(self) -> list:
-        return [self.nx, self.ny, self.nx]
+        return [self.nx, self.ny, self.nz]
 
 
 class PrimaryParticle(Output):
