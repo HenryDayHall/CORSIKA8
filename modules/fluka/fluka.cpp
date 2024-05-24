@@ -12,6 +12,7 @@
 
 #include <cctype>
 #include <string>
+#include <string_view>
 #include <functional>
 
 IMPLEMENT_RNG(fluka)
@@ -46,12 +47,12 @@ namespace fluka {
 
   char const* get_version() {
 #ifdef FLUKA_HAS_FLKAVR
-    static auto const str = std::invoke([]() -> std::string {
-      std::string const dot = ".";
-      return std::to_string(flkavr_.mjflvr) + dot + std::to_string(flkavr_.mnflvr) + dot +
-             std::to_string(flkavr_.mrflvr) +
-             (std::isalnum(flkavc_.chflvr) ? std::string{flkavc_.chflvr} : std::string{});
-    });
+    std::string_view const dot = ".";
+    static std::string const str =
+        std::to_string(flkavr_.mjflvr) + std::string{dot} +
+        std::to_string(flkavr_.mnflvr) + std::string{dot} +
+        std::to_string(flkavr_.mrflvr) +
+        (std::isalnum(flkavc_.chflvr) ? std::string{flkavc_.chflvr} : std::string{});
 
     return str.data();
 #else
