@@ -28,6 +28,16 @@ namespace corsika {
     return exclContainsIter != excludedNodes_.cend() ? *exclContainsIter : nullptr;
   }
 
+  template <typename IModelProperties>
+  inline VolumeTreeNode<IModelProperties>* VolumeTreeNode<IModelProperties>::excludes(
+      Point const& p) {
+    auto exclContainsIter =
+        std::find_if(excludedNodes_.cbegin(), excludedNodes_.cend(),
+                     [&](auto const& s) { return bool(s->contains(p)); });
+
+    return exclContainsIter != excludedNodes_.cend() ? *exclContainsIter : nullptr;
+  }
+
   /** returns a pointer to the sub-VolumeTreeNode which is "responsible" for the given
    * \class Point \p p, or nullptr iff \p p is not contained in this volume.
    */
@@ -53,14 +63,35 @@ namespace corsika {
   }
 
   template <typename IModelProperties>
+  inline VolumeTreeNode<IModelProperties>*
+  VolumeTreeNode<IModelProperties>::getContainingNode(Point const& p) {
+    if (!contains(p)) { return nullptr; }
+
+    if (auto const childContainsIter =
+            std::find_if(childNodes_.cbegin(), childNodes_.cend(),
+                         [&](auto const& s) { return bool(s->contains(p)); });
+        childContainsIter == childNodes_.cend()) // not contained in any of the children
+    {
+      if (auto const exclContainsIter = excludes(p)) // contained in any excluded nodes
+      {
+        return exclContainsIter->getContainingNode(p);
+      } else {
+        return this;
+      }
+    } else {
+      return (*childContainsIter)->getContainingNode(p);
+    }
+  }
+
+  template <typename IModelProperties>
   inline void VolumeTreeNode<IModelProperties>::addChildToContainingNode(Point const& p,
                                                                          VTNUPtr pChild) {
-    VolumeTreeNode<IModelProperties> const* node = getContainingNode(p);
+    VolumeTreeNode<IModelProperties>* node = getContainingNode(p);
     if (!node) {
       CORSIKA_LOG_WARN("Adding child at {} failed!. No containing node", p);
       return;
     }
-    const_cast<VolumeTreeNode<IModelProperties>*>(node)->addChild(std::move(pChild));
+    node->addChild(std::move(pChild));
   }
 
   template <typename IModelProperties>

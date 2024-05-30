@@ -32,11 +32,13 @@ namespace corsika {
     bool contains(Point const& p) const;
 
     VolumeTreeNode<IModelProperties> const* excludes(Point const& p) const;
+    VolumeTreeNode<IModelProperties>* excludes(Point const& p);
 
     /** returns a pointer to the sub-VolumeTreeNode which is "responsible" for the given
      * \class Point \p p, or nullptr iff \p p is not contained in this volume.
      */
     VolumeTreeNode<IModelProperties> const* getContainingNode(Point const& p) const;
+    VolumeTreeNode<IModelProperties>* getContainingNode(Point const& p);
 
     /**
      * Traverses the VolumeTree pre- or post-order and calls the functor  \p func for each
@@ -82,7 +84,7 @@ namespace corsika {
 
   private:
     std::vector<VTNUPtr> childNodes_;
-    std::vector<VTN_type const*> excludedNodes_;
+    std::vector<VTN_type*> excludedNodes_;
     VTN_type const* parentNode_ = nullptr;
     VolUPtr geoVolume_;
     IMPSharedPtr modelProperties_;
