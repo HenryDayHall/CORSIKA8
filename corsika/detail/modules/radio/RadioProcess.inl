@@ -34,6 +34,10 @@ namespace corsika {
   inline ProcessReturn RadioProcess<TAntennaCollection, TRadioImpl,
                                     TPropagator>::doContinuous(const Step<Particle>& step,
                                                                const bool) {
+
+    // return immediately if radio process does not have any antennas
+    if (antennas_.size() == 0) return ProcessReturn::Ok;
+
     // we want the following particles:
     // Code::Electron & Code::Positron
 
