@@ -82,6 +82,9 @@ for ishower in range(n_showers):
         gridspec_kw={"wspace": 0.2, "hspace": 0.3},
     )
 
+    if nrows == 1:
+        ax = [ax]
+    
     # Make a plot for each of the antenna locations
     for iant, ant_name in enumerate(ant_names):
 
