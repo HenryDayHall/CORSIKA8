@@ -38,7 +38,7 @@ else()
 
     try_compile(fluka_have_flkavr
         SOURCES ${input_dir}/try_flkavr.c
-        LINK_LIBRARIES flukahp-norndm
+        LINK_LIBRARIES ${C8_FLUKALIB_}
     )
 
     # build shared library containing FLUKA + our own implementation of flrndm_()
