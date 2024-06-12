@@ -31,8 +31,7 @@ namespace corsika {
     //! convenience function equivalent to Volume::isInside
     bool contains(Point const& p) const;
 
-    VolumeTreeNode<IModelProperties> const* excludes(Point const& p) const;
-    VolumeTreeNode<IModelProperties>* excludes(Point const& p);
+    VTN_type const* excludes(Point const& p) const;
 
     /** returns a pointer to the sub-VolumeTreeNode which is "responsible" for the given
      * \class Point \p p, or nullptr iff \p p is not contained in this volume.

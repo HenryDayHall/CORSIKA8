@@ -28,16 +28,6 @@ namespace corsika {
     return exclContainsIter != excludedNodes_.cend() ? *exclContainsIter : nullptr;
   }
 
-  template <typename IModelProperties>
-  inline VolumeTreeNode<IModelProperties>* VolumeTreeNode<IModelProperties>::excludes(
-      Point const& p) {
-    auto exclContainsIter =
-        std::find_if(excludedNodes_.cbegin(), excludedNodes_.cend(),
-                     [&](auto const& s) { return bool(s->contains(p)); });
-
-    return exclContainsIter != excludedNodes_.cend() ? *exclContainsIter : nullptr;
-  }
-
   /** returns a pointer to the sub-VolumeTreeNode which is "responsible" for the given
    * \class Point \p p, or nullptr iff \p p is not contained in this volume.
    */
@@ -65,22 +55,8 @@ namespace corsika {
   template <typename IModelProperties>
   inline VolumeTreeNode<IModelProperties>*
   VolumeTreeNode<IModelProperties>::getContainingNode(Point const& p) {
-    if (!contains(p)) { return nullptr; }
-
-    if (auto const childContainsIter =
-            std::find_if(childNodes_.cbegin(), childNodes_.cend(),
-                         [&](auto const& s) { return bool(s->contains(p)); });
-        childContainsIter == childNodes_.cend()) // not contained in any of the children
-    {
-      if (auto const exclContainsIter = excludes(p)) // contained in any excluded nodes
-      {
-        return exclContainsIter->getContainingNode(p);
-      } else {
-        return this;
-      }
-    } else {
-      return (*childContainsIter)->getContainingNode(p);
-    }
+    // see Scott Meyers, Effective C++ 3rd ed., Item 3
+    return const_cast<VTN_type*>(std::as_const(*this).getContainingNode(p));
   }
 
   template <typename IModelProperties>
