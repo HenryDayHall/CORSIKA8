@@ -83,7 +83,7 @@ namespace corsika {
 
   private:
     std::vector<VTNUPtr> childNodes_;
-    std::vector<VTN_type*> excludedNodes_;
+    std::vector<VTN_type const*> excludedNodes_;
     VTN_type const* parentNode_ = nullptr;
     VolUPtr geoVolume_;
     IMPSharedPtr modelProperties_;
