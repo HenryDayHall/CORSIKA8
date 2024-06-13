@@ -9,14 +9,13 @@
 #pragma once
 
 #include <boost/filesystem/path.hpp>
+#include "corsika/framework/core/EnergyMomentumOperations.hpp"
 
 namespace corsika::pythia8 {
 
   inline NeutrinoInteraction::NeutrinoInteraction(bool const& handleNC,
-                                                  bool const& handleCC,
-                                                  bool const print_listing)
-      : print_listing_(print_listing)
-      , handle_nc_(handleNC)
+                                                  bool const& handleCC)
+      : handle_nc_(handleNC)
       , handle_cc_(handleCC)
       , pythiaMain_{CORSIKA_Pythia8_XML_DIR, false} {
 
@@ -24,7 +23,7 @@ namespace corsika::pythia8 {
   }
 
   inline NeutrinoInteraction::~NeutrinoInteraction() {
-    CORSIKA_LOG_INFO("Pythia::NeutrinoInteraction n= {}", count_);
+    CORSIKA_LOGGER_DEBUG(logger_, "Pythia::NeutrinoInteraction n= {}", count_);
   }
 
   template <class TView>
@@ -33,19 +32,22 @@ namespace corsika::pythia8 {
                                           FourMomentum const& projectileP4,
                                           FourMomentum const& targetP4) {
 
-    CORSIKA_LOG_INFO("Primary {} - {} interaction with E_nu = {} GeV", projectileId,
-                     targetId, projectileP4.getTimeLikeComponent() / 1_GeV);
-    CORSIKA_LOG_INFO("configure Pythia for primary neutrino interactions. NC={}, CC={}",
-                     handle_nc_, handle_cc_);
+    CORSIKA_LOGGER_DEBUG(logger_, "Primary {} - {} interaction with E_nu = {} GeV",
+                         projectileId, targetId,
+                         projectileP4.getTimeLikeComponent() / 1_GeV);
+    CORSIKA_LOGGER_DEBUG(
+        logger_, "configure Pythia for primary neutrino interactions. NC={}, CC={}",
+        handle_nc_, handle_cc_);
     if (!handle_nc_ && !handle_cc_) {
-      CORSIKA_LOG_ERROR(
+      CORSIKA_LOGGER_ERROR(
+          logger_,
           "no neutrino interaction channel configured! Select either NC, CC or both!");
       throw std::runtime_error("Configuration error!");
     }
-    CORSIKA_LOG_INFO("minimal Q2 in DIS: {} GeV2", minQ2_ / 1_GeV / 1_GeV);
+    CORSIKA_LOGGER_DEBUG(logger_, "minimal Q2 in DIS: {} GeV2", minQ2_ / 1_GeV / 1_GeV);
 
     if (!isValid(projectileId, targetId, projectileP4, targetP4)) {
-      CORSIKA_LOG_ERROR("wrong projectile, target or energy configuration!");
+      CORSIKA_LOGGER_ERROR(logger_, "wrong projectile, target or energy configuration!");
       throw std::runtime_error("Configuration error!");
     }
     // sample nucleon from nucleus A,Z
@@ -54,25 +56,29 @@ namespace corsika::pythia8 {
     std::discrete_distribution<int> nucleonChannelDist{fProtons, fNeutrons};
     corsika::default_prng_type& rng =
         corsika::RNGManager<>::getInstance().getRandomStream("pythia");
-    Code const nucleonId = (nucleonChannelDist(rng) ? Code::Neutron : Code::Proton);
-    int const idTarget = static_cast<int>(get_PDG(nucleonId));
-    CORSIKA_LOG_INFO("selected {} target", nucleonId);
-    double const eTarget = get_mass(nucleonId) / 1_GeV;
+    Code const targetNucleonId = (nucleonChannelDist(rng) ? Code::Neutron : Code::Proton);
+    int const idTarget_pythia = static_cast<int>(get_PDG(targetNucleonId));
+    CORSIKA_LOGGER_DEBUG(logger_, "selected {} target", targetNucleonId);
 
     // set projectile
-    double const eElectron = projectileP4.getTimeLikeComponent() / 1_GeV; // 270.5;
     double const Q2min = minQ2_ / 1_GeV / 1_GeV;
-    int const idProjectile = static_cast<int>(get_PDG(projectileId));
+    int const idProjectile_pythia = static_cast<int>(get_PDG(projectileId));
 
-    // Set up incoming beams, for frame with unequal beam energies.
-    // projectile is along -z
-    pythiaMain_.readString("Beams:frameType = 2");
-    // BeamA = nucleon.(+z)
-    pythiaMain_.settings.mode("Beams:idB", idTarget);
-    pythiaMain_.settings.parm("Beams:eA", eTarget);
-    // BeamB = neutrino (-z direction)
-    pythiaMain_.settings.mode("Beams:idB", idProjectile);
-    pythiaMain_.settings.parm("Beams:eB", eElectron);
+    // calculate CoM energy of the neutrino nucleon interaction
+    double const ecm_pythia =
+        calculate_com_energy(projectileP4.getTimeLikeComponent(), get_mass(projectileId),
+                             get_mass(targetNucleonId)) /
+        1_GeV;
+
+    CORSIKA_LOGGER_DEBUG(logger_, "center-of-mass energy: {} GeV", ecm_pythia);
+    // Set up CoM interaction
+    pythiaMain_.readString("Beams:frameType = 1");
+    // center-of-mass energy
+    pythiaMain_.settings.parm("Beams:eCM", ecm_pythia);
+    // BeamA (+z in CoM)
+    pythiaMain_.settings.mode("Beams:idA", idProjectile_pythia);
+    // BeamB (-z direction in CoM)
+    pythiaMain_.settings.mode("Beams:idB", idTarget_pythia);
 
     // Set up DIS process within some phase space.
     // Neutral current (with gamma/Z interference).
@@ -108,57 +114,63 @@ namespace corsika::pythia8 {
 
     // References to the event record
     Pythia8::Event& eventMain = pythiaMain_.event;
-
-    COMBoost const labFrameBoost{targetP4.getSpaceLikeComponents(), get_mass(targetId)};
-    auto const proj4MomLab = labFrameBoost.toCoM(projectileP4);
+    // define boost assuming target nucleon is at rest
+    COMBoost const labFrameBoost{projectileP4, get_mass(targetNucleonId)};
+    // the boost is along the total momentum axis and does not include a rotation
+    // get rotated frame where momentum of projectile in the CoM is along +z
     auto const& rotCS = labFrameBoost.getRotatedCS();
 
     if (!pythiaMain_.next()) {
       throw std::runtime_error("Pythia neutrino collision failed ");
     } else {
-      CORSIKA_LOG_INFO("pythia neutrino interaction done!");
+      CORSIKA_LOGGER_DEBUG(logger_, "pythia neutrino interaction done!");
     }
 
     MomentumVector Plab_final{labFrameBoost.getOriginalCS()};
     auto Elab_final = HEPEnergyType::zero();
-    CORSIKA_LOG_INFO("particles generated in neutrino interaction:");
+    CORSIKA_LOGGER_DEBUG(logger_, "particles generated in neutrino interaction:");
     for (int i = 0; i < eventMain.size(); ++i) {
       auto const& p8p = eventMain[i];
       if (p8p.isFinal()) {
         try {
+          // get particle ids from pythia stack and convert to corsika id
           auto const volatile id = static_cast<PDGCode>(p8p.id());
           auto const pyId = convert_from_PDG(id);
-
-          MomentumVector const pyPlab(
+          // get pythia momentum in CoM (rotated cs!)
+          MomentumVector const pyPcom(
               rotCS, {p8p.px() * 1_GeV, p8p.py() * 1_GeV, p8p.pz() * 1_GeV});
-          auto const pyP = labFrameBoost.fromCoM(FourVector{p8p.e() * 1_GeV, pyPlab});
-
-          HEPEnergyType const mass = get_mass(pyId);
-          HEPEnergyType const Ekin =
-              sqrt(pyP.getSpaceLikeComponents().getSquaredNorm() + mass * mass) - mass;
+          // boost pythia 4Momentum in CoM to lab. frame. This includes the rotation.
+          // calculate 3-momentum and kinetic energy
+          CORSIKA_LOGGER_DEBUG(logger_, "momentum in CoM: {} GeV",
+                               pyPcom.getComponents() / 1_GeV);
+          auto const pyP4lab = labFrameBoost.fromCoM(FourVector{p8p.e() * 1_GeV, pyPcom});
+          auto const pyPlab = pyP4lab.getSpaceLikeComponents();
+          HEPEnergyType const pyEkinlab =
+              calculate_kinetic_energy(pyPlab.getNorm(), get_mass(pyId));
 
           // add to corsika stack
-          auto pnew = view.addSecondary(std::make_tuple(pyId, Ekin, pyPlab.normalized()));
+          auto pnew =
+              view.addSecondary(std::make_tuple(pyId, pyEkinlab, pyPlab.normalized()));
 
-          CORSIKA_LOG_INFO("id = {}, E = {} GeV, p = {} GeV", pyId, Ekin / 1_GeV,
-                           pyPlab.getComponents() / 1_GeV);
+          CORSIKA_LOGGER_DEBUG(logger_, "id = {}, E = {} GeV, p = {} GeV", pyId,
+                               pyEkinlab / 1_GeV, pyPlab.getComponents() / 1_GeV);
           Plab_final += pnew.getMomentum();
           Elab_final += pnew.getEnergy();
         }
         // irreproducible in tests, LCOV_EXCL_START
         catch (std::out_of_range const& ex) {
-          CORSIKA_LOG_CRITICAL("Pythia ID {} unknown in C8", p8p.id());
+          CORSIKA_LOGGER_CRITICAL(logger_, "Pythia ID {} unknown in C8", p8p.id());
           throw ex;
         }
         // LCOV_EXCL_STOP
       }
     }
 
-    CORSIKA_LOG_DEBUG(
-        "conservation (all GeV): "
-        "Elab_final= {}"
-        ", Plab_final= {}",
-        Elab_final / 1_GeV, (Plab_final / 1_GeV).getComponents());
+    CORSIKA_LOGGER_DEBUG(logger_,
+                         "conservation (all GeV): "
+                         "Elab_final= {}"
+                         ", Plab_final= {}",
+                         Elab_final / 1_GeV, (Plab_final / 1_GeV).getComponents());
 
     count_++;
   }
