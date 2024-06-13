@@ -31,12 +31,13 @@ namespace corsika {
     //! convenience function equivalent to Volume::isInside
     bool contains(Point const& p) const;
 
-    VolumeTreeNode<IModelProperties> const* excludes(Point const& p) const;
+    VTN_type const* excludes(Point const& p) const;
 
     /** returns a pointer to the sub-VolumeTreeNode which is "responsible" for the given
      * \class Point \p p, or nullptr iff \p p is not contained in this volume.
      */
     VolumeTreeNode<IModelProperties> const* getContainingNode(Point const& p) const;
+    VolumeTreeNode<IModelProperties>* getContainingNode(Point const& p);
 
     /**
      * Traverses the VolumeTree pre- or post-order and calls the functor  \p func for each
@@ -47,6 +48,11 @@ namespace corsika {
     void walk(TCallable func) const;
 
     void addChild(VTNUPtr pChild);
+
+    /**
+     * Adds a child to the node containing \p using the same logic as getContainingNode
+     */
+    void addChildToContainingNode(Point const& p, VTNUPtr pChild);
 
     void excludeOverlapWith(VTNUPtr const& pNode);
 
