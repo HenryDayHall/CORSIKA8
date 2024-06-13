@@ -179,14 +179,16 @@ TEST_CASE("Pythia8Interface", "modules") {
         {calculate_total_energy(100_TeV, NuE::mass), {rootCS, {0_eV, 0_eV, 100_TeV}}},
         {Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
 
+    // non-zero cross section for neutrino projectile
     REQUIRE(collision.getCrossSection(Code::NuE, Code::Proton,
                                       {100_GeV, {rootCS, {0_eV, 0_eV, 100_GeV}}},
                                       {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) !=
             CrossSectionType::zero());
 
+    HEPEnergyType const P0 = 100_PeV;
     collision.doInteraction(
         view, Code::NuE, Code::Nitrogen,
-        {calculate_total_energy(100_TeV, NuE::mass), {rootCS, {0_eV, 0_eV, 100_TeV}}},
+        {calculate_total_energy(P0, NuE::mass), {rootCS, {0_eV, 0_eV, P0}}},
         {Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}});
     REQUIRE(view.getSize() >= 2);
 

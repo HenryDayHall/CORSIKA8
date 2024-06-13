@@ -25,8 +25,7 @@ namespace corsika::pythia8 {
   class NeutrinoInteraction : public InteractionProcess<NeutrinoInteraction> {
 
   public:
-    NeutrinoInteraction(bool const& handleNC = true, bool const& handleCC = true,
-                        bool const print_listing = false);
+    NeutrinoInteraction(bool const& handleNC = true, bool const& handleCC = true);
     ~NeutrinoInteraction();
     /**
      * Returns inelastic (production) cross section.
@@ -72,9 +71,10 @@ namespace corsika::pythia8 {
                        FourMomentum const& projectileP4, FourMomentum const& targetP4);
 
   private:
+    std::shared_ptr<spdlog::logger> logger_ =
+        get_logger("corsika_pythia8_NeutrinoInteraction");
     CrossSectionType const cross_section_ = 4_nb;
     int count_ = 0;
-    bool const print_listing_ = false;
     bool const handle_nc_ = true;
     bool const handle_cc_ = true;
     HEPEnergyTypeSqr minQ2_ = 25_GeV * 1_GeV;
