@@ -64,8 +64,8 @@ namespace corsika {
                                                                          VTNUPtr pChild) {
     VolumeTreeNode<IModelProperties>* node = getContainingNode(p);
     if (!node) {
-      CORSIKA_LOG_WARN("Adding child at {} failed!. No containing node", p);
-      return;
+      CORSIKA_LOG_ERROR("Adding child at {} failed!. No containing node", p);
+      throw std::runtime_error("Failed adding child node. No parent at chosen location");
     }
     node->addChild(std::move(pChild));
   }

@@ -98,8 +98,8 @@ TEST_CASE("VolumeTree") {
             world->getContainingNode(nestingPoint)->getParent()->getVolume())
             .getRadius() == r3);
 
-  // don't crash on adding outside the world
-  world->addChildToContainingNode(Point(gCS, 0_m, 151_km, 0_m), std::move(vol3));
+  // throws if you try to add child outside of all existing nodes
+  CHECK_THROWS(world->addChildToContainingNode(Point(gCS, 0_m, 151_km, 0_m), std::move(vol3)));
   CHECK(world->getContainingNode(Point(gCS, 0_m, 151_km, 0_m)) == nullptr);
 
   universe.addChild(std::move(world));
