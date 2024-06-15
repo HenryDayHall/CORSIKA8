@@ -60,7 +60,7 @@ class RadioProcess(Output):
 
         """
         data = pq.read_table(op.join(path, "antennas.parquet"))
-        nshowers = data.to_pandas()["shower"].iloc[-1] + 1
+        nshowers = int(data.to_pandas()["shower"].iloc[-1] + 1)
         antennas = list(self.config["antennas"].keys())
 
         # check that we got some events
@@ -79,8 +79,8 @@ class RadioProcess(Output):
             # loop over each of the antennas
             for name in antennas:
                 sampling_period = self.config["antennas"][name]["number of bins"]
-                start = ant_nr * sampling_period
-                stop = (ant_nr + 1) * sampling_period
+                start = int(ant_nr * sampling_period)
+                stop = int((ant_nr + 1) * sampling_period)
                 antenna_data = data[start:stop].to_pandas()
                 times = antenna_data["Time"]
                 Ex = antenna_data["Ex"]
