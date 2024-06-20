@@ -43,8 +43,7 @@ else()
 
     # build shared library containing FLUKA + our own implementation of flrndm_()
     # Note: This apparently works only when built as shared lib, not possible so easily as static lib
-    # Note also that this lib is not self-contained as it doesn't contain fluka::rndm_interface(), so
-    # you can't load it at runtime
+
     add_library(fluka SHARED fluka.cpp)
     target_link_libraries(fluka PRIVATE flukahp-norndm)
     target_link_libraries(fluka PUBLIC modules_common)
@@ -52,7 +51,20 @@ else()
         message("FLUKA supports flkavr; version info available")
         target_compile_definitions(fluka PRIVATE FLUKA_HAS_FLKAVR)
     else()
-        message("FLUKA does not support flkavr; cannot read version info")
+        message("FLUKA does not support flkavr; cannot read version info, extracting via hack...")
+        execute_process(
+            COMMAND ${input_dir}/extract_version.sh ${C8_FLUKALIB_}
+            RESULT_VARIABLE ret
+            OUTPUT_VARIABLE extracted_fluka_version
+            ECHO_OUTPUT_VARIABLE
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        if (ret AND NOT ret EQUAL "0")
+          message("FLUKA version detection failed")
+        else()
+          message("extracted FLUKA version: \"${extracted_fluka_version}\"")
+          target_compile_definitions(fluka PRIVATE FLUKA_EXTRACTED_VERSION=${extracted_fluka_version})
+        endif()
     endif()
 
     target_include_directories (fluka PUBLIC

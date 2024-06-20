@@ -54,7 +54,11 @@ namespace fluka {
         std::to_string(flkavr_.mrflvr) +
         (std::isalnum(flkavc_.chflvr) ? std::string{flkavc_.chflvr} : std::string{});
 
-    return str.data();
+    return str.c_str();
+#elif defined FLUKA_EXTRACTED_VERSION
+#define XSTR(x) STR(x)
+#define STR(x) #x
+    return XSTR(FLUKA_EXTRACTED_VERSION); // "FLUKA_EXTRACTED_VERSION";
 #else
     return "undefined";
 #endif
