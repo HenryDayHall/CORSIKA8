@@ -12,7 +12,6 @@
 # This is just a hack.
 
 flukalib=`realpath $1`
-target="$2"
 
 if [ -d "$flukalib" ]; then
     echo "\"$flukalib\" is a directory. Please specify full path to libflukahp.a?" 1>&2
