@@ -58,7 +58,7 @@ namespace fluka {
 #elif defined FLUKA_EXTRACTED_VERSION
 #define XSTR(x) STR(x)
 #define STR(x) #x
-    return XSTR(FLUKA_EXTRACTED_VERSION); // "FLUKA_EXTRACTED_VERSION";
+    return XSTR(FLUKA_EXTRACTED_VERSION);
 #else
     return "undefined";
 #endif
