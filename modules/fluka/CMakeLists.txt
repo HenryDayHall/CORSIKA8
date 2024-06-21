@@ -59,7 +59,7 @@ else()
             ECHO_OUTPUT_VARIABLE
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
-        if (ret AND NOT ret EQUAL "0")
+        if (ret AND NOT ret EQUAL "0" OR extracted_fluka_version STREQUAL "")
           message("FLUKA version detection failed")
         else()
           message("extracted FLUKA version: \"${extracted_fluka_version}\"")
