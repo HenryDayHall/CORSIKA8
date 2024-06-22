@@ -10,7 +10,6 @@
 
 #include <cstddef>
 #include <array>
-#include <string_view>
 
 #include <rng_decl.hpp> // from modules/common
 
