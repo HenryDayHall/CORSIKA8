@@ -14,6 +14,7 @@
 #include <iterator>
 #include <set>
 #include <utility>
+#include <string_view>
 
 #include <boost/iterator/zip_iterator.hpp>
 #include <Eigen/Dense>
@@ -33,6 +34,7 @@ namespace corsika::fluka {
   inline InteractionModel::InteractionModel(std::set<Code> const& nuccomp)
       : materials_{genFlukaMaterials(nuccomp)}
       , cumsgx_{std::make_unique<double[]>(materials_.size() * 3)} {
+    CORSIKA_LOGGER_INFO(logger_, "FLUKA version {}", ::fluka::get_version());
     for (auto const& [code, matno] : materials_) {
       CORSIKA_LOGGER_DEBUG(logger_, "FLUKA material initialization: {} -> {}",
                            get_name(code, full_name{}), matno);
