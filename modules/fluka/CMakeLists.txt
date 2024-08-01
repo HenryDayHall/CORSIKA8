@@ -36,7 +36,7 @@ else()
         $<INSTALL_INTERFACE:include/corsika_modules/fluka>
     )
 
-    try_compile(fluka_have_flkavr
+    try_compile(fluka_have_flkavr ${CMAKE_BINARY_DIR}
         SOURCES ${input_dir}/try_flkavr.c
         LINK_LIBRARIES ${C8_FLUKALIB_}
     )
