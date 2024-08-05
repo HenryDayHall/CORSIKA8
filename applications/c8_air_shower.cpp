@@ -64,6 +64,7 @@
 #else
 #include <corsika/modules/UrQMD.hpp>
 #endif
+#include <corsika/modules/TAUOLA.hpp>
 
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/RadioProcess.hpp>
@@ -433,6 +434,16 @@ int main(int argc, char** argv) {
   InteractionCounter heCounted{heModel};
 
   corsika::pythia8::Decay decayPythia;
+  // tau decay via TAUOLA (hard coded to left handed)
+  corsika::tauola::Decay decayTauola(corsika::tauola::Helicity::LeftHanded);
+
+  struct IsTauSwitch {
+    bool operator()(const Particle& p) const {
+      return (p.getPID() == Code::TauMinus || p.getPID() == Code::TauPlus);
+    }
+  };
+
+  auto decaySequence = make_select(IsTauSwitch(), decayTauola, decayPythia);
 
   // neutrino interactions with pythia (options are: NC, CC)
   bool NC = false;
@@ -632,7 +643,7 @@ int main(int argc, char** argv) {
 
     // assemble the final process sequence
     auto sequence =
-        make_sequence(stackInspect, neutrinoPrimaryPythia, hadronSequence, decayPythia,
+        make_sequence(stackInspect, neutrinoPrimaryPythia, hadronSequence, decaySequence,
                       emCascade, emContinuous, coreas, zhs, longprof, observationLevel,
                       inter_writer, thinning, cut);
 

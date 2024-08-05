@@ -6545,7 +6545,7 @@ c     virtual particle
       END
 C=======================================================================
 
-      SUBROUTINE DECPAR (LA,P0,ND,LL,P)
+      SUBROUTINE DECPAR_SIB (LA,P0,ND,LL,P)
 
 C-----------------------------------------------------------------------
 C...This subroutine generates the decay of a particle
@@ -8701,7 +8701,7 @@ c     IF(IRES.EQ.1.and.S_RNDM(LA).LT.0.5D0)
             IF (JQR.LT.-1.OR.JQR.GT.1)  GOTO 120
             LL(NPI+1) = 6+JQR
             IF (LL(NPI+1) .EQ. 5)  LL(NPI+1)=8
-            CALL DECPAR (0,P0,NPI+1,LL, PD)
+            CALL DECPAR_SIB (0,P0,NPI+1,LL, PD)
             DO J=1,NPI+1
                NP = NP+1
                LLIST(NP) = LL(J)
@@ -8745,7 +8745,7 @@ c              print *,'npi:',npi,'av',av,'p05',p0(5),am(la),deltae
               IF (JQR.LT.-1.OR.JQR.GT.1)  GOTO 221
               LL(NPI) = 6+JQR
               IF (LL(NPI) .EQ. 5)  LL(NPI)=8
-              CALL DECPAR (0,P0,NPI+1,LL, PD)
+              CALL DECPAR_SIB (0,P0,NPI+1,LL, PD)
               DO J=1,NPI+1
                  NP = NP+1
                  LLIST(NP) = LL(J)
@@ -8788,7 +8788,7 @@ c                 LL(K) = 27-INT(S_RNDM(0)*2.99999D0)
               IF (JQR.LT.-1.OR.JQR.GT.1)  GOTO 320
               LL(NPI+1) = 6+JQR
               IF (LL(NPI+1) .EQ. 5)  LL(NPI+1)=8
-              CALL DECPAR (0,P0,NPI+1,LL, PD)
+              CALL DECPAR_SIB (0,P0,NPI+1,LL, PD)
               DO J=1,NPI+1
                  NP = NP+1
                  LLIST(NP) = LL(J)
@@ -8854,7 +8854,7 @@ c            print *,'npi:',npi,'av',av,'p05',p0(5),am(la),deltae
             IF (JQR.LT.-1.OR.JQR.GT.1)  GOTO 220
             LL(NPI) = 6+JQR
             IF (LL(NPI) .EQ. 5)  LL(NPI)=8
-            CALL DECPAR (0,P0,NPI+1,LL, PD)
+            CALL DECPAR_SIB (0,P0,NPI+1,LL, PD)
             DO J=1,NPI+1
                NP = NP+1
                LLIST(NP) = LL(J)
@@ -10184,7 +10184,7 @@ c$$$      IF(IAFL1*IAFL2.GT.100)  GOTO 100
      &     NPI,(LL(ii),ii=1,NPI),WREM,NTRYL
 
 c...  fill phasespace
-      CALL DECPAR (0,P0,NPI,LL,PD)
+      CALL DECPAR_SIB (0,P0,NPI,LL,PD)
       DO J=1,NPI
          NP = NP+1
          LLIST(NP) = LL(J)
@@ -13821,7 +13821,7 @@ c     decay with sibyll
               DO K=1,5
                 P0(K) = P(NN,K)
               ENDDO
-              CALL DECPAR (L,P0,ND,LL,PD)
+              CALL DECPAR_SIB (L,P0,ND,LL,PD)
               LLIST(NN) = LLIST(NN)+ISIGN(10000,LLIST(NN))
               DO J=1,ND
                 NP = NP+1

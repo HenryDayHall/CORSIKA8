@@ -101,7 +101,7 @@ c~       ENDDO
 
 C  SET NMAX TO DEFAULT VALUE
       call set0
-      call params
+      call params_urqmd
 
 C  THIS IS THE SUBSTITUE FOR THE URQMD INPUT ROUTINE
 C  INITIALIZE COUNTERS

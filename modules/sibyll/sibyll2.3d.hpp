@@ -112,7 +112,7 @@ void sibyll_ini_();
 void sib_list_(int&);
 
 // decay routine (LA,P0,ND,LL,P)
-void decpar_(const int&, const double*, int&, int*, double*);
+void decpar_sib_(const int&, const double*, int&, int*, double*);
 
 // interaction length
 // double fpni_(double&, int&);

@@ -202,8 +202,8 @@ namespace corsika::sibyll {
     int outputSibPID[10];
 
     // run decay routine
-    decpar_(inputSibPID, inputMomentum, nFinalParticles, outputSibPID,
-            &outputMomentum[0]);
+    decpar_sib_(inputSibPID, inputMomentum, nFinalParticles, outputSibPID,
+                &outputMomentum[0]);
 
     CORSIKA_LOGGER_TRACE(logger_, "number of final state particles: {}", nFinalParticles);
 
