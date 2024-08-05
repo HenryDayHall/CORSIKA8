@@ -109,7 +109,7 @@ c-----------------------------------------------------------------------
       end
 
 c-----------------------------------------------------------------------
-      function ffsig(t,qt,x1,x2)    !former psjy
+      function ffsig_epo(t,qt,x1,x2)    !former psjy
 c-----------------------------------------------------------------------
       include 'epos.incsem'
       include 'epos.inc'
@@ -125,7 +125,7 @@ c-----------------------------------------------------------------------
       dv2= pifpartone(x2,qt, 2,2,1)+pifpartone(x2,qt, 2,2,2)
       sea2=pifpartone(x2,qt,-1,2,1)+pifpartone(x2,qt,-1,2,2)
 
-      ffsig= ffborn(s,t,  g1*g2                                  !gg
+      ffsig_epo= ffborn(s,t,  g1*g2                                  !gg
 
      *  ,(uv1+dv1+2.*naflav*sea1)*g2+g1*(uv2+dv2+2.*naflav*sea2)   !gq
 
@@ -631,7 +631,7 @@ c------------------------------------------------------------------------
       function ffsigi(qq,y0)                   !former psjx1  (sto)
 c------------------------------------------------------------------------
 c
-c    dsigma/dpt_jet =  \int dy \int dx1  ffsig(x1,x2(x1))
+c    dsigma/dpt_jet =  \int dy \int dx1  ffsig_epo(x1,x2(x1))
 c
 c x1=xplus, x2=xminus
 c x2=x2(x1) due to u+t+s=0
@@ -640,7 +640,7 @@ c
 c qq = pt**2,  xt=2.*sqrt(qq/s)
 c rapidity range: 0 to y0
 c
-c    ffsig = function ffsig(t,qq,x1,x2)
+c    ffsig = function ffsig_epo(t,qq,x1,x2)
 c
 c-----------------------------------------------------------------------
       include 'epos.incsem'
@@ -672,7 +672,7 @@ c-----------------------------------------------------------------------
           aa=1.-4.*qq/sh
           aa=max(1e-10,aa)
           t=sh/2.*(1.-sqrt(aa))               !formula in parton-parton cms
-          ft=ffsig(t,qq,sngl(xx1),sngl(xx2))
+          ft=ffsig_epo(t,qq,sngl(xx1),sngl(xx2))
           fx=fx+wgss(ig1,i1)*ft/sh**2
         enddo
         enddo

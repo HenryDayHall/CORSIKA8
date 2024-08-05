@@ -8,6 +8,7 @@ set (test_modules_sources
   testQGSJetII.cpp
   testProposal.cpp
   testPythia8.cpp
+  testTAUOLA.cpp
   testUrQMD.cpp
   testCONEX.cpp
   testParticleCut.cpp

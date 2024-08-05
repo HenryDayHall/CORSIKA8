@@ -51,6 +51,35 @@ set_target_properties (
 set (Pythia8_FOUND @Pythia8_FOUND@)
 message (STATUS "Pythia8 at: @Pythia8_PREFIX@")
 
+#+++++++++++++++++++++++++++++
+# Import TAUOLA
+# since we always import TAUOLA (ExternalProject_Add) we have to
+# import here, too.
+#
+add_library (C8::ext::tauola::CxxInterface STATIC IMPORTED GLOBAL)
+add_library (C8::ext::tauola::Fortran STATIC IMPORTED GLOBAL)
+add_library(C8::ext::tauola INTERFACE IMPORTED)
+set_property(TARGET C8::ext::tauola 
+    PROPERTY
+    INTERFACE_LINK_LIBRARIES 
+    C8::ext::tauola::CxxInterface
+    C8::ext::tauola::Fortran)
+set_target_properties (
+  C8::ext::tauola::CxxInterface PROPERTIES
+  IMPORTED_LOCATION @TAUOLA_LIBDIR@/libTauolaCxxInterface.a
+  IMPORTED_LINK_INTERFACE_LIBRARIES dl
+  INTERFACE_INCLUDE_DIRECTORIES @TAUOLA_INCDIR@
+  )
+set_target_properties (
+  C8::ext::tauola::Fortran PROPERTIES
+  IMPORTED_LOCATION @TAUOLA_LIBDIR@/libTauolaFortran.a
+  IMPORTED_LINK_INTERFACE_LIBRARIES dl
+  INTERFACE_INCLUDE_DIRECTORIES @TAUOLA_INCDIR@
+  )
+
+set (TAUOLA_FOUND @TAUOLA_FOUND@)
+message (STATUS "TAUOLA at: @TAUOLA_PREFIX@")
+
 
 #++++++++++++++++++++++++++++++
 # import CORSIKA8

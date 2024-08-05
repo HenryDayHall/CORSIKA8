@@ -1,7 +1,7 @@
 c $Id: proppot.f,v 1.10 1999/01/18 09:57:12 ernst Exp $
 c Setting of global paramters
 c
-      subroutine params
+      subroutine params_urqmd
       implicit none
       real*8 A0, chi
       include 'coms.f'
