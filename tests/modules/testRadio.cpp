@@ -5,7 +5,7 @@
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/ZHS.hpp>
@@ -55,6 +55,7 @@
 #include <corsika/output/OutputManager.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 double constexpr absMargin = 1.0e-7;
 

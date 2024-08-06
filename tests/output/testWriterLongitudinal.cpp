@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <boost/filesystem.hpp>
 
@@ -26,6 +26,7 @@
 #include <string>
 
 using namespace corsika;
+using Catch::Approx;
 
 const auto density = 1_kg / (1_m * 1_m * 1_m);
 

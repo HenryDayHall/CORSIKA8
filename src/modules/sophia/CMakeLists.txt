@@ -1,5 +1,7 @@
 set (input_dir ${PROJECT_SOURCE_DIR}/src/modules/sophia)
 set (output_dir ${PROJECT_BINARY_DIR}/corsika/modules/sophia)
+set (destination_dir ${PROJECT_SOURCE_DIR}/corsika/modules/sophia )
+
 
 file (MAKE_DIRECTORY ${output_dir})
 
@@ -23,10 +25,12 @@ set_source_files_properties (
   PROPERTIES GENERATED TRUE
 )
 
-add_custom_target (SourceDirLinkSoph DEPENDS ${output_dir}/Generated.inc)
-add_dependencies (CORSIKA8 SourceDirLinkSoph)
+add_custom_command(
+  OUTPUT  ${destination_dir}/Generated.inc
+  COMMAND ${CMAKE_COMMAND} -E copy ${output_dir}/Generated.inc ${destination_dir}/Generated.inc 
+  DEPENDS ${output_dir}/Generated.inc
+)
 
-install (
-  FILES ${output_dir}/Generated.inc
-  DESTINATION include/corsika/modules/sophia
-  )
+
+add_custom_target (SourceDirLinkSoph DEPENDS ${destination_dir}/Generated.inc)
+add_dependencies (CORSIKA8 SourceDirLinkSoph)

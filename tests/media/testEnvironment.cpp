@@ -33,9 +33,10 @@
 #include <SetupTestTrajectory.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
 

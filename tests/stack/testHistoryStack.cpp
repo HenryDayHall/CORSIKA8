@@ -10,7 +10,7 @@
 #include <corsika/stack/DummyStack.hpp>
 #include <corsika/stack/history/HistoryStackExtension.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace corsika;
 

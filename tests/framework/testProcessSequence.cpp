@@ -7,10 +7,10 @@
  */
 #define CORSIKA_UNIT_TESTING
 
-#include <corsika/framework/process/ProcessSequence.hpp>
-#include <corsika/framework/process/SwitchProcessSequence.hpp>
-#include <corsika/framework/process/ProcessTraits.hpp>
 #include <corsika/framework/process/ContinuousProcessStepLength.hpp>
+#include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/process/ProcessTraits.hpp>
+#include <corsika/framework/process/SwitchProcessSequence.hpp>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/Step.hpp>
@@ -19,7 +19,7 @@
 
 #include <corsika/media/NuclearComposition.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <array>
 #include <iomanip>
@@ -35,6 +35,7 @@
 
 using namespace corsika;
 using namespace std;
+using Catch::Approx;
 
 struct DummyRNG {
   static constexpr int max() { return 10; }
@@ -81,8 +82,8 @@ struct DummyTrajectory {
   }
 };
 
-// since there is no stack, there is also no view. This is a simplistic dummy object
-// sufficient here.
+// since there is no stack, there is also no view. This is a simplistic dummy
+// object sufficient here.
 struct DummyView {
   DummyView(DummyData& p)
       : p_(p) {}
@@ -630,8 +631,8 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
 
   auto sequence1 =
       make_sequence(Process1(0), cp2, Decay1(0), sec1, Boundary1(1.0)); // 10 mb
-  auto sequence2 =
-      make_sequence(cp3, Process2(0), Boundary1(-1.0), Decay2(0), sec2); // 20 mb
+  auto sequence2 = make_sequence(cp3, Process2(0), Boundary1(-1.0), Decay2(0),
+                                 sec2); // 20 mb
 
   auto sequence3 = make_sequence(cp1, Process3(0), // 30 mb
                                  SwitchProcessSequence(select1, sequence1, sequence2));
@@ -775,8 +776,8 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     CHECK(checkCont == 0);
     CHECK(checkSec == 0);
 
-    // now check sequence3, which contains a SwitchProcessSequence that contains two
-    // longer sequences in each branch.
+    // now check sequence3, which contains a SwitchProcessSequence that contains
+    // two longer sequences in each branch.
     {
       // check that large "select" value will correctly ignore the call
       cx_select = 1e5_mb;
@@ -820,8 +821,8 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
       CHECK(checkInteract == 1); // 2^1
     }
 
-    // now check sequence3, which contains a SwitchProcessSequence that contains just two
-    // bare InteractionProcess-es in each branch.
+    // now check sequence3, which contains a SwitchProcessSequence that contains
+    // just two bare InteractionProcess-es in each branch.
     {
       // check that large "select" value will correctly ignore the call
       cx_select = 1e5_mb;
@@ -889,8 +890,8 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     DummyTrajectory track;
     Step step(particle, track);
 
-    particle.data_[0] =
-        100; // data positive, selects particular branch on SwitchProcessSequence
+    particle.data_[0] = 100; // data positive, selects particular branch on
+                             // SwitchProcessSequence
 
     cp1.setStep(10_m);
     cp2.setStep(15_m);
@@ -909,8 +910,8 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     CORSIKA_LOG_INFO("step1, l={}, i={}", LengthType(step1),
                      ContinuousProcessIndex(step1).getIndex());
 
-    particle.data_[0] =
-        100; // data positive, selects particular branch on SwitchProcessSequence
+    particle.data_[0] = 100; // data positive, selects particular branch on
+                             // SwitchProcessSequence
 
     cp1.setStep(50_m);
     cp2.setStep(15_m);
@@ -930,8 +931,8 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
                      ContinuousProcessIndex(step2).getIndex(),
                      boost::typeindex::type_id<decltype(sequence3)>().pretty_name());
 
-    particle.data_[0] =
-        -100; // data positive, selects particular branch on SwitchProcessSequence
+    particle.data_[0] = -100; // data positive, selects particular branch on
+                              // SwitchProcessSequence
 
     cp1.setStep(11_m);
     cp2.setStep(15_m);
@@ -951,8 +952,8 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
                      ContinuousProcessIndex(step3).getIndex(),
                      boost::typeindex::type_id<decltype(sequence3)>().pretty_name());
 
-    particle.data_[0] =
-        -100; // data positive, selects particular branch on SwitchProcessSequence
+    particle.data_[0] = -100; // data positive, selects particular branch on
+                              // SwitchProcessSequence
 
     cp1.setStep(11_m);
     cp2.setStep(15_m);
@@ -979,15 +980,15 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     DummyNode node_from(1);
     DummyNode node_to(2);
 
-    particle.data_[0] =
-        100; // data positive, selects particular branch on SwitchProcessSequence
+    particle.data_[0] = 100; // data positive, selects particular branch on
+                             // SwitchProcessSequence
 
     sequence4.doBoundaryCrossing(particle, node_from, node_to);
 
     CHECK(particle.data_[0] == 97); // 100 - 2*1 - 1*1
 
-    particle.data_[0] =
-        -100; // data positive, selects particular branch on SwitchProcessSequence
+    particle.data_[0] = -100; // data positive, selects particular branch on
+                              // SwitchProcessSequence
 
     sequence4.doBoundaryCrossing(particle, node_from, node_to);
     CHECK(particle.data_[0] == -101); // -100 - 2*1 + 1*1
@@ -1102,8 +1103,8 @@ TEST_CASE("SelectInteractionZeroCrossSection", "ProcessSequence") {
 
   auto retValue =
       sequence.selectInteraction(view, projectileP4, noComposition, rng, 0_mb);
-  CHECK(!isInteracted(retValue)); // cross section of process sequence is zero, no process
-                                  // should cause an interaction
+  CHECK(!isInteracted(retValue)); // cross section of process sequence is zero,
+                                  // no process should cause an interaction
 }
 
 TEST_CASE("SwitchProcessSequence Indexing", "ProcessSequence") {

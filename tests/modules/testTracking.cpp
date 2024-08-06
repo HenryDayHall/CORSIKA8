@@ -18,11 +18,12 @@
 #include <SetupTestStack.hpp>
 #include <SetupTestTrajectory.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <boost/type_index.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
 using DummyEnvironment = Environment<DummyEnvironmentInterface>;

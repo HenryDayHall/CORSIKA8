@@ -13,6 +13,7 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/stack/Stack.hpp>
 #include <corsika/modules/sophia/ParticleConversion.hpp>
+#include <fmt/format.h>
 
 #include <sophia.hpp>
 
@@ -122,5 +123,7 @@ namespace corsika::sophia {
   };
 
   typedef corsika::Stack<SophiaStackData, ParticleInterface> SophiaStack;
+
+  auto inline format_as(SophiaCode code) { return fmt::underlying(code); }
 
 } // namespace corsika::sophia

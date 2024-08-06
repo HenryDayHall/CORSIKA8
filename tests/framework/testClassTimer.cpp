@@ -9,13 +9,14 @@
 #include <corsika/framework/analytics/ClassTimer.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <chrono>
 #include <iostream>
 #include <thread>
 
 using namespace corsika;
+using Catch::Approx;
 
 class _foo2 {
 public:

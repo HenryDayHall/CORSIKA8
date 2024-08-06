@@ -7,7 +7,7 @@
  */
 
 #include <boost/filesystem.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <corsika/framework/core/Logging.hpp>
 #include <corsika/media/Environment.hpp>
@@ -15,6 +15,7 @@
 #include <corsika/setup/SetupTrajectory.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 auto setupWritePrimaryEnv() {
   // Set up all of the background

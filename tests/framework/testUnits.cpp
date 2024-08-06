@@ -12,9 +12,10 @@
 #include <array>
 #include <sstream>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 TEST_CASE("PhysicalUnits", "[Units]") {
 

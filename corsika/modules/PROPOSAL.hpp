@@ -10,6 +10,7 @@
 
 #include <corsika/modules/proposal/InteractionModel.hpp>
 #include <corsika/modules/proposal/ContinuousProcess.hpp>
+#include <fmt/format.h>
 
 namespace corsika::proposal {
 
@@ -25,3 +26,13 @@ namespace corsika::proposal {
                                                                thr) {}
   };
 } // namespace corsika::proposal
+
+//----------------------------------
+// SPDLOG PROPOSAL
+//----------------------------------
+
+namespace PROPOSAL {
+
+  auto format_as(InteractionType code) { return fmt::underlying(code); }
+
+} // namespace PROPOSAL

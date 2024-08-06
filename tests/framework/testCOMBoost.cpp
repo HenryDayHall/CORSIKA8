@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
@@ -16,6 +16,7 @@
 #include <corsika/framework/utility/COMBoost.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 double constexpr absMargin = 1e-6;
 

@@ -22,22 +22,30 @@
 
 // use the coarse system clock. This is *much* faster
 // but introduces a timestamp error of O(10 ms) which is fine for us.
+#ifndef SPDLOG_CLOCK_COARSE
 #define SPDLOG_CLOCK_COARSE
-
+#endif
 // do not create a default logger (we provide our own "corsika" logger)
+#ifndef SPDLOG_DISABLE_DEFAULT_LOGGER
 #define SPDLOG_DISABLE_DEFAULT_LOGGER
-
+#endif
 // use __PRETTY_FUNCTION__ instead of __FUNCTION__ where
 // printing function names in trace statements. This is much
 // nicer than __FUNCTION__ under GCC/clang.
+#ifndef SPDLOG_FUNCTION
 #define SPDLOG_FUNCTION __PRETTY_FUNCTION__
+#endif
 
 // if this is a Debug build, include debug messages in objects
 #ifdef _C8_DEBUG_
 // trace is the highest level of logging (ALL messages will be printed)
+#ifndef SPDLOG_ACTIVE_LEVEL
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+#endif
 #else // otherwise, remove everything but "error" and worse messages
+#ifndef SPDLOG_ACTIVE_LEVEL
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
+#endif
 #endif
 
 #include <spdlog/fmt/ostr.h> // will output whenerver a streaming operator is found
@@ -149,3 +157,4 @@ namespace corsika {
 } // namespace corsika
 
 #include <corsika/detail/framework/core/Logging.inl>
+#include <corsika/detail/framework/core/SpdlogSpecializations.inl>

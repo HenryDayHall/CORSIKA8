@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <boost/filesystem.hpp>
 
@@ -14,6 +14,7 @@
 #include <corsika/framework/core/Logging.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 TEST_CASE("ParquetStreamer") {
 

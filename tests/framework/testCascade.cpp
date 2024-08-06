@@ -30,12 +30,13 @@
 #include <SetupTestTrajectory.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace corsika;
 
 #include <limits>
 using namespace std;
+using Catch::Approx;
 
 /**
  * testCascade implements an e.m. Heitler model with energy splitting

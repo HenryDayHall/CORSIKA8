@@ -28,9 +28,10 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
 using DummyEnvironment = Environment<DummyEnvironmentInterface>;

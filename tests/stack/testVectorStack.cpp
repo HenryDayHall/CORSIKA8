@@ -12,10 +12,11 @@
 #include <corsika/stack/VectorStack.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace corsika;
 using namespace std;
+using Catch::Approx;
 
 TEST_CASE("VectorStack", "stack") {
 

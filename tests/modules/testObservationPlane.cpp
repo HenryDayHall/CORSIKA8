@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <corsika/modules/ObservationPlane.hpp>
 
@@ -23,6 +23,7 @@
 #include <corsika/setup/SetupTrajectory.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 TEST_CASE("ObservationPlane", "interface") {
 

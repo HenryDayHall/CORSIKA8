@@ -15,12 +15,13 @@
 
 #include <SetupTestEnvironment.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <string>
 #include <cstdlib>
 
 using namespace corsika;
+using Catch::Approx;
 
 using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
 using DummyEnvironment = Environment<DummyEnvironmentInterface>;
