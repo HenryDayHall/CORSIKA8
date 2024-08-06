@@ -27,6 +27,7 @@
 #include <SetupTestEnvironment.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 template <typename TStackView>
 auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
