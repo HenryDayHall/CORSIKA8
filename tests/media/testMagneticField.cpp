@@ -16,9 +16,10 @@
 #include <corsika/media/IMagneticFieldModel.hpp>
 #include <corsika/media/GeomagneticModel.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 const std::string refDataDir = std::string(REFDATADIR); // from cmake
 

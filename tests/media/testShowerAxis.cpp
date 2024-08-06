@@ -18,10 +18,11 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 // using namespace
 using namespace corsika;
+using Catch::Approx;
 
 const auto density = 1_kg / (1_m * 1_m * 1_m);
 

@@ -82,15 +82,14 @@ namespace corsika {
    *
    * The Code enum is the actual place to define CORSIKA 8 particle codes.
    */
-  enum class Code : int32_t;
+  enum class Code : std::int32_t;
 
   /**
    * @enum PDGCode
    *
    * Specifically for PDG ids.
    */
-  enum class PDGCode : int32_t;
-
+  enum class PDGCode : std::int32_t;
   /**
    * Internal integer type for enum Code.
    */

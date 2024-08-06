@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/ExponentialDistribution.hpp>
@@ -17,6 +17,7 @@
 #include <random>
 
 using namespace corsika;
+using Catch::Approx;
 
 SCENARIO("random-number streams can be registered and retrieved") {
   GIVEN("a RNGManager") {

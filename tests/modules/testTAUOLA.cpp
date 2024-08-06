@@ -9,7 +9,7 @@
 #include <corsika/modules/TAUOLA.hpp>
 #include <SetupTestEnvironment.hpp>
 #include <SetupTestStack.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <boost/histogram.hpp>
 
 #include <boost/format.hpp>
@@ -24,6 +24,7 @@
 using namespace corsika::tauola;
 using namespace corsika;
 using namespace boost::histogram;
+using Catch::Approx;
 
 using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
 using DummyEnvironment = Environment<DummyEnvironmentInterface>;

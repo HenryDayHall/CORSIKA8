@@ -10,7 +10,9 @@
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
+
+using Catch::Approx;
 
 namespace corsika::testing {
 
@@ -22,7 +24,7 @@ namespace corsika::testing {
    * `CHECK(v.normalize().norm() == Approx(1),margin(0)) `
    *
    **/
-  inline bool operator==(DimensionlessType const a, Catch::Detail::Approx const& b) {
+  inline bool operator==(DimensionlessType const a, Approx const& b) {
     return a.magnitude() == b;
   }
 

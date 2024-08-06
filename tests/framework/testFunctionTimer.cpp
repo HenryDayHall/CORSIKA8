@@ -9,7 +9,7 @@
 #include <corsika/framework/analytics/FunctionTimer.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <chrono>
 #include <thread>

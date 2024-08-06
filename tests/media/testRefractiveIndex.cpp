@@ -26,9 +26,11 @@
 #include <SetupTestTrajectory.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace corsika;
+using Catch::Approx;
+
 template <typename TInterface>
 using MyExtraEnv =
     ExponentialRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;

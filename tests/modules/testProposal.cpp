@@ -10,7 +10,7 @@
 
 #include <SetupTestEnvironment.hpp>
 #include <SetupTestStack.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <tuple>
 #include "corsika/framework/core/PhysicalUnits.hpp"
 

@@ -31,12 +31,6 @@ set (COMPILE_OPTIONS @COMPILE_OPTIONS@)
 set (CMAKE_VERBOSE_MAKEFILE  @CMAKE_VERBOSE_MAKEFILE@) 
 
 #+++++++++++++++++++++++++++++
-# Setup external dependencies via conan
-#
-include (${CMAKE_CURRENT_LIST_DIR}/conanbuildinfo.cmake)
-conan_basic_setup (TARGETS)
-
-#+++++++++++++++++++++++++++++
 # Import Pythia8
 # since we always import pythia (ExternalProject_Add) we have to
 # import here, too.

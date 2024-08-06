@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #ifdef WITH_FLUKA
 #include <corsika/modules/FLUKA.hpp>
 #endif
@@ -17,6 +17,8 @@
 #include <corsika/modules/QGSJetII.hpp>
 #include <corsika/modules/Sophia.hpp>
 #include <corsika/modules/UrQMD.hpp>
+
+using Catch::Approx;
 
 static std::size_t first{};
 void dummy_rng_func(double* dest, std::size_t N) {

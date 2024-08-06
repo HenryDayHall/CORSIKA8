@@ -11,9 +11,10 @@
 #include <corsika/framework/core/Logging.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 struct DummyRNG {
   double v_;

@@ -62,7 +62,13 @@ endif ()
 # cmake path dir, and cmake config
 #
 set (CORSIKA8_CMAKE_DIR "${PROJECT_SOURCE_DIR}/cmake")
+
 set (CMAKE_MODULE_PATH "${CORSIKA8_CMAKE_DIR}" ${CMAKE_MODULE_PATH})
+
+if(DEFINED CONAN_CMAKE_DIR)
+	list(APPEND CMAKE_MODULE_PATH "${CONAN_CMAKE_DIR}")
+endif(DEFINED CONAN_CMAKE_DIR)
+
 set (CMAKE_VERBOSE_MAKEFILE  OFF) # this can be done with `make VERBOSE=1`
 # ignore many irrelevant Up-to-date messages during install
 set (CMAKE_INSTALL_MESSAGE LAZY)
@@ -111,8 +117,7 @@ add_compile_options (
 # Setup external dependencies.
 #
 ###
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+
 
 #
 # add cnpy temporarily. As long as SaveBoostHistogram does not save to parquet directly
@@ -123,7 +128,15 @@ add_subdirectory (externals/cnpy)
 # Coverage
 #
 # targets and settings needed to generate coverage reports
-if (CMAKE_BUILD_TYPE STREQUAL Coverage)
+#if (CMAKE_BUILD_TYPE STREQUAL Coverage)
+	
+SET(COVERAGE_BUILD OFF CACHE BOOL "Activate coverage build")
+
+if( COVERAGE_BUILD AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
+	
+
+  message(INFO "\n|==========>  COVERAGE TARGET ACTIVATED.\n")
+	
   find_package (Perl REQUIRED)
 
   # compile coverage under -O0 to avoid any optimization, function elimation etc.
@@ -173,6 +186,7 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
     DEPENDS coverage.info
     )
   add_custom_target (coverage DEPENDS coverage-report)
+  
 endif ()
 
 #+++++++++++++++++++++++++++++
@@ -211,13 +225,14 @@ set (public_CORSIKA8_targets CORSIKA8)
 # CORSIKA8
 #
 add_library (CORSIKA8 INTERFACE)
+
 set_target_properties (
   CORSIKA8
   PROPERTIES
   INTERFACE_CORSIKA8_MAJOR_VERSION 0
   COMPATIBLE_INTERFACE_STRING CORSIKA8_MAJOR_VERSION
   )
-#
+
 target_include_directories (
   CORSIKA8
   INTERFACE
@@ -225,17 +240,31 @@ target_include_directories (
   $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
   $<INSTALL_INTERFACE:include>
   )
+
 # since CORSIKA8 is a header only library we must specify all link dependencies here:
+
+find_package(Boost COMPONENTS filesystem REQUIRED)
+find_package(CLI11 REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(spdlog REQUIRED)
+find_package(yaml-cpp REQUIRED)
+find_package(Arrow REQUIRED)
+find_package(PROPOSAL REQUIRED)
+find_package(BZip2 REQUIRED)
+find_package(Catch2 REQUIRED)
+
 target_link_libraries (
   CORSIKA8
   INTERFACE
-  CONAN_PKG::proposal
-  CONAN_PKG::eigen
-  CONAN_PKG::spdlog
-  CONAN_PKG::boost
-  CONAN_PKG::yaml-cpp
-  CONAN_PKG::arrow
-  CONAN_PKG::cli11
+  ZLIB::ZLIB
+  BZip2::BZip2
+  Boost::filesystem
+  CLI11::CLI11
+  Eigen3::Eigen
+  spdlog::spdlog
+  yaml-cpp::yaml-cpp
+  Parquet::parquet_static
+  PROPOSAL::PROPOSAL
   cnpy # for SaveBoostHistogram
   )
 
@@ -312,6 +341,12 @@ install (
   NAMESPACE CORSIKA8::
   DESTINATION lib/cmake/corsika
   )
+ if(DEFINED CONAN_CMAKE_DIR)
+ install ( 
+  DIRECTORY conan_cmake/
+  DESTINATION lib/cmake/dependencies
+  )
+ endif(DEFINED CONAN_CMAKE_DIR)
 #
 # config for build tree (for find_package)
 #
@@ -362,8 +397,6 @@ configure_file (
 #
 install (
   FILES
-  ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake
-  ${CMAKE_BINARY_DIR}/conaninfo.txt
   ${CMAKE_BINARY_DIR}/corsikaDefines.cmake
   ${CMAKE_BINARY_DIR}/corsikaConfigVersion.cmake
   DESTINATION lib/cmake/corsika

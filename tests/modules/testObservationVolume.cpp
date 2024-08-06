@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <corsika/modules/ObservationVolume.hpp>
 
 #include <corsika/framework/geometry/Point.hpp>
@@ -24,6 +24,8 @@
 #include <corsika/setup/SetupTrajectory.hpp>
 
 using namespace corsika;
+using Catch::Approx;
+
 // some geometries such as box do not support curved track yet.
 using Tracking = tracking_line::Tracking;
 

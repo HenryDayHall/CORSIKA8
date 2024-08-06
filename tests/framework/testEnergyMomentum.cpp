@@ -6,12 +6,13 @@
  * the license.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/EnergyMomentumOperations.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 TEST_CASE("EnergyMomentumOperations") {
 

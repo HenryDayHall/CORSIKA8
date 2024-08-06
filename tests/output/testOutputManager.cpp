@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <boost/filesystem.hpp>
 
@@ -16,6 +16,7 @@
 #include <corsika/output/NoOutput.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 struct DummyNoOutput : public NoOutput {
   void check() {

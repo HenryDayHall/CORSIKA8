@@ -59,7 +59,7 @@ CORSIKA 8 is tested regularly at least on `gcc11.0.0` and `clang-14.0.0`.
 You will also need:
 
 - Python 3 (supported versions are Python >= 3.6), with pip
-- conan (via pip)
+- conan (via pip, with version higher than 2.0)
 - cmake > 3.4
 - git
 - g++, gfortran, binutils, make
@@ -96,7 +96,7 @@ manage our dependencies. Currently, version 1.57.0 or higher is required.
 **Note**: if you are NOT using a virtual environment, you may want to use the `pip install --user` flag.
 
 ``` shell
-pip install conan~=1.57.0
+pip install conan
 ```
 
 ### Compiling
@@ -109,8 +109,9 @@ git clone --recursive https://gitlab.iap.kit.edu/AirShowerPhysics/corsika.git
 # Or for https: git clone --recursive git@gitlab.iap.kit.edu:AirShowerPhysics/corsika.git
 mkdir corsika-build
 cd corsika-build
-../corsika/conan-install.sh
-cmake ../corsika -DCMAKE_BUILD_TYPE="RelWithDebInfo" -DCMAKE_INSTALL_PREFIX=../corsika-install
+../corsika/conan-install.sh --source-directory ../corsika --release-with-debug
+# conan-install.sh takes required options from command line to install dependencies for 'Debug', 'Release' and 'RelWithDebInfo' builds. 
+../corsika/corsika-cmake.sh -c "-DCMAKE_BUILD_TYPE="RelWithDebInfo" -DCMAKE_INSTALL_PREFIX=../corsika-install"
 make -j4  #The number should match the number of available cores on your machine
 make install
 ```
@@ -155,8 +156,9 @@ git clone --recursive https://gitlab.iap.kit.edu/AirShowerPhysics/corsika.git
 sudo docker run -v $PWD:/corsika -it corsika/devel:clang-8 /bin/bash
 mkdir build
 cd build
-../corsika/conan-install.sh
-cmake ../corsika -DCMAKE_INSTALL_PREFIX=../corsika-install
+../corsika/conan-install.sh --source-directory ../corsika --release-with-debug
+# conan-install.sh takes required options from command line to install dependencies for 'Debug', 'Release' and 'RelWithDebInfo' builds. 
+../corsika/corsika-cmake.sh -c "-DCMAKE_BUILD_TYPE="RelWithDebInfo" -DCMAKE_INSTALL_PREFIX=../corsika-install"
 make -j4  #The number should match the number of available cores on your machine
 make install
 ```

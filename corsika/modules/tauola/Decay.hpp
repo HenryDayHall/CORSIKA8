@@ -20,6 +20,8 @@ namespace corsika::tauola {
    */
   enum class Helicity { LeftHanded, Unpolarized, RightHanded };
 
+  auto inline format_as(Helicity code) { return fmt::underlying(code); }
+
   /**
    * An interface to TAUOLA to simulate tau lepton decays.
    *

@@ -9,12 +9,12 @@ set (
   )
 
 add_library (cnpy STATIC ${CNPY_SOURCES})
-
+find_package(ZLIB REQUIRED)
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
   cnpy
   PUBLIC
-  CONAN_PKG::zlib
+  ZLIB::ZLIB
   )
 
 target_include_directories (

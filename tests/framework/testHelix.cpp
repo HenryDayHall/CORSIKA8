@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <corsika/framework/geometry/Helix.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
@@ -16,6 +16,7 @@
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 double constexpr absMargin = 1.0e-8;
 

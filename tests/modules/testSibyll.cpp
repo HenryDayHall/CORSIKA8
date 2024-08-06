@@ -16,11 +16,12 @@
 #include <corsika/framework/utility/COMBoost.hpp>
 
 #include <SetupTestEnvironment.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <tuple>
 
 using namespace corsika;
 using namespace corsika::sibyll;
+using Catch::Approx;
 
 using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
 using DummyEnvironment = Environment<DummyEnvironmentInterface>;

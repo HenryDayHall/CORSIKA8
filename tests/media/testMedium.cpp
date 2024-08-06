@@ -18,12 +18,13 @@
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/MediumProperties.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <SetupTestTrajectory.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
 using namespace corsika;
+using Catch::Approx;
 
 TEST_CASE("MediumProperties") {
 

@@ -18,7 +18,7 @@ from corsika.io import Library
 
 from .. import build_directory
 
-bindir = op.join(build_directory, "bin")
+bindir = op.join(build_directory, "tests/output")
 
 
 def generate_data() -> str:

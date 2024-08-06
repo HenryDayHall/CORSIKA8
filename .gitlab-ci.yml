@@ -102,10 +102,11 @@ check-python-quality:
   tags:
     - corsika
   script:
+    - pip3 install conan --upgrade --user
     - mkdir -p ${CI_PROJECT_DIR}/build
     - cd ${CI_PROJECT_DIR}/build
-    - ${CI_PROJECT_DIR}/conan-install.sh
-    - cmake .. -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/build/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
+    - ${CI_PROJECT_DIR}/conan-install.sh -s .. -d
+    - ${CI_PROJECT_DIR}/corsika-cmake.sh -c "-DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/build/install -DUSE_Pythia8_C8=C8"
   rules:
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_TAG
@@ -141,10 +142,11 @@ config-clang-14:
   tags:
     - corsika
   script:
+    - pip3 install conan --upgrade --user
     - mkdir -p ${CI_PROJECT_DIR}/build
     - cd ${CI_PROJECT_DIR}/build
-    - ${CI_PROJECT_DIR}/conan-install.sh
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
+    - ${CI_PROJECT_DIR}/conan-install.sh -s .. -d
+    - ${CI_PROJECT_DIR}/corsika-cmake.sh -c "-DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/build/install -DUSE_Pythia8_C8=C8"
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4 
@@ -163,6 +165,7 @@ config-clang-14:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
 
+    
 # build_test for gcc
 build_test-u-22_04:
   extends: .build_test
@@ -194,10 +197,11 @@ build_test-clang-14:
   tags:
     - corsika
   script:
+    - pip3 install conan --upgrade --user
     - mkdir -p ${CI_PROJECT_DIR}/build
     - cd ${CI_PROJECT_DIR}/build
-    - ${CI_PROJECT_DIR}/conan-install.sh
-    - cmake .. -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/build/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
+    - ${CI_PROJECT_DIR}/conan-install.sh -s .. -d
+    - ${CI_PROJECT_DIR}/corsika-cmake.sh -c "-DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/build/install -DUSE_Pythia8_C8=C8"
     - cmake --build . -- VERBOSE=1 -j4
     - set -o pipefail
     - ctest -j4
@@ -205,7 +209,8 @@ build_test-clang-14:
     - mkdir -p ${CI_PROJECT_DIR}/build/build_examples
     - cd ${CI_PROJECT_DIR}/build/build_examples
     - export corsika_DIR=${CI_PROJECT_DIR}/build/install
-    - cmake -DCMAKE_BUILD_TYPE=Debug ../install/share/corsika/examples
+    - export corsika_CONAN_DEPENDENCIES=${CI_PROJECT_DIR}/build/install/lib/cmake/dependencies
+    - cmake -DCMAKE_TOOLCHAIN_FILE=${corsika_CONAN_DEPENDENCIES}/conan_toolchain.cmake -DCMAKE_PREFIX_PATH=${corsika_CONAN_DEPENDENCIES} -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_BUILD_TYPE=Debug ../install/share/corsika/examples
     - cmake --build . -- -j2
     - cmake --build . --target run_examples -- -j2
     - export EXE=${CI_PROJECT_DIR}/build/install/bin/c8_air_shower  # Run the example scripts
@@ -233,7 +238,7 @@ build_test-clang-14:
       - ${CI_PROJECT_DIR}/build/build_examples/example_outputs/c8_air_shower_output #python examples need this
       - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
       - ${CI_PROJECT_DIR}/build/CMakeCache.txt #python tests need this
-      - ${CI_PROJECT_DIR}/build/bin #python tests need this
+      - ${CI_PROJECT_DIR}/build #/bin #python tests need this
 
 # build_test_example for gcc
 build_test_example-u-22_04:
@@ -267,19 +272,22 @@ build_test_example-clang-14:
   tags:
     - corsika
   script:
+    - pip3 install conan --upgrade --user
     - mkdir -p ${CI_PROJECT_DIR}/build
     - cd ${CI_PROJECT_DIR}/build
-    - ${CI_PROJECT_DIR}/conan-install.sh
-    - cmake .. -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/build/install -DCMAKE_BUILD_TYPE=Release -DUSE_Pythia8_C8=C8
+    - ${CI_PROJECT_DIR}/conan-install.sh -s .. -r
+    - ${CI_PROJECT_DIR}/corsika-cmake.sh -c "-DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/build/install -DUSE_Pythia8_C8=C8"
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4
     - cmake --install .
     - mkdir -p ${CI_PROJECT_DIR}/build/build_examples
     - cd ${CI_PROJECT_DIR}/build/build_examples
-    - cmake -DCMAKE_BUILD_TYPE=Release ${CI_PROJECT_DIR}/build/install/share/corsika/examples
-    - cmake --build . -- VERBOSE=1 -j2
-    - cmake --build . --target run_examples -- -j2 
+    - export corsika_DIR=${CI_PROJECT_DIR}/build/install
+    - export corsika_CONAN_DEPENDENCIES=${CI_PROJECT_DIR}/build/install/lib/cmake/dependencies
+    - cmake -DCMAKE_TOOLCHAIN_FILE=${corsika_CONAN_DEPENDENCIES}/conan_toolchain.cmake -DCMAKE_PREFIX_PATH=${corsika_CONAN_DEPENDENCIES} -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_BUILD_TYPE=Release ../install/share/corsika/examples
+    - cmake --build . -- VERBOSE=1 -j4
+    - cmake --build . --target run_examples -- -j4 
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for Code Review/' # run on merge requests, if label 'Ready for Code Review' is set
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -300,6 +308,7 @@ build_test_example-clang-14:
     paths:
       - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
 
+      
 # release for gcc
 release-full-u-22_04:
   extends: .release
@@ -335,10 +344,11 @@ coverage:
   tags:
     - corsika
   script:
+    - pip3 install conan --upgrade --user
     - mkdir -p ${CI_PROJECT_DIR}/build
     - cd ${CI_PROJECT_DIR}/build
-    - ${CI_PROJECT_DIR}/conan-install.sh
-    - cmake .. -DCMAKE_BUILD_TYPE=Coverage -DUSE_Pythia8_C8=C8
+    - ${CI_PROJECT_DIR}/conan-install.sh -s .. -d
+    - ${CI_PROJECT_DIR}/corsika-cmake.sh -c "-DCOVERAGE_BUILD=True -DUSE_Pythia8_C8=C8"
     - cmake --build . -- -j4
     - ctest -j4 
     - cmake --build . --target coverage
@@ -378,10 +388,11 @@ sanity:
   tags:
     - corsika
   script:
+    - pip3 install conan --upgrade --user
     - mkdir -p ${CI_PROJECT_DIR}/build
     - cd ${CI_PROJECT_DIR}/build
-    - ${CI_PROJECT_DIR}/conan-install.sh
-    - cmake .. -DWITH_CORSIKA_SANITIZERS_ENABLED=ON -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
+    - ${CI_PROJECT_DIR}/conan-install.sh -s .. -d
+    - ${CI_PROJECT_DIR}/corsika-cmake.sh -c "-DWITH_CORSIKA_SANITIZERS_ENABLED=ON -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/build/install -DUSE_Pythia8_C8=C8"
     - cmake --build . -- -j4
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for Code Review/' # run on merge requests, if label 'Ready for Code Review' is set

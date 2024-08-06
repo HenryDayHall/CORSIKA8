@@ -12,7 +12,7 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <numeric>
 #include <algorithm>

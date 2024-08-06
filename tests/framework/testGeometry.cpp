@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <cmath>
 #include <corsika/framework/core/PhysicalUnits.hpp>
@@ -28,6 +28,7 @@
 
 using namespace corsika;
 using namespace corsika::testing;
+using Catch::Approx;
 
 double constexpr absMargin = 1.0e-8;
 

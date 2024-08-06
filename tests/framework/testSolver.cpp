@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <cmath>
 #include <vector>
@@ -21,6 +21,7 @@
 
 using namespace corsika;
 using namespace std;
+using Catch::Approx;
 
 double pol4(long double x, long double a, long double b, long double c, long double d,
             long double e) {
