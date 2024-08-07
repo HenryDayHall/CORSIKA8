@@ -20,9 +20,9 @@ include (GNUInstallDirs)
 # version is:  "8.major.minor.patch"
 #   major: API changes
 #   minor: no API changes
-#   patch: bug fix and small improvements 
+#   patch: bug fix and small improvements
 #
-set (c8_version 8.0.0.0) 
+set (c8_version 8.0.0.0)
 project (
   corsika
   VERSION ${c8_version}
@@ -66,7 +66,7 @@ set (CORSIKA8_CMAKE_DIR "${PROJECT_SOURCE_DIR}/cmake")
 set (CMAKE_MODULE_PATH "${CORSIKA8_CMAKE_DIR}" ${CMAKE_MODULE_PATH})
 
 if(DEFINED CONAN_CMAKE_DIR)
-	list(APPEND CMAKE_MODULE_PATH "${CONAN_CMAKE_DIR}")
+  list(APPEND CMAKE_MODULE_PATH "${CONAN_CMAKE_DIR}")
 endif(DEFINED CONAN_CMAKE_DIR)
 
 set (CMAKE_VERBOSE_MAKEFILE  OFF) # this can be done with `make VERBOSE=1`
@@ -129,18 +129,18 @@ add_subdirectory (externals/cnpy)
 #
 # targets and settings needed to generate coverage reports
 #if (CMAKE_BUILD_TYPE STREQUAL Coverage)
-	
+
 SET(COVERAGE_BUILD OFF CACHE BOOL "Activate coverage build")
 
 if( COVERAGE_BUILD AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
-	
+
 
   message(INFO "\n|==========>  COVERAGE TARGET ACTIVATED.\n")
-	
+
   find_package (Perl REQUIRED)
 
   # compile coverage under -O0 to avoid any optimization, function elimation etc.
-  add_compile_options ("-O0")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 --coverage")
 
   # search for local lcov
   find_program (c8_lcov_bin lcov)
@@ -158,23 +158,23 @@ if( COVERAGE_BUILD AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
 
   set (GCOV gcov CACHE STRING "gcov executable" FORCE)
 
-  
+
   # collect coverage data
   add_custom_command (
     OUTPUT raw-coverage.info
     COMMAND ${CMAKE_COMMAND} -E echo "Note: you need to run ctest at least once to generate the coverage data"
-    COMMAND ${c8_lcov_bin} --gcov-tool=${GCOV} --rc lcov_branch_coverage=1 
+    COMMAND ${c8_lcov_bin} --gcov-tool=${GCOV} --rc lcov_branch_coverage=1
                            --directory . --capture --output-file raw-coverage.info
     )
   # remove uninteresting entries
   add_custom_command (
     OUTPUT coverage.info
     COMMAND ${c8_lcov_bin} -q --remove raw-coverage.info "*/usr/*" "/usr/*" --output-file coverage2.info
-    COMMAND ${c8_lcov_bin} --remove coverage2.info 
-                        "*/externals/*" "*/tests/*" "*/sibyll2.3d.cpp" "*/.conan/*" 
+    COMMAND ${c8_lcov_bin} --remove coverage2.info
+                        "*/externals/*" "*/tests/*" "*/sibyll2.3d.cpp" "*/.conan/*"
                         "*/include/Pythia8/*" "*/install/*"
-                        "${CMAKE_SOURCE_DIR}/modules/*" "${CMAKE_BINARY_DIR}/modules/*" 
-                        "*/cxroot/*"
+                        "${CMAKE_SOURCE_DIR}/modules/*" "${CMAKE_BINARY_DIR}/modules/*"
+                        "*/cxroot/*" "*/.conan2/*" "/boost/*"
                         --output-file coverage.info
     COMMAND ${CMAKE_COMMAND} -E remove coverage2.info
     DEPENDS raw-coverage.info
@@ -186,7 +186,7 @@ if( COVERAGE_BUILD AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
     DEPENDS coverage.info
     )
   add_custom_target (coverage DEPENDS coverage-report)
-  
+
 endif ()
 
 #+++++++++++++++++++++++++++++
@@ -342,7 +342,7 @@ install (
   DESTINATION lib/cmake/corsika
   )
  if(DEFINED CONAN_CMAKE_DIR)
- install ( 
+ install (
   DIRECTORY conan_cmake/
   DESTINATION lib/cmake/dependencies
   )
@@ -356,7 +356,7 @@ configure_package_config_file (
   INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
   )
 #
-# corsikaDefines 
+# corsikaDefines
 #
 configure_package_config_file (
   cmake/corsikaDefines.cmake
@@ -412,8 +412,8 @@ install (
   )
 #
 # also install-level config.hpp
-# 
-install (FILES 
+#
+install (FILES
   ${PROJECT_BINARY_DIR}/corsika.hpp-install
   RENAME corsika.hpp
   DESTINATION include/corsika
