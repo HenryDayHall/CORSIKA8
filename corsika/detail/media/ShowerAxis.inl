@@ -26,9 +26,16 @@ namespace corsika {
       , X_(steps + 1) {
     auto const* const universe = env.getUniverse().get();
 
-    auto rho = [pStart, length, universe](double x) {
+    auto rho = [pStart, length, universe, doThrow](double x) {
       auto const p = pStart + length * x;
       auto const* node = universe->getContainingNode(p);
+      if (!node->hasModelProperties()) {
+        CORSIKA_LOG_CRITICAL(
+            "Unable to construct ShowerAxis. ShowerAxis includes volume "
+            "with no model properties at point {}.",
+            p);
+        if (doThrow) throw std::runtime_error("Unable to construct ShowerAxis.");
+      }
       return node->getModelProperties().getMassDensity(p).magnitude();
     };
 
