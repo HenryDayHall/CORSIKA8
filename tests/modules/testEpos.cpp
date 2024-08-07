@@ -225,71 +225,31 @@ TEST_CASE("Epos", "modules") {
         {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}}));
   }
 
-  SECTION("InteractionInterface - nuclear projectile") {
+  SECTION("InteractionInterface - valid projectile target combinations") {
 
-    HEPEnergyType const P0 = 10_TeV;
-    Code const pid = get_nucleus_code(40, 20);
+    HEPMomentumType const P0 = 10_TeV;
+    Code const projectileId =
+        GENERATE(Code::Proton, Code::PiPlus, Code::KPlus, Code::Iron);
+    Code const targetId = GENERATE(Code::Proton, Code::Neutron, Code::Nitrogen);
+
     auto [stack, viewPtr] = setup::testing::setup_stack(
-        pid, P0, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
-    MomentumVector plab =
-        MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about
+        projectileId, P0, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
     test::StackView& view = *viewPtr;
 
     // @todo This is very obscure since it fails for -O2, but for both clang and gcc ???
-    model.doInteraction(view, pid, Code::Oxygen,
-                        {sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid))), plab},
-                        {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
+    model.doInteraction(
+        view, projectileId, targetId,
+        {calculate_total_energy(P0, get_mass(projectileId)), {cs, {P0, 0_eV, 0_eV}}},
+        {get_mass(targetId), {cs, 0_GeV, 0_GeV, 0_GeV}});
 
     //  simply check if stack is not empty after the event. Energy and momentum
     //  conservation will be tested elsewhere
     CHECK(view.getSize() > 0);
-
-    // auto const pSum = sumMomentum(view, cs);
-
-    // CHECK(pSum.getComponents(cs).getX() / P0 == Approx(1).margin(0.05));
-    // CHECK(pSum.getComponents(cs).getY() / 1_GeV ==
-    //       Approx(0).margin(0.5)); // this is not physics validation
-    // CHECK(pSum.getComponents(cs).getZ() / 1_GeV ==
-    //       Approx(0).margin(0.5)); // this is not physics validation
-
-    // CHECK((pSum - plab).getNorm() / 1_GeV ==
-    //       Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
-    // CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
-    //    [[maybe_unused]] const GrammageType length =
-    //    model.getInteractionLength(particle);
-    //  CHECK(length / 1_g * 1_cm * 1_cm ==
-    //      Approx(30).margin(20)); // this is no physics validation
   }
 
-  // SECTION("InteractionInterface")
-  {
-    HEPEnergyType const P0 = 10_TeV;
-    Code const pid = Code::Proton;
-    auto [stack, viewPtr] = setup::testing::setup_stack(
-        pid, P0, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
-    MomentumVector plab =
-        MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about
-    test::StackView& view = *viewPtr;
+  SECTION("Decay config") {
+    logging::set_level(logging::level::debug);
 
-    // @todo This is very obscure since it fails for -O2, but for both clang and gcc ???
-    model.doInteraction(view, pid, Code::Oxygen,
-                        {sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid))), plab},
-                        {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
-
-    auto const pSum = sumMomentum(view, cs);
-
-    CHECK(pSum.getComponents(cs).getX() / P0 == Approx(1).margin(0.05));
-    CHECK(pSum.getComponents(cs).getY() / 1_GeV ==
-          Approx(0).margin(0.5)); // this is not physics validation
-    CHECK(pSum.getComponents(cs).getZ() / 1_GeV ==
-          Approx(0).margin(0.5)); // this is not physics validation
-
-    CHECK((pSum - plab).getNorm() / 1_GeV ==
-          Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
-    CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
-    //    [[maybe_unused]] const GrammageType length =
-    //    model.getInteractionLength(particle);
-    //  CHECK(length / 1_g * 1_cm * 1_cm ==
-    //      Approx(30).margin(20)); // this is no physics validation
+    InteractionModel model(std::set<Code>{Code::Proton, Code::PiPlus, Code::KPlus});
   }
 }

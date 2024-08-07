@@ -26,5 +26,9 @@ namespace corsika::epos {
    * The epos::InteractionModel is wrapped as an InteractionProcess here in order
    * to provide all the functions for ProcessSequence.
    */
-  class Interaction : public InteractionModel, public InteractionProcess<Interaction> {};
+  class Interaction : public InteractionModel, public InteractionProcess<Interaction> {
+  public:
+    Interaction(std::set<Code> const& stableList)
+        : InteractionModel{stableList} {};
+  };
 } // namespace corsika::epos
