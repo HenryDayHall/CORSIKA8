@@ -24,7 +24,8 @@
 
 namespace corsika::epos {
 
-  inline InteractionModel::InteractionModel(std::string const& dataPath,
+  inline InteractionModel::InteractionModel(std::set<Code> vList,
+                                            std::string const& dataPath,
                                             bool const epos_printout_on)
       : data_path_(dataPath)
       , epos_listing_(epos_printout_on) {
@@ -36,7 +37,45 @@ namespace corsika::epos {
         data_path_ = (std::string(corsika_data("EPOS").c_str()) + "/").c_str();
       }
       initialize();
+      if (vList.empty()) {
+        CORSIKA_LOGGER_DEBUG(logger_,
+                             "set all particles known to CORSIKA stable inside EPOS..");
+        setParticleListStable(get_all_particles());
+      } else {
+        CORSIKA_LOGGER_DEBUG(logger_, "set specific particles stable inside EPOS..");
+        setParticleListStable(vList);
+      }
     }
+  }
+
+  inline void InteractionModel::setParticleListStable(std::set<Code> vPartList) const {
+    for (auto& p : vPartList) {
+      int const eid = convertToEposRaw(p);
+      if (eid != 0) {
+        // LCOV_EXCL_START
+        // this is only a safeguard against messing up the epos internals by initializing
+        // more than once.
+        unsigned int const n_particles_stable_epos =
+            ::epos::nodcy_.nrnody; // avoid waring -Wsign-compare
+        if (n_particles_stable_epos < ::epos::mxnody) {
+          CORSIKA_LOGGER_TRACE(logger_, "setting {} with EposId={} stable inside EPOS.",
+                               p, eid);
+          ::epos::nodcy_.nrnody = ::epos::nodcy_.nrnody + 1;
+          ::epos::nodcy_.nody[::epos::nodcy_.nrnody - 1] = eid;
+        } else {
+          CORSIKA_LOGGER_ERROR(logger_, "List of stable particles too long for Epos!");
+          throw std::runtime_error("Epos initialization error!");
+        }
+        // LCOV_EXCL_STOP
+      } else {
+        CORSIKA_LOG_TRACE(
+            "particle conversion Corsika-->Epos not known for {}. Using {}. Setting "
+            "unstable in Epos!",
+            p, eid);
+      }
+    }
+    CORSIKA_LOGGER_DEBUG(logger_, "set {} particles stable inside Epos",
+                         ::epos::nodcy_.nrnody);
   }
 
   inline bool InteractionModel::isValid(Code const projectileId, Code const targetId,
@@ -103,7 +142,8 @@ namespace corsika::epos {
     ::epos::othe2_.iframe = 11; // cms frame
 
     // decay settings
-    ::epos::othe2_.idecay = 0; // no decays in epos
+    // activate decays in epos for particles defined by set_stable/set_unstable
+    // ::epos::othe2_.idecay = 0; // no decays in epos
 
     // set paths to tables in corsika data
     ::epos::datadir BASE(data_path_);
@@ -417,7 +457,7 @@ namespace corsika::epos {
     if (is_nucleus(targetId)) {
       targetA = get_nucleus_A(targetId);
       targetZ = get_nucleus_Z(targetId);
-      CORSIKA_LOGGER_DEBUG(logger_, "target: A={}, Z={} ", beamA, beamZ);
+      CORSIKA_LOGGER_DEBUG(logger_, "target: A={}, Z={} ", targetA, targetZ);
     }
     initializeEventCoM(projectileId, beamA, beamZ, targetId, targetA, targetZ, sqrtSNN);
 

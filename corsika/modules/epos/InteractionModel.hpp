@@ -9,6 +9,7 @@
 #pragma once
 
 #include <tuple>
+#include <set>
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
@@ -20,7 +21,7 @@ namespace corsika::epos {
   class InteractionModel {
 
   public:
-    InteractionModel(std::string const& dataPath = "",
+    InteractionModel(std::set<Code> = {}, std::string const& dataPath = "",
                      bool const epos_printout_on = false);
     ~InteractionModel();
 
@@ -101,7 +102,7 @@ namespace corsika::epos {
     // initialize and setParticlesStable are private since they can only be called once at
     // the beginning and are already called in the constructor!
     void initialize() const;
-    void setParticlesStable() const;
+    void setParticleListStable(std::set<Code>) const;
     inline static bool isInitialized_ = false;
 
     std::string data_path_;

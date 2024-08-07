@@ -76,6 +76,7 @@
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
+#include <corsika/setup/SetupC7trackedParticles.hpp>
 
 #include <boost/filesystem.hpp>
 
@@ -425,7 +426,7 @@ int main(int argc, char** argv) {
         std::make_shared<corsika::qgsjetII::Interaction>()};
   } else if (modelStr == "EPOS-LHC") {
     heModel = DynamicInteractionProcess<StackType>{
-        std::make_shared<corsika::epos::Interaction>()};
+        std::make_shared<corsika::epos::Interaction>(corsika::setup::C7trackedParticles)};
   } else {
     CORSIKA_LOG_CRITICAL("invalid choice \"{}\"; also check argument parser", modelStr);
     return EXIT_FAILURE;
