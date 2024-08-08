@@ -22,6 +22,9 @@ find_package(spdlog)
 
 set(CONANDEPS  Catch2::Catch2WithMain  yaml-cpp::yaml-cpp  CLI11::CLI11  arrow::arrow  PROPOSAL::PROPOSAL  boost::boost  ZLIB::ZLIB  BZip2::BZip2  Eigen3::Eigen  spdlog::spdlog )
 
+# Put binaries in bin directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 ###################
 ## cascade_examples
 ###################

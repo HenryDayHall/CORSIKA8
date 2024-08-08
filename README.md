@@ -59,14 +59,13 @@ CORSIKA 8 is tested regularly at least on `gcc11.0.0` and `clang-14.0.0`.
 You will also need:
 
 - Python 3 (supported versions are Python >= 3.6), with pip
-- conan (via pip, with version higher than 2.0)
 - cmake > 3.4
 - git
 - g++, gfortran, binutils, make
 - optional: FLUKA (see below)
 
 
-On a bare Ubuntu 20.04, just add:
+On a bare Ubuntu machine, just add:
 ``` shell
 sudo apt-get install python3 python3-pip cmake g++ gfortran git doxygen graphviz
 ```
@@ -92,7 +91,7 @@ source /path/to/new/virtual/environment/corsika-8/bin/activate
 You will need to load the environment each time that you open a new terminal.
 
 CORSIKA 8 uses the [conan](https://conan.io/) package manager to
-manage our dependencies. Currently, version 1.57.0 or higher is required.  
+manage our dependencies. Currently, version 2.50.0 or higher is required.  
 **Note**: if you are NOT using a virtual environment, you may want to use the `pip install --user` flag.
 
 ``` shell
@@ -105,12 +104,12 @@ Once Conan is installed, follow these steps to download and install CORSIKA 8:
 
 ``` shell
 cd ./top/directory/for/corsika/installation
-git clone --recursive https://gitlab.iap.kit.edu/AirShowerPhysics/corsika.git
-# Or for https: git clone --recursive git@gitlab.iap.kit.edu:AirShowerPhysics/corsika.git
+git clone --recursive git@gitlab.iap.kit.edu:AirShowerPhysics/corsika.git
+# Or for https: git clone --recursive https://gitlab.iap.kit.edu/AirShowerPhysics/corsika.git
 mkdir corsika-build
 cd corsika-build
 ../corsika/conan-install.sh --source-directory ../corsika --release-with-debug
-# conan-install.sh takes required options from command line to install dependencies for 'Debug', 'Release' and 'RelWithDebInfo' builds. 
+# conan-install.sh takes required options from command line to install dependencies for 'Debug', 'Release' and 'RelWithDebInfo' builds.
 ../corsika/corsika-cmake.sh -c "-DCMAKE_BUILD_TYPE="RelWithDebInfo" -DCMAKE_INSTALL_PREFIX=../corsika-install"
 make -j4  #The number should match the number of available cores on your machine
 make install
@@ -152,7 +151,7 @@ You only need docker, e.g. on Ubunut: `sudo apt-get install docker` and of cours
 Follow these steps to download and install CORSIKA 8, master development version
 ```shell
 cd ./top/directory/for/corsika/installation
-git clone --recursive https://gitlab.iap.kit.edu/AirShowerPhysics/corsika.git
+git clone --recursive git@gitlab.iap.kit.edu:AirShowerPhysics/corsika.git
 sudo docker run -v $PWD:/corsika -it corsika/devel:clang-8 /bin/bash
 mkdir build
 cd build
@@ -169,7 +168,7 @@ To run the unit tests, do the following.
 
 ```shell
 cd ./corsika-build
-ctest
+ctest -j4  #The number should match the number of available cores on your machine
 ```
 
 ## Running applications and examples
@@ -195,7 +194,8 @@ This will run a vertical 100 TeV proton shower and will create and put the outpu
 Unlike the applications, the examples must be compiled as a second step.
 From your top corsika directory, (the one that includes `corsika-build` and `corsika-install`) run
 ```shell
-cmake -Dcorsika_DIR=$PWD/corsika-build -S ./corsika/examples -B ./corsika-build-examples
+export CONAN_DEPENDENCIES=$PWD/corsika-install/lib/cmake/dependencies
+cmake -DCMAKE_TOOLCHAIN_FILE=${CONAN_DEPENDENCIES}/conan_toolchain.cmake -DCMAKE_PREFIX_PATH=${CONAN_DEPENDENCIES} -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_BUILD_TYPE=RelWithDebInfo -Dcorsika_DIR=./corsika-build  -S ./corsika/examples -B ./corsika-build-examples
 cd corsika-build-examples
 make -j4 #The number should match the number of available cores on your machine
 ```
@@ -212,11 +212,11 @@ This will print out all of the particles that are known by CORSIKA.
 
 To generate the documentation, you need doxygen and graphviz. If you work with 
 the docker corsika/devel containers this is already included. 
-Otherwise, e.g. on Ubuntu 18.04, do:
+Otherwise, e.g. on Ubuntu machines, do:
 ```shell
 sudo apt-get install doxygen graphviz
 ```
-Switch to the corsika build directory and do
+Switch to the `corsika-build` directory and do
 ```shell
 make docs
 make install

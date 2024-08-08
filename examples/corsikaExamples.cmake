@@ -38,12 +38,13 @@ function (CORSIKA_REGISTER_EXAMPLE)
   endif ()
   add_dependencies (run_examples ${name})
   # just run the command as-is
-  set (CMD ${CMAKE_CURRENT_BINARY_DIR}/${name} ${run_options})
+  set (CMD ${CMAKE_CURRENT_BINARY_DIR}/bin/${name} ${run_options})
   add_custom_command (TARGET run_examples
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "**************************************"
-    COMMAND ${CMAKE_COMMAND} -E echo "*****   running example: ${name} " ${run_options} VERBATIM
+    COMMAND ${CMAKE_COMMAND} -E echo "*****   example: ${name} " ${run_options} VERBATIM
+    COMMAND ${CMAKE_COMMAND} -E echo "*****   running command: " ${CMD} VERBATIM
     COMMAND ${CMD} VERBATIM
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/example_outputs)
   install (TARGETS ${name} DESTINATION share/examples)
