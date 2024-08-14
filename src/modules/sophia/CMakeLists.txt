@@ -25,3 +25,8 @@ set_source_files_properties (
 
 add_custom_target (SourceDirLinkSoph DEPENDS ${output_dir}/Generated.inc)
 add_dependencies (CORSIKA8 SourceDirLinkSoph)
+
+install (
+  FILES ${output_dir}/Generated.inc
+  DESTINATION include/corsika/modules/sophia
+)

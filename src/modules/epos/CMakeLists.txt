@@ -18,3 +18,8 @@ add_custom_command (
 
 add_custom_target (SourceDirLinkEpos DEPENDS ${output_dir}/Generated.inc)
 add_dependencies (CORSIKA8 SourceDirLinkEpos)
+
+install (
+  FILES ${output_dir}/Generated.inc
+  DESTINATION include/corsika/modules/epos
+)

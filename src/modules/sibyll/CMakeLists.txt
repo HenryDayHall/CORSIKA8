@@ -24,3 +24,8 @@ set_source_files_properties (
 
 add_custom_target (SourceDirLinkSib DEPENDS ${output_dir}/Generated.inc)
 add_dependencies (CORSIKA8 SourceDirLinkSib)
+
+install (
+  FILES ${output_dir}/Generated.inc
+  DESTINATION include/corsika/modules/sibyll
+)
