@@ -250,13 +250,11 @@ find_package(spdlog REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(Arrow REQUIRED)
 find_package(PROPOSAL REQUIRED)
-find_package(BZip2 REQUIRED)
 find_package(Catch2 REQUIRED)
 
 target_link_libraries (
   CORSIKA8
   INTERFACE
-  ZLIB::ZLIB
   BZip2::BZip2
   Boost::filesystem
   CLI11::CLI11

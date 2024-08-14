@@ -1,6 +1,5 @@
 set (input_dir ${PROJECT_SOURCE_DIR}/src/modules/fluka)
 set (output_dir ${PROJECT_BINARY_DIR}/corsika/modules/fluka)
-set (destination_dir ${PROJECT_SOURCE_DIR}/corsika/modules/fluka )
 
 file (MAKE_DIRECTORY ${output_dir})
 
@@ -18,11 +17,10 @@ add_custom_command (
   VERBATIM
   )
 
- add_custom_command(
-  OUTPUT  ${destination_dir}/Generated.inc
-  COMMAND ${CMAKE_COMMAND} -E copy ${output_dir}/Generated.inc ${destination_dir}/Generated.inc 
-  DEPENDS ${output_dir}/Generated.inc
-)
-
-add_custom_target (SourceDirLinkFLUKA DEPENDS ${destination_dir}/Generated.inc)
+add_custom_target (SourceDirLinkFLUKA DEPENDS ${output_dir}/Generated.inc)
 add_dependencies (CORSIKA8 SourceDirLinkFLUKA)
+
+install (
+  FILES ${output_dir}/Generated.inc
+  DESTINATION include/corsika/modules/fluka
+)
