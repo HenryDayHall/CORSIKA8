@@ -19,8 +19,7 @@
 using namespace corsika;
 
 int main() {
-
-  logging::set_level(logging::level::warn);
+  logging::set_level(logging::level::info);
 
   CORSIKA_LOG_INFO("geometry_example");
 
