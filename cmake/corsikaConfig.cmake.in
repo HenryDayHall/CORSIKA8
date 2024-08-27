@@ -31,6 +31,18 @@ set (COMPILE_OPTIONS @COMPILE_OPTIONS@)
 set (CMAKE_VERBOSE_MAKEFILE  @CMAKE_VERBOSE_MAKEFILE@) 
 
 #+++++++++++++++++++++++++++++
+# external dependencies
+# same list as top-level CML.txt, except for Catch2 (not needed here)
+#
+find_package(Boost COMPONENTS filesystem REQUIRED)
+find_package(CLI11 REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(spdlog REQUIRED)
+find_package(yaml-cpp REQUIRED)
+find_package(Arrow REQUIRED)
+find_package(PROPOSAL REQUIRED)
+
+#+++++++++++++++++++++++++++++
 # Import Pythia8
 # since we always import pythia (ExternalProject_Add) we have to
 # import here, too.
