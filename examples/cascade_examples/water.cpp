@@ -225,7 +225,8 @@ int main(int argc, char** argv) {
   HEPEnergyType heHadronModelThreshold = std::pow(10, 1.9) * 1_GeV;
   corsika::sibyll::Interaction sibyll(corsika::get_all_elements_in_universe(env));
 
-  corsika::fluka::Interaction leIntModel{env};
+  auto const all_elements = corsika::get_all_elements_in_universe(env);
+  corsika::fluka::Interaction leIntModel{all_elements};
   InteractionCounter leIntCounted{leIntModel};
   struct EnergySwitch {
     HEPEnergyType cutE_;
