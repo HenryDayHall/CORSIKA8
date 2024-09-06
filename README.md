@@ -128,7 +128,10 @@ The following should be done *before* compiling CORSIKA 8:
  4. Un-tar the files that you downloaded using `tar -xf <filename>`
  5. Set environmental variables `export FLUFOR=gfortran` and `export FLUPRO=<path to where you unzipped the files>`. Note that the `FLUPRO` directory should contain __libflukahp.a__. Both of these variables will have to be set every time you open a new terminal.
  6. Go to the `FLUPRO` directory and run `make`. This will compile an exe, __flukahp__, in your current directory.
- 7. Follow the normal steps to compile CORSIKA 8 (see above). However, during the `cmake` step, append the additional flag `-DWITH_FLUKA=ON`
+ 7. Follow the normal steps to compile CORSIKA 8 (see above). However, during the `cmake` step, append the additional flag `-DWITH_FLUKA=ON`, i.e., 
+``` shell
+../corsika/corsika-cmake.sh -c "-DCMAKE_BUILD_TYPE="RelWithDebInfo" -DCMAKE_INSTALL_PREFIX=../corsika-install -DWITH_FLUKA=ON"
+```
 
 When you install CORSIKA 8, you should see a message during the __cmake__ step indicating the FLUKA was correctly found.
 
@@ -153,8 +156,8 @@ Follow these steps to download and install CORSIKA 8, master development version
 cd ./top/directory/for/corsika/installation
 git clone --recursive git@gitlab.iap.kit.edu:AirShowerPhysics/corsika.git
 sudo docker run -v $PWD:/corsika -it corsika/devel:clang-8 /bin/bash
-mkdir build
-cd build
+mkdir corsika-build
+cd corsika-build
 ../corsika/conan-install.sh --source-directory ../corsika --release-with-debug
 # conan-install.sh takes required options from command line to install dependencies for 'Debug', 'Release' and 'RelWithDebInfo' builds. 
 ../corsika/corsika-cmake.sh -c "-DCMAKE_BUILD_TYPE="RelWithDebInfo" -DCMAKE_INSTALL_PREFIX=../corsika-install"
@@ -194,11 +197,12 @@ This will run a vertical 100 TeV proton shower and will create and put the outpu
 Unlike the applications, the examples must be compiled as a second step.
 From your top corsika directory, (the one that includes `corsika-build` and `corsika-install`) run
 ```shell
-export CONAN_DEPENDENCIES=$PWD/corsika-install/lib/cmake/dependencies
-cmake -DCMAKE_TOOLCHAIN_FILE=${CONAN_DEPENDENCIES}/conan_toolchain.cmake -DCMAKE_PREFIX_PATH=${CONAN_DEPENDENCIES} -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_BUILD_TYPE=RelWithDebInfo -Dcorsika_DIR=./corsika-build  -S ./corsika/examples -B ./corsika-build-examples
+export CONAN_DEPENDENCIES=$PWD/corsika-install/lib/cmake/corsika
+cmake -DCMAKE_TOOLCHAIN_FILE=${CONAN_DEPENDENCIES}/conan_toolchain.cmake -DCMAKE_PREFIX_PATH=${CONAN_DEPENDENCIES} -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_BUILD_TYPE=RelWithDebInfo -Dcorsika_DIR=$PWD/corsika-build  -S $PWD/corsika/examples -B $PWD/corsika-build-examples
 cd corsika-build-examples
 make -j4 #The number should match the number of available cores on your machine
 ```
+Also add an `-DWITH_FLUKA=ON` at the cmake command here if you want to use FLUKA as low-energy hadronic interaction model for the examples.
 
 You can run the examples by using the binaries in `corsika-build-examples/bin/`.
 For example:
