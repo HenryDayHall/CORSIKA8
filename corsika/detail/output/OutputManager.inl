@@ -133,13 +133,16 @@ namespace corsika {
 
     auto end_time{std::chrono::system_clock::now()};
 
-    // now let's construct an estimate of the runtime
-    auto runtime{end_time - start_time};
+    // calculate the number of days
+    auto const start_t = std::chrono::system_clock::to_time_t(start_time);
+    auto const end_t = std::chrono::system_clock::to_time_t(end_time);
+    int const durationDays = std::difftime(end_t, start_t) / (60 * 60 * 24);
 
     // add the time and duration info
     summary["start time"] = timeToString(start_time);
     summary["end time"] = timeToString(end_time);
-    summary["runtime"] = fmt::format("{:%H:%M:%S}", runtime);
+    summary["runtime"] = (durationDays ? fmt::format("+{}d ", durationDays) : "") +
+                         fmt::format("{:%H:%M:%S}", end_time - start_time);
 
     return summary;
   }
