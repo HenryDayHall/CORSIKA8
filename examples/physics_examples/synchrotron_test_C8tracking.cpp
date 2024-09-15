@@ -54,7 +54,13 @@ int main() {
   logging::set_level(logging::level::warn);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
-  CORSIKA_LOG_INFO("Synchrotron radiation");
+  CORSIKA_LOG_INFO("Synchrotron radiation -- CORSIKA 8 tracking");
+  CORSIKA_LOG_INFO(" ");
+  CORSIKA_LOG_WARN(
+      "Adjust the resolution of the circular trajectory via the "
+      "maxMagneticDeflectionAngle parameter which can be found in "
+      "~/corsika/corsika/detail/modules/tracking/TrackingLeapFrogCurved.inl and "
+      "recompile example. Recommended value is 0.00001 rad.");
 
   feenableexcept(FE_INVALID);
   RNGManager<>::getInstance().registerRandomStream("cascade");

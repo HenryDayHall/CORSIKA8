@@ -137,8 +137,8 @@ int main() {
   LengthType const radius{100_m};
   TimeType timeCounter{0._s};
 
-  // loop over all the tracks twice (this produces 2 pulses)
-  for (size_t i = 0; i <= (n_points)*2; i++) {
+  // loop over the circular trajectory (this produces 1 pulse)
+  for (size_t i = 0; i <= (n_points); i++) {
     Point const point_1(rootCS, {radius * cos(M_PI * 2 * i / n_points),
                                  radius * sin(M_PI * 2 * i / n_points), 0_m});
     Point const point_2(rootCS, {radius * cos(M_PI * 2 * (i + 1) / n_points),
