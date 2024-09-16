@@ -56,7 +56,6 @@ else()
             COMMAND ${input_dir}/extract_version.sh ${C8_FLUKALIB_}
             RESULT_VARIABLE ret
             OUTPUT_VARIABLE extracted_fluka_version
-            ECHO_OUTPUT_VARIABLE
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
         if (ret AND NOT ret EQUAL "0" OR extracted_fluka_version STREQUAL "")
