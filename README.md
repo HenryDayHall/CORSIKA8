@@ -122,7 +122,7 @@ FLUKA support is enabled.
 
 ### Compiling CORSIKA 8
 
-Once Conan is installed, follow these steps to download and install CORSIKA 8:
+Once Conan is installed and FLUKA provided, follow these steps to download and install CORSIKA 8:
 
 ``` shell
 cd ./top/directory/for/corsika/installation
@@ -137,7 +137,7 @@ make -j4  #The number should match the number of available cores on your machine
 make install
 ```
 
-## Installation (using docker containers)
+## Alternate installation using docker containers
 
 There are docker containers prepared that bring all the environment and packages you need to run CORSIKA. See [docker hub](https://hub.docker.com/repository/docker/corsika/devel) for a complete overview. 
 
@@ -156,7 +156,7 @@ mkdir corsika-build
 cd corsika-build
 ../corsika/conan-install.sh --source-directory ../corsika --release-with-debug
 # conan-install.sh takes required options from command line to install dependencies for 'Debug', 'Release' and 'RelWithDebInfo' builds. 
-../corsika/corsika-cmake.sh -c "-DCMAKE_BUILD_TYPE="RelWithDebInfo" -DCMAKE_INSTALL_PREFIX=../corsika-install"
+../corsika/corsika-cmake.sh -c "-DCMAKE_BUILD_TYPE="RelWithDebInfo" -DWITH_FLUKA=ON -DCMAKE_INSTALL_PREFIX=../corsika-install"
 make -j4  #The number should match the number of available cores on your machine
 make install
 ```
