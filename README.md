@@ -161,7 +161,7 @@ make -j4  #The number should match the number of available cores on your machine
 make install
 ```
 
-## Runing Unit Tests
+## Running Unit Tests
 
 To run the unit tests, do the following.
 
