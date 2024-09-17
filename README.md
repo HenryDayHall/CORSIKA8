@@ -1,4 +1,4 @@
-# CORSIKA 8 Framework for Particle Cascades in Astroparticle Physics 
+# CORSIKA 8 Framework for Particle Cascades in Astroparticle Physics
 
 The purpose of CORSIKA is to simulate any particle cascades in
 astroparticle physics or astrophysical context. A lot of emphasis is
@@ -31,7 +31,7 @@ guidelines](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/CONT
 that fails the review by the CORSIKA author group must be improved
 before it can be merged in the official code base. After your code has
 been accepted and merged, you become a contributor of the CORSIKA 8
-project (code author). 
+project (code author).
 
 IMPORTANT: Before you contribute, you need to read and agree to the
 [collaboration
@@ -44,7 +44,7 @@ guidelines](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/MCNE
 ## Get in contact
   * Join our chat threads using Mattermost via this [invite link](https://mattermost.hzdr.de/signup_user_complete/?id=xtdd8jyt6trbiezt71gaz3z4ge&md=link&sbr=su). Click the `GitLab` button, then `Sign in with Helmholtz ID`. You will be able to make an account by either finding your institution, or using your e.g. ORCID, GitHub, or Google account.
 
-  * Connect to https://gitlab.iap.kit.edu, register yourself and join the "Air Shower Physics" group. Write to us on Mattermost (in the User Questions channel), or directly contact one of the [steering comittee members](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/wikis/Steering-Committee) in case there are problems with that. 
+  * Connect to https://gitlab.iap.kit.edu, register yourself and join the "Air Shower Physics" group. Write to us on Mattermost (in the User Questions channel), or directly contact one of the [steering comittee members](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/wikis/Steering-Committee) in case there are problems with that.
   * Connect to corsika-devel@lists.kit.edu (self-register at
     https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in
     touch with the project.
@@ -52,7 +52,7 @@ guidelines](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/MCNE
 
 ## Installation
 
-CORSIKA 8 is tested regularly at least on `gcc11.0.0` and `clang-14.0.0`. 
+CORSIKA 8 is tested regularly at least on `gcc11.0.0` and `clang-14.0.0`.
 
 ### Prerequisites
 
@@ -70,12 +70,6 @@ On a bare Ubuntu machine, just add:
 sudo apt-get install python3 python3-pip cmake g++ gfortran git doxygen graphviz
 ```
 
-On a bare CentOS 7 install python3, pip3 (pip from python3) and cmake3. Any of the devtools 7, 8, 9 should work (at least). 
-Also initialize devtools, before building CORSIKA 8:
-``` shell
-source /opt/rh/devtoolset-9/enable
-```
-
 ### Creating a virtual environment and Conan
 
 It is recommended that you install CORSIKA 8 and its dependencies within a python3 virtual environment.
@@ -91,7 +85,7 @@ source /path/to/new/virtual/environment/corsika-8/bin/activate
 You will need to load the environment each time that you open a new terminal.
 
 CORSIKA 8 uses the [conan](https://conan.io/) package manager to
-manage our dependencies. Currently, version 2.50.0 or higher is required.  
+manage our dependencies. Currently, version 2.50.0 or higher is required.
 **Note**: if you are NOT using a virtual environment, you may want to use the `pip install --user` flag.
 
 ``` shell
@@ -139,7 +133,7 @@ make install
 
 ## Alternate installation using docker containers
 
-There are docker containers prepared that bring all the environment and packages you need to run CORSIKA. See [docker hub](https://hub.docker.com/repository/docker/corsika/devel) for a complete overview. 
+There are docker containers prepared that bring all the environment and packages you need to run CORSIKA. See [docker hub](https://hub.docker.com/repository/docker/corsika/devel) for a complete overview.
 
 ### Prerequisites
 
@@ -155,7 +149,7 @@ sudo docker run -v $PWD:/corsika -it corsika/devel:clang-8 /bin/bash
 mkdir corsika-build
 cd corsika-build
 ../corsika/conan-install.sh --source-directory ../corsika --release-with-debug
-# conan-install.sh takes required options from command line to install dependencies for 'Debug', 'Release' and 'RelWithDebInfo' builds. 
+# conan-install.sh takes required options from command line to install dependencies for 'Debug', 'Release' and 'RelWithDebInfo' builds.
 ../corsika/corsika-cmake.sh -c "-DCMAKE_BUILD_TYPE="RelWithDebInfo" -DWITH_FLUKA=ON -DCMAKE_INSTALL_PREFIX=../corsika-install"
 make -j4  #The number should match the number of available cores on your machine
 make install
@@ -181,7 +175,7 @@ The applications are compiled automatically after running `make` and will appear
 After running `make install` the binaries will also be copied into your `corsika-install/bin` directory as well.
 
 
-For example, from inside your `corsika-install/bin` directory, run 
+For example, from inside your `corsika-install/bin` directory, run
 ```shell
 c8_air_shower --pdg 2212 -E 1e5 -f my_shower
 ```
@@ -209,8 +203,8 @@ This will print out all of the particles that are known by CORSIKA.
 
 ### Generating doxygen documentation
 
-To generate the documentation, you need doxygen and graphviz. If you work with 
-the docker corsika/devel containers this is already included. 
+To generate the documentation, you need doxygen and graphviz. If you work with
+the docker corsika/devel containers this is already included.
 Otherwise, e.g. on Ubuntu machines, do:
 ```shell
 sudo apt-get install doxygen graphviz
@@ -224,4 +218,3 @@ open with firefox:
 ```shell
 firefox ../corsika-install/share/corsika/doc/html/index.html
 ```
-
