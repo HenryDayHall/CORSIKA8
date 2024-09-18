@@ -27,7 +27,7 @@
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/ZHS.hpp>
-#include <corsika/modules/radio/observer/TimeDomainObserver.hpp>
+#include <corsika/modules/radio/observers/TimeDomainObserver.hpp>
 #include <corsika/modules/radio/detectors/ObserverCollection.hpp>
 #include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 
