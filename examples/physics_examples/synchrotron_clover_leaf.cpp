@@ -111,7 +111,7 @@ int main() {
 
   std::string name_center = "CoREAS_R=0_m--Phi=0degrees";
   auto triggertime_center{((triggerpoint_ - center).getNorm() / constants::c) - 500_ns};
-  TimeDomainObserver observer(name_center, center, rootCS, triggertime_center, duration_,
+  TimeDomainObserver observer_center(name_center, center, rootCS, triggertime_center, duration_,
                               sampleRate_, triggertime_center);
   detectorCoREAS.addObserver(observer_center);
 
