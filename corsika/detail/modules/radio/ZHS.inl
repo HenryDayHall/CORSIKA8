@@ -97,12 +97,14 @@ namespace corsika {
                   sign = -1.;
                 } // end if statement for time structure
 
-                double const startBin{std::floor(
-                    (detectionTime1 - observer.getStartTime()) * observer.getSampleRate() +
-                    0.5)};
-                double const endBin{std::floor((detectionTime2 - observer.getStartTime()) *
-                                                   observer.getSampleRate() +
-                                               0.5)};
+                double const startBin{
+                    std::floor((detectionTime1 - observer.getStartTime()) *
+                                   observer.getSampleRate() +
+                               0.5)};
+                double const endBin{
+                    std::floor((detectionTime2 - observer.getStartTime()) *
+                                   observer.getSampleRate() +
+                               0.5)};
 
                 auto const betaPerp{
                     newMidPaths[k].emit_.cross(beta.cross(newMidPaths[k].emit_))};
@@ -112,8 +114,9 @@ namespace corsika {
                   // track contained in bin
                   // if not in Cerenkov angle then
                   if (std::fabs(denominator) > 1.e-15) {
-                    double const f{std::fabs((detectionTime2 * observer.getSampleRate() -
-                                              detectionTime1 * observer.getSampleRate()))};
+                    double const f{
+                        std::fabs((detectionTime2 * observer.getSampleRate() -
+                                   detectionTime1 * observer.getSampleRate()))};
                     VectorPotential const Vp = betaPerp * sign * constants * f /
                                                denominator / newMidPaths[k].R_distance_;
                     observer.receive(detectionTime2, betaPerp, Vp);
@@ -137,9 +140,9 @@ namespace corsika {
                   // intermidiate contributions
                   for (int it{1}; it < numberOfBins; ++it) {
                     Vp = betaPerp * constants / denominator / newMidPaths[k].R_distance_;
-                    observer.receive(detectionTime1 +
-                                        static_cast<double>(it) / observer.getSampleRate(),
-                                    betaPerp, Vp);
+                    observer.receive(detectionTime1 + static_cast<double>(it) /
+                                                          observer.getSampleRate(),
+                                     betaPerp, Vp);
                   } // end loop over bins in which potential vector is not zero
                   // final contribution// f +0.5 from new observer rounding
                   f = std::fabs((detectionTime2 - observer.getStartTime()) *

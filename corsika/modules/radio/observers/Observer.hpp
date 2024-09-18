@@ -25,9 +25,10 @@ namespace corsika {
   class Observer {
 
   protected:
-    std::string const name_;                     ///< The name/identifier of this observer.
-    Point const location_;                       ///< The location of this observer.
-    CoordinateSystemPtr const coordinateSystem_; ///< The coordinate system of the observer
+    std::string const name_; ///< The name/identifier of this observer.
+    Point const location_;   ///< The location of this observer.
+    CoordinateSystemPtr const
+        coordinateSystem_; ///< The coordinate system of the observer
 
   public:
     using axistype = std::vector<long double>;

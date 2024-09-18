@@ -555,7 +555,7 @@ int main(int argc, char** argv) {
       std::string name_1 = "CoREAS_R=" + std::to_string(rr_) +
                            "_m--Phi=" + std::to_string(phi_1) + "degrees";
       TimeDomainObserver observer_1(name_1, point_1, rootCS, triggertime_1, duration_,
-                                   sampleRate_, triggertime_1);
+                                    sampleRate_, triggertime_1);
       detectorCoREAS.addObserver(observer_1);
     }
 
@@ -570,7 +570,7 @@ int main(int argc, char** argv) {
       std::string name_ =
           "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
       TimeDomainObserver observer_2(name_, point_, rootCS, triggertime_, duration_,
-                                  sampleRate_, triggertime_);
+                                    sampleRate_, triggertime_);
       detectorZHS.addObserver(observer_2);
     }
   }

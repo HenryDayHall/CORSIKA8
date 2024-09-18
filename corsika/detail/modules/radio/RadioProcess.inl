@@ -150,8 +150,8 @@ namespace corsika {
   }
 
   template <typename TObserverCollection, typename TRadioImpl, typename TPropagator>
-  inline YAML::Node RadioProcess<TObserverCollection, TRadioImpl, TPropagator>::getConfig()
-      const {
+  inline YAML::Node
+  RadioProcess<TObserverCollection, TRadioImpl, TPropagator>::getConfig() const {
 
     // top-level YAML node
     YAML::Node config;

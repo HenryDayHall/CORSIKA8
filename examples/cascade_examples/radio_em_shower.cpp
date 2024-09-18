@@ -202,8 +202,9 @@ int main(int argc, char** argv) {
   auto triggertime_coreas{(triggerpoint - point_coreas).getNorm() / constants::c};
   std::string name_coreas = "CoREAS_R=" + std::to_string(rr_coreas) +
                             "_m--Phi=" + std::to_string(phi_coreas) + "degrees";
-  TimeDomainObserver observer_coreas(name_coreas, point_coreas, rootCS, triggertime_coreas,
-                                    duration, sampleRate, triggertime_coreas);
+  TimeDomainObserver observer_coreas(name_coreas, point_coreas, rootCS,
+                                     triggertime_coreas, duration, sampleRate,
+                                     triggertime_coreas);
   detectorCoREAS.addObserver(observer_coreas);
   //   }
   // }
@@ -222,7 +223,7 @@ int main(int argc, char** argv) {
   std::string name_zhs = "ZHS_R=" + std::to_string(rr_zhs) +
                          "_m--Phi=" + std::to_string(phi_zhs) + "degrees";
   TimeDomainObserver observer_zhs(name_zhs, point_zhs, rootCS, triggertime_zhs, duration,
-                                 sampleRate, triggertime_zhs);
+                                  sampleRate, triggertime_zhs);
   detectorZHS.addObserver(observer_zhs);
   //   }
   // }

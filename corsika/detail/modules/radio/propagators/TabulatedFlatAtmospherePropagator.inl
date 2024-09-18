@@ -86,7 +86,8 @@ namespace corsika {
      *
      */
 
-    // these are used for the direction of emission and reception of signal at the observer
+    // these are used for the direction of emission and reception of signal at the
+    // observer
     auto const emit_{(destination - source).normalized()};
     auto const receive_{-emit_};
 

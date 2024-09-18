@@ -697,7 +697,7 @@ TEST_CASE("observers") {
     TimeType const groundHitTime(1e3_ns);
 
     TimeDomainObserver const observer("observer", obsPos, rootCS, tStart, duration,
-                                    sampleRate, groundHitTime);
+                                      sampleRate, groundHitTime);
 
     // All waveforms are of equal non-zero size
     CHECK(observer.getWaveformX().size() == observer.getWaveformY().size());
@@ -732,8 +732,8 @@ TEST_CASE("observers") {
                                            sampleRate, groundHitTime);
     TimeDomainObserver const observer_bad2("bad_observer", obsPos, rootCS, tStart, 0_ns,
                                            sampleRate, groundHitTime);
-    TimeDomainObserver const observer_bad3("bad_observer", obsPos, rootCS, tStart, duration,
-                                           -1_GHz, groundHitTime);
+    TimeDomainObserver const observer_bad3("bad_observer", obsPos, rootCS, tStart,
+                                           duration, -1_GHz, groundHitTime);
   } // END: SECTION("TimeDomainObserver Bad Constructor")
 
   SECTION("TimeDomainObserver Receive Efield") {

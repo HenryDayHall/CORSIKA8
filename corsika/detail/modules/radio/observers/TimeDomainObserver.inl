@@ -12,12 +12,12 @@
 namespace corsika {
 
   inline TimeDomainObserver::TimeDomainObserver(std::string const& name,
-                                              Point const& location,
-                                              CoordinateSystemPtr coordinateSystem,
-                                              TimeType const& start_time,
-                                              TimeType const& duration,
-                                              InverseTimeType const& sample_rate,
-                                              TimeType const ground_hit_time)
+                                                Point const& location,
+                                                CoordinateSystemPtr coordinateSystem,
+                                                TimeType const& start_time,
+                                                TimeType const& duration,
+                                                InverseTimeType const& sample_rate,
+                                                TimeType const ground_hit_time)
       : Observer(name, location, coordinateSystem)
       , start_time_(start_time)
       , duration_(std::abs(duration / 1_s) * 1_s)

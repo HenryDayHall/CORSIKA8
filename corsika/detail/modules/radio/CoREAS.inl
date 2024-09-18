@@ -202,8 +202,8 @@ namespace corsika {
 
               // CoREAS calculation -> get ElectricFieldVector for "midPoint"
               ElectricFieldVector EVmid_ = (path.emit_.cross(path.emit_.cross(beta_))) /
-                                            midDoppler_ / path.R_distance_ * constants_ *
-                                            observer.getSampleRate();
+                                           midDoppler_ / path.R_distance_ * constants_ *
+                                           observer.getSampleRate();
 
               ElectricFieldVector EV1_{EVmid_};
               ElectricFieldVector EV2_{EVmid_ * (-1.0)};

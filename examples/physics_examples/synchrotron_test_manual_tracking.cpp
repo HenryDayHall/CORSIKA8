@@ -86,9 +86,9 @@ int main() {
 
   // create 2 observers
   TimeDomainObserver obs1("CoREAS observer", point1, rootCS, start, duration, sampleRate_,
-                           start);
+                          start);
   TimeDomainObserver obs2("ZHS observer", point1, rootCS, start, duration, sampleRate_,
-                           start);
+                          start);
 
   // construct a radio detector instance to store our observers
   ObserverCollection<TimeDomainObserver> detectorCoREAS;
