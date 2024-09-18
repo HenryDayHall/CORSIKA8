@@ -16,7 +16,7 @@ namespace corsika {
 
   /**
    * Radio propagators are used to calculate the propagation
-   * paths from particles to antennas. Any class that wants
+   * paths from particles to observers. Any class that wants
    * to be used as a RadioPropagator must implement the
    * following methods:
    *

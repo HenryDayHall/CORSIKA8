@@ -20,12 +20,12 @@ namespace corsika {
    * The base interface for radio emission processes.
    *
    * TRadioImpl is the concrete implementation of the radio algorithm.
-   * TAntennaCollection is the detector instance that stores antennas
+   * TObserverCollection is the detector instance that stores observers
    * and is responsible for managing the output writing.
    */
-  template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
+  template <typename TObserverCollection, typename TRadioImpl, typename TPropagator>
   class RadioProcess : public ContinuousProcess<
-                           RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>>,
+                           RadioProcess<TObserverCollection, TRadioImpl, TPropagator>>,
                        public BaseOutput {
 
     /*
@@ -44,17 +44,17 @@ namespace corsika {
     TRadioImpl const& implementation() const;
 
   protected:
-    TAntennaCollection& antennas_; ///< The radio antennas we store into.
-    TPropagator propagator_;       ///< The propagator implementation.
-    unsigned int showerId_{0};     ///< The current event ID.
-    ParquetStreamer output_;       //!< The parquet streamer for this process.
+    TObserverCollection& observers_; ///< The radio observers we store into.
+    TPropagator propagator_;         ///< The propagator implementation.
+    unsigned int showerId_{0};       ///< The current event ID.
+    ParquetStreamer output_;         //!< The parquet streamer for this process.
 
   public:
     using axistype = std::vector<long double>;
     /**
      * Construct a new RadioProcess.
      */
-    RadioProcess(TAntennaCollection& antennas, TPropagator& propagator);
+    RadioProcess(TObserverCollection& observers, TPropagator& propagator);
 
     /**
      * Perform the continuous process (radio emission).

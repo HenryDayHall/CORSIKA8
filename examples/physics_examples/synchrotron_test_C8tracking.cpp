@@ -31,8 +31,8 @@
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/ZHS.hpp>
-#include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
-#include <corsika/modules/radio/detectors/AntennaCollection.hpp>
+#include <corsika/modules/radio/observers/TimeDomainObserver.hpp>
+#include <corsika/modules/radio/detectors/ObserverCollection.hpp>
 #include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 
 #include <corsika/modules/TimeCut.hpp>
@@ -94,23 +94,23 @@ int main() {
 
   universe.addChild(std::move(world));
 
-  // the antenna locations
+  // the observer locations
   const auto point1{Point(rootCS, 30000_m, 0_m, 0_m)};
 
-  // the antenna time variables
+  // the observer time variables
   const TimeType t1{0.994e-4_s};
   const TimeType t2{1.07e-4_s - 0.994e-4_s};
   const InverseTimeType t3{5e+11_Hz};
 
-  // the antennas
-  TimeDomainAntenna ant1("antenna CoREAS", point1, rootCS, t1, t2, t3, t1);
-  TimeDomainAntenna ant2("antenna ZHS", point1, rootCS, t1, t2, t3, t1);
+  // the observers
+  TimeDomainObserver obs1("observer CoREAS", point1, rootCS, t1, t2, t3, t1);
+  TimeDomainObserver obs2("observer ZHS", point1, rootCS, t1, t2, t3, t1);
 
   // the detectors
-  AntennaCollection<TimeDomainAntenna> detectorCoREAS;
-  AntennaCollection<TimeDomainAntenna> detectorZHS;
-  detectorCoREAS.addAntenna(ant1);
-  detectorZHS.addAntenna(ant2);
+  ObserverCollection<TimeDomainObserver> detectorCoREAS;
+  ObserverCollection<TimeDomainObserver> detectorZHS;
+  detectorCoREAS.addObserver(obs1);
+  detectorZHS.addObserver(obs2);
 
   // setup particle stack, and add primary particle
   setup::Stack<EnvType> stack;

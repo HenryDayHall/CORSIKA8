@@ -7,22 +7,22 @@
  */
 #pragma once
 
-#include <corsika/modules/radio/antennas/Antenna.hpp>
+#include <corsika/modules/radio/observers/Observer.hpp>
 #include <yaml-cpp/yaml.h>
 #include <vector>
 
 namespace corsika {
 
   /**
-   * An implementation of a time-domain antenna that has a customized
+   * An implementation of a time-domain observer that has a customized
    * start time, sampling rate, and waveform duration.
    *
    */
-  class TimeDomainAntenna : public Antenna<TimeDomainAntenna> {
+  class TimeDomainObserver : public Observer<TimeDomainObserver> {
 
     TimeType const start_time_;         ///< The start time of this waveform.
     TimeType const duration_;           ///< The duration of this waveform.
-    InverseTimeType const sample_rate_; ///< The sampling rate of this antenna.
+    InverseTimeType const sample_rate_; ///< The sampling rate of this observer.
     TimeType const ground_hit_time_; ///< The time the primary particle hits the ground.
     uint64_t const num_bins_;        ///< The number of bins used.
     std::vector<double> waveformEX_; ///< EX polarization.
@@ -32,16 +32,16 @@ namespace corsika {
         time_axis_; ///< The time axis corresponding to the electric field.
 
   public:
-    // import the methods from the antenna
-    using Antenna<TimeDomainAntenna>::getName;
-    using Antenna<TimeDomainAntenna>::getLocation;
+    // import the methods from the observer
+    using Observer<TimeDomainObserver>::getName;
+    using Observer<TimeDomainObserver>::getLocation;
 
     /**
-     * Construct a new TimeDomainAntenna.
+     * Construct a new TimeDomainObserver.
      *
-     * @param name               The name of this antenna.
-     * @param location           The location of this antenna.
-     * @param coordinateSystem   The coordinate system of this antenna.
+     * @param name               The name of this observer.
+     * @param location           The location of this observer.
+     * @param coordinateSystem   The coordinate system of this observer.
      * @param start_time         The starting time of this waveform.
      * @param duration           The duration of this waveform.
      * @param sample_rate        The sample rate of this waveform.
@@ -49,15 +49,15 @@ namespace corsika {
      * straight vertical line.
      *
      */
-    TimeDomainAntenna(std::string const& name, Point const& location,
-                      CoordinateSystemPtr coordinateSystem, TimeType const& start_time,
-                      TimeType const& duration, InverseTimeType const& sample_rate,
-                      TimeType const ground_hit_time);
+    TimeDomainObserver(std::string const& name, Point const& location,
+                       CoordinateSystemPtr coordinateSystem, TimeType const& start_time,
+                       TimeType const& duration, InverseTimeType const& sample_rate,
+                       TimeType const ground_hit_time);
 
     /**
-     * Receive an electric field at this antenna.
+     * Receive an electric field at this observer.
      *
-     * This assumes that the antenna will receive
+     * This assumes that the observer will receive
      *  an *instantaneous* electric field modeled as a delta function (or timebin).
      *
      * @param time             The (global) time at which this signal is received.
@@ -65,7 +65,7 @@ namespace corsika {
      * @param field            The incident electric field vector.
      *
      */
-    // TODO: rethink this method a bit. If the endpoint is at the end of the antenna
+    // TODO: rethink this method a bit. If the endpoint is at the end of the observer
     // resolution then you get the startpoint signal but you lose the endpoint signal!
     void receive(TimeType const time, Vector<dimensionless_d> const& receive_vector,
                  ElectricFieldVector const& efield);
@@ -96,7 +96,7 @@ namespace corsika {
 
     /**
      * Return a label that indicates that this is a time
-     * domain antenna
+     * domain observer
      *
      * This returns the string "Time".
      */
@@ -117,27 +117,27 @@ namespace corsika {
     auto const getAxis() const;
 
     /**
-     * Returns the sampling rate of the time domain antenna.
+     * Returns the sampling rate of the time domain observer.
      */
     InverseTimeType const& getSampleRate() const;
 
     /**
-     * Returns the start time of detection for the time domain antenna.
+     * Returns the start time of detection for the time domain observer.
      */
     TimeType const& getStartTime() const;
 
     /**
-     * Reset the antenna before starting a new simulation.
+     * Reset the observer before starting a new simulation.
      */
     void reset();
 
     /**
-     * Return a YAML configuration for this antenna.
+     * Return a YAML configuration for this observer.
      */
     YAML::Node getConfig() const;
 
-  }; // END: class TimeDomainAntenna
+  }; // END: class TimeDomainObserver
 
 } // namespace corsika
 
-#include <corsika/detail/modules/radio/antennas/TimeDomainAntenna.inl>
+#include <corsika/detail/modules/radio/observers/TimeDomainObserver.inl>

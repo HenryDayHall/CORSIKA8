@@ -19,7 +19,7 @@ namespace corsika {
   /**
    * This class implements a dummy propagator that uses
    * the straight-line (vector) between the particle
-   * location and the antenna as the trajectory.
+   * location and the observer as the trajectory.
    * It is intended mainly for fast testing as it only
    * works with 2 points in a uniform refractive index
    * atmospheric profile.
@@ -42,7 +42,7 @@ namespace corsika {
     /**
      * Return the collection of paths from `source` to `destination`.
      * Hence, the signal propagated from the
-     * emission point to the antenna location.
+     * emission point to the observer location.
      *
      */
     template <typename Particle>

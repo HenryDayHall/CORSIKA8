@@ -15,57 +15,57 @@
 namespace corsika {
 
   /**
-   * A common abstract interface for radio antennas.
+   * A common abstract interface for radio oberservers.
    *
-   * All concrete antenna implementations should be of
-   * type Antenna<T> where T is a concrete antenna implementation.
+   * All concrete observer implementations should be of
+   * type Observer<T> where T is a concrete observer implementation.
    *
    */
-  template <typename TAntennaImpl>
-  class Antenna {
+  template <typename TObserverImpl>
+  class Observer {
 
   protected:
-    std::string const name_;                     ///< The name/identifier of this antenna.
-    Point const location_;                       ///< The location of this antenna.
-    CoordinateSystemPtr const coordinateSystem_; ///< The coordinate system of the antenna
+    std::string const name_;                     ///< The name/identifier of this observer.
+    Point const location_;                       ///< The location of this observer.
+    CoordinateSystemPtr const coordinateSystem_; ///< The coordinate system of the observer
 
   public:
     using axistype = std::vector<long double>;
 
     /**
-     * \brief Construct a base antenna instance.
+     * \brief Construct a base observer instance.
      *
-     * @param name    A name for this antenna.
-     * @param location    The location of this antenna.
+     * @param name    A name for this observer.
+     * @param location    The location of this observer.
      *
      */
-    Antenna(std::string const& name, Point const& location,
-            CoordinateSystemPtr const& coordinateSystem);
+    Observer(std::string const& name, Point const& location,
+             CoordinateSystemPtr const& coordinateSystem);
 
     /**
-     * Receive a signal at this antenna.
+     * Receive a signal at this observer.
      *
      * This is a general implementation call that must be specialized
-     * for the particular antenna implementation and usage.
+     * for the particular observer implementation and usage.
      *
      */
     template <typename... TVArgs>
     void receive(TVArgs&&... args);
 
     /**
-     * Get the location of this antenna.
+     * Get the location of this observer.
      */
     Point const& getLocation() const;
 
     /**
-     * Get the name of this name antenna.
+     * Get the name of this name observer.
      *
      * This is used in producing the output data file.
      */
     std::string const& getName() const;
 
     /**
-     * Reset the antenna before starting a new simulation.
+     * Reset the observer before starting a new simulation.
      */
     void reset();
 
@@ -80,7 +80,7 @@ namespace corsika {
     /**
      * Return a reference to the underlying waveform data for X polarization.
      *
-     * This is used when writing the antenna information to disk
+     * This is used when writing the observer information to disk
      * and will be converted to a 32-bit float before writing.
      */
     std::vector<double> const& getWaveformX() const;
@@ -88,7 +88,7 @@ namespace corsika {
     /**
      * Return a reference to the underlying waveform data for Y polarization.
      *
-     * This is used when writing the antenna information to disk
+     * This is used when writing the observer information to disk
      * and will be converted to a 32-bit float before writing.
      */
     std::vector<double> const& getWaveformY() const;
@@ -96,7 +96,7 @@ namespace corsika {
     /**
      * Return a reference to the underlying waveform data for Z polarization.
      *
-     * This is used when writing the antenna information to disk
+     * This is used when writing the observer information to disk
      * and will be converted to a 32-bit float before writing.
      */
     std::vector<double> const& getWaveformZ() const;
@@ -104,10 +104,10 @@ namespace corsika {
     /**
      * Get a reference to the underlying radio implementation.
      */
-    TAntennaImpl& implementation();
+    TObserverImpl& implementation();
 
-  }; // END: class Antenna final
+  }; // END: class Observer final
 
 } // namespace corsika
 
-#include <corsika/detail/modules/radio/antennas/Antenna.inl>
+#include <corsika/detail/modules/radio/observers/Observer.inl>

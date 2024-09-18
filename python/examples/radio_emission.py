@@ -37,7 +37,7 @@ found_zhs = False
 try:
     waveforms_config_zhs = lib.get("ZHS").config  # meta information
     waveforms_zhs = lib.get("ZHS").astype("pandas")
-    antennas_zhs = lib.get("ZHS").get_antennas()
+    observers_zhs = lib.get("ZHS").get_observers()
     found_zhs = True
 except Exception:
     print("No ZHS waveforms in this directory")
@@ -47,7 +47,7 @@ found_coreas = False
 try:
     waveforms_config_coreas = lib.get("CoREAS").config  # meta information
     waveforms_coreas = lib.get("CoREAS").astype("pandas")
-    antennas_coreas = lib.get("CoREAS").get_antennas()
+    observers_coreas = lib.get("CoREAS").get_observers()
     found_coreas = True
 except Exception:
     print("No CoREAS waveforms in this directory")
@@ -63,18 +63,18 @@ for ishower in range(n_showers):
     title = f"Primary: {primary.name}," + r" E$_{\rm tot}$:"
     title += f" {primary.total_energy:.2e} {primary_config['units']['energy']}"
 
-    # Get all of the unique antenna names to match up the CoREAS/ZHS waveforms
-    ant_names = []
+    # Get all of the unique observer names to match up the CoREAS/ZHS waveforms
+    obs_names = []
     if found_zhs:
-        ant_names += list(waveforms_zhs[str(ishower)].keys())
+        obs_names += list(waveforms_zhs[str(ishower)].keys())
         zhs_dict = waveforms_zhs[str(ishower)]
     if found_coreas:
-        ant_names += list(waveforms_coreas[str(ishower)].keys())
+        obs_names += list(waveforms_coreas[str(ishower)].keys())
         coreas_dict = waveforms_coreas[str(ishower)]
-    ant_names = np.unique(ant_names)
+    obs_names = np.unique(obs_names)
 
     ncols = 1
-    nrows = len(ant_names)
+    nrows = len(obs_names)
     fig, ax = plt.subplots(
         ncols=ncols,
         nrows=nrows,
@@ -84,72 +84,73 @@ for ishower in range(n_showers):
 
     if nrows == 1:
         ax = [ax]
-    
-    # Make a plot for each of the antenna locations
-    for iant, ant_name in enumerate(ant_names):
+
+    # Make a plot for each of the observer locations
+    for iobs, obs_name in enumerate(obs_names):
 
         # Add blank entry to show colors in legend
-        ax[iant].fill_between([], [], [], color="k", label="Ex")
-        ax[iant].fill_between([], [], [], color="r", label="Ey")
-        ax[iant].fill_between([], [], [], color="b", label="Ez")
+        ax[iobs].fill_between([], [], [], color="k", label="Ex")
+        ax[iobs].fill_between([], [], [], color="r", label="Ey")
+        ax[iobs].fill_between([], [], [], color="b", label="Ez")
 
-        if not iant:
-            ax[iant].set_title(title)
+        if not iobs:
+            ax[iobs].set_title(title)
 
         # Make the plots for the ZHS waveforms
-        if found_zhs and ant_name in antennas_zhs.keys():
-            ant_position = np.array(
+        if found_zhs and obs_name in observers_zhs.keys():
+            obs_position = np.array(
                 [
-                    antennas_zhs[ant_name]["x"],
-                    antennas_zhs[ant_name]["y"],
-                    antennas_zhs[ant_name]["z"],
+                    observers_zhs[obs_name]["x"],
+                    observers_zhs[obs_name]["y"],
+                    observers_zhs[obs_name]["z"],
                 ]
             ).flatten()
-            times = np.array(zhs_dict[ant_name]["time"])
+            times = np.array(zhs_dict[obs_name]["time"])
 
-            ax[iant].plot(
-                times, zhs_dict[ant_name]["Ex"], color="k", linestyle="-", label="ZHS"
+            ax[iobs].plot(
+                times, zhs_dict[obs_name]["Ex"], color="k", linestyle="-", label="ZHS"
             )
-            ax[iant].plot(times, zhs_dict[ant_name]["Ey"], color="r", linestyle="-")
-            ax[iant].plot(times, zhs_dict[ant_name]["Ez"], color="b", linestyle="-")
-            ax[iant].set_xlabel(f"Time [{waveforms_config_zhs['units']['time']}]")
-            ax[iant].set_ylabel(
+            ax[iobs].plot(times, zhs_dict[obs_name]["Ey"], color="r", linestyle="-")
+            ax[iobs].plot(times, zhs_dict[obs_name]["Ez"], color="b", linestyle="-")
+            ax[iobs].set_xlabel(f"Time [{waveforms_config_zhs['units']['time']}]")
+            ax[iobs].set_ylabel(
                 f"Amp ({waveforms_config_zhs['units']['electric field']})"
             )
 
         # Make the plots for the CoREAS waveforms
-        if found_coreas and ant_name in antennas_coreas.keys():
-            ant_position = np.array(
+        if found_coreas and obs_name in observers_coreas.keys():
+            obs_position = np.array(
                 [
-                    antennas_coreas[ant_name]["x"],
-                    antennas_coreas[ant_name]["y"],
-                    antennas_coreas[ant_name]["z"],
+                    observers_coreas[obs_name]["x"],
+                    observers_coreas[obs_name]["y"],
+                    observers_coreas[obs_name]["z"],
                 ]
             ).flatten()
-            times = np.array(coreas_dict[ant_name]["time"])
+            times = np.array(coreas_dict[obs_name]["time"])
 
-            ax[iant].plot(
+            ax[iobs].plot(
                 times,
-                coreas_dict[ant_name]["Ex"],
+                coreas_dict[obs_name]["Ex"],
                 color="k",
                 linestyle="--",
                 label="CoREAS",
             )
-            ax[iant].plot(times, coreas_dict[ant_name]["Ey"], color="r", linestyle="--")
-            ax[iant].plot(times, coreas_dict[ant_name]["Ez"], color="b", linestyle="--")
-            ax[iant].set_xlabel(f"Time ({waveforms_config_coreas['units']['time']})")
-            ax[iant].set_ylabel(
+            ax[iobs].plot(times, coreas_dict[obs_name]["Ey"], color="r", linestyle="--")
+            ax[iobs].plot(times, coreas_dict[obs_name]["Ez"], color="b", linestyle="--")
+            ax[iobs].set_xlabel(f"Time ({waveforms_config_coreas['units']['time']})")
+            ax[iobs].set_ylabel(
                 f"Amp ({waveforms_config_coreas['units']['electric field']})"
             )
 
-        ymin, ymax = ax[iant].get_ylim()
+        ymin, ymax = ax[iobs].get_ylim()
         max_amp = max(abs(ymin), abs(ymax))
-        ax[iant].set_ylim(-max_amp, max_amp)
-        text = f"Antenna @ ({ant_position[0]:0.0f}, {ant_position[1]:0.0f},"
-        text += f" {ant_position[2]:0.0f})"
-        ax[iant].text(times[-1], 2 * max_amp * 0.05 - max_amp, text, ha="right")
-        ax[iant].legend(loc="upper right")
+        ax[iobs].set_ylim(-max_amp, max_amp)
+        text = f"Observer @ ({obs_position[0]:0.0f}, {obs_position[1]:0.0f},"
+        text += f" {obs_position[2]:0.0f})"
+        ax[iobs].text(times[-1], 2 * max_amp * 0.05 - max_amp, text, ha="right")
+        ax[iobs].legend(loc="upper right")
 
-    plot_path = os.path.join(args.output_dir, f"AntennaWaveforms_Sh{ishower}.png")
+    plot_path = os.path.join(args.output_dir, f"ObserverWaveforms_Sh{ishower}.png")
     print("Saving", plot_path)
     fig.savefig(plot_path, bbox_inches="tight")
+

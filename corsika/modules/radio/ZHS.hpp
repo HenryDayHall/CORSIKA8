@@ -52,7 +52,7 @@ namespace corsika {
   private:
     using Base =
         RadioProcess<TRadioDetector, ZHS<TRadioDetector, TPropagator>, TPropagator>;
-    using Base::antennas_;
+    using Base::observers_;
 
   }; // END: class ZHS
 

@@ -10,8 +10,8 @@
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/ZHS.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
-#include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
-#include <corsika/modules/radio/detectors/AntennaCollection.hpp>
+#include <corsika/modules/radio/observers/TimeDomainObserver.hpp>
+#include <corsika/modules/radio/detectors/ObserverCollection.hpp>
 #include <corsika/modules/radio/propagators/NumericalIntegratingPropagator.hpp>
 #include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 #include <corsika/modules/radio/propagators/TabulatedFlatAtmospherePropagator.hpp>
@@ -134,16 +134,16 @@ TEST_CASE("Radio", "[processes]") {
     envCoREAS.getUniverse()->addChild(std::move(Medium));
 
     // create the detector
-    const auto ant1Loc{Point(rootCS, 100_m, 2_m, 3_m)};
-    const auto ant2Loc{Point(rootCS, 4_m, 80_m, 6_m)};
+    const auto obs1Loc{Point(rootCS, 100_m, 2_m, 3_m)};
+    const auto obs2Loc{Point(rootCS, 4_m, 80_m, 6_m)};
     const TimeType t1{0_s};
     const TimeType t2{10_s};
     const InverseTimeType t3{1e+3_Hz};
-    TimeDomainAntenna ant1("antenna_name", ant1Loc, rootCS, t1, t2, t3, t1);
-    TimeDomainAntenna ant2("antenna_name2", ant2Loc, rootCS, t1, t2, t3, t1);
-    AntennaCollection<TimeDomainAntenna> detector;
-    detector.addAntenna(ant1);
-    detector.addAntenna(ant2);
+    TimeDomainObserver obs1("observer_name", obs1Loc, rootCS, t1, t2, t3, t1);
+    TimeDomainObserver obs2("observer_name2", obs2Loc, rootCS, t1, t2, t3, t1);
+    ObserverCollection<TimeDomainObserver> detector;
+    detector.addObserver(obs1);
+    detector.addObserver(obs2);
 
     auto SP = make_numerical_integrating_radio_propagator(envCoREAS, 1_m);
     // create a radio process instance using CoREAS
@@ -156,15 +156,15 @@ TEST_CASE("Radio", "[processes]") {
     auto const result = coreas.doContinuous(step, true);
     REQUIRE(ProcessReturn::Ok == result);
 
-    for (auto const& ant : detector.getAntennas()) {
-      // make sure something was put into the antenna
-      auto totalX = ant.getWaveformX()[0];
-      auto totalY = ant.getWaveformY()[0];
-      auto totalZ = ant.getWaveformZ()[0];
-      for (size_t i = 0; i < ant.getWaveformX().size(); i++) {
-        totalX += ant.getWaveformX()[i];
-        totalY += ant.getWaveformY()[i];
-        totalZ += ant.getWaveformZ()[i];
+    for (auto const& obs : detector.getObservers()) {
+      // make sure something was put into the observer
+      auto totalX = obs.getWaveformX()[0];
+      auto totalY = obs.getWaveformY()[0];
+      auto totalZ = obs.getWaveformZ()[0];
+      for (size_t i = 0; i < obs.getWaveformX().size(); i++) {
+        totalX += obs.getWaveformX()[i];
+        totalY += obs.getWaveformY()[i];
+        totalZ += obs.getWaveformZ()[i];
       }
       REQUIRE((totalX + totalY + totalZ) > (totalX * 0));
     }
@@ -172,8 +172,8 @@ TEST_CASE("Radio", "[processes]") {
     //////////////////////////////////////
     // reset everything for a new particle
     //////////////////////////////////////
-    ant1.reset();
-    ant2.reset();
+    obs1.reset();
+    obs2.reset();
     stack.purge();
 
     // add the particle to the stack that is VERY late
@@ -183,15 +183,15 @@ TEST_CASE("Radio", "[processes]") {
     Step step2(particle2, base);
     auto const result2 = coreas.doContinuous(step2, true);
     REQUIRE(ProcessReturn::Ok == result2);
-    for (auto const& ant : detector.getAntennas()) {
-      // make sure something was put into the antenna
-      auto total = ant.getWaveformX()[0];
-      for (size_t i = 0; i < ant.getWaveformX().size(); i++) {
-        total += ant.getWaveformX()[i] * ant.getWaveformX()[i];
-        total += ant.getWaveformY()[i] * ant.getWaveformY()[i];
-        total += ant.getWaveformZ()[i] * ant.getWaveformZ()[i];
+    for (auto const& obs : detector.getObservers()) {
+      // make sure something was put into the observer
+      auto total = obs.getWaveformX()[0];
+      for (size_t i = 0; i < obs.getWaveformX().size(); i++) {
+        total += obs.getWaveformX()[i] * obs.getWaveformX()[i];
+        total += obs.getWaveformY()[i] * obs.getWaveformY()[i];
+        total += obs.getWaveformZ()[i] * obs.getWaveformZ()[i];
       }
-      REQUIRE(total < (1e-12 * ant.getWaveformX().size()));
+      REQUIRE(total < (1e-12 * obs.getWaveformX().size()));
     }
 
     // coreas output check
@@ -205,7 +205,7 @@ TEST_CASE("Radio", "[processes]") {
 
     boost::filesystem::create_directory(tempPathC);
     coreas.startOfLibrary(tempPathC);
-    auto const outputFileC = tempPathC / ("antennas.parquet");
+    auto const outputFileC = tempPathC / ("observers.parquet");
     CHECK(boost::filesystem::exists(outputFileC));
     // run end of shower and make sure that something extra was added
     auto const fileSizeC = boost::filesystem::file_size(outputFileC);
@@ -268,16 +268,16 @@ TEST_CASE("Radio", "[processes]") {
     envCoREAS.getUniverse()->addChild(std::move(Medium));
 
     // create the detector
-    const auto ant1Loc{Point(rootCS, 100_m, 2_m, 3_m)};
-    const auto ant2Loc{Point(rootCS, 4_m, 80_m, 6_m)};
+    const auto obs1Loc{Point(rootCS, 100_m, 2_m, 3_m)};
+    const auto obs2Loc{Point(rootCS, 4_m, 80_m, 6_m)};
     const TimeType t1{0_s};
     const TimeType t2{10_s};
     const InverseTimeType t3{1e+3_Hz};
-    TimeDomainAntenna ant1("antenna_name", ant1Loc, rootCS, t1, t2, t3, t1);
-    TimeDomainAntenna ant2("antenna_name2", ant2Loc, rootCS, t1, t2, t3, t1);
-    AntennaCollection<TimeDomainAntenna> detector;
-    detector.addAntenna(ant1);
-    detector.addAntenna(ant2);
+    TimeDomainObserver obs1("observer_name", obs1Loc, rootCS, t1, t2, t3, t1);
+    TimeDomainObserver obs2("observer_name2", obs2Loc, rootCS, t1, t2, t3, t1);
+    ObserverCollection<TimeDomainObserver> detector;
+    detector.addObserver(obs1);
+    detector.addObserver(obs2);
 
     auto SP = make_numerical_integrating_radio_propagator(envCoREAS, 1_m);
 
@@ -337,7 +337,7 @@ TEST_CASE("Radio", "[processes]") {
 
     Vector B0(rootCS, 5_T, 5_T, 5_T);
 
-    // the antennas location
+    // the observers location
     const auto trackStart{Point(envZHS.getCoordinateSystem(), 7_m, 8_m, 9_m)};
     const auto trackEnd{Point(envZHS.getCoordinateSystem(), 5_m, 5_m, 10_m)};
 
@@ -387,24 +387,24 @@ TEST_CASE("Radio", "[processes]") {
     envZHS.getUniverse()->addChild(std::move(Medium));
 
     // create the detector
-    const auto ant1Loc{Point(rootCS, 100_m, 2_m, 3_m)};
-    const auto ant2Loc{Point(rootCS, 4_m, 80_m, 6_m)};
+    const auto obs1Loc{Point(rootCS, 100_m, 2_m, 3_m)};
+    const auto obs2Loc{Point(rootCS, 4_m, 80_m, 6_m)};
     const TimeType t1{0_s};
     const TimeType t2{10_s};
     const InverseTimeType t3{1e+3_Hz};
-    TimeDomainAntenna ant1("antenna_name", ant1Loc, rootCS, t1, t2, t3, t1);
-    TimeDomainAntenna ant2("antenna_name2", ant2Loc, rootCS, t1, t2, t3, t1);
-    AntennaCollection<TimeDomainAntenna> detector;
-    detector.addAntenna(ant1);
-    detector.addAntenna(ant2);
+    TimeDomainObserver obs1("observer_name", obs1Loc, rootCS, t1, t2, t3, t1);
+    TimeDomainObserver obs2("observer_name2", obs2Loc, rootCS, t1, t2, t3, t1);
+    ObserverCollection<TimeDomainObserver> detector;
+    detector.addObserver(obs1);
+    detector.addObserver(obs2);
 
     auto const charge_{get_charge(particle1.getPID())};
 
     auto SP = make_numerical_integrating_radio_propagator(envZHS, 1_m);
 
     // create a radio process instance using ZHS
-    RadioProcess<AntennaCollection<TimeDomainAntenna>,
-                 ZHS<AntennaCollection<TimeDomainAntenna>, decltype(SP)>, decltype(SP)>
+    RadioProcess<ObserverCollection<TimeDomainObserver>,
+                 ZHS<ObserverCollection<TimeDomainObserver>, decltype(SP)>, decltype(SP)>
         zhs(detector, SP);
 
     Step step(particle1, base);
@@ -422,7 +422,7 @@ TEST_CASE("Radio", "[processes]") {
 
     boost::filesystem::create_directory(tempPathZ);
     zhs.startOfLibrary(tempPathZ);
-    auto const outputFileZ = tempPathZ / ("antennas.parquet");
+    auto const outputFileZ = tempPathZ / ("observers.parquet");
     CHECK(boost::filesystem::exists(outputFileZ));
     // run end of shower and make sure that something extra was added
     auto const fileSizeZ = boost::filesystem::file_size(outputFileZ);
@@ -490,8 +490,8 @@ TEST_CASE("Radio", "[processes]") {
     particle_stack_proton.setNode(Medium.get());
     envRadio.getUniverse()->addChild(std::move(Medium));
 
-    // now create antennas and detectors
-    // the antennas location
+    // now create observers and detectors
+    // the observers location
     const auto point1{Point(envRadio.getCoordinateSystem(), 0_m, 0_m, 0_m)};
 
     // track points
@@ -499,33 +499,33 @@ TEST_CASE("Radio", "[processes]") {
     Point const point_4(rootCSRadio, {0_m, 1_m, 0_m});
     const auto point_b{Point(rootCSRadio, 30000_m, 0_m, 0_m)};
 
-    // create times for the antenna
+    // create times for the observer
     const TimeType start{0_s};
     const TimeType duration{100_ns};
     const InverseTimeType sample{1e+12_Hz};
     const TimeType duration_dummy{2_s};
     const InverseTimeType sample_dummy{1_Hz};
 
-    // create specific times for antenna to do timebin check
+    // create specific times for observer to do timebin check
     const TimeType start_b{0.994e-4_s};
     const TimeType duration_b{1.07e-4_s - 0.994e-4_s};
     const InverseTimeType sampleRate_b{5e+11_Hz};
 
-    // check that I can create an antenna at (1, 2, 3)
-    TimeDomainAntenna ant1("antenna_name", point1, rootCSRadio, start, duration, sample,
-                           start);
-    TimeDomainAntenna ant2("dummy", point1, rootCSRadio, start, duration_dummy,
-                           sample_dummy, start);
-    TimeDomainAntenna ant_b("timebin", point_b, rootCSRadio, start_b, duration_b,
-                            sampleRate_b, start_b);
-    // construct a radio detector instance to store our antennas
-    AntennaCollection<TimeDomainAntenna> detector;
-    AntennaCollection<TimeDomainAntenna> detector_dummy;
-    AntennaCollection<TimeDomainAntenna> detector_b;
-    // add the antennas to the detector
-    detector.addAntenna(ant1);
-    detector_dummy.addAntenna(ant2);
-    detector_b.addAntenna(ant_b);
+    // check that I can create an observer at (1, 2, 3)
+    TimeDomainObserver obs1("observer_name", point1, rootCSRadio, start, duration, sample,
+                            start);
+    TimeDomainObserver obs2("dummy", point1, rootCSRadio, start, duration_dummy,
+                            sample_dummy, start);
+    TimeDomainObserver obs_b("timebin", point_b, rootCSRadio, start_b, duration_b,
+                             sampleRate_b, start_b);
+    // construct a radio detector instance to store our observers
+    ObserverCollection<TimeDomainObserver> detector;
+    ObserverCollection<TimeDomainObserver> detector_dummy;
+    ObserverCollection<TimeDomainObserver> detector_b;
+    // add the observers to the detector
+    detector.addObserver(obs1);
+    detector_dummy.addObserver(obs2);
+    detector_b.addObserver(obs_b);
 
     // feed radio with a proton track to check that it skips that track.
     TimeType tp{(point_2 - point_1).getNorm() / (0.999 * constants::c)};
@@ -544,7 +544,7 @@ TEST_CASE("Radio", "[processes]") {
     Step step_h(particle_stack, track_h);
     Step step_h_neg_time(particle_stack, track_h_neg_time);
 
-    // feed radio with an electron track that ends in a different antenna bin.
+    // feed radio with an electron track that ends in a different observer bin.
     Point const point_start(rootCSRadio, {100_m, 0_m, 0_m});
     Point const point_end(rootCSRadio, {100_m, 0.00628319_m, 0_m});
     TimeType tb{(point_end - point_start).getNorm() / (0.999 * constants::c)};
@@ -569,7 +569,7 @@ TEST_CASE("Radio", "[processes]") {
     zhs.doContinuous(step_h, true);
     zhs.doContinuous(step_h_neg_time, true);
 
-    // create radio processes with "dummy" antenna to trigger extreme time-binning
+    // create radio processes with "dummy" observer to trigger extreme time-binning
     RadioProcess<decltype(detector_dummy), CoREAS<decltype(detector_dummy), decltype(SP)>,
                  decltype(SP)>
         coreas_dummy(detector_dummy, SP);
@@ -616,16 +616,16 @@ TEST_CASE("Radio", "[processes]") {
     envCoREAS.getUniverse()->addChild(std::move(Medium));
 
     // create the detector
-    const auto ant1Loc{Point(rootCS, 100_m, 2_m, 3_m)};
-    const auto ant2Loc{Point(rootCS, 4_m, 80_m, 6_m)};
+    const auto obs1Loc{Point(rootCS, 100_m, 2_m, 3_m)};
+    const auto obs2Loc{Point(rootCS, 4_m, 80_m, 6_m)};
     const TimeType t1{0_s};
     const TimeType t2{10_s};
     const InverseTimeType t3{1e+3_Hz};
-    TimeDomainAntenna ant1("antenna_name", ant1Loc, rootCS, t1, t2, t3, t1);
-    TimeDomainAntenna ant2("antenna_name2", ant2Loc, rootCS, t1, t2, t3, t1);
-    AntennaCollection<TimeDomainAntenna> detector;
-    detector.addAntenna(ant1);
-    detector.addAntenna(ant2);
+    TimeDomainObserver obs1("observer_name", obs1Loc, rootCS, t1, t2, t3, t1);
+    TimeDomainObserver obs2("observer_name2", obs2Loc, rootCS, t1, t2, t3, t1);
+    ObserverCollection<TimeDomainObserver> detector;
+    detector.addObserver(obs1);
+    detector.addObserver(obs2);
 
     const auto trackStart{Point(rootCS, 7_m, 8_m, 9_m)};
     const auto trackEnd{Point(rootCS, 5_m, 5_m, 10_m)};
@@ -674,69 +674,69 @@ TEST_CASE("Radio", "[processes]") {
     CHECK(config["units"]["electric field"].as<std::string>() == "V/m");
     CHECK(config["units"]["distance"].as<std::string>() == "m");
 
-    CHECK(config["antennas"]["antenna_name"]["location"][0].as<double>() == 100);
-    CHECK(config["antennas"]["antenna_name"]["location"][1].as<double>() == 2);
-    CHECK(config["antennas"]["antenna_name"]["location"][2].as<double>() == 3);
+    CHECK(config["observers"]["observer_name"]["location"][0].as<double>() == 100);
+    CHECK(config["observers"]["observer_name"]["location"][1].as<double>() == 2);
+    CHECK(config["observers"]["observer_name"]["location"][2].as<double>() == 3);
 
-    CHECK(config["antennas"]["antenna_name2"]["location"][0].as<double>() == 4);
-    CHECK(config["antennas"]["antenna_name2"]["location"][1].as<double>() == 80);
-    CHECK(config["antennas"]["antenna_name2"]["location"][2].as<double>() == 6);
+    CHECK(config["observers"]["observer_name2"]["location"][0].as<double>() == 4);
+    CHECK(config["observers"]["observer_name2"]["location"][1].as<double>() == 80);
+    CHECK(config["observers"]["observer_name2"]["location"][2].as<double>() == 6);
   } // END: SECTION("Process Library")
 
 } // END: TEST_CASE("Radio", "[processes]")
 
-TEST_CASE("Antennas") {
+TEST_CASE("observers") {
 
-  SECTION("TimeDomainAntenna Constructor") {
+  SECTION("TimeDomainObserver Constructor") {
     Environment<IRefractiveIndexModel<IMediumModel>> env;
     const auto rootCS = env.getCoordinateSystem();
-    auto const antPos = Point(rootCS, {0_m, 0_m, 0_m});
+    auto const obsPos = Point(rootCS, {0_m, 0_m, 0_m});
     TimeType const tStart(0_s);
     TimeType const duration(10_ns);
     InverseTimeType const sampleRate(1_GHz);
     TimeType const groundHitTime(1e3_ns);
 
-    TimeDomainAntenna const antenna("antenna", antPos, rootCS, tStart, duration,
+    TimeDomainObserver const observer("observer", obsPos, rootCS, tStart, duration,
                                     sampleRate, groundHitTime);
 
     // All waveforms are of equal non-zero size
-    CHECK(antenna.getWaveformX().size() == antenna.getWaveformY().size());
-    CHECK(antenna.getWaveformX().size() == antenna.getWaveformZ().size());
-    CHECK(antenna.getWaveformX().size() > 0);
+    CHECK(observer.getWaveformX().size() == observer.getWaveformY().size());
+    CHECK(observer.getWaveformX().size() == observer.getWaveformZ().size());
+    CHECK(observer.getWaveformX().size() > 0);
 
     // All waveform values are initialized to zero
-    for (auto const& val : antenna.getWaveformX()) { CHECK(val * 0 == val); }
-    for (auto const& val : antenna.getWaveformY()) { CHECK(val * 0 == val); }
-    for (auto const& val : antenna.getWaveformZ()) { CHECK(val * 0 == val); }
+    for (auto const& val : observer.getWaveformX()) { CHECK(val * 0 == val); }
+    for (auto const& val : observer.getWaveformY()) { CHECK(val * 0 == val); }
+    for (auto const& val : observer.getWaveformZ()) { CHECK(val * 0 == val); }
 
     // check that variables were set properly
-    CHECK("antenna" == antenna.getName());
-    CHECK(sampleRate == antenna.getSampleRate());
-    CHECK(tStart == antenna.getStartTime());
+    CHECK("observer" == observer.getName());
+    CHECK(sampleRate == observer.getSampleRate());
+    CHECK(tStart == observer.getStartTime());
 
-    // and check that the antenna is at the right location
-    CHECK((antenna.getLocation() - antPos).getNorm() < 1e-12 * 1_m);
-  } // END: SECTION("TimeDomainAntenna Constructor")
+    // and check that the observer is at the right location
+    CHECK((observer.getLocation() - obsPos).getNorm() < 1e-12 * 1_m);
+  } // END: SECTION("TimeDomainObserver Constructor")
 
-  SECTION("TimeDomainAntenna Bad Constructor") {
+  SECTION("TimeDomainObserver Bad Constructor") {
     Environment<IRefractiveIndexModel<IMediumModel>> env;
     const auto rootCS = env.getCoordinateSystem();
-    auto const antPos = Point(rootCS, {0_m, 0_m, 0_m});
+    auto const obsPos = Point(rootCS, {0_m, 0_m, 0_m});
     TimeType const tStart(0_s);
     TimeType const duration(1e3_ns);
     InverseTimeType const sampleRate(1_GHz);
     TimeType const groundHitTime(10_ns);
 
     // Giving zero or negative values for sampling rate and duration
-    TimeDomainAntenna const antenna_bad1("bad_antenna", antPos, rootCS, tStart, -13_ns,
-                                         sampleRate, groundHitTime);
-    TimeDomainAntenna const antenna_bad2("bad_antenna", antPos, rootCS, tStart, 0_ns,
-                                         sampleRate, groundHitTime);
-    TimeDomainAntenna const antenna_bad3("bad_antenna", antPos, rootCS, tStart, duration,
-                                         -1_GHz, groundHitTime);
-  } // END: SECTION("TimeDomainAntenna Bad Constructor")
+    TimeDomainObserver const observer_bad1("bad_observer", obsPos, rootCS, tStart, -13_ns,
+                                           sampleRate, groundHitTime);
+    TimeDomainObserver const observer_bad2("bad_observer", obsPos, rootCS, tStart, 0_ns,
+                                           sampleRate, groundHitTime);
+    TimeDomainObserver const observer_bad3("bad_observer", obsPos, rootCS, tStart, duration,
+                                           -1_GHz, groundHitTime);
+  } // END: SECTION("TimeDomainObserver Bad Constructor")
 
-  SECTION("TimeDomainAntenna Receive Efield") {
+  SECTION("TimeDomainObserver Receive Efield") {
     // Checks that the basic functionality of the receive function is working properly
 
     using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
@@ -747,15 +747,15 @@ TEST_CASE("Antennas") {
     auto const point1 = Point(rootCS, {1_m, 2_m, 3_m});
     auto const point2 = Point(rootCS, {4_m, 5_m, 6_m});
 
-    // create times for the antenna
+    // create times for the observer
     const TimeType t1{10_s};
     const TimeType t2{10_s};
     const InverseTimeType t3{1 / 1_s};
     const TimeType t4{11_s};
 
-    // make the two antennas with different start times
-    TimeDomainAntenna ant1("antenna_name", point1, rootCS, t1, t2, t3, t1);
-    TimeDomainAntenna ant2("antenna_name", point2, rootCS, t4, t2, t3, t4);
+    // make the two observers with different start times
+    TimeDomainObserver obs1("observer_name", point1, rootCS, t1, t2, t3, t1);
+    TimeDomainObserver obs2("observer_name", point2, rootCS, t4, t2, t3, t4);
 
     Vector<dimensionless_d> receiveVec1(rootCS, {0, 0, 1});
     Vector<dimensionless_d> receiveVec2(rootCS, {0, 1, 0});
@@ -765,40 +765,40 @@ TEST_CASE("Antennas") {
     Vector<ElectricFieldType::dimension_type> eField2(
         rootCS, {20_V / 1_m, 20_V / 1_m, 20_V / 1_m});
 
-    // inject efield into ant1
-    ant1.receive(15_s, receiveVec1, eField1);
-    REQUIRE(ant1.getWaveformX()[5] - 10 == 0);
-    REQUIRE(ant1.getWaveformX()[5] == ant1.getWaveformY()[5]);
-    REQUIRE(ant1.getWaveformX()[5] == ant1.getWaveformZ()[5]);
+    // inject efield into obs1
+    obs1.receive(15_s, receiveVec1, eField1);
+    REQUIRE(obs1.getWaveformX()[5] - 10 == 0);
+    REQUIRE(obs1.getWaveformX()[5] == obs1.getWaveformY()[5]);
+    REQUIRE(obs1.getWaveformX()[5] == obs1.getWaveformZ()[5]);
 
-    // inject efield but with different receive vector into ant2
-    ant2.receive(16_s, receiveVec2, eField1);
-    REQUIRE(ant1.getWaveformX()[5] ==
-            ant2.getWaveformX()[5]); // Currently receive vector does nothing
-    ant2.reset();
-    REQUIRE(ant2.getWaveformX()[5] == 0); // reset was successful
+    // inject efield but with different receive vector into obs2
+    obs2.receive(16_s, receiveVec2, eField1);
+    REQUIRE(obs1.getWaveformX()[5] ==
+            obs2.getWaveformX()[5]); // Currently receive vector does nothing
+    obs2.reset();
+    REQUIRE(obs2.getWaveformX()[5] == 0); // reset was successful
 
-    // inject the other eField into ant2
-    ant2.receive(16_s, receiveVec2, eField2);
-    REQUIRE(ant2.getWaveformX()[5] - 20 == 0);
-    REQUIRE(ant2.getWaveformX()[5] == ant2.getWaveformY()[5]);
-    REQUIRE(ant2.getWaveformX()[5] == ant2.getWaveformZ()[5]);
+    // inject the other eField into obs2
+    obs2.receive(16_s, receiveVec2, eField2);
+    REQUIRE(obs2.getWaveformX()[5] - 20 == 0);
+    REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformY()[5]);
+    REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformZ()[5]);
 
     // make sure the next one is empty before filling it
-    REQUIRE(ant2.getWaveformX()[6] == 0);
-    ant2.receive(17_s, receiveVec2, eField2);
-    REQUIRE(ant2.getWaveformX()[6] - 20 == 0);
+    REQUIRE(obs2.getWaveformX()[6] == 0);
+    obs2.receive(17_s, receiveVec2, eField2);
+    REQUIRE(obs2.getWaveformX()[6] - 20 == 0);
 
-    // reset ant1 and then put values in out of range
-    ant1.reset();
-    ant1.receive(-1000_s, receiveVec1, eField1);
-    for (auto const& val : ant1.getWaveformX()) { CHECK(val * 0 == val); }
-    ant1.reset();
-    ant1.receive(t1 + t2 + 1_s, receiveVec1, eField1);
-    for (auto const& val : ant1.getWaveformX()) { CHECK(val * 0 == val); }
-  } // END: SECTION("TimeDomainAntenna Receive EField")
+    // reset obs1 and then put values in out of range
+    obs1.reset();
+    obs1.receive(-1000_s, receiveVec1, eField1);
+    for (auto const& val : obs1.getWaveformX()) { CHECK(val * 0 == val); }
+    obs1.reset();
+    obs1.receive(t1 + t2 + 1_s, receiveVec1, eField1);
+    for (auto const& val : obs1.getWaveformX()) { CHECK(val * 0 == val); }
+  } // END: SECTION("TimeDomainObserver Receive EField")
 
-  SECTION("TimeDomainAntenna Receive Vector Potential") {
+  SECTION("TimeDomainObserver Receive Vector Potential") {
     // Checks that the basic functionality of the receive function is working properly
 
     using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
@@ -809,15 +809,15 @@ TEST_CASE("Antennas") {
     auto const point1 = Point(rootCS, {1_m, 2_m, 3_m});
     auto const point2 = Point(rootCS, {4_m, 5_m, 6_m});
 
-    // create times for the antenna
+    // create times for the observer
     const TimeType t1{10_s};
     const TimeType t2{10_s};
     const InverseTimeType t3{1 / 1_s};
     const TimeType t4{11_s};
 
-    // make the two antennas with different start times
-    TimeDomainAntenna ant1("antenna_name", point1, rootCS, t1, t2, t3, t1);
-    TimeDomainAntenna ant2("antenna_name", point2, rootCS, t4, t2, t3, t4);
+    // make the two observers with different start times
+    TimeDomainObserver obs1("observer_name", point1, rootCS, t1, t2, t3, t1);
+    TimeDomainObserver obs2("observer_name", point2, rootCS, t4, t2, t3, t4);
 
     Vector<dimensionless_d> receiveVec1(rootCS, {0, 0, 1});
     Vector<dimensionless_d> receiveVec2(rootCS, {0, 1, 0});
@@ -827,40 +827,40 @@ TEST_CASE("Antennas") {
     Vector<VectorPotentialType::dimension_type> vectorPotential2(
         rootCS, {20_V * 1_s / 1_m, 20_V * 1_s / 1_m, 20_V * 1_s / 1_m});
 
-    // inject efield into ant1
-    ant1.receive(15_s, receiveVec1, vectorPotential1);
-    REQUIRE(ant1.getWaveformX()[5] - 10 == 0);
-    REQUIRE(ant1.getWaveformX()[5] == ant1.getWaveformY()[5]);
-    REQUIRE(ant1.getWaveformX()[5] == ant1.getWaveformZ()[5]);
+    // inject efield into obs1
+    obs1.receive(15_s, receiveVec1, vectorPotential1);
+    REQUIRE(obs1.getWaveformX()[5] - 10 == 0);
+    REQUIRE(obs1.getWaveformX()[5] == obs1.getWaveformY()[5]);
+    REQUIRE(obs1.getWaveformX()[5] == obs1.getWaveformZ()[5]);
 
-    // inject efield but with different receive vector into ant2
-    ant2.receive(16_s, receiveVec2, vectorPotential1);
-    REQUIRE(ant1.getWaveformX()[5] ==
-            ant2.getWaveformX()[5]); // Currently receive vector does nothing
-    ant2.reset();
-    REQUIRE(ant2.getWaveformX()[5] == 0); // reset was successful
+    // inject efield but with different receive vector into obs2
+    obs2.receive(16_s, receiveVec2, vectorPotential1);
+    REQUIRE(obs1.getWaveformX()[5] ==
+            obs2.getWaveformX()[5]); // Currently receive vector does nothing
+    obs2.reset();
+    REQUIRE(obs2.getWaveformX()[5] == 0); // reset was successful
 
-    // inject the other eField into ant2
-    ant2.receive(16_s, receiveVec2, vectorPotential2);
-    REQUIRE(ant2.getWaveformX()[5] - 20 == 0);
-    REQUIRE(ant2.getWaveformX()[5] == ant2.getWaveformY()[5]);
-    REQUIRE(ant2.getWaveformX()[5] == ant2.getWaveformZ()[5]);
+    // inject the other eField into obs2
+    obs2.receive(16_s, receiveVec2, vectorPotential2);
+    REQUIRE(obs2.getWaveformX()[5] - 20 == 0);
+    REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformY()[5]);
+    REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformZ()[5]);
 
     // make sure the next one is empty before filling it
-    REQUIRE(ant2.getWaveformX()[6] == 0);
-    ant2.receive(17_s, receiveVec2, vectorPotential2);
-    REQUIRE(ant2.getWaveformX()[6] - 20 == 0);
+    REQUIRE(obs2.getWaveformX()[6] == 0);
+    obs2.receive(17_s, receiveVec2, vectorPotential2);
+    REQUIRE(obs2.getWaveformX()[6] - 20 == 0);
 
-    // reset ant1 and then put values in out of range
-    ant1.reset();
-    ant1.receive(-1000_s, receiveVec1, vectorPotential1);
-    for (auto const& val : ant1.getWaveformX()) { CHECK(val * 0 == val); }
-    ant1.reset();
-    ant1.receive(t1 + t2 + 1_s, receiveVec1, vectorPotential1);
-    for (auto const& val : ant1.getWaveformX()) { CHECK(val * 0 == val); }
-  } // END: SECTION("TimeDomainAntenna Receive Vector Potential")
+    // reset obs1 and then put values in out of range
+    obs1.reset();
+    obs1.receive(-1000_s, receiveVec1, vectorPotential1);
+    for (auto const& val : obs1.getWaveformX()) { CHECK(val * 0 == val); }
+    obs1.reset();
+    obs1.receive(t1 + t2 + 1_s, receiveVec1, vectorPotential1);
+    for (auto const& val : obs1.getWaveformX()) { CHECK(val * 0 == val); }
+  } // END: SECTION("TimeDomainObserver Receive Vector Potential")
 
-  SECTION("TimeDomainAntenna AntennaCollection") {
+  SECTION("TimeDomainObserver ObserverCollection") {
 
     // create an environment so we can get a coordinate system
     using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
@@ -869,7 +869,7 @@ TEST_CASE("Antennas") {
     using UniRIndex =
         UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
 
-    // the antenna location
+    // the observer location
     const auto point1{Point(env6.getCoordinateSystem(), 1_m, 2_m, 3_m)};
     const auto point2{Point(env6.getCoordinateSystem(), 4_m, 5_m, 6_m)};
 
@@ -884,86 +884,86 @@ TEST_CASE("Antennas") {
 
     env6.getUniverse()->addChild(std::move(Medium6));
 
-    // create times for the antenna
+    // create times for the observer
     const TimeType t1{10_s};
     const TimeType t2{10_s};
     const InverseTimeType t3{1 / 1_s};
     const TimeType t4{11_s};
 
-    // construct a radio detector instance to store our antennas
-    AntennaCollection<TimeDomainAntenna> detector;
+    // construct a radio detector instance to store our observers
+    ObserverCollection<TimeDomainObserver> detector;
 
-    // the following creates a star-shaped pattern of antennas in the ground
+    // the following creates a star-shaped pattern of observers in the ground
     const auto point11{Point(env6.getCoordinateSystem(), 1000_m, 20_m, 30_m)};
     const TimeType t2222{1e-6_s};
     const InverseTimeType t3333{1e+9_Hz};
 
-    std::vector<std::string> antenna_names;
-    std::vector<Point> antenna_locations;
+    std::vector<std::string> observer_names;
+    std::vector<Point> observer_locations;
     for (auto radius = 100_m; radius <= 200_m; radius += 100_m) {
       for (auto phi = 0; phi <= 315; phi += 45) {
         auto phiRad = phi / 180. * M_PI;
         auto const point{Point(env6.getCoordinateSystem(), radius * cos(phiRad),
                                radius * sin(phiRad), 0_m)};
-        antenna_locations.push_back(point);
+        observer_locations.push_back(point);
         auto time__{(point11 - point).getNorm() / constants::c};
         const int rr_ = static_cast<int>(radius / 1_m);
-        std::string name = "antenna_R=" + std::to_string(rr_) +
+        std::string name = "observer_R=" + std::to_string(rr_) +
                            "_m-Phi=" + std::to_string(phi) + "degrees";
-        antenna_names.push_back(name);
-        TimeDomainAntenna ant(name, point, rootCS, time__, t2222, t3333, time__);
-        detector.addAntenna(ant);
+        observer_names.push_back(name);
+        TimeDomainObserver obs(name, point, rootCS, time__, t2222, t3333, time__);
+        detector.addObserver(obs);
       }
     }
 
     CHECK(detector.size() == 16);
-    CHECK(detector.getAntennas().size() == 16);
+    CHECK(detector.getObservers().size() == 16);
     int i = 0;
-    // this prints out the antenna names and locations
-    for (auto const& antenna : detector.getAntennas()) {
-      CHECK(antenna.getName() == antenna_names[i]);
-      CHECK(distance(antenna.getLocation(), antenna_locations[i]) / 1_m == 0);
+    // this prints out the observer names and locations
+    for (auto const& observer : detector.getObservers()) {
+      CHECK(observer.getName() == observer_names[i]);
+      CHECK(distance(observer.getLocation(), observer_locations[i]) / 1_m == 0);
       i++;
     }
 
     // Check the .at() method for radio detectors
     for (int i = 0; i <= (detector.size() - 1); i++) {
-      CHECK(detector.at(i).getName() == antenna_names[i]);
-      CHECK(distance(detector.at(i).getLocation(), antenna_locations[i]) / 1_m == 0);
+      CHECK(detector.at(i).getName() == observer_names[i]);
+      CHECK(distance(detector.at(i).getLocation(), observer_locations[i]) / 1_m == 0);
     }
 
-  } // END: SECTION("TimeDomainAntenna AntennaCollection")
+  } // END: SECTION("TimeDomainObserver ObserverCollection")
 
-  SECTION("TimeDomainAntenna Config File") {
+  SECTION("TimeDomainObserver Config File") {
     // Runs checks that the file readers are working properly
     Environment<IRefractiveIndexModel<IMediumModel>> env;
     const auto rootCS = env.getCoordinateSystem();
-    auto const antPos = Point(rootCS, {0_m, 0_m, 0_m});
+    auto const obsPos = Point(rootCS, {0_m, 0_m, 0_m});
     TimeType const tStart(0_s);
     TimeType const duration(10_ns);
     InverseTimeType const sampleRate(1_GHz);
     TimeType const groundHitTime(1e3_ns);
 
-    TimeDomainAntenna antennaC("test_antennaCoREAS", antPos, rootCS, tStart, duration,
-                               sampleRate, groundHitTime);
-    TimeDomainAntenna antennaZ("test_antennaZHS", antPos, rootCS, tStart, duration,
-                               sampleRate, groundHitTime);
+    TimeDomainObserver observerC("test_observerCoREAS", obsPos, rootCS, tStart, duration,
+                                 sampleRate, groundHitTime);
+    TimeDomainObserver observerZ("test_observerZHS", obsPos, rootCS, tStart, duration,
+                                 sampleRate, groundHitTime);
 
     // Check the YAML file output
-    auto const configC = antennaC.getConfig();
-    CHECK(configC["type"].as<std::string>() == "TimeDomainAntenna");
+    auto const configC = observerC.getConfig();
+    CHECK(configC["type"].as<std::string>() == "TimeDomainObserver");
     CHECK(configC["start time"].as<double>() == tStart / 1_ns);
     CHECK(configC["duration"].as<double>() == duration / 1_ns);
     CHECK(configC["sampling frequency"].as<double>() == sampleRate / 1_GHz);
 
-    auto const configZ = antennaZ.getConfig();
-    CHECK(configZ["type"].as<std::string>() == "TimeDomainAntenna");
+    auto const configZ = observerZ.getConfig();
+    CHECK(configZ["type"].as<std::string>() == "TimeDomainObserver");
     CHECK(configZ["start time"].as<double>() == tStart / 1_ns);
     CHECK(configZ["duration"].as<double>() == duration / 1_ns);
     CHECK(configZ["sampling frequency"].as<double>() == sampleRate / 1_GHz);
-  } // END: SECTION("TimeDomainAntenna Config File")
+  } // END: SECTION("TimeDomainObserver Config File")
 
-} // END: TEST_CASE("Antennas")
+} // END: TEST_CASE("observers")
 
 TEST_CASE("Propagators") {
 
@@ -1003,7 +1003,7 @@ TEST_CASE("Propagators") {
     Point const center{rootCS, 0_m, 0_m, 0_m};
     // a refractive index for the vacuum
     const double ri_{1};
-    // the constant density
+    // the constobs density
     const auto density{19.2_g / cube(1_cm)};
     // the composition we use for the homogeneous medium
     NuclearComposition const Composition({Code::Nitrogen}, {1.});
@@ -1092,7 +1092,7 @@ TEST_CASE("Propagators") {
     Point const center{rootCS, 0_m, 0_m, 0_m};
     // a refractive index for the vacuum
     const double ri_{1};
-    // the constant density
+    // the constobs density
     const auto density{19.2_g / cube(1_cm)};
     // the composition we use for the homogeneous medium
     NuclearComposition const Composition({Code::Nitrogen}, {1.});

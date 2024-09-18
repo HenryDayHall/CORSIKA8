@@ -27,8 +27,8 @@
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/ZHS.hpp>
-#include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
-#include <corsika/modules/radio/detectors/AntennaCollection.hpp>
+#include <corsika/modules/radio/observer/TimeDomainObserver.hpp>
+#include <corsika/modules/radio/detectors/ObserverCollection.hpp>
 #include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 
 #include <iomanip>
@@ -71,32 +71,32 @@ int main() {
   env.getUniverse()->addChild(std::move(Medium));
   auto const& node_ = env.getUniverse()->getChildNodes().front();
 
-  // the antennas location
+  // the observers location
   const auto point1{Point(rootCS, 30000_m, 0_m, 0_m)};
 
-  // create times for the antenna
+  // create times for the observer
   const TimeType start{0.994e-4_s};
   const TimeType duration{1.07e-4_s - 0.994e-4_s};
-  // 3 km antenna
+  // 3 km observer
   //    const TimeType start{0.994e-5_s};
   //    const TimeType duration{1.7e-5_s - 0.994e-5_s};
   const InverseTimeType sampleRate_{5e+11_Hz};
 
   std::cout << "number of points in time: " << duration * sampleRate_ << std::endl;
 
-  // create 2 antennas
-  TimeDomainAntenna ant1("CoREAS antenna", point1, rootCS, start, duration, sampleRate_,
-                         start);
-  TimeDomainAntenna ant2("ZHS antenna", point1, rootCS, start, duration, sampleRate_,
-                         start);
+  // create 2 observers
+  TimeDomainObserver obs1("CoREAS observer", point1, rootCS, start, duration, sampleRate_,
+                           start);
+  TimeDomainObserver obs2("ZHS observer", point1, rootCS, start, duration, sampleRate_,
+                           start);
 
-  // construct a radio detector instance to store our antennas
-  AntennaCollection<TimeDomainAntenna> detectorCoREAS;
-  AntennaCollection<TimeDomainAntenna> detectorZHS;
+  // construct a radio detector instance to store our observers
+  ObserverCollection<TimeDomainObserver> detectorCoREAS;
+  ObserverCollection<TimeDomainObserver> detectorZHS;
 
-  // add the antennas to the detector
-  detectorCoREAS.addAntenna(ant1);
-  detectorZHS.addAntenna(ant2);
+  // add the observers to the detector
+  detectorCoREAS.addObserver(obs1);
+  detectorZHS.addObserver(obs2);
 
   // create a new stack for each trial
   setup::Stack<EnvType> stack;
@@ -115,15 +115,15 @@ int main() {
   auto SP = make_dummy_test_radio_propagator(env);
 
   // create a radio process instance using CoREAS
-  RadioProcess<AntennaCollection<TimeDomainAntenna>,
-               CoREAS<AntennaCollection<TimeDomainAntenna>, decltype(SP)>, decltype(SP)>
+  RadioProcess<ObserverCollection<TimeDomainObserver>,
+               CoREAS<ObserverCollection<TimeDomainObserver>, decltype(SP)>, decltype(SP)>
       coreas(detectorCoREAS, SP);
   // register CoREAS to the output manager
   outputs.add("CoREAS", coreas);
 
   // create a radio process instance using ZHS
-  RadioProcess<AntennaCollection<TimeDomainAntenna>,
-               ZHS<AntennaCollection<TimeDomainAntenna>, decltype(SP)>, decltype(SP)>
+  RadioProcess<ObserverCollection<TimeDomainObserver>,
+               ZHS<ObserverCollection<TimeDomainObserver>, decltype(SP)>, decltype(SP)>
       zhs(detectorZHS, SP);
   // register ZHS to the output manager
   outputs.add("ZHS", zhs);

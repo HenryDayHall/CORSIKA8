@@ -47,9 +47,9 @@
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/ZHS.hpp>
-#include <corsika/modules/radio/antennas/Antenna.hpp>
-#include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
-#include <corsika/modules/radio/detectors/AntennaCollection.hpp>
+#include <corsika/modules/radio/observers/Observer.hpp>
+#include <corsika/modules/radio/observers/TimeDomainObserver.hpp>
+#include <corsika/modules/radio/detectors/ObserverCollection.hpp>
 #include <corsika/modules/radio/propagators/NumericalIntegratingPropagator.hpp>
 #include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 
@@ -68,8 +68,8 @@ using namespace std;
 //
 // An example of running an casacde which generates radio input for a
 // cascade that has hadronic interactions turned off. Currently, this
-// will produce output for only one antenna, but there are lines below,
-// which are commented out, to enable a full star-shape pattern of antennas
+// will produce output for only one observer, but there are lines below,
+// which are commented out, to enable a full star-shape pattern of observers
 //
 
 void registerRandomStreams(int seed) {
@@ -159,17 +159,17 @@ int main(int argc, char** argv) {
                               false, 1000};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
 
-  // setup the radio antennas
+  // setup the radio observers
   TimeType const groundHitTime{(showerCore - injectionPos).getNorm() / constants::c};
 
-  // Radio antennas and relevant information
-  // the antenna time variables
+  // Radio observers and relevant information
+  // the observer time variables
   TimeType const duration{1e-6_s};
   InverseTimeType const sampleRate{1e+9_Hz};
 
-  // the detector (aka antenna collection) for CoREAS and ZHS
-  AntennaCollection<TimeDomainAntenna> detectorCoREAS;
-  AntennaCollection<TimeDomainAntenna> detectorZHS;
+  // the detector (aka observer collection) for CoREAS and ZHS
+  ObserverCollection<TimeDomainObserver> detectorCoREAS;
+  ObserverCollection<TimeDomainObserver> detectorZHS;
 
   auto const showerCoreX{showerCore.getCoordinates().getX()};
   auto const showerCoreY{showerCore.getCoordinates().getY()};
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
                    (showerCore - injectionPos).getNorm() * 1.02);
   CORSIKA_LOG_INFO("Trigger Point is:   {}", triggerpoint);
 
-  // // setup CoREAS antennas - use the for loop for star shape pattern
+  // // setup CoREAS observers - use the for loop for star shape pattern
   // for (auto radius_coreas = 25_m; radius_coreas <= 500_m; radius_coreas += 25_m) {
   //   for (auto phi_coreas = 0; phi_coreas <= 315; phi_coreas += 45) {
   auto radius_coreas = 200_m;
@@ -197,18 +197,18 @@ int main(int argc, char** argv) {
   auto const point_coreas{Point(rootCS, showerCoreX + radius_coreas * cos(phiRad_coreas),
                                 showerCoreY + radius_coreas * sin(phiRad_coreas),
                                 constants::EarthRadius::Mean)};
-  std::cout << "Antenna point: " << point_coreas << std::endl;
-  CORSIKA_LOG_INFO("Antenna point    {}", injectionPos.getCoordinates());
+  std::cout << "Observer point: " << point_coreas << std::endl;
+  CORSIKA_LOG_INFO("Observer point    {}", injectionPos.getCoordinates());
   auto triggertime_coreas{(triggerpoint - point_coreas).getNorm() / constants::c};
   std::string name_coreas = "CoREAS_R=" + std::to_string(rr_coreas) +
                             "_m--Phi=" + std::to_string(phi_coreas) + "degrees";
-  TimeDomainAntenna antenna_coreas(name_coreas, point_coreas, rootCS, triggertime_coreas,
-                                   duration, sampleRate, triggertime_coreas);
-  detectorCoREAS.addAntenna(antenna_coreas);
+  TimeDomainObserver observer_coreas(name_coreas, point_coreas, rootCS, triggertime_coreas,
+                                    duration, sampleRate, triggertime_coreas);
+  detectorCoREAS.addObserver(observer_coreas);
   //   }
   // }
 
-  // // setup ZHS antennas - use the for loop for star shape pattern
+  // // setup ZHS observers - use the for loop for star shape pattern
   // for (auto radius_zhs = 25_m; radius_zhs <= 500_m; radius_zhs += 25_m) {
   //   for (auto phi_zhs = 0; phi_zhs <= 315; phi_zhs += 45) {
   auto radius_zhs = 200_m;
@@ -221,9 +221,9 @@ int main(int argc, char** argv) {
   auto triggertime_zhs{(triggerpoint - point_zhs).getNorm() / constants::c};
   std::string name_zhs = "ZHS_R=" + std::to_string(rr_zhs) +
                          "_m--Phi=" + std::to_string(phi_zhs) + "degrees";
-  TimeDomainAntenna antenna_zhs(name_zhs, point_zhs, rootCS, triggertime_zhs, duration,
-                                sampleRate, triggertime_zhs);
-  detectorZHS.addAntenna(antenna_zhs);
+  TimeDomainObserver observer_zhs(name_zhs, point_zhs, rootCS, triggertime_zhs, duration,
+                                 sampleRate, triggertime_zhs);
+  detectorZHS.addObserver(observer_zhs);
   //   }
   // }
 
