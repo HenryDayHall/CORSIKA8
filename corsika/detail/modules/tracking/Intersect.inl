@@ -107,7 +107,7 @@ namespace corsika {
     // this branch cannot be unit-testes. This is malfunction: LCOV_EXCL_START
     if (minTime < 0_s) {
       if (minTime < -1e-8_s) {
-        CORSIKA_LOG_ERROR(
+        CORSIKA_LOG_DEBUG(
             "There is a very negative time step detected: {}. This is not physical and "
             "may "
             "easily crash subsequent modules. Set to 0_s, but CHECK AND FIX.",
