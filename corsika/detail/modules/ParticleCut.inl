@@ -17,19 +17,23 @@ namespace corsika {
   inline ParticleCut<TOutput>::ParticleCut(HEPEnergyType const eEleCut,
                                            HEPEnergyType const ePhoCut,
                                            HEPEnergyType const eHadCut,
-                                           HEPEnergyType const eMuCut, bool const inv,
+                                           HEPEnergyType const eMuCut,
+                                           HEPEnergyType const eTauCut, bool const inv,
                                            TArgs&&... outputArgs)
       : TOutput(std::forward<TArgs>(outputArgs)...)
       , cut_electrons_(eEleCut)
       , cut_photons_(ePhoCut)
-      , cut_muons_(eMuCut)
       , cut_hadrons_(eHadCut)
+      , cut_muons_(eMuCut)
+      , cut_tau_(eTauCut)
       , doCutInv_(inv) {
     for (auto p : get_all_particles()) {
       if (is_hadron(p)) // nuclei are also hadrons
         set_kinetic_energy_propagation_threshold(p, eHadCut);
       else if (is_muon(p))
         set_kinetic_energy_propagation_threshold(p, eMuCut);
+      else if (p == Code::TauMinus || p == Code::TauPlus)
+        set_kinetic_energy_propagation_threshold(p, eTauCut);
       else if (p == Code::Electron || p == Code::Positron)
         set_kinetic_energy_propagation_threshold(p, eEleCut);
       else if (p == Code::Photon)
@@ -40,7 +44,8 @@ namespace corsika {
         "setting kinetic energy thresholds: electrons = {} GeV, photons = {} GeV, "
         "hadrons = {} GeV, "
         "muons = {} GeV",
-        eEleCut / 1_GeV, ePhoCut / 1_GeV, eHadCut / 1_GeV, eMuCut / 1_GeV);
+        "tau = {} GeV", eEleCut / 1_GeV, ePhoCut / 1_GeV, eHadCut / 1_GeV, eMuCut / 1_GeV,
+        eTauCut / 1_GeV);
   }
 
   template <typename TOutput>
@@ -152,6 +157,7 @@ namespace corsika {
     CORSIKA_LOG_DEBUG("kinetic energy threshold for photons is {} GeV",
                       cut_photons_ / 1_GeV);
     CORSIKA_LOG_DEBUG("kinetic energy threshold for muons is {} GeV", cut_muons_ / 1_GeV);
+    CORSIKA_LOG_DEBUG("kinetic energy threshold for tau is {} GeV", cut_tau_ / 1_GeV);
     CORSIKA_LOG_DEBUG("kinetic energy threshold for hadrons is {} GeV",
                       cut_hadrons_ / 1_GeV);
 
@@ -171,6 +177,7 @@ namespace corsika {
     node["cut_photons"] = cut_photons_ / 1_GeV;
     node["cut_muons"] = cut_muons_ / 1_GeV;
     node["cut_hadrons"] = cut_hadrons_ / 1_GeV;
+    node["cut_tau"] = cut_tau_ / 1_GeV;
     node["cut_invisibles"] = doCutInv_;
     for (auto const& cut : cuts_) {
       node[fmt::format("cut_{}", cut.first)] = cut.second / 1_GeV;

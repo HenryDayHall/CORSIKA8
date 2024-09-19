@@ -211,7 +211,8 @@ int main(int argc, char** argv) {
   // particle production threshold
   HEPEnergyType const emCut = eCut;
   HEPEnergyType const hadCut = eCut;
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(emCut, emCut, hadCut, hadCut, true, dEdX);
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(emCut, emCut, hadCut, hadCut, hadCut, true,
+                                             dEdX);
 
   // tell proposal that we are interested in all energy losses above the particle cut
   set_energy_production_threshold(Code::Electron, std::min({emCut, hadCut}));
