@@ -87,7 +87,7 @@ namespace corsika {
       std::stringstream ETA_string;
       ETA_string << std::put_time(std::localtime(&ETA_time), "%T %Z");
 
-      CORSIKA_LOG_INFO(
+      CORSIKA_LOG_DEBUG(
           "StackInspector: "
           " time={}"
           ", running={:.1f} seconds"
@@ -103,8 +103,8 @@ namespace corsika {
       printoutCounter_++;
 
       if (printoutCounter_ == maxNumberOfPrintouts_) {
-        CORSIKA_LOG_INFO("StackInspector reached allowed maximum of {} lines printout",
-                         maxNumberOfPrintouts_);
+        CORSIKA_LOG_DEBUG("StackInspector reached allowed maximum of {} lines printout",
+                          maxNumberOfPrintouts_);
       }
 
       // Change reference time once the shower has begin (avoid counting overhead time)
