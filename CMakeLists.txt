@@ -87,7 +87,7 @@ include (corsikaDefines)
 # check if compiler is C++17 compliant
 #
 include (CheckCXXCompilerFlag)
-check_CXX_compiler_flag ("--std=c++17" COMPILER_SUPPORTS_CXX17)
+check_CXX_compiler_flag ("-std=c++17" COMPILER_SUPPORTS_CXX17)
 if (NOT COMPILER_SUPPORTS_CXX17)
  message (FATAL "| CORSIKA8 > The compiler ${CMAKE_CXX_COMPILER} has no C++17 support. Please use a different C++ compiler.")
 endif ()
