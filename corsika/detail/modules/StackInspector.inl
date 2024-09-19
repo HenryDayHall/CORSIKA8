@@ -59,7 +59,7 @@ namespace corsika {
     if ((E0_ - Etot) < dE_threshold_) return;
 
     // limit number of printouts
-    if (printoutCounter_ < maxNumberOfPrintouts_) {
+    if (PrintoutCounter_ < MaxNumberOfPrintouts_) {
       std::chrono::system_clock::time_point const now = std::chrono::system_clock::now();
       std::chrono::duration<double> const elapsed_seconds = now - StartTime_; // seconds
 
@@ -100,11 +100,11 @@ namespace corsika {
           (progress * 100), getStep(), vS.getSize(), Etot / 1_GeV,
           (dyday == 0 ? "" : fmt::format("+{}d ", dyday)), ETA_string.str());
 
-      printoutCounter_++;
+      PrintoutCounter_++;
 
-      if (printoutCounter_ == maxNumberOfPrintouts_) {
+      if (PrintoutCounter_ == MaxNumberOfPrintouts_) {
         CORSIKA_LOG_DEBUG("StackInspector reached allowed maximum of {} lines printout",
-                          maxNumberOfPrintouts_);
+                          MaxNumberOfPrintouts_);
       }
 
       // Change reference time once the shower has begin (avoid counting overhead time)
