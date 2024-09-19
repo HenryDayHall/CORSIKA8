@@ -58,51 +58,60 @@ namespace corsika {
 
     if ((E0_ - Etot) < dE_threshold_) return;
 
-    std::chrono::system_clock::time_point const now = std::chrono::system_clock::now();
-    std::chrono::duration<double> const elapsed_seconds = now - StartTime_; // seconds
+    // limit number of printouts
+    if (printoutCounter_ < maxNumberOfPrintouts_) {
+      std::chrono::system_clock::time_point const now = std::chrono::system_clock::now();
+      std::chrono::duration<double> const elapsed_seconds = now - StartTime_; // seconds
 
-    // Select reference times and energies using either the true start
-    // or the delayed start to avoid counting overhead in ETA
-    bool const usePostVals = (energyPostInit_ != HEPEnergyType::zero());
-    auto const dE = (usePostVals ? energyPostInit_ : E0_) - Etot;
-    std::chrono::duration<double> const usedSeconds = now - timePostInit_;
-    double const dT = usedSeconds.count();
+      // Select reference times and energies using either the true start
+      // or the delayed start to avoid counting overhead in ETA
+      bool const usePostVals = (energyPostInit_ != HEPEnergyType::zero());
+      auto const dE = (usePostVals ? energyPostInit_ : E0_) - Etot;
+      std::chrono::duration<double> const usedSeconds = now - timePostInit_;
+      double const dT = usedSeconds.count();
 
-    double const progress = (E0_ - Etot) / E0_;
-    // for printout
-    std::time_t const now_time = std::chrono::system_clock::to_time_t(now);
+      double const progress = (E0_ - Etot) / E0_;
+      // for printout
+      std::time_t const now_time = std::chrono::system_clock::to_time_t(now);
 
-    double const ETA_seconds = (1.0 - progress) * dT * (E0_ / dE);
-    std::chrono::system_clock::time_point const ETA =
-        now + std::chrono::seconds((int)ETA_seconds);
+      double const ETA_seconds = (1.0 - progress) * dT * (E0_ / dE);
+      std::chrono::system_clock::time_point const ETA =
+          now + std::chrono::seconds((int)ETA_seconds);
 
-    // for printout
-    std::time_t const ETA_time = std::chrono::system_clock::to_time_t(ETA);
+      std::time_t const ETA_time = std::chrono::system_clock::to_time_t(ETA);
 
-    int const yday0 = std::localtime(&now_time)->tm_yday;
-    int const yday1 = std::localtime(&ETA_time)->tm_yday;
-    int const dyday = yday1 - yday0;
+      int const yday0 = std::localtime(&now_time)->tm_yday;
+      int const yday1 = std::localtime(&ETA_time)->tm_yday;
+      int const dyday = yday1 - yday0;
 
-    std::stringstream ETA_string;
-    ETA_string << std::put_time(std::localtime(&ETA_time), "%T %Z");
+      std::stringstream ETA_string;
+      ETA_string << std::put_time(std::localtime(&ETA_time), "%T %Z");
 
-    CORSIKA_LOG_INFO(
-        "StackInspector: "
-        " time={}"
-        ", running={:.1f} seconds"
-        " ( {:.1f}%)"
-        ", nStep={}"
-        ", stackSize={}"
-        ", Estack={:.1f} GeV"
-        ", ETA={}{}",
-        std::put_time(std::localtime(&now_time), "%T %Z"), elapsed_seconds.count(),
-        (progress * 100), getStep(), vS.getSize(), Etot / 1_GeV,
-        (dyday == 0 ? "" : fmt::format("+{}d ", dyday)), ETA_string.str());
+      CORSIKA_LOG_INFO(
+          "StackInspector: "
+          " time={}"
+          ", running={:.1f} seconds"
+          " ( {:.1f}%)"
+          ", nStep={}"
+          ", stackSize={}"
+          ", Estack={:.1f} GeV"
+          ", ETA={}{}",
+          std::put_time(std::localtime(&now_time), "%T %Z"), elapsed_seconds.count(),
+          (progress * 100), getStep(), vS.getSize(), Etot / 1_GeV,
+          (dyday == 0 ? "" : fmt::format("+{}d ", dyday)), ETA_string.str());
 
-    // Change reference time once the shower has begin (avoid counting overhead time)
-    if (progress > 0.02 && energyPostInit_ == HEPEnergyType::zero()) {
-      energyPostInit_ = Etot;
-      timePostInit_ = std::chrono::system_clock::now();
+      printoutCounter_++;
+
+      if (printoutCounter_ == maxNumberOfPrintouts_) {
+        CORSIKA_LOG_INFO("StackInspector reached allowed maximum of {} lines printout",
+                         maxNumberOfPrintouts_);
+      }
+
+      // Change reference time once the shower has begin (avoid counting overhead time)
+      if (progress > 0.02 && energyPostInit_ == HEPEnergyType::zero()) {
+        energyPostInit_ = Etot;
+        timePostInit_ = std::chrono::system_clock::now();
+      }
     }
   }
 
