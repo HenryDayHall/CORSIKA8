@@ -322,16 +322,6 @@ int main(int argc, char** argv) {
 
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
-  ofstream atmout("earth.dat");
-  for (LengthType h = 0_m; h < 110_km; h += 100_m) {
-    Point const ptest{rootCS, 0_m, 0_m, constants::EarthRadius::Mean + h};
-    auto rho =
-        env.getUniverse()->getContainingNode(ptest)->getModelProperties().getMassDensity(
-            ptest);
-    atmout << h / 1_m << " " << rho / 1_kg * cube(1_m) << "\n";
-  }
-  atmout.close();
-
   /* === START: CONSTRUCT PRIMARY PARTICLE === */
 
   // parse the primary ID as a PDG or A/Z code
