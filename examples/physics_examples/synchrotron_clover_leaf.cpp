@@ -31,9 +31,9 @@
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/ZHS.hpp>
-#include <corsika/modules/radio/antennas/Antenna.hpp>
-#include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
-#include <corsika/modules/radio/detectors/AntennaCollection.hpp>
+#include <corsika/modules/radio/observers/Observer.hpp>
+#include <corsika/modules/radio/observers/TimeDomainObserver.hpp>
+#include <corsika/modules/radio/detectors/ObserverCollection.hpp>
 #include <corsika/modules/radio/propagators/DummyTestPropagator.hpp>
 #include <corsika/modules/writers/PrimaryWriter.hpp>
 
@@ -102,18 +102,18 @@ int main() {
   auto const injectionPosZ_{injectionPos.getCoordinates().getZ()};
   auto const triggerpoint_{Point(rootCS, injectionPosX_, injectionPosY_, injectionPosZ_)};
 
-  // the antenna characteristics
+  // the observer characteristics
   const TimeType duration_{2e-6_s};            // 0.8e-4_s
   const InverseTimeType sampleRate_{1e+11_Hz}; // 1e+9_Hz
 
   // the detectors
-  AntennaCollection<TimeDomainAntenna> detectorCoREAS;
+  ObserverCollection<TimeDomainObserver> detectorCoREAS;
 
   std::string name_center = "CoREAS_R=0_m--Phi=0degrees";
   auto triggertime_center{((triggerpoint_ - center).getNorm() / constants::c) - 500_ns};
-  TimeDomainAntenna antenna_center(name_center, center, rootCS, triggertime_center,
-                                   duration_, sampleRate_, triggertime_center);
-  detectorCoREAS.addAntenna(antenna_center);
+  TimeDomainObserver observer_center(name_center, center, rootCS, triggertime_center,
+                                     duration_, sampleRate_, triggertime_center);
+  detectorCoREAS.addObserver(observer_center);
 
   for (auto radius_1 = 25_m; radius_1 <= 1000_m; radius_1 += 25_m) {
     for (auto phi_1 = 0; phi_1 <= 315; phi_1 += 45) {
@@ -121,13 +121,13 @@ int main() {
       auto rr_1 = static_cast<int>(radius_1 / 1_m);
       auto const point_1{Point(rootCS, centerX + radius_1 * cos(phiRad_1),
                                centerY + radius_1 * sin(phiRad_1), centerZ)};
-      CORSIKA_LOG_INFO("Antenna point: {}", point_1);
+      CORSIKA_LOG_INFO("Observer point: {}", point_1);
       auto triggertime_1{((triggerpoint_ - point_1).getNorm() / constants::c) - 500_ns};
       std::string name_1 = "CoREAS_R=" + std::to_string(rr_1) +
                            "_m--Phi=" + std::to_string(phi_1) + "degrees";
-      TimeDomainAntenna antenna_1(name_1, point_1, rootCS, triggertime_1, duration_,
-                                  sampleRate_, triggertime_1);
-      detectorCoREAS.addAntenna(antenna_1);
+      TimeDomainObserver observer_1(name_1, point_1, rootCS, triggertime_1, duration_,
+                                    sampleRate_, triggertime_1);
+      detectorCoREAS.addObserver(observer_1);
     }
   }
 

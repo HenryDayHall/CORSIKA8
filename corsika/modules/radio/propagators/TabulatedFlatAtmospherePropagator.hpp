@@ -44,7 +44,7 @@ namespace corsika {
     /**
      * Return the collection of paths from `source` to `destination`.
      * Hence, the signal propagated from the
-     * emission point to the antenna location.
+     * emission point to the oberserver location.
      *
      */
     template <typename Particle>

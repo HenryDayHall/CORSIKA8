@@ -19,7 +19,7 @@ namespace corsika {
   /**
    * This class implements a basic propagator that uses
    * the straight-line (vector) between the particle
-   * location and the antenna as the trajectory.
+   * location and the observer as the trajectory.
    * To calculate the time delay of the signal, a basic
    * numerical integration scheme based on Simpson's rule
    * takes place. This propagator is slow and not
@@ -46,7 +46,7 @@ namespace corsika {
     /**
      * Return the collection of paths from `start` to `end`.
      * or from 'source' which is the emission point to 'destination'
-     * which is the location of the antenna
+     * which is the location of the observer
      */
     template <typename Particle>
     SignalPathCollection propagate(Particle const& particle, Point const& source,

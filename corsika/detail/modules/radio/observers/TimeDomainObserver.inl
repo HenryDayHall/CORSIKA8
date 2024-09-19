@@ -7,18 +7,18 @@
  */
 #pragma once
 
-#include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
+#include <corsika/modules/radio/observers/TimeDomainObserver.hpp>
 
 namespace corsika {
 
-  inline TimeDomainAntenna::TimeDomainAntenna(std::string const& name,
-                                              Point const& location,
-                                              CoordinateSystemPtr coordinateSystem,
-                                              TimeType const& start_time,
-                                              TimeType const& duration,
-                                              InverseTimeType const& sample_rate,
-                                              TimeType const ground_hit_time)
-      : Antenna(name, location, coordinateSystem)
+  inline TimeDomainObserver::TimeDomainObserver(std::string const& name,
+                                                Point const& location,
+                                                CoordinateSystemPtr coordinateSystem,
+                                                TimeType const& start_time,
+                                                TimeType const& duration,
+                                                InverseTimeType const& sample_rate,
+                                                TimeType const ground_hit_time)
+      : Observer(name, location, coordinateSystem)
       , start_time_(start_time)
       , duration_(std::abs(duration / 1_s) * 1_s)
       , sample_rate_(std::abs(sample_rate / 1_Hz) * 1_Hz)
@@ -30,21 +30,21 @@ namespace corsika {
       , time_axis_(createTimeAxis()) {
     if (0_s == duration_) {
       CORSIKA_LOG_WARN(
-          "Antenna: \"{}\" has a duration of zero. Nothing will be injected into it",
+          "Observer: \"{}\" has a duration of zero. Nothing will be injected into it",
           name);
     } else if (duration_ != duration) {
       CORSIKA_LOG_WARN(
-          "Antenna: \"{}\" was given a negative duration. Set to absolute value.", name);
+          "Observer: \"{}\" was given a negative duration. Set to absolute value.", name);
     }
 
     if (sample_rate_ != sample_rate) {
       CORSIKA_LOG_WARN(
-          "Antenna: \"{}\" was given a negative sampling rate. Set to absolute value.",
+          "Observer: \"{}\" was given a negative sampling rate. Set to absolute value.",
           name);
     }
   }
 
-  inline void TimeDomainAntenna::receive(
+  inline void TimeDomainObserver::receive(
       const TimeType time, [[maybe_unused]] const Vector<dimensionless_d>& receive_vector,
       const ElectricFieldVector& efield) {
 
@@ -66,7 +66,7 @@ namespace corsika {
     }
   }
 
-  inline void TimeDomainAntenna::receive(
+  inline void TimeDomainObserver::receive(
       const TimeType time, [[maybe_unused]] const Vector<dimensionless_d>& receive_vector,
       const VectorPotential& vectorP) {
 
@@ -91,15 +91,15 @@ namespace corsika {
     }
   }
 
-  inline auto const& TimeDomainAntenna::getWaveformX() const { return waveformEX_; }
+  inline auto const& TimeDomainObserver::getWaveformX() const { return waveformEX_; }
 
-  inline auto const& TimeDomainAntenna::getWaveformY() const { return waveformEY_; }
+  inline auto const& TimeDomainObserver::getWaveformY() const { return waveformEY_; }
 
-  inline auto const& TimeDomainAntenna::getWaveformZ() const { return waveformEZ_; }
+  inline auto const& TimeDomainObserver::getWaveformZ() const { return waveformEZ_; }
 
-  inline std::string const TimeDomainAntenna::getDomainLabel() { return "Time"; }
+  inline std::string const TimeDomainObserver::getDomainLabel() { return "Time"; }
 
-  inline std::vector<long double> TimeDomainAntenna::createTimeAxis() const {
+  inline std::vector<long double> TimeDomainObserver::createTimeAxis() const {
 
     // create a 1-D xtensor to store time values so we can print them later.
     std::vector<long double> times(num_bins_, 0);
@@ -117,26 +117,26 @@ namespace corsika {
     return times;
   }
 
-  inline auto const TimeDomainAntenna::getAxis() const { return time_axis_; }
+  inline auto const TimeDomainObserver::getAxis() const { return time_axis_; }
 
-  inline InverseTimeType const& TimeDomainAntenna::getSampleRate() const {
+  inline InverseTimeType const& TimeDomainObserver::getSampleRate() const {
     return sample_rate_;
   }
 
-  inline TimeType const& TimeDomainAntenna::getStartTime() const { return start_time_; }
+  inline TimeType const& TimeDomainObserver::getStartTime() const { return start_time_; }
 
-  inline void TimeDomainAntenna::reset() {
+  inline void TimeDomainObserver::reset() {
     std::fill(waveformEX_.begin(), waveformEX_.end(), 0);
     std::fill(waveformEY_.begin(), waveformEY_.end(), 0);
     std::fill(waveformEZ_.begin(), waveformEZ_.end(), 0);
   }
 
-  inline YAML::Node TimeDomainAntenna::getConfig() const {
+  inline YAML::Node TimeDomainObserver::getConfig() const {
 
     // top-level config
     YAML::Node config;
 
-    config["type"] = "TimeDomainAntenna";
+    config["type"] = "TimeDomainObserver";
     config["start time"] = start_time_ / 1_ns;
     config["duration"] = duration_ / 1_ns;
     config["number of bins"] = duration_ * sample_rate_;

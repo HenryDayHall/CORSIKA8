@@ -31,7 +31,8 @@ namespace corsika {
      * so they are both called direction
      */
 
-    // these are used for the direction of emission and reception of signal at the antenna
+    // these are used for the direction of emission and reception of signal at the
+    // observer
     auto const emit{(destination - source).normalized()};
     auto const receive{-emit};
 

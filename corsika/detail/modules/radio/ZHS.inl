@@ -45,15 +45,15 @@ namespace corsika {
 
       auto const constants{charge * emConstant_ * thinningWeight};
 
-      // we loop over each antenna in the collection
-      for (auto& antenna : antennas_.getAntennas()) {
+      // we loop over each observer in the collection
+      for (auto& observer : observers_.getObservers()) {
         auto midPaths{this->propagator_.propagate(step.getParticlePre(), midPoint,
-                                                  antenna.getLocation())};
+                                                  observer.getLocation())};
         // Loop over midPaths, first check Fraunhoffer limit
         for (size_t i{0}; i < midPaths.size(); i++) {
           double const uTimesK{beta.dot(midPaths[i].emit_) / betaModule};
           double const sinTheta2{1. - uTimesK * uTimesK};
-          LengthType const lambda{constants::c / antenna.getSampleRate()};
+          LengthType const lambda{constants::c / observer.getSampleRate()};
           double const fraunhLimit{sinTheta2 * trackLength * trackLength /
                                    midPaths[i].R_distance_ / lambda * 2 * M_PI};
           // Checks if we are in fraunhoffer domain
@@ -72,7 +72,7 @@ namespace corsika {
               auto const newHalfVector{(point1 - point2) / 2.};
               auto const newMidPoint{point2 + newHalfVector};
               auto const newMidPaths{this->propagator_.propagate(
-                  step.getParticlePre(), newMidPoint, antenna.getLocation())};
+                  step.getParticlePre(), newMidPoint, observer.getLocation())};
               // A function for calculating the field should be made since it is repeated
               // later
               for (size_t k{0}; k < newMidPaths.size(); k++) {
@@ -97,12 +97,14 @@ namespace corsika {
                   sign = -1.;
                 } // end if statement for time structure
 
-                double const startBin{std::floor(
-                    (detectionTime1 - antenna.getStartTime()) * antenna.getSampleRate() +
-                    0.5)};
-                double const endBin{std::floor((detectionTime2 - antenna.getStartTime()) *
-                                                   antenna.getSampleRate() +
-                                               0.5)};
+                double const startBin{
+                    std::floor((detectionTime1 - observer.getStartTime()) *
+                                   observer.getSampleRate() +
+                               0.5)};
+                double const endBin{
+                    std::floor((detectionTime2 - observer.getStartTime()) *
+                                   observer.getSampleRate() +
+                               0.5)};
 
                 auto const betaPerp{
                     newMidPaths[k].emit_.cross(beta.cross(newMidPaths[k].emit_))};
@@ -112,42 +114,43 @@ namespace corsika {
                   // track contained in bin
                   // if not in Cerenkov angle then
                   if (std::fabs(denominator) > 1.e-15) {
-                    double const f{std::fabs((detectionTime2 * antenna.getSampleRate() -
-                                              detectionTime1 * antenna.getSampleRate()))};
+                    double const f{
+                        std::fabs((detectionTime2 * observer.getSampleRate() -
+                                   detectionTime1 * observer.getSampleRate()))};
                     VectorPotential const Vp = betaPerp * sign * constants * f /
                                                denominator / newMidPaths[k].R_distance_;
-                    antenna.receive(detectionTime2, betaPerp, Vp);
+                    observer.receive(detectionTime2, betaPerp, Vp);
                   } else { // If emission in Cerenkov angle => approximation
-                    double const f{time2 * antenna.getSampleRate() -
-                                   time1 * antenna.getSampleRate()};
+                    double const f{time2 * observer.getSampleRate() -
+                                   time1 * observer.getSampleRate()};
                     VectorPotential const Vp =
                         betaPerp * sign * constants * f / newMidPaths[k].R_distance_;
-                    antenna.receive(detectionTime2, betaPerp, Vp);
+                    observer.receive(detectionTime2, betaPerp, Vp);
                   } // end if Cerenkov angle approx
                 } else {
                   /*Track is contained in more than one bin*/
                   int const numberOfBins{static_cast<int>(endBin - startBin)};
-                  // first contribution/ plus 1 bin minus 0.5 from new antenna ruonding
+                  // first contribution/ plus 1 bin minus 0.5 from new observer ruonding
                   double f{std::fabs(startBin + 0.5 -
-                                     (detectionTime1 - antenna.getStartTime()) *
-                                         antenna.getSampleRate())};
+                                     (detectionTime1 - observer.getStartTime()) *
+                                         observer.getSampleRate())};
                   VectorPotential Vp = betaPerp * sign * constants * f / denominator /
                                        newMidPaths[k].R_distance_;
-                  antenna.receive(detectionTime1, betaPerp, Vp);
+                  observer.receive(detectionTime1, betaPerp, Vp);
                   // intermidiate contributions
                   for (int it{1}; it < numberOfBins; ++it) {
                     Vp = betaPerp * constants / denominator / newMidPaths[k].R_distance_;
-                    antenna.receive(detectionTime1 +
-                                        static_cast<double>(it) / antenna.getSampleRate(),
-                                    betaPerp, Vp);
+                    observer.receive(detectionTime1 + static_cast<double>(it) /
+                                                          observer.getSampleRate(),
+                                     betaPerp, Vp);
                   } // end loop over bins in which potential vector is not zero
-                  // final contribution// f +0.5 from new antenna rounding
-                  f = std::fabs((detectionTime2 - antenna.getStartTime()) *
-                                    antenna.getSampleRate() +
+                  // final contribution// f +0.5 from new observer rounding
+                  f = std::fabs((detectionTime2 - observer.getStartTime()) *
+                                    observer.getSampleRate() +
                                 0.5 - endBin);
                   Vp = betaPerp * sign * constants * f / denominator /
                        newMidPaths[k].R_distance_;
-                  antenna.receive(detectionTime2, betaPerp, Vp);
+                  observer.receive(detectionTime2, betaPerp, Vp);
                 } // end if statement for track in multiple bins
 
               } // end of loop over newMidPaths
@@ -178,11 +181,11 @@ namespace corsika {
               sign = -1.;
             } // end if statement for time structure
 
-            double const startBin{std::floor((detectionTime1 - antenna.getStartTime()) *
-                                                 antenna.getSampleRate() +
+            double const startBin{std::floor((detectionTime1 - observer.getStartTime()) *
+                                                 observer.getSampleRate() +
                                              0.5)};
-            double const endBin{std::floor((detectionTime2 - antenna.getStartTime()) *
-                                               antenna.getSampleRate() +
+            double const endBin{std::floor((detectionTime2 - observer.getStartTime()) *
+                                               observer.getSampleRate() +
                                            0.5)};
 
             auto const betaPerp{midPaths[i].emit_.cross(beta.cross(midPaths[i].emit_))};
@@ -193,18 +196,18 @@ namespace corsika {
               // track contained in bin
               // if not in Cerenkov angle then
               if (std::fabs(denominator) > 1.e-15) {
-                double const f{std::fabs((detectionTime2 * antenna.getSampleRate() -
-                                          detectionTime1 * antenna.getSampleRate()))};
+                double const f{std::fabs((detectionTime2 * observer.getSampleRate() -
+                                          detectionTime1 * observer.getSampleRate()))};
 
                 VectorPotential const Vp = betaPerp * sign * constants * f / denominator /
                                            midPaths[i].R_distance_;
-                antenna.receive(detectionTime2, betaPerp, Vp);
+                observer.receive(detectionTime2, betaPerp, Vp);
               } else { // If emission in Cerenkov angle => approximation
-                double const f{endTime * antenna.getSampleRate() -
-                               startTime * antenna.getSampleRate()};
+                double const f{endTime * observer.getSampleRate() -
+                               startTime * observer.getSampleRate()};
                 VectorPotential const Vp =
                     betaPerp * sign * constants * f / midPaths[i].R_distance_;
-                antenna.receive(detectionTime2, betaPerp, Vp);
+                observer.receive(detectionTime2, betaPerp, Vp);
               } // end if Cerenkov angle approx
             } else {
               /*Track is contained in more than one bin*/
@@ -212,32 +215,32 @@ namespace corsika {
               // TODO: should we check for Cerenkov angle?
               // first contribution
               double f{std::fabs(startBin + 0.5 -
-                                 (detectionTime1 - antenna.getStartTime()) *
-                                     antenna.getSampleRate())};
+                                 (detectionTime1 - observer.getStartTime()) *
+                                     observer.getSampleRate())};
               VectorPotential Vp =
                   betaPerp * sign * constants * f / denominator / midPaths[i].R_distance_;
-              antenna.receive(detectionTime1, betaPerp, Vp);
+              observer.receive(detectionTime1, betaPerp, Vp);
               // intermediate contributions
               for (int it{1}; it < numberOfBins; ++it) {
                 Vp = betaPerp * sign * constants / denominator / midPaths[i].R_distance_;
-                antenna.receive(
-                    detectionTime1 + static_cast<double>(it) / antenna.getSampleRate(),
+                observer.receive(
+                    detectionTime1 + static_cast<double>(it) / observer.getSampleRate(),
                     betaPerp, Vp);
               } // end loop over bins in which potential vector is not zero
               // final contribution
-              f = std::fabs((detectionTime2 - antenna.getStartTime()) *
-                                antenna.getSampleRate() +
+              f = std::fabs((detectionTime2 - observer.getStartTime()) *
+                                observer.getSampleRate() +
                             0.5 - endBin);
               Vp =
                   betaPerp * sign * constants * f / denominator / midPaths[i].R_distance_;
-              antenna.receive(detectionTime2, betaPerp, Vp);
+              observer.receive(detectionTime2, betaPerp, Vp);
             } // end if statement for track in multiple bins
 
           } // finish if statement of track in fraunhoffer or not
 
         } // end loop over mid paths
 
-      } // END: loop over antennas
+      } // END: loop over observers
       return ProcessReturn::Ok;
     }
   } // end simulate

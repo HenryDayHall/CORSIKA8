@@ -11,32 +11,32 @@
 
 namespace corsika {
 
-  template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
+  template <typename TObserverCollection, typename TRadioImpl, typename TPropagator>
   inline TRadioImpl&
-  RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>::implementation() {
+  RadioProcess<TObserverCollection, TRadioImpl, TPropagator>::implementation() {
     return static_cast<TRadioImpl&>(*this);
   }
 
-  template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
+  template <typename TObserverCollection, typename TRadioImpl, typename TPropagator>
   inline TRadioImpl const&
-  RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>::implementation() const {
+  RadioProcess<TObserverCollection, TRadioImpl, TPropagator>::implementation() const {
     return static_cast<TRadioImpl const&>(*this);
   }
 
-  template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
-  inline RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>::RadioProcess(
-      TAntennaCollection& antennas, TPropagator& propagator)
-      : antennas_(antennas)
+  template <typename TObserverCollection, typename TRadioImpl, typename TPropagator>
+  inline RadioProcess<TObserverCollection, TRadioImpl, TPropagator>::RadioProcess(
+      TObserverCollection& observers, TPropagator& propagator)
+      : observers_(observers)
       , propagator_(propagator) {}
 
-  template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
+  template <typename TObserverCollection, typename TRadioImpl, typename TPropagator>
   template <typename Particle>
-  inline ProcessReturn RadioProcess<TAntennaCollection, TRadioImpl,
+  inline ProcessReturn RadioProcess<TObserverCollection, TRadioImpl,
                                     TPropagator>::doContinuous(const Step<Particle>& step,
                                                                const bool) {
 
-    // return immediately if radio process does not have any antennas
-    if (antennas_.size() == 0) return ProcessReturn::Ok;
+    // return immediately if radio process does not have any observers
+    if (observers_.size() == 0) return ProcessReturn::Ok;
 
     // we want the following particles:
     // Code::Electron & Code::Positron
@@ -57,21 +57,21 @@ namespace corsika {
     //}
   }
 
-  template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
+  template <typename TObserverCollection, typename TRadioImpl, typename TPropagator>
   template <typename Particle, typename Track>
   inline LengthType
-  RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>::getMaxStepLength(
+  RadioProcess<TObserverCollection, TRadioImpl, TPropagator>::getMaxStepLength(
       [[maybe_unused]] const Particle& vParticle,
       [[maybe_unused]] const Track& vTrack) const {
     return meter * std::numeric_limits<double>::infinity();
   }
 
-  template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
-  inline void RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>::startOfLibrary(
+  template <typename TObserverCollection, typename TRadioImpl, typename TPropagator>
+  inline void RadioProcess<TObserverCollection, TRadioImpl, TPropagator>::startOfLibrary(
       const boost::filesystem::path& directory) {
 
     // setup the streamer
-    output_.initStreamer((directory / ("antennas.parquet")).string());
+    output_.initStreamer((directory / ("observers.parquet")).string());
     // LCOV_EXCL_START
     // build the schema
     output_.addField("Time", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
@@ -90,34 +90,34 @@ namespace corsika {
     output_.buildStreamer();
   }
 
-  template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
-  inline void RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>::endOfShower(
+  template <typename TObserverCollection, typename TRadioImpl, typename TPropagator>
+  inline void RadioProcess<TObserverCollection, TRadioImpl, TPropagator>::endOfShower(
       const unsigned int) {
 
-    // loop over every antenna and instruct them to
-    // flush data to disk, and then reset the antenna
+    // loop over every observer and instruct them to
+    // flush data to disk, and then reset the observer
     // before the next event
-    for (auto& antenna : antennas_.getAntennas()) {
+    for (auto& observer : observers_.getObservers()) {
 
-      auto const sampleRate = antenna.getSampleRate() * 1_s;
+      auto const sampleRate = observer.getSampleRate() * 1_s;
       auto const radioImplementation =
           static_cast<std::string>(this->implementation().algorithm);
 
-      // get the axis labels for this antenna and write the first row.
-      axistype axis = antenna.implementation().getAxis();
+      // get the axis labels for this observer and write the first row.
+      axistype axis = observer.implementation().getAxis();
 
       // get the copy of the waveform data for this event
-      std::vector<double> const& dataX = antenna.implementation().getWaveformX();
-      std::vector<double> const& dataY = antenna.implementation().getWaveformY();
-      std::vector<double> const& dataZ = antenna.implementation().getWaveformZ();
+      std::vector<double> const& dataX = observer.implementation().getWaveformX();
+      std::vector<double> const& dataY = observer.implementation().getWaveformY();
+      std::vector<double> const& dataZ = observer.implementation().getWaveformZ();
 
       // check for the axis name
       std::string label = "Unknown";
-      if (antenna.getDomainLabel() == "Time") {
+      if (observer.getDomainLabel() == "Time") {
         label = "Time";
       }
       // LCOV_EXCL_START
-      else if (antenna.getDomainLabel() == "Frequency") {
+      else if (observer.getDomainLabel() == "Frequency") {
         label = "Frequency";
       }
       // LCOV_EXCL_STOP
@@ -141,7 +141,7 @@ namespace corsika {
         }
       }
 
-      antenna.reset();
+      observer.reset();
     }
     output_.closeStreamer();
 
@@ -149,9 +149,9 @@ namespace corsika {
     showerId_++;
   }
 
-  template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
-  inline YAML::Node RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>::getConfig()
-      const {
+  template <typename TObserverCollection, typename TRadioImpl, typename TPropagator>
+  inline YAML::Node
+  RadioProcess<TObserverCollection, TRadioImpl, TPropagator>::getConfig() const {
 
     // top-level YAML node
     YAML::Node config;
@@ -164,18 +164,18 @@ namespace corsika {
     config["units"]["electric field"] = "V/m";
     config["units"]["distance"] = "m";
 
-    for (auto& antenna : antennas_.getAntennas()) {
-      // get the name/location of this antenna
-      auto name = antenna.getName();
-      auto location = antenna.getLocation().getCoordinates();
+    for (auto& observer : observers_.getObservers()) {
+      // get the name/location of this observer
+      auto name = observer.getName();
+      auto location = observer.getLocation().getCoordinates();
 
-      // get the antennas config
-      config["antennas"][name] = antenna.getConfig();
+      // get the observers config
+      config["observers"][name] = observer.getConfig();
 
-      // write the location of this antenna
-      config["antennas"][name]["location"].push_back(location.getX() / 1_m);
-      config["antennas"][name]["location"].push_back(location.getY() / 1_m);
-      config["antennas"][name]["location"].push_back(location.getZ() / 1_m);
+      // write the location of this observer
+      config["observers"][name]["location"].push_back(location.getX() / 1_m);
+      config["observers"][name]["location"].push_back(location.getY() / 1_m);
+      config["observers"][name]["location"].push_back(location.getZ() / 1_m);
     }
 
     return config;

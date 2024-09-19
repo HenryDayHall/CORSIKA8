@@ -49,7 +49,7 @@ namespace corsika {
 
     using Base =
         RadioProcess<TRadioDetector, CoREAS<TRadioDetector, TPropagator>, TPropagator>;
-    using Base::antennas_;
+    using Base::observers_;
 
   }; // end of class CoREAS
 

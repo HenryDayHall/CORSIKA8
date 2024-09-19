@@ -54,16 +54,16 @@ namespace corsika {
       // set threshold for application of ZHS-like approximation.
       const double approxThreshold_{1.0e-3};
 
-      // loop over each antenna in the antenna collection (detector)
-      for (auto& antenna : antennas_.getAntennas()) {
+      // loop over each observer in the observer collection (detector)
+      for (auto& observer : observers_.getObservers()) {
 
-        // get the SignalPathCollection (path1) from the start "endpoint" to the antenna.
+        // get the SignalPathCollection (path1) from the start "endpoint" to the observer.
         auto paths1{this->propagator_.propagate(step.getParticlePre(), startPoint_,
-                                                antenna.getLocation())};
+                                                observer.getLocation())};
 
-        // get the SignalPathCollection (path2) from the end "endpoint" to the antenna.
+        // get the SignalPathCollection (path2) from the end "endpoint" to the observer.
         auto paths2{this->propagator_.propagate(step.getParticlePre(), endPoint_,
-                                                antenna.getLocation())};
+                                                observer.getLocation())};
 
         // LCOV_EXCL_START
         // This should never happen unless someone implements a bad propagator
@@ -140,14 +140,14 @@ namespace corsika {
           // calculate receive time for endpoint
           auto endPointReceiveTime_{endTime_ + paths2[i].propagation_time_};
 
-          // get unit vector for startpoint at antenna location
+          // get unit vector for startpoint at observer location
           auto ReceiveVectorStart_{paths1[i].receive_};
 
-          // get unit vector for endpoint at antenna location
+          // get unit vector for endpoint at observer location
           auto ReceiveVectorEnd_{paths2[i].receive_};
 
           // perform ZHS-like calculation close to Cherenkov angle and for refractive
-          // index at antenna location greater than 1
+          // index at observer location greater than 1
           if ((paths1[i].refractive_index_destination_ > 1) &&
               ((std::fabs(preDoppler_) < approxThreshold_) ||
                (std::fabs(postDoppler_) < approxThreshold_))) {
@@ -165,9 +165,9 @@ namespace corsika {
             TimeType const midTime_{(startTime_ + endTime_) * 0.5};
 
             // get the SignalPathCollection (path3) from the middle "endpoint" to the
-            // antenna.
+            // observer.
             auto paths3{this->propagator_.propagate(step.getParticlePre(), midPoint_,
-                                                    antenna.getLocation())};
+                                                    observer.getLocation())};
 
             // now loop over the paths for endpoint that we got above
             for (auto const& path : paths3) {
@@ -203,7 +203,7 @@ namespace corsika {
               // CoREAS calculation -> get ElectricFieldVector for "midPoint"
               ElectricFieldVector EVmid_ = (path.emit_.cross(path.emit_.cross(beta_))) /
                                            midDoppler_ / path.R_distance_ * constants_ *
-                                           antenna.getSampleRate();
+                                           observer.getSampleRate();
 
               ElectricFieldVector EV1_{EVmid_};
               ElectricFieldVector EV2_{EVmid_ * (-1.0)};
@@ -222,7 +222,7 @@ namespace corsika {
                 endPointReceiveTime_ = midPointReceiveTime_ - 0.5 * deltaT_;
               }
 
-              TimeType const gridResolution_{1 / antenna.getSampleRate()};
+              TimeType const gridResolution_{1 / observer.getSampleRate()};
               deltaT_ = endPointReceiveTime_ - startPointReceiveTime_;
 
               // redistribute contributions over time scale defined by the observation
@@ -304,8 +304,8 @@ namespace corsika {
 
               // TODO: Be very careful with this. Maybe the EVs should be fed after the
               // for loop of paths3
-              antenna.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
-              antenna.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
+              observer.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
+              observer.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
             } // End of looping over paths3
 
           } // end of ZHS-like approximation
@@ -314,16 +314,16 @@ namespace corsika {
             // calculate electric field vector for startpoint
             ElectricFieldVector EV1_ =
                 (paths1[i].emit_.cross(paths1[i].emit_.cross(beta_))) / preDoppler_ /
-                paths1[i].R_distance_ * constants_ * antenna.getSampleRate();
+                paths1[i].R_distance_ * constants_ * observer.getSampleRate();
 
             // calculate electric field vector for endpoint
             ElectricFieldVector EV2_ =
                 (paths2[i].emit_.cross(paths2[i].emit_.cross(beta_))) / postDoppler_ /
-                paths2[i].R_distance_ * constants_ * (-1.0) * antenna.getSampleRate();
+                paths2[i].R_distance_ * constants_ * (-1.0) * observer.getSampleRate();
 
             if ((preDoppler_ < 1.e-9) || (postDoppler_ < 1.e-9)) {
 
-              TimeType const gridResolution_{1 / antenna.getSampleRate()};
+              TimeType const gridResolution_{1 / observer.getSampleRate()};
               TimeType deltaT_{endPointReceiveTime_ - startPointReceiveTime_};
 
               if (abs(deltaT_) < (gridResolution_)) {
@@ -372,12 +372,12 @@ namespace corsika {
                 } // End of if for startbin == endbin
               }   // End of if deltaT < gridresolution
             }     // End of if that checks small doppler factors
-            antenna.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
-            antenna.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
+            observer.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
+            observer.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
           } // End of else that does not perform ZHS-like approximation
 
         } // End of loop over both paths to get signal info
-      }   // End of looping over antennas
+      }   // End of looping over observer
 
       return ProcessReturn::Ok;
     }

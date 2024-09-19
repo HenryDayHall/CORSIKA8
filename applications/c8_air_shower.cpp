@@ -69,9 +69,9 @@
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/ZHS.hpp>
-#include <corsika/modules/radio/antennas/Antenna.hpp>
-#include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
-#include <corsika/modules/radio/detectors/AntennaCollection.hpp>
+#include <corsika/modules/radio/observers/Observer.hpp>
+#include <corsika/modules/radio/observers/TimeDomainObserver.hpp>
+#include <corsika/modules/radio/detectors/ObserverCollection.hpp>
 #include <corsika/modules/radio/propagators/TabulatedFlatAtmospherePropagator.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
@@ -271,7 +271,7 @@ int main(int argc, char** argv) {
   bool multithin = false;
   app.add_flag("--multithin", multithin, "keep thinned particles (with weight=0)")
       ->group("Thinning");
-  app.add_option("--ring", "concentric ring of star shape pattern of antennas")
+  app.add_option("--ring", "concentric ring of star shape pattern of observers")
       ->default_val(0)
       ->check(CLI::Range(0, 20))
       ->group("Radio");
@@ -527,14 +527,14 @@ int main(int argc, char** argv) {
   auto const radius_{ring_number * 25_m};
   const int rr_ = static_cast<int>(radius_ / 1_m);
 
-  // Radio antennas and relevant information
-  // the antenna time variables
+  // Radio observers and relevant information
+  // the observer time variables
   const TimeType duration_{4e-7_s};
   const InverseTimeType sampleRate_{1e+9_Hz};
 
-  // the antenna collection for CoREAS and ZHS
-  AntennaCollection<TimeDomainAntenna> detectorCoREAS;
-  AntennaCollection<TimeDomainAntenna> detectorZHS;
+  // the observer collection for CoREAS and ZHS
+  ObserverCollection<TimeDomainObserver> detectorCoREAS;
+  ObserverCollection<TimeDomainObserver> detectorZHS;
 
   auto const showerCoreX_{showerCore.getCoordinates().getX()};
   auto const showerCoreY_{showerCore.getCoordinates().getY()};
@@ -544,34 +544,34 @@ int main(int argc, char** argv) {
   auto const triggerpoint_{Point(rootCS, injectionPosX_, injectionPosY_, injectionPosZ_)};
 
   if (ring_number != 0) {
-    // setup CoREAS antennas - use the for loop for star shape pattern
+    // setup CoREAS observers - use the for loop for star shape pattern
     for (auto phi_1 = 0; phi_1 <= 315; phi_1 += 45) {
       auto phiRad_1 = phi_1 / 180. * M_PI;
       auto const point_1{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_1),
                                showerCoreY_ + radius_ * sin(phiRad_1),
                                constants::EarthRadius::Mean)};
-      std::cout << "Antenna point CoREAS: " << point_1 << std::endl;
+      std::cout << "Observer point CoREAS: " << point_1 << std::endl;
       auto triggertime_1{(triggerpoint_ - point_1).getNorm() / constants::c};
       std::string name_1 = "CoREAS_R=" + std::to_string(rr_) +
                            "_m--Phi=" + std::to_string(phi_1) + "degrees";
-      TimeDomainAntenna antenna_1(name_1, point_1, rootCS, triggertime_1, duration_,
-                                  sampleRate_, triggertime_1);
-      detectorCoREAS.addAntenna(antenna_1);
+      TimeDomainObserver observer_1(name_1, point_1, rootCS, triggertime_1, duration_,
+                                    sampleRate_, triggertime_1);
+      detectorCoREAS.addObserver(observer_1);
     }
 
-    // setup ZHS antennas - use the for loop for star shape pattern
+    // setup ZHS observers - use the for loop for star shape pattern
     for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
       auto phiRad_ = phi_ / 180. * M_PI;
       auto const point_{Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_),
                               showerCoreY_ + radius_ * sin(phiRad_),
                               constants::EarthRadius::Mean)};
-      std::cout << "Antenna point ZHS: " << point_ << std::endl;
+      std::cout << "Observer point ZHS: " << point_ << std::endl;
       auto triggertime_{(triggerpoint_ - point_).getNorm() / constants::c};
       std::string name_ =
           "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
-      TimeDomainAntenna antenna_(name_, point_, rootCS, triggertime_, duration_,
-                                 sampleRate_, triggertime_);
-      detectorZHS.addAntenna(antenna_);
+      TimeDomainObserver observer_2(name_, point_, rootCS, triggertime_, duration_,
+                                    sampleRate_, triggertime_);
+      detectorZHS.addObserver(observer_2);
     }
   }
   LengthType const step = 1_m;
