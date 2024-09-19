@@ -28,6 +28,8 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 
+#include <corsika/setup/SetupC7trackedParticles.hpp>
+
 #include <catch2/catch_all.hpp>
 
 using namespace corsika;
@@ -94,7 +96,7 @@ TEST_CASE("CONEX") {
 
   std::set<Code> const nuclearcomp = {Code::Nitrogen, Code::Oxygen};
   // need to initialize Sibyll, done in constructor:
-  corsika::sibyll::HadronInteractionModel sibyll;
+  corsika::sibyll::HadronInteractionModel sibyll(corsika::setup::C7trackedParticles);
   [[maybe_unused]] corsika::sibyll::NuclearInteractionModel sibyllNuc(sibyll,
                                                                       nuclearcomp);
 

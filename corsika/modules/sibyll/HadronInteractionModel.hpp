@@ -13,6 +13,7 @@
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
 
+#include <set>
 #include <tuple>
 
 namespace corsika::sibyll {
@@ -27,6 +28,13 @@ namespace corsika::sibyll {
 
   public:
     HadronInteractionModel();
+    /**
+     * @brief construct hadron interaction model with SIBYLL
+     *
+     * @param list: list of particles that should be stable inside SIBYLL. all other
+     * particles should decay (if they can)
+     */
+    HadronInteractionModel(std::set<Code> list);
     ~HadronInteractionModel();
 
     /**
@@ -104,6 +112,8 @@ namespace corsika::sibyll {
                        FourMomentum const& projectileP4, FourMomentum const& targetP4);
 
   private:
+    void setParticleListStable(std::set<Code>);
+    void setAllParticlesUnstable();
     HEPEnergyType constexpr getMinEnergyCoM() const { return minEnergyCoM_; }
     HEPEnergyType constexpr getMaxEnergyCoM() const { return maxEnergyCoM_; }
 
@@ -120,6 +130,8 @@ namespace corsika::sibyll {
     int count_ = 0;
     int nucCount_ = 0;
     bool sibyll_listing_;
+    bool const internal_decays_;
+    std::set<Code> stable_particles_;
   };
 
 } // namespace corsika::sibyll

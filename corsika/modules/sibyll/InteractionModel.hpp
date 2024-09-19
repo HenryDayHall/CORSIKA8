@@ -25,8 +25,7 @@ namespace corsika::sibyll {
   public:
     using nuclear_model_type = NuclearInteractionModel<HadronInteractionModel>;
 
-    template <typename TEnvironment>
-    InteractionModel(TEnvironment const&);
+    InteractionModel(std::set<Code> const&, std::set<Code> const&);
 
     CrossSectionType getCrossSection(Code, Code, FourMomentum const&,
                                      FourMomentum const&) const;

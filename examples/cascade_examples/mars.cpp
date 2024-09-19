@@ -60,6 +60,7 @@
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
+#include <corsika/setup/SetupC7trackedParticles.hpp>
 
 #include <CLI/App.hpp>
 #include <CLI/Config.hpp>
@@ -325,7 +326,7 @@ int main(int argc, char** argv) {
 
   /* === START: SETUP PROCESS LIST === */
   auto const all_elements = corsika::get_all_elements_in_universe(env);
-  corsika::sibyll::Interaction sibyll(all_elements);
+  corsika::sibyll::Interaction sibyll(all_elements, corsika::setup::C7trackedParticles);
   InteractionCounter sibyllCounted(sibyll);
 
   corsika::pythia8::Decay decayPythia;

@@ -406,7 +406,8 @@ int main(int argc, char** argv) {
 
   auto const all_elements = corsika::get_all_elements_in_universe(env);
   // have SIBYLL always for PROPOSAL photo-hadronic interactions
-  auto sibyll = std::make_shared<corsika::sibyll::Interaction>(all_elements);
+  auto sibyll = std::make_shared<corsika::sibyll::Interaction>(
+      all_elements, corsika::setup::C7trackedParticles);
 
   if (auto const modelStr = app["--hadronModel"]->as<std::string>();
       modelStr == "SIBYLL-2.3d") {

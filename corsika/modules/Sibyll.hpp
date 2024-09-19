@@ -32,8 +32,8 @@ namespace corsika::sibyll {
    * to provide all the functions for ProcessSequence.
    */
   struct Interaction : public InteractionModel, public InteractionProcess<Interaction> {
-    Interaction(std::set<Code> const& nuccomp)
-        : InteractionModel{nuccomp} {}
+    Interaction(std::set<Code> const& nuccomp, std::set<Code> const& stablehad)
+        : InteractionModel{nuccomp, stablehad} {}
   };
 
   /**
