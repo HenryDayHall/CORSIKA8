@@ -231,8 +231,8 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
   EnergyLossWriter energyloss{showerAxis, dX};
-  ParticleCut<SubWriter<decltype(energyloss)>> cut(5_MeV, 5_MeV, 100_GeV, 100_GeV, true,
-                                                   energyloss);
+  ParticleCut<SubWriter<decltype(energyloss)>> cut(5_MeV, 5_MeV, 100_GeV, 100_GeV,
+                                                   100_GeV, true, energyloss);
 
   corsika::sibyll::Interaction sibyll(corsika::get_all_elements_in_universe(env),
                                       corsika::setup::C7trackedParticles);

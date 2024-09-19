@@ -44,8 +44,8 @@ namespace corsika {
      */
     template <typename... TArgs>
     ParticleCut(HEPEnergyType const eEleCut, HEPEnergyType const ePhoCut,
-                HEPEnergyType const eHadCut, HEPEnergyType const eMuCut, bool const inv,
-                TArgs&&... args);
+                HEPEnergyType const eHadCut, HEPEnergyType const eMuCut,
+                HEPEnergyType const eTauCut, bool const inv, TArgs&&... args);
 
     /**
      * particle cut with kinetic energy thresholds for all particles.
@@ -103,6 +103,7 @@ namespace corsika {
     HEPEnergyType getElectronKineticECut() const { return cut_electrons_; }
     HEPEnergyType getPhotonKineticECut() const { return cut_photons_; }
     HEPEnergyType getMuonKineticECut() const { return cut_muons_; }
+    HEPEnergyType getTauKineticECut() const { return cut_tau_; }
     HEPEnergyType getHadronKineticECut() const { return cut_hadrons_; }
 
     //! get configuration of this node, for output
@@ -116,8 +117,9 @@ namespace corsika {
   private:
     HEPEnergyType cut_electrons_;
     HEPEnergyType cut_photons_;
-    HEPEnergyType cut_muons_;
     HEPEnergyType cut_hadrons_;
+    HEPEnergyType cut_muons_;
+    HEPEnergyType cut_tau_;
     bool doCutInv_;
     std::unordered_map<Code const, HEPEnergyType const> cuts_;
   }; // namespace corsika

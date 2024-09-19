@@ -195,6 +195,10 @@ int main(int argc, char** argv) {
       ->default_val(0.3)
       ->check(CLI::Range(0.000001, 1.e13))
       ->group("Config");
+  app.add_option("--taucut", "Min. kin. energy of tau leptons in tracking (GeV)")
+      ->default_val(0.3)
+      ->check(CLI::Range(0.000001, 1.e13))
+      ->group("Config");
   bool track_neutrinos = false;
   app.add_flag("--track-neutrinos", track_neutrinos, "switch on tracking of neutrinos")
       ->group("Config");
@@ -459,17 +463,19 @@ int main(int argc, char** argv) {
   HEPEnergyType const emcut = 1_GeV * app["--emcut"]->as<double>();
   HEPEnergyType const hadcut = 1_GeV * app["--hadcut"]->as<double>();
   HEPEnergyType const mucut = 1_GeV * app["--mucut"]->as<double>();
-  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, mucut,
+  HEPEnergyType const taucut = 1_GeV * app["--taucut"]->as<double>();
+  ParticleCut<SubWriter<decltype(dEdX)>> cut(emcut, emcut, hadcut, mucut, taucut,
                                              !track_neutrinos, dEdX);
 
   // tell proposal that we are interested in all energy losses above the particle cut
-  set_energy_production_threshold(Code::Electron, std::min({emcut, hadcut, mucut}));
-  set_energy_production_threshold(Code::Positron, std::min({emcut, hadcut, mucut}));
-  set_energy_production_threshold(Code::Photon, std::min({emcut, hadcut, mucut}));
-  set_energy_production_threshold(Code::MuMinus, std::min({emcut, hadcut, mucut}));
-  set_energy_production_threshold(Code::MuPlus, std::min({emcut, hadcut, mucut}));
-  set_energy_production_threshold(Code::TauMinus, std::min({emcut, hadcut, mucut}));
-  set_energy_production_threshold(Code::TauPlus, std::min({emcut, hadcut, mucut}));
+  auto const prod_threshold = std::min({emcut, hadcut, mucut, taucut});
+  set_energy_production_threshold(Code::Electron, prod_threshold);
+  set_energy_production_threshold(Code::Positron, prod_threshold);
+  set_energy_production_threshold(Code::Photon, prod_threshold);
+  set_energy_production_threshold(Code::MuMinus, prod_threshold);
+  set_energy_production_threshold(Code::MuPlus, prod_threshold);
+  set_energy_production_threshold(Code::TauMinus, prod_threshold);
+  set_energy_production_threshold(Code::TauPlus, prod_threshold);
 
   // energy threshold for high energy hadronic model. Affects LE/HE switch for
   // hadron interactions and the hadronic photon model in proposal

@@ -56,7 +56,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
   SECTION("cut on particle type: inv") {
 
     // particle cut with 20GeV threshold for all, also cut invisible
-    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, true);
+    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, 20_GeV, true);
     CHECK(cut.getHadronKineticECut() == 20_GeV);
 
     // add primary particle to stack
@@ -83,7 +83,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
 
   SECTION("cut on particle type: em") {
 
-    ParticleCut cut(1_EeV, 1_EeV, 1_GeV, 1_GeV, false);
+    ParticleCut cut(1_EeV, 1_EeV, 1_GeV, 1_GeV, 1_GeV, false);
 
     // add primary particle to stack
     auto particle = stack.addParticle(std::make_tuple(
@@ -105,7 +105,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
   }
 
   SECTION("cut low energy") {
-    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, true);
+    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, 20_GeV, true);
 
     // add primary particle to stack
     auto particle = stack.addParticle(std::make_tuple(
@@ -133,8 +133,8 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     CHECK(view.getSize() == 13);
   }
 
-  SECTION("cut low energy: electrons, photons, hadrons and muons") {
-    ParticleCut cut(5_MeV, 5_MeV, 5_GeV, 5_GeV, true);
+  SECTION("cut low energy: electrons, photons, hadrons, muons and tau") {
+    ParticleCut cut(5_MeV, 5_MeV, 5_GeV, 5_GeV, 5_MeV, true);
 
     // add primary particle to stack
     auto particle = stack.addParticle(std::make_tuple(Code::Proton, Eabove - Proton::mass,
@@ -177,7 +177,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
   }
 
   SECTION("cut on time") {
-    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, false);
+    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, 20_GeV, false);
     const TimeType too_late = 1_s;
 
     // add primary particle to stack
@@ -205,7 +205,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
 
   SECTION("cut on doContinous, just invisibles") {
 
-    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, true);
+    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, 20_GeV, true);
 
     // add particles, all with energies above the threshold
     // only cut is by species
