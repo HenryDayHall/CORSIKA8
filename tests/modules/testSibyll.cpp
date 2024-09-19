@@ -114,9 +114,11 @@ TEST_CASE("SibyllInterface", "modules") {
 
   std::set<Code> const nuclearcomp = {Code::Hydrogen, Code::Nitrogen, Code::Oxygen,
                                       Code::Carbon};
+
+  std::set<Code> stable_particles = {Code::PiPlus, Code::PiMinus};
   SECTION("InteractionInterface - valid targets") {
 
-    corsika::sibyll::HadronInteractionModel model;
+    corsika::sibyll::HadronInteractionModel model(stable_particles);
     // sibyll only accepts protons or nuclei with 4<=A<=18 as targets
     CHECK_FALSE(model.isValid(Code::Proton, Code::Electron, 100_GeV));
     CHECK(model.isValid(Code::Proton, Code::Hydrogen, 100_GeV));
@@ -164,7 +166,7 @@ TEST_CASE("SibyllInterface", "modules") {
     const HEPEnergyType P0 = 60_GeV;
     MomentumVector const plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
     // also print particles after sibyll was called
-    corsika::sibyll::HadronInteractionModel model;
+    corsika::sibyll::HadronInteractionModel model(stable_particles);
     model.setVerbose(true);
     HEPEnergyType const Elab = sqrt(static_pow<2>(P0) + static_pow<2>(Proton::mass));
     FourMomentum const projectileP4(Elab, plab);
@@ -248,7 +250,7 @@ TEST_CASE("SibyllInterface", "modules") {
 
     HEPMomentumType const P0 = 50_TeV;
     MomentumVector const plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
-    corsika::sibyll::HadronInteractionModel hmodel;
+    corsika::sibyll::HadronInteractionModel hmodel(stable_particles);
 
     NuclearInteractionModel nuclearModel(hmodel, nuclearcomp);
 
@@ -280,7 +282,7 @@ TEST_CASE("SibyllInterface", "modules") {
   }
 
   SECTION("CombinedInterface") {
-    corsika::sibyll::InteractionModel combinedModel{nuclearcomp};
+    corsika::sibyll::InteractionModel combinedModel{nuclearcomp, stable_particles};
     corsika::sibyll::HadronInteractionModel const& hmodel =
         combinedModel.getHadronInteractionModel();
     auto const& nuclearModel = combinedModel.getNuclearInteractionModel();

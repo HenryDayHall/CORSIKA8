@@ -15,10 +15,11 @@
 #include <corsika/modules/sibyll/NuclearInteractionModel.hpp>
 
 namespace corsika::sibyll {
-  template <typename TEnvironment>
-  inline InteractionModel::InteractionModel(TEnvironment const& environment)
-      : hadronSibyll_{}
-      , nuclearSibyll_{hadronSibyll_, environment} {}
+
+  inline InteractionModel::InteractionModel(std::set<Code> const& nuccomp,
+                                            std::set<Code> const& list)
+      : hadronSibyll_{list}
+      , nuclearSibyll_{hadronSibyll_, nuccomp} {}
 
   inline HadronInteractionModel& InteractionModel::getHadronInteractionModel() {
     return hadronSibyll_;

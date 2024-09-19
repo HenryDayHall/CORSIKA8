@@ -108,6 +108,8 @@ void sibyll_(const int&, const int&, const double&);
 // subroutine to initiate sibyll
 void sibyll_ini_();
 
+void decsib_();
+
 // print event
 void sib_list_(int&);
 

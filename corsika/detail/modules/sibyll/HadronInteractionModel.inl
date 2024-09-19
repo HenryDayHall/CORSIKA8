@@ -26,13 +26,49 @@ namespace corsika::sibyll {
   }
 
   inline HadronInteractionModel::HadronInteractionModel()
-      : sibyll_listing_(false) {
+      : sibyll_listing_(false)
+      , internal_decays_(false)
+      , stable_particles_{} {
     // initialize Sibyll
     corsika::connect_random_stream("sibyll", ::sibyll::set_rng_function);
     static bool initialized = false;
     if (!initialized) {
       sibyll_ini_();
       initialized = true;
+    }
+  }
+
+  inline HadronInteractionModel::HadronInteractionModel(std::set<Code> vlist)
+      : sibyll_listing_(false)
+      , internal_decays_(true)
+      , stable_particles_(vlist) {
+    // initialize Sibyll
+    corsika::connect_random_stream("sibyll", ::sibyll::set_rng_function);
+    static bool initialized = false;
+    if (!initialized) {
+      sibyll_ini_();
+      initialized = true;
+    }
+  }
+
+  inline void HadronInteractionModel::setAllParticlesUnstable() {
+    // activate all decays in SIBYLL
+    CORSIKA_LOGGER_DEBUG(logger_, "setting all particles \"unstable\".");
+    for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = abs(s_csydec_.idb[i]);
+  }
+
+  inline void HadronInteractionModel::setParticleListStable(std::set<Code> vList) {
+    // de-activate specific decays in SIBYLL
+    for (auto p : vList) {
+      CORSIKA_LOGGER_DEBUG(logger_, "setting {} as \"stable\". ", p);
+      auto const sib_code = sibyll::convertToSibyll(p);
+      if (sib_code != corsika::sibyll::SibyllCode::Unknown) {
+        int const s_id = abs(static_cast<int>(sib_code));
+        s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
+      } else {
+        CORSIKA_LOGGER_WARN(logger_,
+                            "particle {} not known to SIBYLL! Cannot set stable!", p);
+      }
     }
   }
 
@@ -99,7 +135,7 @@ namespace corsika::sibyll {
       sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy, sigEla);
     }
     return {sigProd * 1_mb, sigEla * 1_mb};
-  } // namespace corsika::sibyll
+  }
 
   /**
    * In this function SIBYLL is called to produce one event. The
@@ -135,8 +171,13 @@ namespace corsika::sibyll {
     count_++;
     // Sibyll does not know about units..
     double const sqs = sqrtSnn / 1_GeV;
+    if (internal_decays_) {
+      setAllParticlesUnstable();
+      setParticleListStable(stable_particles_);
+    }
     // running sibyll, filling stack
     sibyll_(projectileSibyllCode, targetSibCode, sqs);
+    if (internal_decays_) decsib_();
 
     if (sibyll_listing_) {
       // print final state
@@ -159,9 +200,13 @@ namespace corsika::sibyll {
     for (auto& psib : ss) {
       // abort on particles that have decayed in Sibyll. Should not happen!
       if (psib.hasDecayed()) { // LCOV_EXCL_START
-        throw std::runtime_error("found particle that decayed in SIBYLL!");
-      } // LCOV_EXCL_STOP
-
+        if (internal_decays_) {
+          continue;
+        } else {
+          throw std::runtime_error(
+              "internal decayse switched off! found particle that decayed in SIBYLL!");
+        } // LCOV_EXCL_STOP
+      }
       // transform 4-momentum to lab. frame
       // note that the momentum needs to be rotated back
       auto const tmp = psib.getMomentum().getComponents();

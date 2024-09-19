@@ -43,6 +43,7 @@
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
+#include <corsika/setup/SetupC7trackedParticles.hpp>
 
 #include <CLI/App.hpp>
 #include <CLI/Config.hpp>
@@ -223,7 +224,8 @@ int main(int argc, char** argv) {
 
   // hadronic interactions
   HEPEnergyType heHadronModelThreshold = std::pow(10, 1.9) * 1_GeV;
-  corsika::sibyll::Interaction sibyll(corsika::get_all_elements_in_universe(env));
+  corsika::sibyll::Interaction sibyll(corsika::get_all_elements_in_universe(env),
+                                      corsika::setup::C7trackedParticles);
 
   auto const all_elements = corsika::get_all_elements_in_universe(env);
   corsika::fluka::Interaction leIntModel{all_elements};
