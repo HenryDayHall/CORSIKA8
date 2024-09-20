@@ -72,7 +72,7 @@ def draw_profiles(pr, pr_config):
     ax.set_title(pr_config["type"] + "\n" + title)
     unit_grammage_str = pr_config["units"]["grammage"]  # get units of simulation output
     ax.set_xlabel(f"slant depth, X ({unit_grammage_str})")
-    ax.set_ylabel("dN/dX")
+    ax.set_ylabel("N(X)")
     ax.legend()
     ax.set_yscale("log")
     ax.set_xlim(min(pr["X"]), max(pr["X"]))
