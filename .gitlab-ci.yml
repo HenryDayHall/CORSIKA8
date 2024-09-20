@@ -461,5 +461,6 @@ python-examples:
     - cd ${CI_PROJECT_DIR}/python/examples
     - python3 particle_distribution.py --input-dir $EXAMPLE_SHOWER_DIR
     - python3 shower_profile.py --input-dir $EXAMPLE_SHOWER_DIR
+    - python3 first_interactions.py --input-dir $EXAMPLE_SHOWER_DIR
     - export EXAMPLE_RADIO_SHOWER_DIR=${CI_PROJECT_DIR}/build/build_examples/example_outputs/radio_em_shower_outputs
     - python3 radio_emission.py --input-dir $EXAMPLE_RADIO_SHOWER_DIR
