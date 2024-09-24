@@ -22,9 +22,21 @@ namespace corsika::pythia8 {
 
   using HEPEnergyTypeSqr = decltype(1_GeV * 1_GeV);
 
+  /**
+   * @brief Defines the interface to PYTHIA8. Configured for
+   * DIS neutrino - nucleon interactions.
+   *
+   */
+
   class NeutrinoInteraction : public InteractionProcess<NeutrinoInteraction> {
 
   public:
+    /**
+     * Constructs the interface for PYTHIA8 neutrino interactions
+     *
+     * @param handleNC - Switch on/off neutral current interactions
+     * @param handleCC - Switch on/off charged current interactions
+     */
     NeutrinoInteraction(bool const& handleNC = true, bool const& handleCC = true);
     ~NeutrinoInteraction();
     /**
