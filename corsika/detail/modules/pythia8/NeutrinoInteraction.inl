@@ -58,7 +58,10 @@ namespace corsika::pythia8 {
         corsika::RNGManager<>::getInstance().getRandomStream("pythia");
     Code const targetNucleonId = (nucleonChannelDist(rng) ? Code::Neutron : Code::Proton);
     int const idTarget_pythia = static_cast<int>(get_PDG(targetNucleonId));
-    CORSIKA_LOGGER_DEBUG(logger_, "selected {} target", targetNucleonId);
+    auto const targetP4NN =
+        targetP4 / (is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
+    CORSIKA_LOGGER_DEBUG(logger_, "selected {} target. P4NN={}", targetNucleonId,
+                         targetP4NN.getSpaceLikeComponents());
 
     // set projectile
     double const Q2min = minQ2_ / 1_GeV / 1_GeV;
@@ -115,10 +118,10 @@ namespace corsika::pythia8 {
     // References to the event record
     Pythia8::Event& eventMain = pythiaMain_.event;
     // define boost assuming target nucleon is at rest
-    COMBoost const labFrameBoost{projectileP4, get_mass(targetNucleonId)};
+    COMBoost const boost{projectileP4, targetP4NN};
     // the boost is along the total momentum axis and does not include a rotation
     // get rotated frame where momentum of projectile in the CoM is along +z
-    auto const& rotCS = labFrameBoost.getRotatedCS();
+    auto const& rotCS = boost.getRotatedCS();
 
     if (!pythiaMain_.next()) {
       throw std::runtime_error("Pythia neutrino collision failed ");
@@ -126,7 +129,7 @@ namespace corsika::pythia8 {
       CORSIKA_LOGGER_DEBUG(logger_, "pythia neutrino interaction done!");
     }
 
-    MomentumVector Plab_final{labFrameBoost.getOriginalCS()};
+    MomentumVector Plab_final{boost.getOriginalCS()};
     auto Elab_final = HEPEnergyType::zero();
     CORSIKA_LOGGER_DEBUG(logger_, "particles generated in neutrino interaction:");
     for (int i = 0; i < eventMain.size(); ++i) {
@@ -143,7 +146,7 @@ namespace corsika::pythia8 {
           // calculate 3-momentum and kinetic energy
           CORSIKA_LOGGER_DEBUG(logger_, "momentum in CoM: {} GeV",
                                pyPcom.getComponents() / 1_GeV);
-          auto const pyP4lab = labFrameBoost.fromCoM(FourVector{p8p.e() * 1_GeV, pyPcom});
+          auto const pyP4lab = boost.fromCoM(FourVector{p8p.e() * 1_GeV, pyPcom});
           auto const pyPlab = pyP4lab.getSpaceLikeComponents();
           HEPEnergyType const pyEkinlab =
               calculate_kinetic_energy(pyPlab.getNorm(), get_mass(pyId));
