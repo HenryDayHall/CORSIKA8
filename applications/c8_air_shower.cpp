@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
       ->group("Config");
   app.add_option("--hadcut", "Min. kin. energy of hadrons in tracking (GeV)")
       ->default_val(0.3)
-      ->check(CLI::Range(0.000001, 1.e13))
+      ->check(CLI::Range(0.02, 1.e13))
       ->group("Config");
   app.add_option("--mucut", "Min. kin. energy of muons in tracking (GeV)")
       ->default_val(0.3)
