@@ -11,7 +11,7 @@
 import logging
 import os
 import os.path as op
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
@@ -45,12 +45,28 @@ class Library(object):
         # store the top-level path
         self.path = path
 
+        output_dirs = None
+
         # load the config and summary files
         self.config = self.load_config(path)
         self.summary = self.load_summary(path)
+        if self.summary is None:
+            msg = f"Missing summary file in '{path}'."
+            msg += " The simulation may not have finished. Will not load library"
+            logging.getLogger("corsika").warning(msg)
+            return
+
+        if "output_dirs" in self.summary.keys():
+            output_dirs = self.summary["output_dirs"]
+            msg = f"Reading in sub-directories: {output_dirs}"
+            logging.getLogger("corsika").debug(msg)
+        else:
+            msg = "Sub-directories not specified in summary.yaml file."
+            msg += " Will find then dynamically"
+            logging.getLogger("corsika").debug(msg)
 
         # build the list of outputs
-        self.__outputs = self.__build_outputs(path)
+        self.__outputs = self.__build_outputs(path, output_dirs)
 
     @property
     def names(self) -> List[str]:
@@ -66,12 +82,40 @@ class Library(object):
         if name in self.__outputs:
             return self.__outputs[name]
         else:
-            msg = f"Output with name '{name}' not available in this library."
+            msg = f"Output with name '{name}' not available in this library. Skipping."
             logging.getLogger("corsika").warning(msg)
             return None
 
     @staticmethod
-    def load_config(path: str) -> Dict[str, Any]:
+    def __load_yaml(path: str, yaml_name: str) -> Optional[Dict[str, Any]]:
+        """
+        Load the yaml from a given library path.
+
+
+        Parameters
+        ----------
+        path: str
+            The path to the directory containing the library.
+
+        yaml_name: str
+            The name of the yaml file in `path`
+
+
+        Returns
+        -------
+        dict or None:
+            A dict of the yaml file, if valid directory, otherwise returns `None`
+
+        """
+        config_file = op.join(path, yaml_name)
+        if op.exists(config_file):
+            with open(config_file, "r") as f:
+                return yaml.load(f, Loader=yaml.Loader)
+
+        return None
+
+    @staticmethod
+    def load_config(path: str) -> Optional[Dict[str, Any]]:
         """
         Load the top-level config from a given library path.
 
@@ -83,20 +127,15 @@ class Library(object):
 
         Returns
         -------
-        dict:
-            The config as a python dictionary.
-
-        Raises
-        ------
-        FileNotFoundError
-            If the config file cannot be found
+        dict or None:
+            The config if valid directory, otherwise returns None
 
         """
-        with open(op.join(path, "config.yaml"), "r") as f:
-            return yaml.load(f, Loader=yaml.Loader)
+
+        return Library.__load_yaml(path, "config.yaml")
 
     @staticmethod
-    def load_summary(path: str) -> Dict[str, Any]:
+    def load_summary(path: str) -> Optional[Dict[str, Any]]:
         """
         Load the top-level summary from a given library path.
 
@@ -108,17 +147,12 @@ class Library(object):
 
         Returns
         -------
-        dict:
-            The summary as a python dictionary.
-
-        Raises
-        ------
-        FileNotFoundError
-            If the summary file cannot be found
+        dict or None:
+            The config if valid directory, otherwise returns None
 
         """
-        with open(op.join(path, "summary.yaml"), "r") as f:
-            return yaml.load(f, Loader=yaml.Loader)
+
+        return Library.__load_yaml(path, "summary.yaml")
 
     @staticmethod
     def __valid_library(path: str) -> bool:
@@ -143,12 +177,16 @@ class Library(object):
 
         # the config file exists, we load it
         config = Library.load_config(path)
+        if config is None:
+            return False
 
         # and check that the config's "writer" key is correct
         return config["creator"] == "CORSIKA8"
 
     @staticmethod
-    def __build_outputs(path: str) -> Dict[str, outputs.Output]:
+    def __build_outputs(
+        path: str, dirs: Union[list, None]
+    ) -> Dict[str, outputs.Output]:
         """
         Build the outputs contained in this library.
 
@@ -161,14 +199,19 @@ class Library(object):
         path: str
             The path to the directory containing this library.
 
+        dirs: list[str]
+            List of directory names that will be read in.
+            If None, will attempt to find the directory names
+
         Returns
         -------
         Dict[str, Output]:
             A dictionary mapping names to initialized outputs.
         """
 
-        # get a list of the subdirectories in the library
-        _, dirs, _ = next(os.walk(path))
+        if dirs is None:
+            # if not supplied, get a list of the subdirectories in the library
+            _, dirs, _ = next(os.walk(path))
 
         # this is the dictionary where we store our components
         components: Dict[str, Any] = {}
@@ -177,6 +220,11 @@ class Library(object):
         for subdir in dirs:
             # read the config file for this output
             config = Library.load_config(op.join(path, subdir))
+            if config is None:
+                msg = "Could not find a configuration file in"
+                msg += f" {op.join(path, subdir)}. Skipping sub-directory"
+                logging.getLogger("corsika").warning(msg)
+                continue
 
             # the name keyword is our unique identifier
             name = config.get("name")
@@ -212,7 +260,7 @@ class Library(object):
             except AttributeError as e:
                 msg = (
                     f"Unable to instantiate an instance of '{out_type}' "
-                    f"for a process called '{name}'"
+                    f"for a process called '{name}'. Skipping '{subdir}'"
                 )
                 logging.getLogger("corsika").warning(msg)
                 logging.getLogger("corsika").warning(e)

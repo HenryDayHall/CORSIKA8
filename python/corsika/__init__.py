@@ -8,8 +8,17 @@
  the license.
 """
 
+import logging
+
 from . import io
 from .io.library import Library
+
+logger = logging.getLogger("corsika")
+fmt = "[%(levelname)s] - %(name)s - %(message)s"
+myFormatter = logging.Formatter(fmt)
+handler = logging.StreamHandler()
+handler.setFormatter(myFormatter)
+logger.addHandler(handler)
 
 # all imported objects
 __all__ = ["io", "Library"]
