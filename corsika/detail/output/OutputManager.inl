@@ -144,6 +144,10 @@ namespace corsika {
     summary["runtime"] = (durationDays ? fmt::format("+{}d ", durationDays) : "") +
                          fmt::format("{:%H:%M:%S}", end_time - start_time);
 
+    std::vector<std::string> output_dirs;
+    for (auto const& outs : outputs_) { output_dirs.push_back(outs.first); }
+    summary["output_dirs"] = output_dirs;
+
     return summary;
   }
 
