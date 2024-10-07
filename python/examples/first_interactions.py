@@ -54,7 +54,6 @@ for ish, sh_id in enumerate(shower_ids):
     daughters = interactions[interactions["shower"] == sh_id]
 
     mother = projectiles[ish]
-    norm = np.sqrt(sum(np.array(mother.momentum) ** 2))  # total momentum
 
     print("Plotting shower", sh_id)
     print(mother)
