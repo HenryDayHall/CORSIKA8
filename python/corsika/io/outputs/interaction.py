@@ -36,9 +36,6 @@ class FirstInteraction(Particle):
         """
         Particle.__init__(self, prop_dict)
 
-        # need to define for momentum prop
-        self.px = self.py = self.pz = None
-
     def __repr__(self) -> str:
         """
         Return a string representation of this class.
