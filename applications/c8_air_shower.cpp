@@ -319,9 +319,10 @@ int main(int argc, char** argv) {
   Point const surface_{rootCS, 0_m, 0_m, constants::EarthRadius::Mean};
   GeomagneticModel wmm(center, corsika_data("GeoMag/WMM.COF"));
 
-  // build a Linsley US Standard atmosphere into `env`
+  // build an atmosphere with Keilhauer's parametrization of the
+  // US standard atmosphere into `env`
   create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-      env, AtmosphereId::LinsleyUSStd, center, 1.000327, surface_, Medium::AirDry1Atm,
+      env, AtmosphereId::USStdBK, center, 1.000327, surface_, Medium::AirDry1Atm,
       MagneticFieldVector{rootCS, 50_uT, 0_T, 0_T});
 
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
