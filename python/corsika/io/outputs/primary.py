@@ -34,6 +34,7 @@ class Particle(object):
         # need to define for position/direction functions
         self.x = self.y = self.z = None
         self.nx = self.ny = self.nz = None
+        self.px = self.py = self.pz = None
 
         # wrap the files of the dictionary so that there is a property
         # assigned to each value, i.e. print(my_primary.pdg)
