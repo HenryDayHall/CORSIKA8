@@ -46,6 +46,8 @@ namespace corsika {
 
   private:
     bool ReportStack_;
+    int PrintoutCounter_ = 0;
+    const int MaxNumberOfPrintouts_ = 10;
     HEPEnergyType E0_;
     const HEPEnergyType dE_threshold_ = 1_eV;
     std::chrono::system_clock::time_point StartTime_;
