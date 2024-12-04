@@ -23,9 +23,11 @@
 namespace corsika {
 
   inline OutputManager::OutputManager(std::string const& dir_path, const long& vseed = 0,
-                                      std::string const& vargs = "")
+                                      std::string const& vargs = "",
+                                      bool useCompression = false)
       : root_(dir_path)
       , cmnd_line_args_(vargs)
+      , useCompression_(useCompression)
       , count_(0)
       , seed_(vseed) {
 
@@ -89,6 +91,26 @@ namespace corsika {
     // make sure that we gracefully close all the outputs. This is a supported
     // method of operation so we don't issue a warning here
     if (state_ == OutputState::LibraryReady) { endOfLibrary(); }
+
+    if (useCompression_) {
+      auto const parent = root_.parent_path();
+      auto const final_part = root_.filename();
+
+      // Ensure we use "./" if the parent path is empty
+      std::string parent_path = parent.empty() ? "./" : parent.string() + "/";
+
+      std::string const cmd = "tar cf " + parent_path + final_part.string() + ".tar -C " +
+                              parent_path + " " + final_part.string();
+      CORSIKA_LOG_INFO("Compressing output directory using: {}", cmd.c_str());
+      int const returnCode = std::system(cmd.c_str());
+
+      if (returnCode) {
+        CORSIKA_LOG_ERROR("Compression returned with error code {}", returnCode);
+      } else {
+        // remove the original directory
+        boost::filesystem::remove_all(root_);
+      }
+    }
   }
 
   inline int OutputManager::getEventId() const { return count_; }
@@ -232,6 +254,5 @@ namespace corsika {
 
     // and the library has finished
     state_ = OutputState::LibraryFinished;
-  } // namespace corsika
-
+  }
 } // namespace corsika

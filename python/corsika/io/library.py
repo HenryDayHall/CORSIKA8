@@ -11,6 +11,8 @@
 import logging
 import os
 import os.path as op
+import tarfile
+import tempfile
 from typing import Any, Dict, List, Optional, Union
 
 import yaml
@@ -38,7 +40,22 @@ class Library(object):
             If `path` does not contain a valid CORSIKA8 library.
         """
 
-        # check that this is a valid library
+        self.tempDir = None
+
+        # If the path is a tarball, make a temp dir to open the file into
+        if path.endswith(".tar"):
+            tar = tarfile.open(path, "r")
+            self.tempDir = tempfile.TemporaryDirectory(prefix="c8_temp_dir_")
+            msg = f"Unzipping corsika library {path} to {self.tempDir.name}"
+            logging.getLogger("corsika").info(msg)
+            tar.extractall(self.tempDir.name)
+            tar.close()
+
+            path = op.join(
+                self.tempDir.name, os.path.basename(path).replace(".tar", "")
+            )
+
+        # Check that this is a valid library
         if not self.__valid_library(path):
             raise ValueError(f"'{path}' does not contain a valid CORSIKA8 library.")
 
@@ -48,8 +65,9 @@ class Library(object):
         output_dirs = None
 
         # load the config and summary files
-        self.config = self.load_config(path)
-        self.summary = self.load_summary(path)
+        self.config = self.load_config(self.path)
+        self.summary = self.load_summary(self.path)
+
         if self.summary is None:
             msg = f"Missing summary file in '{path}'."
             msg += " The simulation may not have finished. Will not load library"
@@ -66,7 +84,11 @@ class Library(object):
             logging.getLogger("corsika").debug(msg)
 
         # build the list of outputs
-        self.__outputs = self.__build_outputs(path, output_dirs)
+        self.__outputs = self.__build_outputs(self.path, output_dirs)
+
+    def __del__(self) -> None:
+        if self.tempDir is not None:
+            self.tempDir.cleanup()
 
     @property
     def names(self) -> List[str]:

@@ -68,7 +68,7 @@ TEST_CASE("OutputManager") {
     }
 
     // output manager performs nothing, no action, just interface
-    OutputManager output("./out_test/check", 0, "");
+    OutputManager output("./out_test/check", 0, "", false);
 
     CHECK(boost::filesystem::is_directory("./out_test/check"));
 
@@ -98,6 +98,35 @@ TEST_CASE("OutputManager") {
     test.endLibrary_ = false;
   }
 
+  SECTION("compression") {
+    std::string const outputDir = "./out_compressed";
+
+    // preparation
+    if (boost::filesystem::exists(outputDir)) {
+      boost::filesystem::remove_all(outputDir);
+    }
+
+    // We make a pointer here because the compression happens at deconstruction
+    OutputManager* output = new OutputManager(outputDir, 0, "", true);
+    CHECK(boost::filesystem::is_directory(outputDir));
+    CHECK(
+        !boost::filesystem::exists(outputDir + ".tar")); // compressed file does NOT exist
+
+    // Make an output and open/close shower/lib
+    DummyOutput test;
+    output->add("test", test);
+    output->startOfLibrary();
+    output->startOfShower();
+    output->endOfShower();
+    output->endOfLibrary();
+
+    // Ensure compression happens at deconstruction
+    CHECK(
+        !boost::filesystem::exists(outputDir + ".tar")); // compressed file does NOT exist
+    delete output;
+    CHECK(boost::filesystem::exists(outputDir + ".tar")); // compressed file DOES exist
+  }
+
   SECTION("auto-write") {
 
     // preparation
@@ -106,7 +135,7 @@ TEST_CASE("OutputManager") {
     }
 
     // output manager performs nothing, no action, just interface
-    OutputManager* output = new OutputManager("./out_test/check", 0, "");
+    OutputManager* output = new OutputManager("./out_test/check", 0, "", false);
 
     CHECK(boost::filesystem::is_directory("./out_test/check"));
 
@@ -137,8 +166,8 @@ TEST_CASE("OutputManager") {
     }
 
     // output manager performs nothing, no action, just interface
-    OutputManager output("./out_test/check", 0, "");
-    CHECK_THROWS(new OutputManager("./out_test/check", 0, ""));
+    OutputManager output("./out_test/check", 0, "", false);
+    CHECK_THROWS(new OutputManager("./out_test/check", 0, "", false));
 
     CHECK_THROWS(output.endOfLibrary());
 

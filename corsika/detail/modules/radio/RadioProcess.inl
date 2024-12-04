@@ -72,6 +72,10 @@ namespace corsika {
 
     // setup the streamer
     output_.initStreamer((directory / ("observers.parquet")).string());
+
+    // enable compression with the default level
+    output_.enableCompression();
+
     // LCOV_EXCL_START
     // build the schema
     output_.addField("Time", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,

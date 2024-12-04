@@ -215,7 +215,7 @@ build_test-clang-14:
     - cmake --build . --target run_examples -- -j2
     - export EXE=${CI_PROJECT_DIR}/build/install/bin/c8_air_shower  # Run the example scripts
     - export OUTPUT_DIR=${CI_PROJECT_DIR}/build/build_examples/example_outputs/
-    - export CMD="$EXE --seed 1234 --energy 1e3 -p 2212 --disable-interaction-histograms --filename $OUTPUT_DIR/c8_air_shower_output"
+    - export CMD="$EXE --seed 1234 --energy 1e3 -p 2212 --disable-interaction-histograms --compress --filename $OUTPUT_DIR/c8_air_shower_output"
     - echo "Running...  $CMD"
     - $CMD
   rules:
@@ -235,7 +235,7 @@ build_test-clang-14:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
       - ${CI_PROJECT_DIR}/build/build_examples/example_outputs/radio_em_shower_outputs #python examples need this
-      - ${CI_PROJECT_DIR}/build/build_examples/example_outputs/c8_air_shower_output #python examples need this
+      - ${CI_PROJECT_DIR}/build/build_examples/example_outputs/c8_air_shower_output.tar #python examples need this
       - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
       - ${CI_PROJECT_DIR}/build/CMakeCache.txt #python tests need this
       - ${CI_PROJECT_DIR}/build #/bin #python tests need this
@@ -455,12 +455,13 @@ python-examples:
     paths:
       - ${CI_PROJECT_DIR}/python/examples/example_plots
   script:
-    - export EXAMPLE_SHOWER_DIR=${CI_PROJECT_DIR}/build/build_examples/example_outputs/c8_air_shower_output
+    - export EXAMPLE_SHOWER=${CI_PROJECT_DIR}/build/build_examples/example_outputs/c8_air_shower_output.tar
     - cd ${CI_PROJECT_DIR}/python
     - pip3 install --user -e '.[test,examples]'
     - cd ${CI_PROJECT_DIR}/python/examples
-    - python3 particle_distribution.py --input-dir $EXAMPLE_SHOWER_DIR
-    - python3 shower_profile.py --input-dir $EXAMPLE_SHOWER_DIR
-    - python3 first_interactions.py --input-dir $EXAMPLE_SHOWER_DIR
+    - python3 particle_distribution.py --input-dir $EXAMPLE_SHOWER
+    - python3 shower_profile.py --input-dir $EXAMPLE_SHOWER
+    - python3 first_interactions.py --input-dir $EXAMPLE_SHOWER
     - export EXAMPLE_RADIO_SHOWER_DIR=${CI_PROJECT_DIR}/build/build_examples/example_outputs/radio_em_shower_outputs
     - python3 radio_emission.py --input-dir $EXAMPLE_RADIO_SHOWER_DIR
+

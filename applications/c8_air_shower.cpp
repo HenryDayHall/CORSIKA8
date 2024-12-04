@@ -229,6 +229,9 @@ int main(int argc, char** argv) {
       ->default_val("corsika_library")
       ->check(CLI::NonexistentPath)
       ->group("Library/Output");
+  bool compressOutput = false;
+  app.add_flag("--compress", compressOutput, "Compress the output directory to a tarball")
+      ->group("Library/Output");
   app.add_option("-s,--seed", "The random number seed.")
       ->default_val(0)
       ->check(CLI::NonNegativeNumber)
@@ -401,7 +404,8 @@ int main(int argc, char** argv) {
   std::stringstream args;
   for (int i = 0; i < argc; ++i) { args << argv[i] << " "; }
   // create the output manager that we then register outputs with
-  OutputManager output(app["--filename"]->as<std::string>(), seed, args.str());
+  OutputManager output(app["--filename"]->as<std::string>(), seed, args.str(),
+                       compressOutput);
 
   // register energy losses as output
   EnergyLossWriter dEdX{showerAxis, dX};

@@ -40,7 +40,7 @@ namespace corsika {
      * @param input_args  The command line arguments at runtime (written to summary file)
      */
     OutputManager(std::string const& dir_path, const long& vseed,
-                  std::string const& input_args);
+                  std::string const& input_args, bool useCompression);
 
     /**
      * Handle graceful closure of the outputs upon destruction.
@@ -108,6 +108,7 @@ namespace corsika {
     boost::filesystem::path root_;           ///< The unique output directory.
     OutputState state_{OutputState::NoInit}; ///< The current state of this manager.
     std::string const cmnd_line_args_; ///< The command line arguments used in this run
+    bool useCompression_;              ///< compress the files to tarball
     int count_{0};                     ///< The current ID of this shower.
     long seed_{0};
     std::chrono::time_point<std::chrono::system_clock> const start_time{

@@ -102,6 +102,9 @@ namespace corsika {
       boost::filesystem::path const& directory) {
     output_.initStreamer((directory / ("interactions.parquet")).string());
 
+    // enable compression with the default level
+    output_.enableCompression();
+
     output_.addField("pdg", parquet::Repetition::REQUIRED, parquet::Type::INT32,
                      parquet::ConvertedType::INT_32);
     output_.addField("px", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,

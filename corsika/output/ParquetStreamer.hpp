@@ -47,7 +47,7 @@ namespace corsika {
     /**
      * Enable compression for this streamer.
      */
-    void enableCompression(int const level = 3);
+    void enableCompression(int const level = 9);
 
     /**
      * Finalize the streamer construction.
