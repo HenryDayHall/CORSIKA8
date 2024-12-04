@@ -18,6 +18,7 @@ class Pkg(ConanFile):
 		'arrow*:with_utf8proc': 'False',
 		'arrow*:with_zstd': 'False',
 		'arrow*:with_bz2': 'False',
+		'arrow*:with_lz4': 'True',
 		'arrow*:with_thrift': 'True',
 		'arrow*:with_boost': 'True',
 		'boost*:without_container': 'True',

@@ -20,6 +20,9 @@ namespace corsika {
     // setup the streamer
     output_.initStreamer((directory / "tracks.parquet").string());
 
+    // enable compression with the default level
+    output_.enableCompression();
+
     // build the schema
     output_.addField("pdg", parquet::Repetition::REQUIRED, parquet::Type::INT32,
                      parquet::ConvertedType::INT_32);

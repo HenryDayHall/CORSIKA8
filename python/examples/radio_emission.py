@@ -153,4 +153,3 @@ for ishower in range(n_showers):
     plot_path = os.path.join(args.output_dir, f"ObserverWaveforms_Sh{ishower}.png")
     print("Saving", plot_path)
     fig.savefig(plot_path, bbox_inches="tight")
-

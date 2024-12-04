@@ -37,7 +37,7 @@ TEST_CASE("ParquetStreamer") {
     test.addField("testfloat", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                   parquet::ConvertedType::NONE);
 
-    //    test.enableCompression(1); needs to be enabled via conan
+    test.enableCompression(1);
 
     test.buildStreamer();
     CHECK(test.isInit());

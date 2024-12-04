@@ -31,7 +31,7 @@ namespace corsika {
     output_.initStreamer((directory / "profile.parquet").string());
 
     // enable compression with the default level
-    // output_.enableCompression();
+    output_.enableCompression();
 
     // build the schema
     output_.addField("X", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
