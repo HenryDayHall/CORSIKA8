@@ -13,7 +13,7 @@ compiler optimization. Thus, the most fundamental configuration
 decisions of the user must be performed at compile time. At run time,
 model parameters can still be changed.
 
-CORSIKA 8 is by default released under the GPLv3 license. See [license
+CORSIKA 8 is by default released under the BSD 3-Clause License. See [license
 file](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/LICENSE)
 which is part of every release and the source code.
 
