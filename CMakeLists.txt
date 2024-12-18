@@ -11,11 +11,6 @@
 cmake_minimum_required (VERSION 3.9)
 
 #+++++++++++++++++++++++++++++
-# for pre-defined standard path
-#
-include (GNUInstallDirs)
-
-#+++++++++++++++++++++++++++++
 # project name
 # version is:  "8.major.minor.patch"
 #   major: API changes
@@ -31,6 +26,11 @@ project (
   )
 
 #+++++++++++++++++++++++++++++
+# for pre-defined standard path
+#
+include (GNUInstallDirs)
+
+#+++++++++++++++++++++++++++++
 # prevent in-source builds and give warning message
 #
 if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
@@ -44,11 +44,16 @@ endif ()
 # cmake version-specific settings
 #
 # https://cmake.org/cmake/help/latest/policy/CMP0079.html
-if (${CMAKE_VERSION} VERSION_GREATER "3.13.0")
-  cmake_policy (SET CMP0079 NEW)
-endif ()
 if (POLICY CMP0079)
     cmake_policy (SET CMP0079 NEW)
+endif ()
+# Download timestamp for external modules
+if (POLICY CMP0135)
+    cmake_policy (SET CMP0135 OLD)
+endif ()
+# AUtomatically add extensions to filenames if needed (old behaviour)
+if (POLICY CMP0115)
+    cmake_policy (SET CMP0115 OLD)
 endif ()
 
 #+++++++++++++++++++++++++++++
@@ -384,7 +389,7 @@ configure_file (
 )
 #
 # second also for install-tree
-# 
+#
 set (CORSIKA_CMAKE_DATA_DIR "${CMAKE_INSTALL_FULL_DATADIR}/corsika/data")
 configure_file (
   src/corsika.hpp.in
