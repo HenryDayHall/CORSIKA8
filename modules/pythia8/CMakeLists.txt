@@ -23,8 +23,8 @@ file (MAKE_DIRECTORY ${CORSIKA_Pythia8_MODULE_DIR})
 
 add_library (C8::ext::pythia8 STATIC IMPORTED GLOBAL)
 if ("x_${USE_Pythia8_C8}" STREQUAL "x_SYSTEM")
-  
-  find_package (Pythia8 8310 EXACT REQUIRED) 
+
+  find_package (Pythia8 8310 EXACT REQUIRED)
   message (STATUS "Using system-level Pythia8 version ${Pythia8_VERSION} at ${Pythia8_PREFIX}")
   set (Pythia8_INCLUDE_DIRS ${Pythia8_INCLUDE_DIR})
   set_target_properties (
@@ -40,24 +40,25 @@ if ("x_${USE_Pythia8_C8}" STREQUAL "x_SYSTEM")
   configure_file (Pythia8ConfigurationDirectory.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/Pythia8ConfigurationDirectory_install.hpp  @ONLY)
 
   # install and build are both the same here since it is external
-  set (Pythia8_PREFIX_INSTALL ${Pythia8_PREFIX}) 
-  set (Pythia8_LIBDIR ${Pythia8_LIBRARY}) 
-  set (Pythia8_LIBDIR_INSTALL ${Pythia8_LIBRARY}) 
-  set (Pythia8_INCDIR ${Pythia8_INCLUDE_DIR}) 
-  set (Pythia8_INCDIR_INSTALL ${Pythia8_INCLUDE_DIR}) 
-  
+  set (Pythia8_PREFIX_INSTALL ${Pythia8_PREFIX})
+  set (Pythia8_LIBDIR ${Pythia8_LIBRARY})
+  set (Pythia8_LIBDIR_INSTALL ${Pythia8_LIBRARY})
+  set (Pythia8_INCDIR ${Pythia8_INCLUDE_DIR})
+  set (Pythia8_INCDIR_INSTALL ${Pythia8_INCLUDE_DIR})
+
   message (STATUS "Pythia8 (system) at ${Pythia8_PREFIX}")
 
 else ()
 
+  set (_C8_Pythia8_Download_Dir "https://pythia.org/download/pythia83")
   set (_C8_Pythia8_VERSION "8312")
   message (STATUS "Building modules/pythia8 using pythia${_C8_Pythia8_VERSION}.tar.bz2")
   message (STATUS "This will take a bit.....")
   # this is not a full Pythia8 install, it is a bit simplified, e.g. no pythia8-config, no examples
   # and also, it is fitted into the normal CORSIKA8 install "include/corsika_modules/Pythia8, lib/corsika"
   ExternalProject_Add (pythia8
-    URL ${CMAKE_CURRENT_SOURCE_DIR}/pythia${_C8_Pythia8_VERSION}.tar.bz2
-    URL_MD5 7e85d7ff3f0886f8e834f51aff4bacf0
+    URL ${_C8_Pythia8_Download_Dir}/pythia${_C8_Pythia8_VERSION}.tar.bz2
+    URL_MD5 0acde09714b5383ac807edb10f161dd9
     SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/source"
     INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/install"
     CONFIGURE_COMMAND ./configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/pythia8/install
@@ -79,16 +80,16 @@ else ()
   set (Pythia8_PREFIX ${INSTALL_DIR})
   set (Pythia8_INCLUDE_DIR  ${Pythia8_PREFIX}/include/corsika_modules)
   set (Pythia8_LIBDIR ${Pythia8_PREFIX}/lib/corsika)
-  set (Pythia8_LIBDIR_INSTALL ${Pythia8_PREFIX_INSTALL}/lib/corsika) 
+  set (Pythia8_LIBDIR_INSTALL ${Pythia8_PREFIX_INSTALL}/lib/corsika)
   set (Pythia8_INCDIR ${Pythia8_PREFIX}/include/corsika_modules)
-  set (Pythia8_INCDIR_INSTALL ${Pythia8_PREFIX_INSTALL}/include/corsika_modules) 
+  set (Pythia8_INCDIR_INSTALL ${Pythia8_PREFIX_INSTALL}/include/corsika_modules)
   add_dependencies (C8::ext::pythia8 pythia8)
 
   set (CORSIKA_Pythia8_LOCATION ${Pythia8_PREFIX}) # build location
   configure_file (Pythia8ConfigurationDirectory.hpp.in ${CORSIKA_Pythia8_MODULE_DIR}/Pythia8ConfigurationDirectory.hpp  @ONLY)
   set (CORSIKA_Pythia8_LOCATION ${Pythia8_PREFIX_INSTALL}) # install location
   configure_file (Pythia8ConfigurationDirectory.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/Pythia8ConfigurationDirectory_install.hpp  @ONLY)
-  
+
   install (DIRECTORY ${Pythia8_PREFIX}/ DESTINATION ${Pythia8_PREFIX_INSTALL})
 
   set (Pythia8_INCLUDE_DIRS ${Pythia8_INCLUDE_DIR})
@@ -103,7 +104,7 @@ else ()
     TARGET C8::ext::pythia8
     APPEND PROPERTY
     INTERFACE_INCLUDE_DIRECTORIES $<BUILD_INTERFACE:${Pythia8_INCLUDE_DIRS}>
-                                  $<INSTALL_INTERFACE:include/corsika/modules/pythia8/include> 
+                                  $<INSTALL_INTERFACE:include/corsika/modules/pythia8/include>
     )
 
     message (STATUS "Pythia8 build at: ${Pythia8_PREFIX}, final install to: ${Pythia8_PREFIX_INSTALL}")
