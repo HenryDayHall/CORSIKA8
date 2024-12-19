@@ -1,6 +1,6 @@
 # Guidelines for code development, structure, formating etc.
 
-The CORSIKA Project very much welcomes contributions. Here we outlined
+The CORSIKA Project very much welcomes contributions. Here we outline
 how you can find the right place to contribute, and how to do that.
 Connect to https://gitlab.iap.kit.edu and corsika-devel@lists.kit.edu (self-register at https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in touch with the project.
 The CORSIKA Project decides on the [GUIDELINES](CONTRIBUTING.md) and can decide to
@@ -53,15 +53,14 @@ Please read the [Coding wiki page](https://gitlab.iap.kit.edu/AirShowerPhysics/c
 ## Release versioning scheme
 
 Releases of CORSIKA 8 are thought to be the baseline for larger scale
-validation, and full production.  The releases are numbered as x.y.z,
-starting with x=8, which will not be changed for CORSIKA 8. The y index is
-updated for new releases that normally contain improved or
+validation, and full production.  The releases are numbered as CORSIKA 8 vx.y.z,
+starting with x=1. The x index is updated for new releases that normally contain improved or
 enhanced physics performance, and also interface
-changes to accomodate improvements. The z index can be updated more
+changes to accomodate improvements. The y and z indices can be updated more
 frequently for bug fixes or new features. Changes in z will not
 contain interface changes, thus, production code will remain
-fully compatible within changes of z.  Special releases of CORSIKA will
-also have a release names.
+fully compatible within changes of z.  Special releases of CORSIKA might
+also have a release name.
 
 
 # How to become scientific author of the CORSIKA Project
@@ -73,6 +72,6 @@ required all the time:
   - have read and follow these [GUIDELINES](CONTRIBUTING.md)
   - active in the CORSIKA Project, that means responsive to
     discussions and problems in corsika-devel@list.kit.edu or on https//gitlab.iap.kit.edu, 
-    of relevant *Issues*, or in (phone) meetings
+    of relevant *Issues*, in (phone) meetings or our Mattermost workspace
   - agreement to the [COLLABORATION_AGREEMENT](COLLABORATION_AGREEMENT.md) 
   - the members of the CORSIKA Project must agree
