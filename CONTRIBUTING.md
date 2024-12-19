@@ -3,7 +3,7 @@
 The CORSIKA Project very much welcomes contributions. Here we outline
 how you can find the right place to contribute, and how to do that.
 Connect to https://gitlab.iap.kit.edu and corsika-devel@lists.kit.edu (self-register at https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in touch with the project.
-The CORSIKA Project decides on the [GUIDELINES](CONTRIBUTING.md) and can decide to
+The CORSIKA Project decides on the [contributing guidelines](CONTRIBUTING.md) and can decide to
 change/improve them.
 
 # How to contribute
@@ -69,9 +69,9 @@ The CORSIKA Project decides on who becomes scientific author. The
 following conditions are sufficient, but not all of them are
 required all the time:
   - responsibility for a particular functionality or software/management part 
-  - have read and follow these [GUIDELINES](CONTRIBUTING.md)
+  - have read and follow our [contributing guidelines](CONTRIBUTING.md)
   - active in the CORSIKA Project, that means responsive to
     discussions and problems in corsika-devel@list.kit.edu or on https//gitlab.iap.kit.edu, 
     of relevant *Issues*, in (phone) meetings or our Mattermost workspace
-  - agreement to the [COLLABORATION_AGREEMENT](COLLABORATION_AGREEMENT.md) 
+  - agreement to the [using and collaborating agreement](USING_COLLABORATING.md) 
   - the members of the CORSIKA Project must agree
