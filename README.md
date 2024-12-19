@@ -1,16 +1,16 @@
 # CORSIKA 8 Framework for Particle Cascades in Astroparticle Physics
 
-The purpose of CORSIKA is to simulate any particle cascades in
-astroparticle physics or astrophysical context. A lot of emphasis is
+The purpose of CORSIKA 8 is to simulate any particle cascades in
+astroparticle physics or astrophysical context. A lot of emphasis has been
 put on modularity, flexibility, completeness, validation and
-correctness. To boost computational efficiency different techniques
+correctness. To boost computational efficiency, different techniques
 are provided, like thinning or cascade equations. The aim is that
-CORSIKA remains the most comprehensive framework for simulating
+CORSIKA 8 remains the most comprehensive framework for simulating
 particle cascades with stochastic and continuous processes.
 
 The software makes extensive use of static design patterns and
 compiler optimization. Thus, the most fundamental configuration
-decision of the user must be performed at compile time. At run time
+decisions of the user must be performed at compile time. At run time,
 model parameters can still be changed.
 
 CORSIKA 8 is by default released under the GPLv3 license. See [license
@@ -19,31 +19,36 @@ which is part of every release and the source code.
 
 If you use, or want to refer to, CORSIKA 8 please cite ["Towards a Next
 Generation of CORSIKA: A Framework for the Simulation of Particle
-Cascades in Astroparticle Physics", Comput.Softw.Big Sci. 3 (2019)
-2](https://doi.org/10.1007/s41781-018-0013-0). We kindly ask (and
-require) any relevant improvement or addition to be offered or
+Cascades in Astroparticle Physics", Comput. Softw. Big Sci. 3 (2019)
+2](https://doi.org/10.1007/s41781-018-0013-0) as well as
+["Simulating radio emission from particle cascades with CORSIKA 8", Astropart. Phys. 166 (2025)
+103072](https://doi.org/10.1016/j.astropartphys.2024.103072).
+
+We kindly ask (and require) any relevant improvement or addition to be offered or
 contributed to the main CORSIKA 8 repository for the benefit of the
 whole community.
 
-When you plan to contribute to CORSIKA 8 check the guidelines outlined here:
+CORSIKA 8 makes use of various third-party code, in particular interaction
+models. Please check the [using and collaborating
+agreement](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/USING_COLLABORATING.md)
+for further information on this topic.
+
+If you plan to contribute to CORSIKA 8, please check the guidelines outlined here:
 [coding
 guidelines](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/CONTRIBUTING.md). Code
-that fails the review by the CORSIKA author group must be improved
+that fails the review by the CORSIKA 8 author group must be improved
 before it can be merged in the official code base. After your code has
 been accepted and merged, you become a contributor of the CORSIKA 8
 project (code author).
 
-IMPORTANT: Before you contribute, you need to read and agree to the
-[collaboration
-agreement](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/COLLABORATION_AGREEMENT.md). The agreement can be discussed, and eventually improved.
-
-We also want to point you to the [MCnet
-guidelines](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/MCNET_GUIDELINES), which are very useful also for us.
+IMPORTANT: Before you contribute, you need to read and agree to the conditions set out in the
+[using and collaborating
+agreement](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/USING_COLLABORATING.md).
+The agreement can be discussed, and eventually improved if necessary.
 
 
 ## Get in contact
   * Join our chat threads using Mattermost via this [invite link](https://mattermost.hzdr.de/signup_user_complete/?id=xtdd8jyt6trbiezt71gaz3z4ge&md=link&sbr=su). Click the `GitLab` button, then `Sign in with Helmholtz ID`. You will be able to make an account by either finding your institution, or using your e.g. ORCID, GitHub, or Google account.
-
   * Connect to https://gitlab.iap.kit.edu, register yourself and join the "Air Shower Physics" group. Write to us on Mattermost (in the User Questions channel), or directly contact one of the [steering comittee members](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/wikis/Steering-Committee) in case there are problems with that.
   * Connect to corsika-devel@lists.kit.edu (self-register at
     https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in
