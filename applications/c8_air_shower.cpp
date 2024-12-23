@@ -139,12 +139,12 @@ int main(int argc, char** argv) {
   CLI::App app{"Simulate standard (downgoing) showers with CORSIKA 8."};
 
   CORSIKA_LOG_INFO(
-      "Please cite the following papers when using CORSIKA8:\n"
+      "Please cite the following papers when using CORSIKA 8:\n"
       " - \"Towards a Next Generation of CORSIKA: A Framework for the Simulation of "
       "Particle Cascades in Astroparticle Physics\", Comput. Softw. Big Sci. 3 (2019) "
-      "2.\n"
+      "2, https://doi.org/10.1007/s41781-018-0013-0\n"
       " - \"Simulating radio emission from particle cascades with CORSIKA 8\", "
-      "Astropart. Phys. 166 (2025) 103072.");
+      "Astropart. Phys. 166 (2025) 103072, https://doi.org/10.1016/j.astropartphys.2024.103072");
 
   //////// Primary options ////////
 
