@@ -112,8 +112,7 @@ TEST_CASE("OutputManager") {
     // We make a pointer here because the compression happens at deconstruction
     OutputManager* output = new OutputManager(outputDir, 0, "", true);
     CHECK(boost::filesystem::is_directory(outputDir));
-    CHECK(
-        !boost::filesystem::exists(outputArchive)); // compressed file does NOT exist
+    CHECK(!boost::filesystem::exists(outputArchive)); // compressed file does NOT exist
 
     // Make an output and open/close shower/lib
     DummyOutput test;
@@ -124,8 +123,7 @@ TEST_CASE("OutputManager") {
     output->endOfLibrary();
 
     // Ensure compression happens at deconstruction
-    CHECK(
-        !boost::filesystem::exists(outputArchive)); // compressed file does NOT exist
+    CHECK(!boost::filesystem::exists(outputArchive)); // compressed file does NOT exist
     delete output;
     CHECK(boost::filesystem::exists(outputArchive)); // compressed file DOES exist
   }
