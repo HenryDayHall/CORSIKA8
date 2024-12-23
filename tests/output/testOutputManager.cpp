@@ -99,17 +99,21 @@ TEST_CASE("OutputManager") {
 
   SECTION("compression") {
     std::string const outputDir = "./out_compressed";
+    std::string const outputArchive = outputDir + ".tar";
 
     // preparation
     if (boost::filesystem::exists(outputDir)) {
       boost::filesystem::remove_all(outputDir);
+    }
+    if (boost::filesystem::exists(outputArchive)) {
+      boost::filesystem::remove_all(outputArchive);
     }
 
     // We make a pointer here because the compression happens at deconstruction
     OutputManager* output = new OutputManager(outputDir, 0, "", true);
     CHECK(boost::filesystem::is_directory(outputDir));
     CHECK(
-        !boost::filesystem::exists(outputDir + ".tar")); // compressed file does NOT exist
+        !boost::filesystem::exists(outputArchive)); // compressed file does NOT exist
 
     // Make an output and open/close shower/lib
     DummyOutput test;
@@ -121,9 +125,9 @@ TEST_CASE("OutputManager") {
 
     // Ensure compression happens at deconstruction
     CHECK(
-        !boost::filesystem::exists(outputDir + ".tar")); // compressed file does NOT exist
+        !boost::filesystem::exists(outputArchive)); // compressed file does NOT exist
     delete output;
-    CHECK(boost::filesystem::exists(outputDir + ".tar")); // compressed file DOES exist
+    CHECK(boost::filesystem::exists(outputArchive)); // compressed file DOES exist
   }
 
   SECTION("auto-write") {
