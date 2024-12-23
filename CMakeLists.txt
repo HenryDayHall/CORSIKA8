@@ -142,7 +142,7 @@ if( COVERAGE_BUILD AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
   message(INFO "\n|==========>  COVERAGE TARGET ACTIVATED.\n")
 
   set (c8_lcov_download_url "https://github.com/linux-test-project/lcov/releases/download")
-  set (c8_lcov_version "1.14")
+  set (c8_lcov_version "1.16")
   set (c8_lcov_install_dir "${CMAKE_BINARY_DIR}/lcov")
 
   include(ExternalProject)
