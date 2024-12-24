@@ -127,9 +127,8 @@ You can then include such a process in your programm (e.g. in vertical_EAS) with
  - initialize it with `simple_process::SimpleProcess simple; `
  - add it to the physiscs sequence i.e. via `auto extended_sequence = make_sequence(old_sequence, simple);`
 
-Please follow the style and guidelines for programming CORSIKA 8 code
-even for private project. Your code will be GPLv3, too, and thus
-should be made public to the community. Any discussion or eventual
-bug-fixing is much more complicated if there are deviations from the
-guideline.
+Please follow the style and guidelines for programming CORSIKA 8 code even for
+private projects. Your code will be covered by the BSD 3-Clause License, too,
+and thus should be made public to the community. Any discussion or eventual
+bug-fixing is much more complicated if there are deviations from the guidelines.
 

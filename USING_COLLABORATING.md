@@ -11,8 +11,7 @@ possible performance and physics output.
 
 ## The software license of the CORSIKA project
 
-The license adopted for the CORSIKA project is the explicit copyleft
-license GPLv3, as copied in full in the file
+CORSIKA 8 is by default released under the BSD 3-Clause License, as copied in full in the file
 [LICENSE](LICENSE). Each source file of the CORSIKA project contains a
 short statement of the copyright and this license. Each binary or
 source code release of CORSIKA contains the file LICENSE.

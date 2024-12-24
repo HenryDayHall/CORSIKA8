@@ -3,9 +3,8 @@
 #
 # See file AUTHORS for a list of contributors.
 #
-# This software is distributed under the terms of the GNU General Public
-# Licence version 3 (GPL Version 3). See file LICENSE for a full version of
-# the license.
+# This software is distributed under the terms of the 3-clause BSD license.
+# See file LICENSE for a full version of the license.
 #
 
 cmake_minimum_required (VERSION 3.9)
@@ -142,6 +141,19 @@ if( COVERAGE_BUILD AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
 
   message(INFO "\n|==========>  COVERAGE TARGET ACTIVATED.\n")
 
+  set (c8_lcov_download_url "https://github.com/linux-test-project/lcov/releases/download")
+  set (c8_lcov_version "1.16")
+  set (c8_lcov_install_dir "${CMAKE_BINARY_DIR}/lcov")
+
+  include(ExternalProject)
+  ExternalProject_Add(lcov
+    URL ${c8_lcov_download_url}/v${c8_lcov_version}/lcov-${c8_lcov_version}.tar.gz
+    DOWNLOAD_NO_EXTRACT 0
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND make -C <SOURCE_DIR> install PREFIX=${c8_lcov_install_dir}
+  )
+
   find_package (Perl REQUIRED)
 
   # compile coverage under -O0 to avoid any optimization, function elimation etc.
@@ -150,14 +162,14 @@ if( COVERAGE_BUILD AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
   # search for local lcov
   find_program (c8_lcov_bin lcov)
   if (NOT c8_lcov_bin)
-    set (c8_lcov_bin "${PROJECT_SOURCE_DIR}/externals/lcov/bin/lcov")
+    set (c8_lcov_bin "${c8_lcov_install_dir}/bin/lcov")
     message ("use C8 version of lcov ${c8_lcov_bin}")
   endif ()
 
   # search for local genhtml
   find_program (c8_genhtml_bin genhtml)
   if (NOT c8_genhtml_bin)
-    set (c8_genhtml_bin "${PROJECT_SOURCE_DIR}/externals/lcov/bin/genhtml")
+    set (c8_genhtml_bin "${c8_lcov_install_dir}/bin/genhtml")
     message ("use C8 version of genhtml ${c8_genhtml_bin}")
   endif ()
 
