@@ -7,6 +7,7 @@
 #include <catch2/catch_all.hpp>
 
 #include <corsika/modules/radio/RadioProcess.hpp>
+#include <corsika/modules/radio/LimitedRadioProcess.hpp>
 #include <corsika/modules/radio/ZHS.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/observers/TimeDomainObserver.hpp>
@@ -65,6 +66,23 @@ using MyExtraEnv =
 template <typename TInterface2>
 using MyExtraEnv2 =
     GladstoneDaleRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface2>>>;
+
+// Dummy process for testing LimitedRadioProcess
+// If it is run, returns ProcessReturn::Interacted
+class TestRadioProcess {
+public:
+  TestRadioProcess() {}
+
+  template <typename Particle>
+  ProcessReturn doContinuous(Step<Particle> const&, bool const) {
+    return ProcessReturn::Interacted;
+  }
+
+  template <typename Particle, typename Track>
+  LengthType getMaxStepLength(Particle const&, Track const&) const {
+    return 123_m;
+  }
+};
 
 TEST_CASE("Radio", "[processes]") {
 
@@ -681,6 +699,73 @@ TEST_CASE("Radio", "[processes]") {
     CHECK(config["observers"]["observer_name2"]["location"][1].as<double>() == 80);
     CHECK(config["observers"]["observer_name2"]["location"][2].as<double>() == 6);
   } // END: SECTION("Process Library")
+
+  SECTION("LimitedRadioProcess") {
+    /// Make a limited selection where any particle further than 1_m from the origin will
+    /// not be executed.
+
+    TestRadioProcess wrappedRadioProcess;
+
+    Environment<IEmpty> env;
+    CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
+    Point const origin(rootCS, {0_m, 0_m, 0_m});
+    Point const outside(rootCS, {1000_m, 0_m, 0_m});
+
+    // Fcn to check if the wrapped process should be run
+    auto const RadioLimitedSelection = [origin](Point const& position) -> bool {
+      return (position - origin).getNorm() > 1_m;
+    };
+
+    CHECK_FALSE(RadioLimitedSelection(origin)); // sanity check on the slection
+    CHECK(RadioLimitedSelection(outside));      // sanity check on the slection, part2
+
+    LimitedRadioProcess limitedProcess(std::move(wrappedRadioProcess),
+                                       RadioLimitedSelection);
+
+    // Check that the feed-through to the underlying process works
+    double dummy = 0; // Doesn't matter what this is
+    CHECK(limitedProcess.getMaxStepLength(dummy, dummy) == 123_m);
+    // Does feed-through to underlying process
+    CHECK(limitedProcess.getMaxStepLength(dummy, dummy) ==
+          wrappedRadioProcess.getMaxStepLength(dummy, dummy));
+
+    // Set up test for doContinuouse
+    Line lineInside(origin, VelocityVector(rootCS, {1_m / 1_s, 1_m / 1_s, 1_m / 1_s}));
+    Line lineOutside(outside, VelocityVector(rootCS, {1_m / 1_s, 1_m / 1_s, 1_m / 1_s}));
+
+    StraightTrajectory const trajectoryInside(lineInside, 0_ns);
+    StraightTrajectory const trajectoryOutside(lineOutside, 0_ns);
+
+    setup::Stack<Environment<IEmpty>> stack;
+
+    /////// Electron case //////
+
+    auto electronInside = stack.addParticle(std::make_tuple(
+        Code::Electron, 10_GeV, DirectionVector(rootCS, {1, 0, 0}), origin, 0_s));
+    auto electronOutside = stack.addParticle(std::make_tuple(
+        Code::Electron, 10_GeV, DirectionVector(rootCS, {1, 0, 0}), outside, 0_s));
+
+    Step const stepElectronInside(electronInside, trajectoryInside);
+    Step const stepElectronOutside(electronOutside, trajectoryOutside);
+
+    CHECK(limitedProcess.doContinuous(stepElectronInside, true) == ProcessReturn::Ok);
+    CHECK(limitedProcess.doContinuous(stepElectronOutside, true) ==
+          ProcessReturn::Interacted);
+
+    /////// Proton case //////
+
+    auto protonInside = stack.addParticle(std::make_tuple(
+        Code::Proton, 10_GeV, DirectionVector(rootCS, {1, 0, 0}), origin, 0_s));
+    auto protonOutside = stack.addParticle(std::make_tuple(
+        Code::Proton, 10_GeV, DirectionVector(rootCS, {1, 0, 0}), outside, 0_s));
+
+    Step const stepProtonInside(protonInside, trajectoryInside);
+    Step const stepProtonOutisde(protonOutside, trajectoryOutside);
+
+    CHECK(limitedProcess.doContinuous(stepProtonInside, true) == ProcessReturn::Ok);
+    CHECK(limitedProcess.doContinuous(stepProtonOutisde, true) == ProcessReturn::Ok);
+
+  } // END: SECTION("LimitedRadioProcess")
 
 } // END: TEST_CASE("Radio", "[processes]")
 
