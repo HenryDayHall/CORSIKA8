@@ -32,7 +32,6 @@ set_target_properties (
   PROPERTIES
   POSITION_INDEPENDENT_CODE 1
   )
-target_compile_options (EPOS_static BEFORE PRIVATE -O0)
 
 install (
   FILES
