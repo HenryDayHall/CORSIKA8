@@ -57,7 +57,7 @@ TEST_CASE("OnShellCheck", "[processes]") {
     // add secondaries, all with energies above the threshold
     // only cut is by species
     int count = -1;
-    for (auto proType : particleList) {
+    for (auto& proType : particleList) {
       count++;
       const auto pz = sqrt((E - get_mass(proType) * mass_shifts[count]) *
                            (E + get_mass(proType) * mass_shifts[count]));
