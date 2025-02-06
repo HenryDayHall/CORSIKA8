@@ -58,7 +58,7 @@ namespace corsika::sibyll {
 
   inline void HadronInteractionModel::setParticleListStable(std::set<Code> vList) {
     // de-activate specific decays in SIBYLL
-    for (auto p : vList) {
+    for (auto& p : vList) {
       CORSIKA_LOGGER_DEBUG(logger_, "setting {} as \"stable\". ", p);
       auto const sib_code = sibyll::convertToSibyll(p);
       if (sib_code != corsika::sibyll::SibyllCode::Unknown) {

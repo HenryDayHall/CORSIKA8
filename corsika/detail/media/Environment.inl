@@ -59,7 +59,7 @@ namespace corsika {
         if (vtn.hasModelProperties()) {
           auto const& comp =
               vtn.getModelProperties().getNuclearComposition().getComponents();
-          for (auto const c : comp) allElementsInUniverse.insert(c);
+          for (auto const& c : comp) allElementsInUniverse.insert(c);
         }
       };
       universe.walk(collectElements);

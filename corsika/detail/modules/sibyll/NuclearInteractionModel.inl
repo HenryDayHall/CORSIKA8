@@ -92,7 +92,7 @@ namespace corsika::sibyll {
 
     // loop over target components, at most 4!!
     int k = -1;
-    for (Code const ptarg : allElementsInUniverse) {
+    for (Code const& ptarg : allElementsInUniverse) {
       ++k;
       CORSIKA_LOGGER_DEBUG(logger_, "init target component: {} A={}", ptarg,
                            get_nucleus_A(ptarg));

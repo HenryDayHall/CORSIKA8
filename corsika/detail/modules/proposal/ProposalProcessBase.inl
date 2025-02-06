@@ -33,7 +33,7 @@ namespace corsika::proposal {
     HEPEnergyType lowest_table_value = 0_GeV;
 
     // find tables for EnergyCuts closest (but still smaller than) production_threshold
-    for (auto table_energy : energycut_table_values) {
+    for (auto& table_energy : energycut_table_values) {
       if (table_energy <= production_threshold && table_energy > lowest_table_value) {
         lowest_table_value = table_energy;
       }
@@ -76,7 +76,7 @@ namespace corsika::proposal {
     PROPOSAL::InterpolationSettings::TABLES_PATH = corsika_data("PROPOSAL").c_str();
 
     //! Initialize EnergyCutSettings
-    for (auto particle_code : tracked) {
+    for (auto& particle_code : tracked) {
       if (particle_code == Code::Photon) {
         // no EnergyCut for photon, only-stochastic propagation
         continue;
@@ -89,8 +89,8 @@ namespace corsika::proposal {
     }
 
     //! Initialize PROPOSAL tables for all media and all particles
-    for (auto medium : media) {
-      for (auto particle_code : tracked) {
+    for (auto& medium : media) {
+      for (auto& particle_code : tracked) {
         buildTables(medium.second, particle_code,
                     proposal_energycutsettings[particle_code]);
       }
