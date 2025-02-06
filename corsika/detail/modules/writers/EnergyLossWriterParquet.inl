@@ -52,7 +52,7 @@ namespace corsika {
     // and write the data into the column
     *(output_.getWriter()) << showerId
                            << static_cast<float>(grammage / 1_g * square(1_cm));
-    for (HEPEnergyType const dedx : data) {
+    for (HEPEnergyType const& dedx : data) {
       *(output_.getWriter()) << static_cast<float>(dedx / 1_GeV);
     }
     *(output_.getWriter()) << parquet::EndRow;
