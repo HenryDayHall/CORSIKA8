@@ -1,10 +1,10 @@
 """
- This file allows for reading/working with C8 libraries.
+This file allows for reading/working with C8 libraries.
 
- (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+(c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
 
- This software is distributed under the terms of the 3-clause BSD license.
- See file LICENSE for a full version of the license.
+This software is distributed under the terms of the 3-clause BSD license.
+See file LICENSE for a full version of the license.
 """
 
 import logging
