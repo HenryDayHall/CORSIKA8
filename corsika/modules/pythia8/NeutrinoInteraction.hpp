@@ -33,10 +33,13 @@ namespace corsika::pythia8 {
     /**
      * Constructs the interface for PYTHIA8 neutrino interactions
      *
+     * @param listOfStableParticles - Switch on Pythia internal decay for all hadrons
+     * except those in the list
      * @param handleNC - Switch on/off neutral current interactions
      * @param handleCC - Switch on/off charged current interactions
      */
-    NeutrinoInteraction(bool const& handleNC = true, bool const& handleCC = true);
+    NeutrinoInteraction(std::set<Code> const& listOfStableParticles,
+                        bool const& handleNC = true, bool const& handleCC = true);
     ~NeutrinoInteraction();
     /**
      * Returns inelastic (production) cross section.
@@ -86,6 +89,7 @@ namespace corsika::pythia8 {
         get_logger("corsika_pythia8_NeutrinoInteraction");
     CrossSectionType const cross_section_ = 4_nb;
     int count_ = 0;
+    std::set<Code> const stable_particles_ = {};
     bool const handle_nc_ = true;
     bool const handle_cc_ = true;
     HEPEnergyTypeSqr minQ2_ = 25_GeV * 1_GeV;

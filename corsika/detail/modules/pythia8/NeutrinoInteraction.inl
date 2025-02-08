@@ -12,9 +12,11 @@
 
 namespace corsika::pythia8 {
 
-  inline NeutrinoInteraction::NeutrinoInteraction(bool const& handleNC,
+  inline NeutrinoInteraction::NeutrinoInteraction(std::set<Code> const& list,
+                                                  bool const& handleNC,
                                                   bool const& handleCC)
-      : handle_nc_(handleNC)
+      : stable_particles_(list)
+      , handle_nc_(handleNC)
       , handle_cc_(handleCC)
       , pythiaMain_{CORSIKA_Pythia8_XML_DIR, false} {
 
@@ -101,8 +103,15 @@ namespace corsika::pythia8 {
     pythiaMain_.readString("PDF:lepton = off");
     pythiaMain_.readString("TimeShower:QEDshowerByL = off");
 
-    // // no Decays to be done by pythiaMain_.
-    pythiaMain_.readString("HadronLevel:Decay = off");
+    // switch on decays for all hadrons except the ones defined as tracked by C8
+    if (!stable_particles_.empty()) {
+      pythiaMain_.readString("HadronLevel:Decay = on");
+      for (auto pCode : stable_particles_)
+        pythiaMain_.particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
+    } else {
+      // all hadrons stable
+      pythiaMain_.readString("HadronLevel:Decay = off");
+    }
 
     pythiaMain_.readString("Stat:showProcessLevel = off");
     pythiaMain_.readString("Stat:showPartonLevel = off");
