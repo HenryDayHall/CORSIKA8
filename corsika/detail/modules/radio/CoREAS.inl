@@ -195,10 +195,6 @@ namespace corsika {
               }
               // LCOV_EXCL_STOP
 
-              // change the values of the receive unit vectors of start and end
-              ReceiveVectorStart_ = path.receive_;
-              ReceiveVectorEnd_ = path.receive_;
-
               // CoREAS calculation -> get ElectricFieldVector for "midPoint"
               ElectricFieldVector EVmid_ = (path.emit_.cross(path.emit_.cross(beta_))) /
                                            midDoppler_ / path.R_distance_ * constants_ *
@@ -303,8 +299,10 @@ namespace corsika {
 
               // TODO: Be very careful with this. Maybe the EVs should be fed after the
               // for loop of paths3
-              observer.receive(startPointReceiveTime_, EV1_);
-              observer.receive(endPointReceiveTime_, EV2_);
+              observer.receive(startPointReceiveTime_, paths1[i].emit_,
+                               paths1[i].receive_, EV1_);
+              observer.receive(endPointReceiveTime_, paths2[i].emit_, paths2[i].receive_,
+                               EV2_);
             } // End of looping over paths3
 
           } // end of ZHS-like approximation
@@ -371,8 +369,10 @@ namespace corsika {
                 } // End of if for startbin == endbin
               } // End of if deltaT < gridresolution
             } // End of if that checks small doppler factors
-            observer.receive(startPointReceiveTime_, EV1_);
-            observer.receive(endPointReceiveTime_, EV2_);
+            observer.receive(startPointReceiveTime_, paths1[i].emit_, paths1[i].receive_,
+                             EV1_);
+            observer.receive(endPointReceiveTime_, paths2[i].emit_, paths2[i].receive_,
+                             EV2_);
           } // End of else that does not perform ZHS-like approximation
 
         } // End of loop over both paths to get signal info
