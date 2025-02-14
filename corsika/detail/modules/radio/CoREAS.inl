@@ -303,8 +303,8 @@ namespace corsika {
 
               // TODO: Be very careful with this. Maybe the EVs should be fed after the
               // for loop of paths3
-              observer.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
-              observer.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
+              observer.receive(startPointReceiveTime_, EV1_);
+              observer.receive(endPointReceiveTime_, EV2_);
             } // End of looping over paths3
 
           } // end of ZHS-like approximation
@@ -371,8 +371,8 @@ namespace corsika {
                 } // End of if for startbin == endbin
               }   // End of if deltaT < gridresolution
             }     // End of if that checks small doppler factors
-            observer.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
-            observer.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
+            observer.receive(startPointReceiveTime_, EV1_);
+            observer.receive(endPointReceiveTime_, EV2_);
           } // End of else that does not perform ZHS-like approximation
 
         } // End of loop over both paths to get signal info

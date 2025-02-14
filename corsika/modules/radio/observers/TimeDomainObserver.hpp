@@ -60,17 +60,14 @@ namespace corsika {
      *  an *instantaneous* electric field modeled as a delta function (or timebin).
      *
      * @param time             The (global) time at which this signal is received.
-     * @param receive_vector   The incident unit vector. (not used at the moment)
      * @param field            The incident electric field vector.
      *
      */
     // TODO: rethink this method a bit. If the endpoint is at the end of the observer
     // resolution then you get the startpoint signal but you lose the endpoint signal!
-    void receive(TimeType const time, Vector<dimensionless_d> const& receive_vector,
-                 ElectricFieldVector const& efield);
+    void receive(TimeType const time, ElectricFieldVector const& efield);
 
-    void receive(TimeType const time, Vector<dimensionless_d> const& receive_vector,
-                 VectorPotential const& vectorP);
+    void receive(TimeType const time, VectorPotential const& vectorP);
 
     /**
      * Return the time-units of each waveform for X polarization

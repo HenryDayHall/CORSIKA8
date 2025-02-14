@@ -841,29 +841,26 @@ TEST_CASE("observers") {
     TimeDomainObserver obs1("observer_name", point1, rootCS, t1, t2, t3, t1);
     TimeDomainObserver obs2("observer_name", point2, rootCS, t4, t2, t3, t4);
 
-    Vector<dimensionless_d> receiveVec1(rootCS, {0, 0, 1});
-    Vector<dimensionless_d> receiveVec2(rootCS, {0, 1, 0});
-
     Vector<ElectricFieldType::dimension_type> eField1(
         rootCS, {10_V / 1_m, 10_V / 1_m, 10_V / 1_m});
     Vector<ElectricFieldType::dimension_type> eField2(
         rootCS, {20_V / 1_m, 20_V / 1_m, 20_V / 1_m});
 
     // inject efield into obs1
-    obs1.receive(15_s, receiveVec1, eField1);
+    obs1.receive(15_s, eField1);
     REQUIRE(obs1.getWaveformX()[5] - 10 == 0);
     REQUIRE(obs1.getWaveformX()[5] == obs1.getWaveformY()[5]);
     REQUIRE(obs1.getWaveformX()[5] == obs1.getWaveformZ()[5]);
 
     // inject efield but with different receive vector into obs2
-    obs2.receive(16_s, receiveVec2, eField1);
+    obs2.receive(16_s, eField1);
     REQUIRE(obs1.getWaveformX()[5] ==
-            obs2.getWaveformX()[5]); // Currently receive vector does nothing
+            obs2.getWaveformX()[5]);
     obs2.reset();
     REQUIRE(obs2.getWaveformX()[5] == 0); // reset was successful
 
     // inject the other eField into obs2
-    obs2.receive(16_s, receiveVec2, eField2);
+    obs2.receive(16_s, eField2);
     REQUIRE(obs2.getWaveformX()[5] - 20 == 0);
     REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformY()[5]);
     REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformZ()[5]);
@@ -875,10 +872,10 @@ TEST_CASE("observers") {
 
     // reset obs1 and then put values in out of range
     obs1.reset();
-    obs1.receive(-1000_s, receiveVec1, eField1);
+    obs1.receive(-1000_s, eField1);
     for (auto const& val : obs1.getWaveformX()) { CHECK(val * 0 == val); }
     obs1.reset();
-    obs1.receive(t1 + t2 + 1_s, receiveVec1, eField1);
+    obs1.receive(t1 + t2 + 1_s, eField1);
     for (auto const& val : obs1.getWaveformX()) { CHECK(val * 0 == val); }
   } // END: SECTION("TimeDomainObserver Receive EField")
 
@@ -903,29 +900,26 @@ TEST_CASE("observers") {
     TimeDomainObserver obs1("observer_name", point1, rootCS, t1, t2, t3, t1);
     TimeDomainObserver obs2("observer_name", point2, rootCS, t4, t2, t3, t4);
 
-    Vector<dimensionless_d> receiveVec1(rootCS, {0, 0, 1});
-    Vector<dimensionless_d> receiveVec2(rootCS, {0, 1, 0});
-
     Vector<VectorPotentialType::dimension_type> vectorPotential1(
         rootCS, {10_V * 1_s / 1_m, 10_V * 1_s / 1_m, 10_V * 1_s / 1_m});
     Vector<VectorPotentialType::dimension_type> vectorPotential2(
         rootCS, {20_V * 1_s / 1_m, 20_V * 1_s / 1_m, 20_V * 1_s / 1_m});
 
     // inject efield into obs1
-    obs1.receive(15_s, receiveVec1, vectorPotential1);
+    obs1.receive(15_s, vectorPotential1);
     REQUIRE(obs1.getWaveformX()[5] - 10 == 0);
     REQUIRE(obs1.getWaveformX()[5] == obs1.getWaveformY()[5]);
     REQUIRE(obs1.getWaveformX()[5] == obs1.getWaveformZ()[5]);
 
     // inject efield but with different receive vector into obs2
-    obs2.receive(16_s, receiveVec2, vectorPotential1);
+    obs2.receive(16_s, vectorPotential1);
     REQUIRE(obs1.getWaveformX()[5] ==
-            obs2.getWaveformX()[5]); // Currently receive vector does nothing
+            obs2.getWaveformX()[5]);
     obs2.reset();
     REQUIRE(obs2.getWaveformX()[5] == 0); // reset was successful
 
     // inject the other eField into obs2
-    obs2.receive(16_s, receiveVec2, vectorPotential2);
+    obs2.receive(16_s, vectorPotential2);
     REQUIRE(obs2.getWaveformX()[5] - 20 == 0);
     REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformY()[5]);
     REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformZ()[5]);
@@ -937,10 +931,10 @@ TEST_CASE("observers") {
 
     // reset obs1 and then put values in out of range
     obs1.reset();
-    obs1.receive(-1000_s, receiveVec1, vectorPotential1);
+    obs1.receive(-1000_s, vectorPotential1);
     for (auto const& val : obs1.getWaveformX()) { CHECK(val * 0 == val); }
     obs1.reset();
-    obs1.receive(t1 + t2 + 1_s, receiveVec1, vectorPotential1);
+    obs1.receive(t1 + t2 + 1_s, vectorPotential1);
     for (auto const& val : obs1.getWaveformX()) { CHECK(val * 0 == val); }
   } // END: SECTION("TimeDomainObserver Receive Vector Potential")
 
