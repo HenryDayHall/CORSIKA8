@@ -298,8 +298,8 @@ namespace corsika {
                       }
                     }
                   } // End of else statement
-                }   // End of if for startbin == endbin
-              }     // End of if deltaT < gridresolution
+                } // End of if for startbin == endbin
+              } // End of if deltaT < gridresolution
 
               // TODO: Be very careful with this. Maybe the EVs should be fed after the
               // for loop of paths3
@@ -369,14 +369,14 @@ namespace corsika {
                   }
 
                 } // End of if for startbin == endbin
-              }   // End of if deltaT < gridresolution
-            }     // End of if that checks small doppler factors
+              } // End of if deltaT < gridresolution
+            } // End of if that checks small doppler factors
             observer.receive(startPointReceiveTime_, EV1_);
             observer.receive(endPointReceiveTime_, EV2_);
           } // End of else that does not perform ZHS-like approximation
 
         } // End of loop over both paths to get signal info
-      }   // End of looping over observer
+      } // End of looping over observer
 
       return ProcessReturn::Ok;
     }

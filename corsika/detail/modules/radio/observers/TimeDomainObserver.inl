@@ -43,9 +43,8 @@ namespace corsika {
     }
   }
 
-  inline void TimeDomainObserver::receive(
-      const TimeType time,
-      const ElectricFieldVector& efield) {
+  inline void TimeDomainObserver::receive(const TimeType time,
+                                          const ElectricFieldVector& efield) {
 
     if (time < start_time_ || time > (start_time_ + duration_)) {
       return;
@@ -65,9 +64,8 @@ namespace corsika {
     }
   }
 
-  inline void TimeDomainObserver::receive(
-      const TimeType time,
-      const VectorPotential& vectorP) {
+  inline void TimeDomainObserver::receive(const TimeType time,
+                                          const VectorPotential& vectorP) {
 
     if (time < start_time_ || time > (start_time_ + duration_)) {
       return;

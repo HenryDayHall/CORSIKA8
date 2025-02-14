@@ -854,8 +854,7 @@ TEST_CASE("observers") {
 
     // inject efield but with different receive vector into obs2
     obs2.receive(16_s, eField1);
-    REQUIRE(obs1.getWaveformX()[5] ==
-            obs2.getWaveformX()[5]);
+    REQUIRE(obs1.getWaveformX()[5] == obs2.getWaveformX()[5]);
     obs2.reset();
     REQUIRE(obs2.getWaveformX()[5] == 0); // reset was successful
 
@@ -913,8 +912,7 @@ TEST_CASE("observers") {
 
     // inject efield but with different receive vector into obs2
     obs2.receive(16_s, vectorPotential1);
-    REQUIRE(obs1.getWaveformX()[5] ==
-            obs2.getWaveformX()[5]);
+    REQUIRE(obs1.getWaveformX()[5] == obs2.getWaveformX()[5]);
     obs2.reset();
     REQUIRE(obs2.getWaveformX()[5] == 0); // reset was successful
 
