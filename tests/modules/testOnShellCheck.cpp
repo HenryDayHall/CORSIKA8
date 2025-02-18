@@ -57,7 +57,7 @@ TEST_CASE("OnShellCheck", "[processes]") {
     // add secondaries, all with energies above the threshold
     // only cut is by species
     int count = -1;
-    for (auto& proType : particleList) {
+    for (auto const& proType : particleList) {
       count++;
       const auto pz = sqrt((E - get_mass(proType) * mass_shifts[count]) *
                            (E + get_mass(proType) * mass_shifts[count]));
@@ -67,7 +67,7 @@ TEST_CASE("OnShellCheck", "[processes]") {
     }
     check.doSecondaries(view);
     int i = -1;
-    for (auto& p : view) {
+    for (auto const& p : view) {
       i++;
       auto const Plab = FourVector(p.getEnergy(), p.getMomentum());
       auto const m_kinetic = Plab.getNorm();

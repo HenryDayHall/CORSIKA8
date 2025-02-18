@@ -286,7 +286,7 @@ namespace random_iterator_r123 {
   static inline std::array<Ftype, CollType::static_size> u01all(CollType in) {
     std::array<Ftype, CollType::static_size> ret;
     size_t i = 0;
-    for (auto& e : in) { ret[i++] = u01<Ftype>(e); }
+    for (auto const& e : in) { ret[i++] = u01<Ftype>(e); }
     return ret;
   }
 
@@ -300,7 +300,7 @@ namespace random_iterator_r123 {
   static inline std::array<Ftype, CollType::static_size> uneg11all(CollType in) {
     std::array<Ftype, CollType::static_size> ret;
     size_t i = 0;
-    for (auto& e : in) { ret[i++] = uneg11<Ftype>(e); }
+    for (auto const& e : in) { ret[i++] = uneg11<Ftype>(e); }
     return ret;
   }
 
@@ -314,7 +314,7 @@ namespace random_iterator_r123 {
   static inline std::array<Ftype, CollType::static_size> u01fixedptall(CollType in) {
     std::array<Ftype, CollType::static_size> ret;
     size_t i = 0;
-    for (auto& e : in) { ret[i++] = u01fixedpt<Ftype>(e); }
+    for (auto const& e : in) { ret[i++] = u01fixedpt<Ftype>(e); }
     return ret;
   }
 #endif // __cplusplus >= 201103L

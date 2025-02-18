@@ -87,7 +87,7 @@ TEST_CASE("InteractionWriter", "process") {
                                           Code::Electron, Code::MuPlus,  Code::NuE,
                                           Code::Neutron,  Code::NuMu};
 
-  for (auto& proType : particleList)
+  for (auto const& proType : particleList)
     projectile.addSecondary(
         std::make_tuple(proType, 1_GeV, DirectionVector(rootCS, {1, 0, 0})));
 

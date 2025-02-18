@@ -41,7 +41,7 @@ int main() {
       "PDG-mass (GeV)   | "
       "SIBYLL-mass (GeV)|");
   logging::info("{:->{}}", ' ', width);
-  for (auto& p : get_all_particles()) {
+  for (auto const& p : get_all_particles()) {
     if (!is_nucleus(p)) {
       corsika::sibyll::SibyllCode sib_id = corsika::sibyll::convertToSibyll(p);
       auto const sib_mass = (sib_id != corsika::sibyll::SibyllCode::Unknown

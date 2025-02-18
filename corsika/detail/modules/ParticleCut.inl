@@ -26,7 +26,7 @@ namespace corsika {
       , cut_muons_(eMuCut)
       , cut_tau_(eTauCut)
       , doCutInv_(inv) {
-    for (auto& p : get_all_particles()) {
+    for (auto const& p : get_all_particles()) {
       if (is_hadron(p)) // nuclei are also hadrons
         set_kinetic_energy_propagation_threshold(p, eHadCut);
       else if (is_muon(p))
