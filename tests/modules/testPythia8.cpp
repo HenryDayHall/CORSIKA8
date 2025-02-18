@@ -172,7 +172,7 @@ TEST_CASE("Pythia8Interface", "modules") {
         Code::NuE, 7_TeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
     auto& view = *secViewPtr;
 
-    corsika::pythia8::NeutrinoInteraction collision(true, false);
+    corsika::pythia8::NeutrinoInteraction collision({}, true, false);
 
     REQUIRE(collision.isValid(
         Code::NuE, Code::Proton,

@@ -468,7 +468,8 @@ int main(int argc, char** argv) {
     NC = true;
     CC = true;
   }
-  corsika::pythia8::NeutrinoInteraction neutrinoPrimaryPythia(NC, CC);
+  corsika::pythia8::NeutrinoInteraction neutrinoPrimaryPythia(
+      corsika::setup::C7trackedParticles, NC, CC);
 
   // hadronic photon interactions in resonance region
   corsika::sophia::InteractionModel sophia;
