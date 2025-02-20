@@ -868,7 +868,7 @@ TEST_CASE("observers") {
     obs2.receive(16_s, emitVec2, receiveVec2, eField2);
     REQUIRE(obs2.getWaveformX()[5] - 20 == 0);
     REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformY()[5]);
-    REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformZ()[5]);
+    REQUIRE(obs2.getWaveformX()[5] == -1 * obs2.getWaveformZ()[5]);
 
     // make sure the next one is empty before filling it
     REQUIRE(obs2.getWaveformX()[6] == 0);
@@ -923,21 +923,20 @@ TEST_CASE("observers") {
 
     // inject efield but with different receive vector into obs2
     obs2.receive(16_s, emitVec2, receiveVec2, vectorPotential1);
-    REQUIRE(obs1.getWaveformX()[5] ==
-            obs2.getWaveformX()[5]); // Currently receive vector does nothing
+    REQUIRE(obs1.getWaveformX()[5] == -1 * obs2.getWaveformX()[5]);
     obs2.reset();
     REQUIRE(obs2.getWaveformX()[5] == 0); // reset was successful
 
     // inject the other eField into obs2
     obs2.receive(16_s, emitVec2, receiveVec2, vectorPotential2);
-    REQUIRE(obs2.getWaveformX()[5] - 20 == 0);
+    REQUIRE(obs2.getWaveformX()[5] + 20 == 0);
     REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformY()[5]);
     REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformZ()[5]);
 
     // make sure the next one is empty before filling it
     REQUIRE(obs2.getWaveformX()[6] == 0);
     obs2.receive(17_s, emitVec2, receiveVec2, vectorPotential2);
-    REQUIRE(obs2.getWaveformX()[6] - 20 == 0);
+    REQUIRE(obs2.getWaveformX()[6] + 20 == 0);
 
     // reset obs1 and then put values in out of range
     obs1.reset();

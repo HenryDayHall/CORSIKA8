@@ -55,11 +55,28 @@ namespace corsika {
       // NOTE: static cast is implicitly flooring
       auto timebin{static_cast<std::size_t>(
           std::floor((time - start_time_) * sample_rate_ + 0.5l))};
+      CORSIKA_LOG_TRACE("Receiving particle - time {} (bin {}), emit {}, receive {}, efield {}",
+                        time, timebin, emit_vector, receive_vector, efield);
 
       auto const dotProd = emit_vector.dot(-receive_vector);
-      if (dotProd != 0.0) {
-        auto const sinTh = sqrt(1 - dotProd * dotProd);
+      // If propagation not in a straight line
+      // catch case where numerical rounding gives errors
+      if (dotProd < (1.0 - 1e-8)) {
+
+        if (dotProd == -1) { // handle by hand (cross product will fail)
+          // store the x,y,z electric field components.
+          CORSIKA_LOG_TRACE("Rotating efield by 180 deg");
+          auto const& components{efield.getComponents(coordinateSystem_)};
+          waveformEX_.at(timebin) += -1 * (components.getX() * (1_m / 1_V));
+          waveformEY_.at(timebin) += -1 * (components.getY() * (1_m / 1_V));
+          waveformEZ_.at(timebin) += -1 * (components.getZ() * (1_m / 1_V));
+          return;
+        }
+
         auto const rotation_axis = emit_vector.cross(-receive_vector).normalized();
+        CORSIKA_LOG_TRACE("Rotating efield by {} deg about axis {}",
+                          asin(dotProd) * 180 / M_PI, rotation_axis);
+        auto const sinTh = sqrt(1 - dotProd * dotProd);
         auto const rotated =
             efield * dotProd +
             (rotation_axis.cross(efield) * sinTh +
@@ -96,11 +113,27 @@ namespace corsika {
       // NOTE: static cast is implicitly flooring
       auto timebin{static_cast<std::size_t>(
           std::floor((time - start_time_) * sample_rate_ + 0.5l))};
+      CORSIKA_LOG_TRACE("Receiving particle - time {} (bin {}), emit {}, receive {}, vector {}",
+                        time, timebin, emit_vector, receive_vector, vectorP);
 
       auto const dotProd = emit_vector.dot(-receive_vector);
-      if (dotProd != 0.0) {
-        auto const sinTh = sqrt(1 - dotProd * dotProd);
+      // If propagation not in a straight line
+      // catch case where numerical rounding gives errors
+      if (dotProd < (1.0 - 1e-8)) {
+
+        if (dotProd == -1) { // handle by hand (cross product will fail)
+          // store the x,y,z electric field components.
+          auto const& components{vectorP.getComponents(coordinateSystem_)};
+          waveformEX_.at(timebin) += -1 * (components.getX() * (1_m / (1_V * 1_s)));
+          waveformEY_.at(timebin) += -1 * (components.getY() * (1_m / (1_V * 1_s)));
+          waveformEZ_.at(timebin) += -1 * (components.getZ() * (1_m / (1_V * 1_s)));
+          return;
+        }
+
         auto const rotation_axis = emit_vector.cross(-receive_vector).normalized();
+        CORSIKA_LOG_TRACE("Rotating efield by {} deg about axis {}",
+                          asin(dotProd) * 180 / M_PI, rotation_axis);
+        auto const sinTh = sqrt(1 - dotProd * dotProd);
         auto const rotated =
             vectorP * dotProd +
             (rotation_axis.cross(vectorP) * sinTh +
