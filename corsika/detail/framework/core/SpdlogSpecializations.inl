@@ -32,7 +32,7 @@ namespace std {
 namespace corsika {
 
   // formatters for particle codes declared on ParticleProperties.hpp
-  auto inline format_as(Code code) { return fmt::underlying(code); }
+  auto inline format_as(Code code) { return get_name(code); }
   auto inline format_as(PDGCode code) { return fmt::underlying(code); }
 
   template <typename Type>
