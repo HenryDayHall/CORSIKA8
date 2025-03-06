@@ -206,7 +206,9 @@ int main(int argc, char** argv) {
   app.add_option("--taucut", "Min. kin. energy of tau leptons in tracking (GeV)")
       ->default_val(0.3)
       ->check(CLI::Range(0.000001, 1.e13))
-  app.add_option("--max-deflection-angle", "maximal deflection angle in tracking in radians")
+      ->group("Config");
+  app.add_option("--max-deflection-angle",
+                 "maximal deflection angle in tracking in radians")
       ->default_val(0.2)
       ->check(CLI::Range(1.e-8, 1.))
       ->group("Config");
