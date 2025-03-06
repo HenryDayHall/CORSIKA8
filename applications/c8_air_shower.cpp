@@ -207,6 +207,11 @@ int main(int argc, char** argv) {
       ->default_val(0.3)
       ->check(CLI::Range(0.000001, 1.e13))
       ->group("Config");
+  app.add_option("--max-deflection-angle",
+                 "maximal deflection angle in tracking in radians")
+      ->default_val(0.2)
+      ->check(CLI::Range(1.e-8, 1.))
+      ->group("Config");
   bool track_neutrinos = false;
   app.add_flag("--track-neutrinos", track_neutrinos, "switch on tracking of neutrinos")
       ->group("Config");
@@ -661,7 +666,7 @@ int main(int argc, char** argv) {
 
     // create the cascade object using the default stack and tracking
     // implementation
-    TrackingType tracking;
+    TrackingType tracking(app["--max-deflection-angle"]->as<double>());
     StackType stack;
     Cascade EAS(env, tracking, sequence, output, stack);
 
