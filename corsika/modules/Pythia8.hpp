@@ -9,3 +9,18 @@
 
 #include <corsika/modules/pythia8/Decay.hpp>
 #include <corsika/modules/pythia8/NeutrinoInteraction.hpp>
+#include <corsika/modules/pythia8/InteractionModel.hpp>
+
+namespace corsika::pythia8 {
+  /**
+   * pythia8::Interaction is the process for ProcessSequence.
+   *
+   * The pythia8::InteractionModel is wrapped as an InteractionProcess here in order
+   * to provide all the functions for ProcessSequence.
+   */
+  class Interaction : public InteractionModel, public InteractionProcess<Interaction> {
+  public:
+    Interaction(std::set<Code> const& stableList = {})
+        : InteractionModel{stableList} {};
+  };
+} // namespace corsika::pythia8

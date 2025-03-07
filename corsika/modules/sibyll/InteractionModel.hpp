@@ -29,6 +29,9 @@ namespace corsika::sibyll {
     CrossSectionType getCrossSection(Code, Code, FourMomentum const&,
                                      FourMomentum const&) const;
 
+    std::tuple<CrossSectionType, CrossSectionType> getCrossSectionInelEla(
+        Code, Code, FourMomentum const&, FourMomentum const&) const;
+
     template <typename TSecondaries>
     void doInteraction(TSecondaries&, Code, Code, FourMomentum const&,
                        FourMomentum const&);

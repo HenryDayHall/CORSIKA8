@@ -198,4 +198,6 @@ TEST_CASE("Pythia8Interface", "modules") {
                                       {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) ==
             CrossSectionType::zero());
   }
+
+#include <tests/modules/testPythia8Interaction.inl>
 }

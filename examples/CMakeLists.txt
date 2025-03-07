@@ -81,6 +81,14 @@ CORSIKA_REGISTER_EXAMPLE (static_sequence)
 ## physics_examples
 ###################
 
+add_executable (cross_section physics_examples/cross_section.cpp)
+target_link_libraries (cross_section PRIVATE CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (cross_section RUN_OPTIONS sibyll)
+
+add_executable (had_interactions physics_examples/had_interactions.cpp)
+target_link_libraries (had_interactions PRIVATE CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (had_interactions RUN_OPTIONS sibyll)
+
 add_executable (stopping_power physics_examples/stopping_power.cpp)
 target_link_libraries (stopping_power PRIVATE CORSIKA8::CORSIKA8)
 CORSIKA_REGISTER_EXAMPLE (stopping_power)
