@@ -55,6 +55,23 @@ namespace corsika::qgsjetII {
                                      FourMomentum const& targetP4) const;
 
     /**
+     * Returns inelastic AND elastic cross sections.
+     *
+     * These cross sections must correspond to the process described in doInteraction
+     * AND elastic scattering (sigma_tot = sigma_inel + sigma_el).
+     *
+     * @param projectile is the Code of the projectile
+     * @param target is the Code of the target
+     * @param projectileP4: four-momentum of projectile
+     * @param targetP4: four-momentum of target
+     *
+     * @return a tuple of: inelastic cross section, elastic cross section
+     */
+    std::tuple<CrossSectionType, CrossSectionType> getCrossSectionInelEla(
+        Code const projectile, Code const target, FourMomentum const& projectileP4,
+        FourMomentum const& targetP4) const;
+
+    /**
      * In this function QGSJETII is called to produce one event.
      *
      * The event is copied (and boosted) into the shower lab frame.

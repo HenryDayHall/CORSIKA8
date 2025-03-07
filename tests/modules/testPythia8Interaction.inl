@@ -12,14 +12,23 @@
   when this is merged the interaction tests can be activated again by including this file
   in testPytha8.cpp eg #include "tests/modules/testPythia8Interaction.inl"
 */
-SECTION("pythia interaction") {
+#include "corsika/framework/core/EnergyMomentumOperations.hpp"
+#include "corsika/framework/core/Logging.hpp"
+#include "corsika/framework/core/PhysicalUnits.hpp"
 
-  // this will be a p-p collision at sqrts=3.5TeV -> no problem for pythia
-  auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-      Code::Proton, 7_TeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
-  auto& view = *secViewPtr;
+logging::set_level(logging::level::debug);
 
-  corsika::pythia8::Interaction collision;
+// this will be a p-p collision at sqrts=3.5TeV -> no problem for pythia
+auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+    Code::Proton, 7_TeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
+auto& view = *secViewPtr;
+
+std::set<Code> const tracked_hadrons = {Code::Proton, Code::Neutron, Code::Pi0,
+                                        Code::PiPlus};
+
+corsika::pythia8::InteractionModel collision(tracked_hadrons);
+
+SECTION("pythia interaction configurations") {
 
   REQUIRE(collision.canInteract(Code::Proton));
   REQUIRE(collision.canInteract(Code::AntiProton));
@@ -28,33 +37,42 @@ SECTION("pythia interaction") {
   REQUIRE(collision.canInteract(Code::PiMinus));
   REQUIRE(collision.canInteract(Code::PiPlus));
   REQUIRE_FALSE(collision.canInteract(Code::Electron));
+  REQUIRE_FALSE(collision.canInteract(Code::MuPlus));
+}
 
-  // pi+p
-  REQUIRE(collision.getCrossSection(
-              Code::PiPlus, Code::Proton,
-              {sqrt(static_pow<2>(PiPlus::mass) + static_pow<2>(100_GeV)),
-               {rootCS, {0_eV, 0_eV, 100_GeV}}},
-              {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) > 0_mb);
+corsika::units::si::HEPMomentumType P0 = 10_TeV;
 
-  // pi+H
-  REQUIRE(collision.getCrossSection(
-              Code::PiPlus, Code::Hydrogen,
-              {sqrt(static_pow<2>(PiPlus::mass) + static_pow<2>(100_GeV)),
-               {rootCS, {0_eV, 0_eV, 100_GeV}}},
-              {Hydrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) > 0_mb);
+SECTION("pythia interaction") {
+  // test some combinations of valid target and projectile particles
+  // so far only hadron-hadron and hadron-Nucleus is allowed
+  Code const target = GENERATE(Code::Nitrogen, Code::Oxygen, Code::Argon);
+  Code const projectile = GENERATE(Code::Proton, Code::PiPlus, Code::KPlus);
 
-  // K+{p,n,N,O,Ar}
-  Code const target =
-      GENERATE(Code::Proton, Code::Neutron, Code::Nitrogen, Code::Oxygen, Code::Argon);
-  REQUIRE(collision.getCrossSection(
-              Code::KPlus, target,
-              {sqrt(static_pow<2>(KPlus::mass) + static_pow<2>(100_GeV)),
-               {rootCS, {0_eV, 0_eV, 100_GeV}}},
-              {get_mass(target), {rootCS, {0_eV, 0_eV, 0_eV}}}) > 0_mb);
+  CORSIKA_LOG_INFO("testing: {} - {}", projectile, target);
+  REQUIRE(
+      collision.getCrossSection(
+          projectile, target,
+          {calculate_total_energy(P0, get_mass(projectile)), {rootCS, {0_eV, 0_eV, P0}}},
+          {get_mass(target), {rootCS, {0_eV, 0_eV, 0_eV}}}) > 0_mb);
 
-  collision.doInteraction(view, Code::Proton, target,
-                          {sqrt(static_pow<2>(Proton::mass) + static_pow<2>(100_GeV)),
-                           {rootCS, {0_eV, 0_eV, 100_GeV}}},
+  collision.doInteraction(view, projectile, target,
+                          {corsika::calculate_total_energy(P0, get_mass(projectile)),
+                           {rootCS, {0_eV, 0_eV, P0}}},
+                          {get_mass(target), {rootCS, {0_eV, 0_eV, 0_eV}}});
+  REQUIRE(view.getSize() >= 2);
+}
+
+SECTION("pythia interaction: previous angantyr fail, now fixed") {
+  // when initializing pythia with angantyr, kaon-proton or pion-proton interactions do
+  // not seem to work
+  Code const target = Code::Proton;
+  Code const projectile = GENERATE(Code::KPlus, Code::PiPlus);
+
+  CORSIKA_LOG_INFO("testing: {}-{}", projectile, target);
+
+  collision.doInteraction(view, projectile, target,
+                          {corsika::calculate_total_energy(P0, get_mass(projectile)),
+                           {rootCS, {0_eV, 0_eV, P0}}},
                           {get_mass(target), {rootCS, {0_eV, 0_eV, 0_eV}}});
   REQUIRE(view.getSize() >= 2);
 }
@@ -123,26 +141,28 @@ SECTION("pythia wrong projectile") {
       Code::Iron, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);
   { [[maybe_unused]] auto const& dummy_StackPtr = stackPtr; }
 
+  HEPMomentumType const P0 = 100_GeV;
+
   corsika::pythia8::Interaction collision;
   REQUIRE(collision.getCrossSectionInelEla(
               Code::Electron, Code::Electron,
-              {sqrt(static_pow<2>(Electron::mass) + static_pow<2>(100_GeV)),
-               {rootCS, {0_eV, 0_eV, 100_GeV}}},
+              {sqrt(static_pow<2>(Electron::mass) + static_pow<2>(P0)),
+               {rootCS, {0_eV, 0_eV, P0}}},
               {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) == std::tuple{0_mb, 0_mb});
 
-  REQUIRE_THROWS(
-      collision.doInteraction(*secViewPtr, Code::Helium, Code::Nitrogen,
-                              {sqrt(static_pow<2>(Helium::mass) + static_pow<2>(100_GeV)),
-                               {rootCS, {0_eV, 0_eV, 100_GeV}}},
-                              {Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
+  REQUIRE_THROWS(collision.doInteraction(
+      *secViewPtr, Code::Helium, Code::Nitrogen,
+      {sqrt(static_pow<2>(Helium::mass) + static_pow<2>(P0)), {rootCS, {0_eV, 0_eV, P0}}},
+      {Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}));
 
   // gamma+p not possible
   REQUIRE(collision.getCrossSection(
-              Code::Photon, Code::Proton, {100_GeV, {rootCS, {0_eV, 0_eV, 100_GeV}}},
+              Code::H0, Code::Proton,
+              {calculate_total_energy(P0, H0::mass), {rootCS, {0_eV, 0_eV, P0}}},
               {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) == CrossSectionType::zero());
 
   REQUIRE(collision.getCrossSectionInelEla(
-              Code::Photon, Code::Proton, {100_GeV, {rootCS, {0_eV, 0_eV, 100_GeV}}},
+              Code::Photon, Code::Proton, {P0, {rootCS, {0_eV, 0_eV, P0}}},
               {Proton::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) ==
           std::make_tuple(CrossSectionType::zero(), CrossSectionType::zero()));
 }

@@ -266,7 +266,7 @@ int main(int argc, char** argv) {
       ->group("Misc.");
   app.add_option("-M,--hadronModel", "High-energy hadronic interaction model")
       ->default_val("SIBYLL-2.3d")
-      ->check(CLI::IsMember({"SIBYLL-2.3d", "QGSJet-II.04", "EPOS-LHC"}))
+      ->check(CLI::IsMember({"SIBYLL-2.3d", "QGSJet-II.04", "EPOS-LHC", "Pythia8"}))
       ->group("Misc.");
   app.add_option("-T,--hadronModelTransitionEnergy",
                  "Transition between high-/low-energy hadronic interaction "
@@ -440,6 +440,10 @@ int main(int argc, char** argv) {
   } else if (modelStr == "EPOS-LHC") {
     heModel = DynamicInteractionProcess<StackType>{
         std::make_shared<corsika::epos::Interaction>(corsika::setup::C7trackedParticles)};
+  } else if (modelStr == "Pythia8") {
+    heModel = DynamicInteractionProcess<StackType>{
+        std::make_shared<corsika::pythia8::Interaction>(
+            corsika::setup::C7trackedParticles)};
   } else {
     CORSIKA_LOG_CRITICAL("invalid choice \"{}\"; also check argument parser", modelStr);
     return EXIT_FAILURE;
