@@ -7,15 +7,12 @@ add_custom_command (
   OUTPUT  ${output_dir}/GeneratedParticleProperties.inc
           ${output_dir}/GeneratedParticleClasses.inc
           ${output_dir}/particle_db.pkl
-  COMMAND ${input_dir}/code_generator.py ${input_dir}/ParticleData.xml
-                                         ${input_dir}/NuclearData.xml
-                                         ${input_dir}/ParticleClassNames.xml
-  DEPENDS ${input_dir}/code_generator.py
-          ${input_dir}/ParticleData.xml
-          ${input_dir}/NuclearData.xml
-          ${input_dir}/ParticleClassNames.xml
+  COMMAND ${input_dir}/make_input_file.py
+  DEPENDS ${input_dir}/make_input_file.py
+          ${input_dir}/PDG_Ids.txt
+          ${input_dir}/NuclearData.txt
   WORKING_DIRECTORY ${output_dir}
-  COMMENT "Read PYTHIA8 particle data and produce C++ source code GeneratedParticle[...].inc"
+  COMMENT "Get pdg data and produce C++ source code GeneratedParticle[...].inc"
   VERBATIM
   )
 

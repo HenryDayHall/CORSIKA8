@@ -77,7 +77,10 @@ namespace corsika::sophia {
     int nucleonSophiaCode = convertToSophiaRaw(targetId); // either proton or neutron
     // initialize resonance spectrum
     initial_(nucleonSophiaCode);
-    double Enucleon = targetP4.getTimeLikeComponent() / 1_GeV;
+    // Sophia does sqrt(1 - mass_sophia / mass_c8), so we need to make sure that E0 >=
+    // m_sophia
+    double Enucleon = std::max(corsika::sophia::getSophiaMass(targetId) / 1_GeV,
+                               targetP4.getTimeLikeComponent() / 1_GeV);
     double Ephoton = projectileP4.getTimeLikeComponent() / 1_GeV;
     double theta = 0.0; // set nucleon at rest in collision
     int Imode = -1;     // overwritten inside SOPHIA

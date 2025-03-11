@@ -102,7 +102,7 @@ TEST_CASE("InteractionCounter", "process") {
   }
 
   SECTION("doInteraction Lambda") {
-    auto constexpr pid = Code::Lambda0;
+    auto constexpr pid = Code::Lambda;
 
     countedProcess.doInteraction(
         output, pid, Code::Oxygen,

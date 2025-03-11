@@ -47,11 +47,11 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   }
 
   SECTION("Names") {
-    CHECK(Electron::name == "e-");
-    CHECK(get_name(Code::Electron) == "e-");
-    CHECK(PiMinus::name == "pi-");
+    CHECK(Electron::name == "Electron");
+    CHECK(get_name(Code::Electron) == "Electron");
+    CHECK(PiMinus::name == "PiMinus");
     CHECK(Iron::name == "nucleus");
-    CHECK(Photon::name == "photon");
+    CHECK(Photon::name == "Photon");
   }
 
   SECTION("PDG") {
@@ -73,7 +73,12 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   SECTION("Conversion PDG -> internal") {
     CHECK(convert_from_PDG(PDGCode::KStarMinus) == Code::KStarMinus);
     CHECK(convert_from_PDG(PDGCode::MuPlus) == Code::MuPlus);
-    CHECK(convert_from_PDG(PDGCode::SigmaStarCMinusBar) == Code::SigmaStarCMinusBar);
+
+    CHECK(static_cast<int>(Code::SigmaC_2455_MinusBar) == 116);
+    CHECK(static_cast<int>(get_PDG(Code::SigmaC_2455_MinusBar)) == -4212);
+    CHECK(static_cast<int>(convert_from_PDG(PDGCode(-4212))) == 116);
+
+    CHECK(convert_from_PDG(PDGCode::SigmaC_2455_MinusBar) == Code::SigmaC_2455_MinusBar);
   }
 
   SECTION("Lifetimes") {
@@ -83,9 +88,9 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     CHECK(get_lifetime(Code::RhoPlus) / si::second ==
           (Approx(4.414566727909413e-24).epsilon(1e-3)));
     CHECK(get_lifetime(Code::SigmaMinusBar) / si::second ==
-          (Approx(8.018880848563575e-11).epsilon(1e-5)));
+          (Approx(8.018175e-11).epsilon(1e-5)));
     CHECK(get_lifetime(Code::MuPlus) / si::second ==
-          (Approx(2.1970332555864364e-06).epsilon(1e-5)));
+          (Approx(2.196981e-06).epsilon(1e-5)));
   }
 
   SECTION("Energy thresholds") {

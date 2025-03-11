@@ -17,6 +17,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive # none: we get the submodules in before_script,
                                  # normal: get submodules automatically
   CTEST_OUTPUT_ON_FAILURE: 1
+  PIP_PARTICLE_VERSION: "0.25.1"
 
 
 #
@@ -103,6 +104,8 @@ check-python-quality:
     - corsika
   script:
     - pip3 install conan --upgrade --user
+    - pip3 install particle==${PIP_PARTICLE_VERSION}
+    - pip3 install numpy
     - mkdir -p ${CI_PROJECT_DIR}/build
     - cd ${CI_PROJECT_DIR}/build
     - ${CI_PROJECT_DIR}/conan-install.sh -s .. -d
@@ -143,6 +146,8 @@ config-clang-14:
     - corsika
   script:
     - pip3 install conan --upgrade --user
+    - pip3 install particle==${PIP_PARTICLE_VERSION}
+    - pip3 install numpy
     - mkdir -p ${CI_PROJECT_DIR}/build
     - cd ${CI_PROJECT_DIR}/build
     - ${CI_PROJECT_DIR}/conan-install.sh -s .. -d
@@ -198,6 +203,8 @@ build_test-clang-14:
     - corsika
   script:
     - pip3 install conan --upgrade --user
+    - pip3 install particle==${PIP_PARTICLE_VERSION}
+    - pip3 install numpy
     - mkdir -p ${CI_PROJECT_DIR}/build
     - cd ${CI_PROJECT_DIR}/build
     - ${CI_PROJECT_DIR}/conan-install.sh -s .. -d
@@ -273,6 +280,8 @@ build_test_example-clang-14:
     - corsika
   script:
     - pip3 install conan --upgrade --user
+    - pip3 install particle==${PIP_PARTICLE_VERSION}
+    - pip3 install numpy
     - mkdir -p ${CI_PROJECT_DIR}/build
     - cd ${CI_PROJECT_DIR}/build
     - ${CI_PROJECT_DIR}/conan-install.sh -s .. -r
@@ -345,6 +354,8 @@ coverage:
     - corsika
   script:
     - pip3 install conan --upgrade --user
+    - pip3 install particle==${PIP_PARTICLE_VERSION}
+    - pip3 install numpy
     - mkdir -p ${CI_PROJECT_DIR}/build
     - cd ${CI_PROJECT_DIR}/build
     - ${CI_PROJECT_DIR}/conan-install.sh -s .. -d
@@ -389,6 +400,8 @@ sanity:
     - corsika
   script:
     - pip3 install conan --upgrade --user
+    - pip3 install particle==${PIP_PARTICLE_VERSION}
+    - pip3 install numpy
     - mkdir -p ${CI_PROJECT_DIR}/build
     - cd ${CI_PROJECT_DIR}/build
     - ${CI_PROJECT_DIR}/conan-install.sh -s .. -d

@@ -40,14 +40,14 @@ TEST_CASE("FLUKACodeConversion") {
           corsika::fluka::FLUKACode::PiPlus);
   REQUIRE(corsika::fluka::convertToFlukaRaw(Code::PiPlus) == 13);
   REQUIRE(corsika::fluka::convertToFlukaRaw(Code::Proton) == 1);
-  REQUIRE(corsika::fluka::convertToFlukaRaw(Code::Lambda0) == 17);
+  REQUIRE(corsika::fluka::convertToFlukaRaw(Code::Lambda) == 17);
 
   REQUIRE_THROWS(corsika::fluka::convertToFluka(Code::WPlus));
 
   SECTION("canInteractInFluka") {
     CHECK(corsika::fluka::canInteract(Code::Proton));
     CHECK_FALSE(corsika::fluka::canInteract(Code::Rho0));
-    CHECK_FALSE(corsika::fluka::canInteract(Code::N1520_0));
+    CHECK_FALSE(corsika::fluka::canInteract(Code::F0_500));
   }
 }
 
@@ -92,9 +92,9 @@ TEST_CASE("FLUKA") {
   SECTION("getCrossSection") {
     auto const projectileCode =
         GENERATE(Code::PiMinus, Code::PiMinus, Code::PiMinus, Code::KMinus, Code::K0Long,
-                 Code::K0Short, Code::Lambda0, Code::SigmaPlus, Code::Proton,
+                 Code::K0Short, Code::Lambda, Code::SigmaPlus, Code::Proton,
                  Code::AntiProton, Code::KMinus, Code::K0Long, Code::K0Short,
-                 Code::Lambda0, Code::SigmaPlus, Code::Proton, Code::AntiProton);
+                 Code::Lambda, Code::SigmaPlus, Code::Proton, Code::AntiProton);
 
     auto const targetCode = GENERATE(Code::Oxygen, Code::Hydrogen);
 
@@ -129,7 +129,7 @@ TEST_CASE("FLUKA") {
     auto const& cs = *csPtr;
 
     auto const projectileCode = GENERATE(Code::PiPlus, Code::PiMinus, Code::KPlus,
-                                         Code::K0Long, Code::Lambda0, Code::SigmaPlus);
+                                         Code::K0Long, Code::Lambda, Code::SigmaPlus);
     auto const p = GENERATE(1_GeV, 20_GeV, 100_GeV, 1_TeV);
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Hydrogen, 1_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, *csPtr);

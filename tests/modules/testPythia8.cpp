@@ -142,7 +142,7 @@ TEST_CASE("Pythia8Interface", "modules") {
     REQUIRE_FALSE(decay.isDecayHandled(Code::KPlus));
 
     const std::vector<Code> particleTestList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
-                                                Code::Lambda0Bar, Code::D0Bar};
+                                                Code::LambdaBar, Code::D0Bar};
 
     // setup decays
     decay.setHandleDecay(particleTestList);
