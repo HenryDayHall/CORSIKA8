@@ -17,8 +17,8 @@ namespace corsika::setup {
   std::set<Code> C7trackedParticles{
       Code::Proton,        Code::Neutron,   Code::AntiProton,   Code::AntiNeutron,
       Code::PiPlus,        Code::PiMinus,   Code::Pi0,          Code::KPlus,
-      Code::KMinus,        Code::K0Long,    Code::K0Short,      Code::Lambda0,
-      Code::Lambda0Bar,    Code::SigmaPlus, Code::SigmaPlusBar, Code::SigmaMinus,
+      Code::KMinus,        Code::K0Long,    Code::K0Short,      Code::Lambda,
+      Code::LambdaBar,     Code::SigmaPlus, Code::SigmaPlusBar, Code::SigmaMinus,
       Code::SigmaMinusBar, Code::Xi0,       Code::Xi0Bar,       Code::OmegaMinus,
       Code::OmegaPlusBar,  Code::MuPlus,    Code::MuMinus};
 } // namespace corsika::setup

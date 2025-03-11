@@ -72,7 +72,7 @@ TEST_CASE("QgsjetII", "[processes]") {
     // CHECK(corsika::qgsjetII::canInteract(Helium::getCode()));
 
     CHECK_FALSE(corsika::qgsjetII::canInteract(Code::EtaC));
-    CHECK_FALSE(corsika::qgsjetII::canInteract(Code::SigmaC0));
+    CHECK_FALSE(corsika::qgsjetII::canInteract(Code::SigmaC_2455_0));
   }
 
   SECTION("cross-section type") {
@@ -233,7 +233,7 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
     // pi0 is internally converted into pi+/pi-
     // rho0 is internally converted into pi-/pi+
     // (anti-)Lambda is internally converted into (anti-)neutron
-    auto pid = GENERATE(Code::Pi0, Code::Rho0, Code::Lambda0, Code::Lambda0Bar);
+    auto pid = GENERATE(Code::Pi0, Code::Rho0, Code::Lambda, Code::LambdaBar);
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Proton, projMomentum, (DummyEnvironment::BaseNodeType* const)nodePtr,
         *csPtr);

@@ -32,7 +32,7 @@ setup(
     keywords=["cosmic ray", "physics", "air shower", "simulation"],
     packages=find_packages(),
     python_requires=">=3.6, <4",
-    install_requires=["numpy", "pyyaml", "pyarrow", "pandas"],
+    install_requires=["numpy", "pyyaml", "pyarrow", "pandas", "particle"],
     extras_require={
         "test": [
             "pytest",
@@ -48,7 +48,6 @@ setup(
         "examples": [
             "argparse",
             "matplotlib",
-            "particle",
         ],
     },
     scripts=[],

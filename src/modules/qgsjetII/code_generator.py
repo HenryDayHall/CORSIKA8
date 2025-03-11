@@ -12,7 +12,7 @@ import pickle, sys, itertools
 def load_particledb(filename):
     '''
     loads the pickled particle_db (which is an OrderedDict)
-    definition of particle_db dict is: "name", "antiName", "pdg", "mass", "electric_charge", "lifetime", "ngc_code", "isNucleus", "isHadron"
+    definition of particle_db dict is: "name", "antiName", "pdg", "mass", "charge", "lifetime", "ngc_code", "isNucleus", "isHadron"
     '''
     with open(filename, "rb") as f:
         particle_db = pickle.load(f)
@@ -40,7 +40,7 @@ def set_default_qgsjetII_definition(particle_db):
             pdg = abs(pData['pdg'])
             anti = pData['pdg'] < 0
             isBaryon = (1000 <= pdg < 4000)
-            charge = pData['electric_charge']
+            charge = pData['charge']
             if (pdg>=100 and pdg<300 and pdg!=130): # light mesons
                 xsType = "LightMesons"
                 if (charge==0):
