@@ -130,7 +130,7 @@ namespace corsika::sibyll {
           logger_, "     all particles known to Sibyll are handled by Sibyll::Decay!");
 
     } else {
-      for ([[maybe_unused]] auto const& pCode : handledDecays_) {
+      for ([[maybe_unused]] auto const pCode : handledDecays_) {
         CORSIKA_LOGGER_DEBUG(logger_, "      Decay of {} is handled by Sibyll!", pCode);
       }
     }
