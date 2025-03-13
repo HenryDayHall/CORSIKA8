@@ -193,7 +193,7 @@ namespace corsika {
       if (!solutions.size()) { return Intersections(); }
       LengthType d_enter, d_exit;
       int first = 0, first_entry = 0, first_exit = 0;
-      for (auto const& solution : solutions) {
+      for (auto const solution : solutions) {
         LengthType const dist = solution * 1_m;
         CORSIKA_LOG_TRACE(
             "Solution (real) for current Volume: deltaL/2*2={} (deltaL/2*2/v={}) ", dist,
