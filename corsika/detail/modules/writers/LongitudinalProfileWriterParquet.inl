@@ -65,7 +65,7 @@ namespace corsika {
     // and write the data into the column
     *(output_.getWriter()) << showerId
                            << static_cast<float>(grammage / 1_g * square(1_cm));
-    for (double const& weight : data) {
+    for (double const weight : data) {
       *(output_.getWriter()) << static_cast<float>(weight);
     }
     *(output_.getWriter()) << parquet::EndRow;
