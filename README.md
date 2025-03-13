@@ -94,7 +94,7 @@ manage our dependencies. Currently, version 2.50.0 or higher is required.
 **Note**: if you are NOT using a virtual environment, you may want to use the `pip install --user` flag.
 
 ``` shell
-pip install conan
+pip install conan particle==0.25.1 numpy
 ```
 
 ### Enabling FLUKA support

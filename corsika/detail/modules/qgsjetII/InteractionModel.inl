@@ -101,6 +101,14 @@ namespace corsika::qgsjetII {
     return sigProd * 1_mb;
   }
 
+  inline std::tuple<CrossSectionType, CrossSectionType>
+  InteractionModel::getCrossSectionInelEla(Code projCode, Code targetCode,
+                                           FourMomentum const& proj4mom,
+                                           FourMomentum const& target4mom) const {
+    return {getCrossSection(projCode, targetCode, proj4mom, target4mom),
+            CrossSectionType::zero()};
+  }
+
   template <typename TSecondaries>
   inline void InteractionModel::doInteraction(TSecondaries& view, Code const projectileId,
                                               Code const targetId,

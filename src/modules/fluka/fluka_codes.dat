@@ -17,8 +17,8 @@ PiPlus	            13	yes
 PiMinus	            14	yes
 KPlus	            15	yes
 KMinus	            16	yes
-Lambda0	            17	yes
-Lambda0Bar	        18	yes
+Lambda	            17	yes
+LambdaBar 	        18	yes
 K0Short	            19	yes
 SigmaMinus	        20  yes
 SigmaPlus	        21  yes
@@ -45,17 +45,17 @@ DPlus	            45
 DMinus	            46
 D0	                47
 D0Bar	            48
-DsPlus	            49
-DsMinus	            50
+DSPlus	            49
+DSMinus	            50
 LambdaCPlus	        51
 XiCPlus	            52
 XiC0	            53
-XiPrimeCPlus	    54
-XiPrimeC0	        55
+XiCPrimePlus	    54
+XiCPrime0	        55
 OmegaC0	            56
 LambdaCMinusBar	    57
 XiCMinusBar	        58
 XiC0Bar	            59
-XiPrimeCMinusBar	60
-XiPrimeC0Bar	    61
+XiCPrimeMinusBar	60
+XiCPrime0Bar	    61
 OmegaC0Bar	        62

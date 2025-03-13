@@ -207,6 +207,11 @@ int main(int argc, char** argv) {
       ->default_val(0.3)
       ->check(CLI::Range(0.000001, 1.e13))
       ->group("Config");
+  app.add_option("--max-deflection-angle",
+                 "maximal deflection angle in tracking in radians")
+      ->default_val(0.2)
+      ->check(CLI::Range(1.e-8, 1.))
+      ->group("Config");
   bool track_neutrinos = false;
   app.add_flag("--track-neutrinos", track_neutrinos, "switch on tracking of neutrinos")
       ->group("Config");
@@ -261,7 +266,7 @@ int main(int argc, char** argv) {
       ->group("Misc.");
   app.add_option("-M,--hadronModel", "High-energy hadronic interaction model")
       ->default_val("SIBYLL-2.3d")
-      ->check(CLI::IsMember({"SIBYLL-2.3d", "QGSJet-II.04", "EPOS-LHC"}))
+      ->check(CLI::IsMember({"SIBYLL-2.3d", "QGSJet-II.04", "EPOS-LHC", "Pythia8"}))
       ->group("Misc.");
   app.add_option("-T,--hadronModelTransitionEnergy",
                  "Transition between high-/low-energy hadronic interaction "
@@ -435,6 +440,10 @@ int main(int argc, char** argv) {
   } else if (modelStr == "EPOS-LHC") {
     heModel = DynamicInteractionProcess<StackType>{
         std::make_shared<corsika::epos::Interaction>(corsika::setup::C7trackedParticles)};
+  } else if (modelStr == "Pythia8") {
+    heModel = DynamicInteractionProcess<StackType>{
+        std::make_shared<corsika::pythia8::Interaction>(
+            corsika::setup::C7trackedParticles)};
   } else {
     CORSIKA_LOG_CRITICAL("invalid choice \"{}\"; also check argument parser", modelStr);
     return EXIT_FAILURE;
@@ -661,7 +670,7 @@ int main(int argc, char** argv) {
 
     // create the cascade object using the default stack and tracking
     // implementation
-    TrackingType tracking;
+    TrackingType tracking(app["--max-deflection-angle"]->as<double>());
     StackType stack;
     Cascade EAS(env, tracking, sequence, output, stack);
 

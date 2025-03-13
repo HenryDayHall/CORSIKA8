@@ -51,14 +51,14 @@ if ("x_${USE_Pythia8_C8}" STREQUAL "x_SYSTEM")
 else ()
 
   set (_C8_Pythia8_Download_Dir "https://pythia.org/download/pythia83")
-  set (_C8_Pythia8_VERSION "8312")
+  set (_C8_Pythia8_VERSION "8313")
   message (STATUS "Building modules/pythia8 using pythia${_C8_Pythia8_VERSION}.tar.bz2")
   message (STATUS "This will take a bit.....")
   # this is not a full Pythia8 install, it is a bit simplified, e.g. no pythia8-config, no examples
   # and also, it is fitted into the normal CORSIKA8 install "include/corsika_modules/Pythia8, lib/corsika"
   ExternalProject_Add (pythia8
     URL ${_C8_Pythia8_Download_Dir}/pythia${_C8_Pythia8_VERSION}.tar.bz2
-    URL_MD5 0acde09714b5383ac807edb10f161dd9
+    URL_MD5 2bfcb4cefefca17605fab253016e6c6e
     SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/source"
     INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/install"
     CONFIGURE_COMMAND ./configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/pythia8/install

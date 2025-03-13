@@ -32,9 +32,10 @@ int main() {
       "------------------------------------------\n"
       "        particles in CORSIKA\n"
       "------------------------------------------\n");
-  int const width = 20 + 10 + 10 + 10 + 16 + 16 + 17;
+  int const width = 25 + 10 + 10 + 10 + 10 + 16 + 16 + 17;
   logging::info(
-      "Name                 | "
+      "Name                      | "
+      "C8 code    | "
       "PDG-id     | "
       "SIBYLL-id  | "
       "QGSJETII-id| "
@@ -48,8 +49,8 @@ int main() {
                                  ? to_string(corsika::sibyll::getSibyllMass(p) / 1_GeV)
                                  : "");
       auto const qgs_id = corsika::qgsjetII::convertToQgsjetII(p);
-      logging::info("{:20} | {:10} | {:10} | {:10} | {:>16.5} | {:>16.5} |", p,
-                    static_cast<int>(get_PDG(p)),
+      logging::info("{:25} | {:10} | {:10} | {:10} | {:10} | {:>16.5} | {:>16.5} |",
+                    get_name(p), p, static_cast<int>(get_PDG(p)),
                     (sib_id != corsika::sibyll::SibyllCode::Unknown
                          ? to_string(static_cast<int>(sib_id))
                          : ""),

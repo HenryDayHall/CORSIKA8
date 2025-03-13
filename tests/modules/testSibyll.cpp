@@ -38,8 +38,8 @@ TEST_CASE("Sibyll", "modules") {
     CHECK(corsika::sibyll::convertToSibyll(Electron::code) ==
           corsika::sibyll::SibyllCode::Electron);
     CHECK(corsika::sibyll::convertToSibyllRaw(Proton::code) == 13);
-    CHECK(corsika::sibyll::convertToSibyll(XiStarC0::code) ==
-          corsika::sibyll::SibyllCode::XiStarC0);
+    CHECK(corsika::sibyll::convertToSibyll(XiC_2645_0::code) ==
+          corsika::sibyll::SibyllCode::XiC_2645_0);
   }
 
   SECTION("canInteractInSibyll") {
@@ -48,7 +48,7 @@ TEST_CASE("Sibyll", "modules") {
     CHECK(corsika::sibyll::canInteract(Code::XiCPlus));
 
     CHECK_FALSE(corsika::sibyll::canInteract(Code::Electron));
-    CHECK_FALSE(corsika::sibyll::canInteract(Code::SigmaC0));
+    CHECK_FALSE(corsika::sibyll::canInteract(Code::SigmaC_2455_0));
 
     CHECK_FALSE(corsika::sibyll::canInteract(Code::Iron));
     CHECK_FALSE(corsika::sibyll::canInteract(Code::K0Bar));
@@ -332,7 +332,7 @@ TEST_CASE("SibyllDecayInterface", "modules") {
   SECTION("DecayInterface") {
 
     auto [stackPtr, viewPtr] = setup::testing::setup_stack(
-        Code::Lambda0, 10_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
+        Code::Lambda, 10_GeV, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
     test::StackView& view = *viewPtr;
     auto& stack = *stackPtr;
     auto particle = stack.first();
@@ -341,7 +341,7 @@ TEST_CASE("SibyllDecayInterface", "modules") {
     model.printDecayConfig();
     [[maybe_unused]] TimeType const time = model.getLifetime(particle);
     auto const gamma = particle.getEnergy() / particle.getMass();
-    CHECK(time == get_lifetime(Code::Lambda0) * gamma);
+    CHECK(time == get_lifetime(Code::Lambda) * gamma);
     model.doDecay(view);
     // run checks
     // not physics validation, just check doDecay finished with something
@@ -371,7 +371,7 @@ TEST_CASE("SibyllDecayInterface", "modules") {
     CHECK_FALSE(model.isDecayHandled(Code::KPlus));
 
     std::vector<Code> const particleTestList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
-                                                Code::Lambda0Bar, Code::D0Bar};
+                                                Code::LambdaBar, Code::D0Bar};
 
     // setup decays
     model.setHandleDecay(particleTestList);

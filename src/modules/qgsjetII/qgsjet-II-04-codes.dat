@@ -25,8 +25,8 @@ Neutron      3 Baryons
 AntiNeutron -3 Baryons
 Proton       2 Baryons
 AntiProton  -2 Baryons 
-Lambda0      6 Baryons
-Lambda0Bar  -6 Baryons
+Lambda       6 Baryons
+LambdaBar   -6 Baryons
 LambdaCPlus      9 Baryons
 LambdaCMinusBar -9 Baryons
 

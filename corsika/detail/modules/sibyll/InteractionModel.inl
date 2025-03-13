@@ -50,6 +50,19 @@ namespace corsika::sibyll {
                                                          target4mom);
   }
 
+  inline std::tuple<CrossSectionType, CrossSectionType>
+  InteractionModel::getCrossSectionInelEla(Code projCode, Code targetCode,
+                                           FourMomentum const& proj4mom,
+                                           FourMomentum const& target4mom) const {
+    if (is_nucleus(projCode))
+      return {getNuclearInteractionModel().getCrossSection(projCode, targetCode, proj4mom,
+                                                           target4mom),
+              CrossSectionType::zero()};
+    else
+      return getHadronInteractionModel().getCrossSectionInelEla(projCode, targetCode,
+                                                                proj4mom, target4mom);
+  }
+
   template <typename TSecondaries>
   inline void InteractionModel::doInteraction(TSecondaries& view, Code projCode,
                                               Code targetCode,
