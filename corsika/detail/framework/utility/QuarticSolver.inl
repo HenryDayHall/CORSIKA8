@@ -79,7 +79,7 @@ namespace corsika {
       std::vector<double> quad1 = solve_quadratic_real(1, p1, q1, 1e-5);
       std::vector<double> quad2 = solve_quadratic_real(1, p2, q2, 1e-5);
       if (quad2.size() > 0) {
-        for (auto const& val : quad2) quad1.push_back(val);
+        for (auto const val : quad2) quad1.push_back(val);
       }
       return quad1;
     }
