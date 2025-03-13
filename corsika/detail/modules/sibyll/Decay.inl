@@ -63,7 +63,7 @@ namespace corsika::sibyll {
 
   inline void Decay::setHandleDecay(std::vector<Code> const& vParticleList) {
     handleAllDecays_ = false;
-    for (auto const& p : vParticleList) Decay::setHandleDecay(p);
+    for (auto const p : vParticleList) Decay::setHandleDecay(p);
   }
 
   inline bool Decay::isDecayHandled(corsika::Code const vParticleCode) {
@@ -76,11 +76,11 @@ namespace corsika::sibyll {
   }
 
   inline void Decay::setStable(std::vector<Code> const& vParticleList) {
-    for (auto const& p : vParticleList) Decay::setStable(p);
+    for (auto const p : vParticleList) Decay::setStable(p);
   }
 
   inline void Decay::setUnstable(std::vector<Code> const& vParticleList) {
-    for (auto const& p : vParticleList) Decay::setUnstable(p);
+    for (auto const p : vParticleList) Decay::setUnstable(p);
   }
 
   inline bool Decay::isStable(Code const vCode) {
