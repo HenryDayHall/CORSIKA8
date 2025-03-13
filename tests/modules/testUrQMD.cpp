@@ -94,7 +94,7 @@ TEST_CASE("UrQMD") {
                                         303_mb, 189_mb, 198_mb, 172_mb};
 
     int i = 0;
-    for (auto const& code : validProjectileCodes) {
+    for (auto const code : validProjectileCodes) {
       FourMomentum const projectileP4{
           sqrt(static_pow<2>(get_mass(code)) + static_pow<2>(P0)),
           {rootCS, {0_GeV, 0_GeV, P0}}};
