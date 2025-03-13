@@ -29,7 +29,7 @@ namespace corsika::proposal {
                                                                 _enthreshold) {
     //! Initialize PROPOSAL tables for all media and all particles
     for (auto const& medium : media) {
-      for (auto const& particle_code : tracked) {
+      for (auto const particle_code : tracked) {
         buildCalculator(particle_code, medium.first);
       }
     }
