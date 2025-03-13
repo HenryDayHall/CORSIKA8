@@ -57,7 +57,7 @@ namespace corsika::proposal {
         auto comp_vec = std::vector<PROPOSAL::Component>();
         const auto& comp = prop.getNuclearComposition();
         auto frac_iter = comp.getFractions().cbegin();
-        for (auto const& pcode : comp.getComponents()) {
+        for (auto const pcode : comp.getComponents()) {
           comp_vec.emplace_back(std::string(get_name(pcode)), get_nucleus_Z(pcode),
                                 get_nucleus_A(pcode), *frac_iter);
           ++frac_iter;
@@ -76,7 +76,7 @@ namespace corsika::proposal {
     PROPOSAL::InterpolationSettings::TABLES_PATH = corsika_data("PROPOSAL").c_str();
 
     //! Initialize EnergyCutSettings
-    for (auto const& particle_code : tracked) {
+    for (auto const particle_code : tracked) {
       if (particle_code == Code::Photon) {
         // no EnergyCut for photon, only-stochastic propagation
         continue;
@@ -90,7 +90,7 @@ namespace corsika::proposal {
 
     //! Initialize PROPOSAL tables for all media and all particles
     for (auto const& medium : media) {
-      for (auto const& particle_code : tracked) {
+      for (auto const particle_code : tracked) {
         buildTables(medium.second, particle_code,
                     proposal_energycutsettings[particle_code]);
       }
