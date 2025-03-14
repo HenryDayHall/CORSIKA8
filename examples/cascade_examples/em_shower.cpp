@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
       {Code::Positron, 5_MeV},
       {Code::Photon, 5_MeV},
   };
-  for (auto [pcode, energy] : energy_resolution)
+  for (auto const& [pcode, energy] : energy_resolution)
     set_energy_production_threshold(pcode, energy);
 
   const Code beamCode = Code::Electron;

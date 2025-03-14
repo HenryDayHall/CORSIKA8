@@ -88,7 +88,7 @@ namespace corsika::pythia8 {
 
   inline void Decay::setHandleDecay(std::vector<Code> const& vParticleList) {
     handleAllDecays_ = false;
-    for (auto p : vParticleList) setHandleDecay(p);
+    for (auto const p : vParticleList) setHandleDecay(p);
   }
 
   inline bool Decay::isDecayHandled(Code const vParticleCode) {
@@ -99,7 +99,7 @@ namespace corsika::pythia8 {
   }
 
   inline void Decay::setStable(std::vector<Code> const& particleList) {
-    for (auto p : particleList) Decay::setStable(p);
+    for (auto const p : particleList) Decay::setStable(p);
   }
 
   inline void Decay::setUnstable(Code const pCode) {
@@ -134,7 +134,7 @@ namespace corsika::pythia8 {
     if (handleAllDecays_)
       CORSIKA_LOG_INFO(" all particles known to Pythia are handled by Pythia::Decay!");
     else
-      for (auto& pCode : handledDecays_)
+      for (auto const pCode : handledDecays_)
         CORSIKA_LOG_INFO("Decay of {} is handled by Pythia!", pCode);
   }
 

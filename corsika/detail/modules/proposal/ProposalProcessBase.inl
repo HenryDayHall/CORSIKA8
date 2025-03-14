@@ -22,8 +22,7 @@
 namespace corsika::proposal {
 
   inline bool ProposalProcessBase::canInteract(Code pcode) const {
-    if (std::find(begin(tracked), end(tracked), pcode) != end(tracked)) return true;
-    return false;
+    return std::find(begin(tracked), end(tracked), pcode) != end(tracked);
   }
 
   inline HEPEnergyType ProposalProcessBase::getOptimizedEmCut(Code code) const {
@@ -33,7 +32,7 @@ namespace corsika::proposal {
     HEPEnergyType lowest_table_value = 0_GeV;
 
     // find tables for EnergyCuts closest (but still smaller than) production_threshold
-    for (auto table_energy : energycut_table_values) {
+    for (auto const& table_energy : energycut_table_values) {
       if (table_energy <= production_threshold && table_energy > lowest_table_value) {
         lowest_table_value = table_energy;
       }
@@ -57,7 +56,7 @@ namespace corsika::proposal {
         auto comp_vec = std::vector<PROPOSAL::Component>();
         const auto& comp = prop.getNuclearComposition();
         auto frac_iter = comp.getFractions().cbegin();
-        for (auto& pcode : comp.getComponents()) {
+        for (auto const pcode : comp.getComponents()) {
           comp_vec.emplace_back(std::string(get_name(pcode)), get_nucleus_Z(pcode),
                                 get_nucleus_A(pcode), *frac_iter);
           ++frac_iter;
@@ -76,7 +75,7 @@ namespace corsika::proposal {
     PROPOSAL::InterpolationSettings::TABLES_PATH = corsika_data("PROPOSAL").c_str();
 
     //! Initialize EnergyCutSettings
-    for (auto particle_code : tracked) {
+    for (auto const particle_code : tracked) {
       if (particle_code == Code::Photon) {
         // no EnergyCut for photon, only-stochastic propagation
         continue;
@@ -89,8 +88,8 @@ namespace corsika::proposal {
     }
 
     //! Initialize PROPOSAL tables for all media and all particles
-    for (auto medium : media) {
-      for (auto particle_code : tracked) {
+    for (auto const& medium : media) {
+      for (auto const particle_code : tracked) {
         buildTables(medium.second, particle_code,
                     proposal_energycutsettings[particle_code]);
       }

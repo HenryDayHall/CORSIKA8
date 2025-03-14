@@ -69,7 +69,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     auto projectile = view.getProjectile();
     // add secondaries, all with energies above the threshold
     // only cut is by species
-    for (auto proType : particleList)
+    for (auto const proType : particleList)
       projectile.addSecondary(
           std::make_tuple(proType, Eabove, DirectionVector(rootCS, {1, 0, 0})));
     CHECK(view.getEntries() == 11);
@@ -94,7 +94,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     auto projectile = view.getProjectile();
     // add secondaries, all with energies above the threshold
     // only cut is by species
-    for (auto proType : particleList) {
+    for (auto const proType : particleList) {
       projectile.addSecondary(
           std::make_tuple(proType, Eabove, DirectionVector(rootCS, {1, 0, 0})));
     }
@@ -116,7 +116,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     auto projectile = view.getProjectile();
     // add secondaries, all with energies below the threshold
     // only cut is by species
-    for (auto proType : particleList)
+    for (auto const proType : particleList)
       projectile.addSecondary(
           std::make_tuple(proType, Ebelow, DirectionVector(rootCS, {1, 0, 0})));
     unsigned short A = 18;
@@ -189,7 +189,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
     auto projectile = view.getProjectile();
     // add secondaries, all with energies above the threshold
     // only cut is by time
-    for (auto proType : particleList) {
+    for (auto const proType : particleList) {
       projectile.addSecondary(
           std::make_tuple(proType, Eabove, DirectionVector(rootCS, {1, 0, 0})));
     }
@@ -208,7 +208,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
 
     // add particles, all with energies above the threshold
     // only cut is by species
-    for (auto proType : particleList) {
+    for (auto const proType : particleList) {
       auto particle = stack.addParticle(
           std::make_tuple(proType, Eabove - get_mass(proType),
                           DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));

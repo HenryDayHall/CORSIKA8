@@ -50,8 +50,10 @@ namespace corsika::proposal {
       : ProposalProcessBase(_env)
       , TOutput(args...) {
     //! Initialize PROPOSAL tables for all media and all particles
-    for (auto medium : media) {
-      for (auto particle_code : tracked) { buildCalculator(particle_code, medium.first); }
+    for (auto const& medium : media) {
+      for (auto const particle_code : tracked) {
+        buildCalculator(particle_code, medium.first);
+      }
     }
   }
 

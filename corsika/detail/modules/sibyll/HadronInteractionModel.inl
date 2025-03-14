@@ -58,7 +58,7 @@ namespace corsika::sibyll {
 
   inline void HadronInteractionModel::setParticleListStable(std::set<Code> vList) {
     // de-activate specific decays in SIBYLL
-    for (auto p : vList) {
+    for (auto const p : vList) {
       CORSIKA_LOGGER_DEBUG(logger_, "setting {} as \"stable\". ", p);
       auto const sib_code = sibyll::convertToSibyll(p);
       if (sib_code != corsika::sibyll::SibyllCode::Unknown) {
@@ -196,7 +196,7 @@ namespace corsika::sibyll {
     auto const& originalCS = boost.getOriginalCS();
     MomentumVector Plab_final(originalCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
     HEPEnergyType Elab_final = 0_GeV, Ecm_final = 0_GeV;
-    for (auto& psib : ss) {
+    for (auto const& psib : ss) {
       // abort on particles that have decayed in Sibyll. Should not happen!
       if (psib.hasDecayed()) { // LCOV_EXCL_START
         if (internal_decays_) {
