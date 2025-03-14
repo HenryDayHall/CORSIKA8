@@ -22,8 +22,7 @@
 namespace corsika::proposal {
 
   inline bool ProposalProcessBase::canInteract(Code pcode) const {
-    if (std::find(begin(tracked), end(tracked), pcode) != end(tracked)) return true;
-    return false;
+    return std::find(begin(tracked), end(tracked), pcode) != end(tracked);
   }
 
   inline HEPEnergyType ProposalProcessBase::getOptimizedEmCut(Code code) const {
