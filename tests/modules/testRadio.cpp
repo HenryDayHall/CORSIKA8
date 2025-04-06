@@ -851,36 +851,50 @@ TEST_CASE("observers") {
     Vector<ElectricFieldType::dimension_type> eField2(
         rootCS, {20_V / 1_m, 20_V / 1_m, 20_V / 1_m});
 
+    // sources
+    auto const source1 = point1 + 1_m * receiveVec1;
+    auto const source2 = point2 + 1_m * receiveVec2;
+
+    // Most of this isn't needed, so we don't need to worry about speed of light, etc.
+    std::deque<Point> points1 = {source1, point1};
+    SignalPath path1(1_ns, 1.0, 1.0, 1.0, emitVec1, receiveVec1,
+                     (point1 - source1).getNorm(), points1);
+    std::deque<Point> points2 = {source2, point2};
+    SignalPath path2(1_ns, 1.0, 1.0, 1.0, emitVec2, receiveVec2,
+                     (point2 - source2).getNorm(), points2);
+
     // inject efield into obs1
-    obs1.receive(15_s, emitVec1, receiveVec1, eField1);
+    obs1.receive(15_s, path1, eField1);
     REQUIRE(obs1.getWaveformX()[5] - 10 == 0);
     REQUIRE(obs1.getWaveformX()[5] == obs1.getWaveformY()[5]);
     REQUIRE(obs1.getWaveformX()[5] == obs1.getWaveformZ()[5]);
 
     // inject efield but with different receive vector into obs2
-    obs2.receive(16_s, emitVec2, receiveVec2, eField1);
+    obs2.receive(16_s, path2, eField1);
     REQUIRE(obs1.getWaveformX()[5] ==
             obs2.getWaveformX()[5]); // Currently receive vector does nothing
     obs2.reset();
     REQUIRE(obs2.getWaveformX()[5] == 0); // reset was successful
 
     // inject the other eField into obs2
-    obs2.receive(16_s, emitVec2, receiveVec2, eField2);
+    obs2.receive(16_s, path2, eField2);
     REQUIRE(obs2.getWaveformX()[5] - 20 == 0);
     REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformY()[5]);
     REQUIRE(obs2.getWaveformX()[5] == -1 * obs2.getWaveformZ()[5]);
 
+    SignalPath pathCross(1_ns, 1.0, 1.0, 1.0, emitVec1, receiveVec2,
+                         (point1 - source1).getNorm(), points1);
     // make sure the next one is empty before filling it
     REQUIRE(obs2.getWaveformX()[6] == 0);
-    obs2.receive(17_s, emitVec1, receiveVec2, eField2);
+    obs2.receive(17_s, pathCross, eField2);
     REQUIRE(obs2.getWaveformX()[6] - 20 == 0);
 
     // reset obs1 and then put values in out of range
     obs1.reset();
-    obs1.receive(-1000_s, emitVec1, receiveVec1, eField1);
+    obs1.receive(-1000_s, path1, eField1);
     for (auto const& val : obs1.getWaveformX()) { CHECK(val * 0 == val); }
     obs1.reset();
-    obs1.receive(t1 + t2 + 1_s, emitVec1, receiveVec1, eField1);
+    obs1.receive(t1 + t2 + 1_s, path1, eField1);
     for (auto const& val : obs1.getWaveformX()) { CHECK(val * 0 == val); }
   } // END: SECTION("TimeDomainObserver Receive EField")
 
@@ -915,35 +929,47 @@ TEST_CASE("observers") {
     Vector<VectorPotentialType::dimension_type> vectorPotential2(
         rootCS, {20_V * 1_s / 1_m, 20_V * 1_s / 1_m, 20_V * 1_s / 1_m});
 
+    // sources
+    auto const source1 = point1 + 1_m * receiveVec1;
+    auto const source2 = point2 + 1_m * receiveVec2;
+
+    // Most of this isn't needed, so we don't need to worry about speed of light, etc.
+    std::deque<Point> points1 = {source1, point1};
+    SignalPath path1(1_ns, 1.0, 1.0, 1.0, emitVec1, receiveVec1,
+                     (point1 - source1).getNorm(), points1);
+    std::deque<Point> points2 = {source2, point2};
+    SignalPath path2(1_ns, 1.0, 1.0, 1.0, emitVec2, receiveVec2,
+                     (point2 - source2).getNorm(), points2);
+
     // inject efield into obs1
-    obs1.receive(15_s, emitVec1, receiveVec1, vectorPotential1);
+    obs1.receive(15_s, path1, vectorPotential1);
     REQUIRE(obs1.getWaveformX()[5] - 10 == 0);
     REQUIRE(obs1.getWaveformX()[5] == obs1.getWaveformY()[5]);
     REQUIRE(obs1.getWaveformX()[5] == obs1.getWaveformZ()[5]);
 
     // inject efield but with different receive vector into obs2
-    obs2.receive(16_s, emitVec2, receiveVec2, vectorPotential1);
+    obs2.receive(16_s, path2, vectorPotential1);
     REQUIRE(obs1.getWaveformX()[5] == -1 * obs2.getWaveformX()[5]);
     obs2.reset();
     REQUIRE(obs2.getWaveformX()[5] == 0); // reset was successful
 
     // inject the other eField into obs2
-    obs2.receive(16_s, emitVec2, receiveVec2, vectorPotential2);
+    obs2.receive(16_s, path2, vectorPotential2);
     REQUIRE(obs2.getWaveformX()[5] + 20 == 0);
     REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformY()[5]);
     REQUIRE(obs2.getWaveformX()[5] == obs2.getWaveformZ()[5]);
 
     // make sure the next one is empty before filling it
     REQUIRE(obs2.getWaveformX()[6] == 0);
-    obs2.receive(17_s, emitVec2, receiveVec2, vectorPotential2);
+    obs2.receive(17_s, path2, vectorPotential2);
     REQUIRE(obs2.getWaveformX()[6] + 20 == 0);
 
     // reset obs1 and then put values in out of range
     obs1.reset();
-    obs1.receive(-1000_s, emitVec1, receiveVec1, vectorPotential1);
+    obs1.receive(-1000_s, path1, vectorPotential1);
     for (auto const& val : obs1.getWaveformX()) { CHECK(val * 0 == val); }
     obs1.reset();
-    obs1.receive(t1 + t2 + 1_s, emitVec1, receiveVec1, vectorPotential1);
+    obs1.receive(t1 + t2 + 1_s, path1, vectorPotential1);
     for (auto const& val : obs1.getWaveformX()) { CHECK(val * 0 == val); }
   } // END: SECTION("TimeDomainObserver Receive Vector Potential")
 

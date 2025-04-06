@@ -43,10 +43,8 @@ namespace corsika {
     }
   }
 
-  inline void TimeDomainObserver::receive(const TimeType time,
-                                          Vector<dimensionless_d> const& emit_vector,
-                                          const Vector<dimensionless_d>& receive_vector,
-                                          const ElectricFieldVector& efield) {
+  inline void TimeDomainObserver::receive(TimeType const time, SignalPath const& path,
+                                          ElectricFieldVector const& efield) {
 
     if (time < start_time_ || time > (start_time_ + duration_)) {
       return;
@@ -55,10 +53,11 @@ namespace corsika {
       // NOTE: static cast is implicitly flooring
       auto timebin{static_cast<std::size_t>(
           std::floor((time - start_time_) * sample_rate_ + 0.5l))};
-      CORSIKA_LOG_TRACE("Receiving particle - time {} (bin {}), emit {}, receive {}, efield {}",
-                        time, timebin, emit_vector, receive_vector, efield);
+      CORSIKA_LOG_TRACE(
+          "Receiving particle - time {} (bin {}), emit {}, receive {}, efield {}", time,
+          timebin, path.emit_, path.receive_, efield);
 
-      auto const dotProd = emit_vector.dot(-receive_vector);
+      auto const dotProd = path.emit_.dot(-path.receive_);
       // If propagation not in a straight line
       // catch case where numerical rounding gives errors
       if (dotProd < (1.0 - 1e-8)) {
@@ -73,7 +72,7 @@ namespace corsika {
           return;
         }
 
-        auto const rotation_axis = emit_vector.cross(-receive_vector).normalized();
+        auto const rotation_axis = path.emit_.cross(-path.receive_).normalized();
         CORSIKA_LOG_TRACE("Rotating efield by {} deg about axis {}",
                           asin(dotProd) * 180 / M_PI, rotation_axis);
         auto const sinTh = sqrt(1 - dotProd * dotProd);
@@ -101,9 +100,7 @@ namespace corsika {
     }
   }
 
-  inline void TimeDomainObserver::receive(const TimeType time,
-                                          Vector<dimensionless_d> const& emit_vector,
-                                          const Vector<dimensionless_d>& receive_vector,
+  inline void TimeDomainObserver::receive(const TimeType time, SignalPath const& path,
                                           const VectorPotential& vectorP) {
 
     if (time < start_time_ || time > (start_time_ + duration_)) {
@@ -113,10 +110,11 @@ namespace corsika {
       // NOTE: static cast is implicitly flooring
       auto timebin{static_cast<std::size_t>(
           std::floor((time - start_time_) * sample_rate_ + 0.5l))};
-      CORSIKA_LOG_TRACE("Receiving particle - time {} (bin {}), emit {}, receive {}, vector {}",
-                        time, timebin, emit_vector, receive_vector, vectorP);
+      CORSIKA_LOG_TRACE(
+          "Receiving particle - time {} (bin {}), emit {}, receive {}, vector {}", time,
+          timebin, path.emit_, path.receive_, vectorP);
 
-      auto const dotProd = emit_vector.dot(-receive_vector);
+      auto const dotProd = path.emit_.dot(-path.receive_);
       // If propagation not in a straight line
       // catch case where numerical rounding gives errors
       if (dotProd < (1.0 - 1e-8)) {
@@ -130,7 +128,7 @@ namespace corsika {
           return;
         }
 
-        auto const rotation_axis = emit_vector.cross(-receive_vector).normalized();
+        auto const rotation_axis = path.emit_.cross(-path.receive_).normalized();
         CORSIKA_LOG_TRACE("Rotating efield by {} deg about axis {}",
                           asin(dotProd) * 180 / M_PI, rotation_axis);
         auto const sinTh = sqrt(1 - dotProd * dotProd);

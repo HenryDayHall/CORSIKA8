@@ -118,15 +118,13 @@ namespace corsika {
                                    detectionTime1 * observer.getSampleRate()))};
                     VectorPotential const Vp = betaPerp * sign * constants * f /
                                                denominator / newMidPaths[k].R_distance_;
-                    observer.receive(detectionTime2, newMidPaths[k].emit_,
-                                     newMidPaths[k].receive_, Vp);
+                    observer.receive(detectionTime2, newMidPaths[k], Vp);
                   } else { // If emission in Cerenkov angle => approximation
                     double const f{time2 * observer.getSampleRate() -
                                    time1 * observer.getSampleRate()};
                     VectorPotential const Vp =
                         betaPerp * sign * constants * f / newMidPaths[k].R_distance_;
-                    observer.receive(detectionTime2, newMidPaths[k].emit_,
-                                     newMidPaths[k].receive_, Vp);
+                    observer.receive(detectionTime2, newMidPaths[k], Vp);
                   } // end if Cerenkov angle approx
                 } else {
                   /*Track is contained in more than one bin*/
@@ -137,14 +135,13 @@ namespace corsika {
                                          observer.getSampleRate())};
                   VectorPotential Vp = betaPerp * sign * constants * f / denominator /
                                        newMidPaths[k].R_distance_;
-                  observer.receive(detectionTime1, newMidPaths[k].emit_,
-                                   newMidPaths[k].receive_, Vp);
+                  observer.receive(detectionTime1, newMidPaths[k], Vp);
                   // intermidiate contributions
                   for (int it{1}; it < numberOfBins; ++it) {
                     Vp = betaPerp * constants / denominator / newMidPaths[k].R_distance_;
                     observer.receive(detectionTime1 + static_cast<double>(it) /
                                                           observer.getSampleRate(),
-                                     newMidPaths[k].emit_, newMidPaths[k].receive_, Vp);
+                                     newMidPaths[k], Vp);
                   } // end loop over bins in which potential vector is not zero
                   // final contribution// f +0.5 from new observer rounding
                   f = std::fabs((detectionTime2 - observer.getStartTime()) *
@@ -152,8 +149,7 @@ namespace corsika {
                                 0.5 - endBin);
                   Vp = betaPerp * sign * constants * f / denominator /
                        newMidPaths[k].R_distance_;
-                  observer.receive(detectionTime2, newMidPaths[k].emit_,
-                                   newMidPaths[k].receive_, Vp);
+                  observer.receive(detectionTime2, newMidPaths[k], Vp);
                 } // end if statement for track in multiple bins
 
               } // end of loop over newMidPaths
@@ -204,15 +200,13 @@ namespace corsika {
 
                 VectorPotential const Vp = betaPerp * sign * constants * f / denominator /
                                            midPaths[i].R_distance_;
-                observer.receive(detectionTime2, midPaths[i].emit_, midPaths[i].receive_,
-                                 Vp);
+                observer.receive(detectionTime2, midPaths[i], Vp);
               } else { // If emission in Cerenkov angle => approximation
                 double const f{endTime * observer.getSampleRate() -
                                startTime * observer.getSampleRate()};
                 VectorPotential const Vp =
                     betaPerp * sign * constants * f / midPaths[i].R_distance_;
-                observer.receive(detectionTime2, midPaths[i].emit_, midPaths[i].receive_,
-                                 Vp);
+                observer.receive(detectionTime2, midPaths[i], Vp);
               } // end if Cerenkov angle approx
             } else {
               /*Track is contained in more than one bin*/
@@ -224,14 +218,13 @@ namespace corsika {
                                      observer.getSampleRate())};
               VectorPotential Vp =
                   betaPerp * sign * constants * f / denominator / midPaths[i].R_distance_;
-              observer.receive(detectionTime1, midPaths[i].emit_, midPaths[i].receive_,
-                               Vp);
+              observer.receive(detectionTime1, midPaths[i], Vp);
               // intermediate contributions
               for (int it{1}; it < numberOfBins; ++it) {
                 Vp = betaPerp * sign * constants / denominator / midPaths[i].R_distance_;
                 observer.receive(
                     detectionTime1 + static_cast<double>(it) / observer.getSampleRate(),
-                    midPaths[i].emit_, midPaths[i].receive_, Vp);
+                    midPaths[i], Vp);
               } // end loop over bins in which potential vector is not zero
               // final contribution
               f = std::fabs((detectionTime2 - observer.getStartTime()) *
@@ -239,8 +232,7 @@ namespace corsika {
                             0.5 - endBin);
               Vp =
                   betaPerp * sign * constants * f / denominator / midPaths[i].R_distance_;
-              observer.receive(detectionTime2, midPaths[i].emit_, midPaths[i].receive_,
-                               Vp);
+              observer.receive(detectionTime2, midPaths[i], Vp);
             } // end if statement for track in multiple bins
 
           } // finish if statement of track in fraunhoffer or not

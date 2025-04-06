@@ -7,6 +7,7 @@
 #pragma once
 
 #include <corsika/modules/radio/observers/Observer.hpp>
+#include <corsika/modules/radio/propagators/SignalPath.hpp>
 #include <yaml-cpp/yaml.h>
 #include <vector>
 
@@ -64,14 +65,10 @@ namespace corsika {
      * @param field            The incident electric field vector.
      *
      */
-    // TODO: rethink this method a bit. If the endpoint is at the end of the observer
-    // resolution then you get the startpoint signal but you lose the endpoint signal!
-    void receive(TimeType const time, Vector<dimensionless_d> const& emit_vector,
-                 Vector<dimensionless_d> const& receive_vector,
+    void receive(TimeType const time, SignalPath const& path,
                  ElectricFieldVector const& efield);
 
-    void receive(TimeType const time, Vector<dimensionless_d> const& emit_vector,
-                 Vector<dimensionless_d> const& receive_vector,
+    void receive(TimeType const time, SignalPath const& path,
                  VectorPotential const& vectorP);
 
     /**
