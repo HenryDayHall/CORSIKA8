@@ -60,8 +60,11 @@ namespace corsika {
       }
     }
 
-    assert(std::is_sorted(X_.cbegin(), X_.cend()));
-    assert(std::is_sorted(d_.cbegin(), d_.cend()));
+    if (!std::is_sorted(X_.cbegin(), X_.cend()) ||
+        !std::is_sorted(d_.cbegin(), d_.cend())) {
+      CORSIKA_LOG_ERROR("Shower axis bins are not sorted");
+      throw std::runtime_error("Bad ShowerAxis construction");
+    }
   }
 
   inline GrammageType ShowerAxis::getX(LengthType l) const {
@@ -95,7 +98,10 @@ namespace corsika {
     CORSIKA_LOG_TRACE("showerAxis::X frac={}, fractionalBin={}, lower={}, upper={}",
                       fraction, fractionalBin, lower, upper);
 
-    assert(0 <= fraction && fraction <= 1.);
+    if (!(0 <= fraction && fraction <= 1.)) {
+      CORSIKA_LOG_ERROR("Fraction must be 0 <= {} <= 1", fraction);
+      throw std::runtime_error("Fraction out of range");
+    }
 
     CORSIKA_LOG_TRACE("ShowerAxis::getX l={} m, lower={}, fraction={}, upper={}", l / 1_m,
                       lower, fraction, upper);
