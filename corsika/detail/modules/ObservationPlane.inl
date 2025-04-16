@@ -62,6 +62,20 @@ namespace corsika {
     if (deleteOnHit_) {
       return ProcessReturn::ParticleAbsorbed;
     } else {
+      // due to numerical precision of tracker, can fall into a Zeno's paradox
+      // ensure that the particle is on the far side to avoid continuously hitting this
+      // plane
+      double epsilon = 1.0;
+      while ((step.getPositionPost() - plane_.getCenter()).dot(plane_.getNormal()) > 0_m) {
+        auto const travelDist =
+            -(step.getPositionPost() - plane_.getCenter()).dot(plane_.getNormal()) /
+            step.getDirectionPost().dot(plane_.getNormal()) * step.getDirectionPost();
+        // should be numerically close to plane after tracking to this extra length
+        // should also be numerically close to zero
+        step.add_displacement(travelDist * (1.0 + epsilon * 1e-4));
+        epsilon *= 2.0;
+      }
+
       return ProcessReturn::Ok;
     }
   } // namespace corsika
