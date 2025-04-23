@@ -95,9 +95,8 @@ else:
 if debug:
     print ("filelist: ", filelist)
     
-cmd = "clang-format"
-if "CLANG_FORMAT" in os.environ:
-  cmd = os.environ["CLANG_FORMAT"]
+cmd = os.getenv("CLANG_FORMAT", "clang-format")
+
 if args.docker: 
   USER=os.environ["USER"]
   UID=os.getuid()
