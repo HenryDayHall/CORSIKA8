@@ -106,7 +106,7 @@ namespace corsika::tauola {
 
     std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_tauola_decay");
 
-    int count_; ///< The number of taus decayed with TAUOLA.
+    int count_ = 0; ///< The number of taus decayed with TAUOLA.
   };
 
 } // namespace corsika::tauola
