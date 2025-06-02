@@ -26,13 +26,12 @@ namespace corsika {
   template <typename TDimension>
   inline QuantityVector<TDimension> Vector<TDimension>::getComponents(
       CoordinateSystemPtr const& pCS) const {
-    if (pCS == BaseVector<TDimension>::getCoordinateSystem()) {
+    CoordinateSystemPtr const& cs = BaseVector<TDimension>::getCoordinateSystem();
+    if (pCS == cs) {
       return BaseVector<TDimension>::getQuantityVector();
     } else {
       return QuantityVector<TDimension>(
-          get_transformation(*BaseVector<TDimension>::getCoordinateSystem().get(),
-                             *pCS.get())
-              .linear() *
+          get_transformation(*cs.get(), *pCS.get()).linear() *
           BaseVector<TDimension>::getQuantityVector().eigenVector_);
     }
   }
@@ -47,13 +46,12 @@ namespace corsika {
   template <typename TDimension>
   inline typename Vector<TDimension>::quantity_type Vector<TDimension>::getX(
       CoordinateSystemPtr const& pCS) const {
-    if (*pCS == *BaseVector<TDimension>::getCoordinateSystem()) {
+    CoordinateSystemPtr const& cs = BaseVector<TDimension>::getCoordinateSystem();
+    if (*pCS == *cs) {
       return BaseVector<TDimension>::getQuantityVector()[0];
     } else {
       return QuantityVector<TDimension>(
-          get_transformation(*BaseVector<TDimension>::getCoordinateSystem().get(),
-                             *pCS.get())
-              .linear() *
+          get_transformation(*cs.get(), *pCS.get()).linear() *
           BaseVector<TDimension>::getQuantityVector().eigenVector_)[0];
     }
   }
@@ -61,13 +59,12 @@ namespace corsika {
   template <typename TDimension>
   inline typename Vector<TDimension>::quantity_type Vector<TDimension>::getY(
       CoordinateSystemPtr const& pCS) const {
-    if (*pCS == *BaseVector<TDimension>::getCoordinateSystem()) {
+    CoordinateSystemPtr const& cs = BaseVector<TDimension>::getCoordinateSystem();
+    if (*pCS == *cs) {
       return BaseVector<TDimension>::getQuantityVector()[1];
     } else {
       return QuantityVector<TDimension>(
-          get_transformation(*BaseVector<TDimension>::getCoordinateSystem().get(),
-                             *pCS.get())
-              .linear() *
+          get_transformation(*cs.get(), *pCS.get()).linear() *
           BaseVector<TDimension>::getQuantityVector().eigenVector_)[1];
     }
   }
@@ -75,13 +72,12 @@ namespace corsika {
   template <typename TDimension>
   inline typename Vector<TDimension>::quantity_type Vector<TDimension>::getZ(
       CoordinateSystemPtr const& pCS) const {
-    if (*pCS == *BaseVector<TDimension>::getCoordinateSystem()) {
+    CoordinateSystemPtr const& cs = BaseVector<TDimension>::getCoordinateSystem();
+    if (*pCS == *cs) {
       return BaseVector<TDimension>::getQuantityVector()[2];
     } else {
       return QuantityVector<TDimension>(
-          get_transformation(*BaseVector<TDimension>::getCoordinateSystem().get(),
-                             *pCS.get())
-              .linear() *
+          get_transformation(*cs.get(), *pCS.get()).linear() *
           BaseVector<TDimension>::getQuantityVector().eigenVector_)[2];
     }
   }
@@ -132,8 +128,7 @@ namespace corsika {
   inline Vector<TDimension> Vector<TDimension>::operator+(
       Vector<TDimension> const& pVec) const {
     CoordinateSystemPtr const& cs = BaseVector<TDimension>::getCoordinateSystem();
-    auto const components = getComponents(cs) + pVec.getComponents(cs);
-    return Vector<TDimension>(BaseVector<TDimension>::getCoordinateSystem(), components);
+    return Vector<TDimension>(cs, getComponents() + pVec.getComponents(cs));
   }
 
   template <typename TDimension>
@@ -206,13 +201,13 @@ namespace corsika {
   template <typename TDimension>
   template <typename TDimension2>
   inline auto Vector<TDimension>::cross(Vector<TDimension2> const& pV) const {
+    CoordinateSystemPtr const& cs = BaseVector<TDimension>::getCoordinateSystem();
     auto const c1 = getComponents().eigenVector_;
-    auto const c2 =
-        pV.getComponents(BaseVector<TDimension>::getCoordinateSystem()).eigenVector_;
+    auto const c2 = pV.getComponents(cs).eigenVector_;
     auto const bareResult = c1.cross(c2);
 
     using ProdDim = phys::units::detail::product_d<TDimension, TDimension2>;
-    return Vector<ProdDim>(BaseVector<TDimension>::getCoordinateSystem(), bareResult);
+    return Vector<ProdDim>(cs, bareResult);
   }
 
   template <typename TDimension>
