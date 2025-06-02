@@ -23,7 +23,6 @@
 #include <boost/multi_array.hpp>
 
 #include <algorithm>
-#include <cassert>
 #include <functional>
 #include <iostream>
 #include <fstream>
@@ -56,7 +55,6 @@ namespace corsika::urqmd {
 
     auto const kinEnergy = labEnergy - get_mass(projectileId);
 
-    assert(kinEnergy >= HEPEnergyType::zero());
     if (kinEnergy < HEPEnergyType::zero()){
       CORSIKA_LOG_ERROR("Kinetic energy {} below zero", kinEnergy);
       throw std::runtime_error("Negative kinetic energy");
