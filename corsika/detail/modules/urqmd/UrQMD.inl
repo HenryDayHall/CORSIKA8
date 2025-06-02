@@ -55,7 +55,7 @@ namespace corsika::urqmd {
 
     auto const kinEnergy = labEnergy - get_mass(projectileId);
 
-    if (kinEnergy < HEPEnergyType::zero()){
+    if (kinEnergy < HEPEnergyType::zero()) {
       CORSIKA_LOG_ERROR("Kinetic energy {} below zero", kinEnergy);
       throw std::runtime_error("Negative kinetic energy");
     }
