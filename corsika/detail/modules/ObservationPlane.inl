@@ -66,7 +66,8 @@ namespace corsika {
       // ensure that the particle is on the far side to avoid continuously hitting this
       // plane
       double epsilon = 1.0;
-      while ((step.getPositionPost() - plane_.getCenter()).dot(plane_.getNormal()) > 0_m) {
+      while ((step.getPositionPost() - plane_.getCenter()).dot(plane_.getNormal()) >
+             0_m) {
         auto const travelDist =
             -(step.getPositionPost() - plane_.getCenter()).dot(plane_.getNormal()) /
             step.getDirectionPost().dot(plane_.getNormal()) * step.getDirectionPost();
