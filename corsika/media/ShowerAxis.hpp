@@ -12,7 +12,6 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <cassert>
 #include <cstdlib>
 #include <fstream>
 #include <functional>

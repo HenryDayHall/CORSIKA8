@@ -67,8 +67,11 @@ namespace corsika {
   }
 
   inline LengthType StraightTrajectory::getDistance(double const u) const {
-    assert(u <= 1);
-    assert(u >= 0);
+    if (!(0 <= u && u <= 1)) {
+      CORSIKA_LOG_ERROR("argument must be 0 <= {} <= 1", u);
+      throw std::runtime_error("value out of range");
+    }
+
     return line_.getArcLength(0 * second, u * timeLength_);
   }
 

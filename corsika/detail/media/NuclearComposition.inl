@@ -13,7 +13,6 @@
 #include <boost/iterator/zip_iterator.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
-#include <cassert>
 #include <functional>
 #include <numeric>
 #include <random>

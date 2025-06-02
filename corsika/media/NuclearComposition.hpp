@@ -10,7 +10,6 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <cassert>
 #include <functional>
 #include <numeric>
 #include <random>
