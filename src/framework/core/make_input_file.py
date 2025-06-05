@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 from collections import OrderedDict
-import hepunits
 import particle
+import hepunits
 from particle import Particle
 import numpy as np
 import os
