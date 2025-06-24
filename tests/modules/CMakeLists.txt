@@ -12,6 +12,7 @@ set (test_modules_sources
   testUrQMD.cpp
   testCONEX.cpp
   testParticleCut.cpp
+  testProductionProfile.cpp
   testSibyll.cpp
   testEpos.cpp
   testRadio.cpp

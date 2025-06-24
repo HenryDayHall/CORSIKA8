@@ -14,6 +14,7 @@ from .observation_plane import ObservationPlane
 from .output import Output
 from .particle_cut import ParticleCut
 from .primary import Particle, PrimaryParticle
+from .production_profile import ProductionProfile
 from .radio_process import RadioProcess
 from .track_writer import TrackWriter
 
@@ -22,6 +23,7 @@ __all__ = [
     "ObservationPlane",
     "TrackWriter",
     "LongitudinalProfile",
+    "ProductionProfile",
     "BetheBlochPDG",
     "ParticleCut",
     "EnergyLoss",

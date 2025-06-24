@@ -149,6 +149,7 @@ namespace corsika {
   TimeType constexpr get_lifetime(Code const); //!< lifetime
 
   bool constexpr is_hadron(Code const); //!< true if particle is hadron
+  bool constexpr is_kaon(Code const);   //!< true if particle is strange meson
   bool constexpr is_em(Code const); //!< true if particle is electron, positron or photon
   bool constexpr is_muon(Code const);     //!< true if particle is mu+ or mu-
   bool constexpr is_neutrino(Code const); //!< true if particle is (anti-) neutrino

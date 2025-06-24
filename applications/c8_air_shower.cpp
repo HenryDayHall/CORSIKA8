@@ -29,6 +29,7 @@
 #include <corsika/modules/writers/EnergyLossWriter.hpp>
 #include <corsika/modules/writers/InteractionWriter.hpp>
 #include <corsika/modules/writers/LongitudinalWriter.hpp>
+#include <corsika/modules/writers/ProductionWriter.hpp>
 #include <corsika/modules/writers/PrimaryWriter.hpp>
 #include <corsika/modules/writers/SubWriter.hpp>
 #include <corsika/output/OutputManager.hpp>
@@ -47,7 +48,6 @@
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/Epos.hpp>
-#include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
 #include <corsika/modules/PROPOSAL.hpp>
 #include <corsika/modules/ParticleCut.hpp>
@@ -57,6 +57,9 @@
 #include <corsika/modules/Sophia.hpp>
 #include <corsika/modules/StackInspector.hpp>
 #include <corsika/modules/thinning/EMThinning.hpp>
+#include <corsika/modules/LongitudinalProfile.hpp>
+#include <corsika/modules/ProductionProfile.hpp>
+
 // for ICRC2023
 #ifdef WITH_FLUKA
 #include <corsika/modules/FLUKA.hpp>
@@ -523,6 +526,10 @@ int main(int argc, char** argv) {
   output.add("profile", profile);
   LongitudinalProfile<SubWriter<decltype(profile)>> longprof{profile};
 
+  ProductionWriter prod_profile{showerAxis, dX};
+  output.add("production_profile", prod_profile);
+  ProductionProfile<SubWriter<decltype(prod_profile)>> prodprof{prod_profile};
+
 // for ICRC2023
 #ifdef WITH_FLUKA
   corsika::fluka::Interaction leIntModel{all_elements};
@@ -665,8 +672,8 @@ int main(int argc, char** argv) {
     // assemble the final process sequence
     auto sequence =
         make_sequence(stackInspect, neutrinoPrimaryPythia, hadronSequence, decaySequence,
-                      emCascade, emContinuous, coreas, zhs, longprof, observationLevel,
-                      inter_writer, thinning, cut);
+                      emCascade, prodprof, emContinuous, coreas, zhs, longprof,
+                      observationLevel, inter_writer, thinning, cut);
 
     // create the cascade object using the default stack and tracking
     // implementation
