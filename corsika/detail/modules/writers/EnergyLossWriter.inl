@@ -58,6 +58,36 @@ namespace corsika {
   template <typename TOutput>
   inline void EnergyLossWriter<TOutput>::endOfShower(unsigned int const showerId) {
 
+    // determined Xmax and dEdXmax from quadratic interpolation
+    double maximum = 0;
+    size_t iMaximum = 0;
+    for (size_t i = 0; i < profile_.size() - 3; ++i) {
+      double value =
+          (profile_[i + 0].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) +
+           profile_[i + 1].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) +
+           profile_[i + 2].at(static_cast<int>(dEdX_output::ProfileIndex::Total))) /
+          1_GeV;
+      if (value > maximum) {
+        maximum = value;
+        iMaximum = i;
+      }
+    }
+
+    double const dX = dX_ / 1_g * square(1_cm);
+
+    auto [Xmax, dEdXmax] = FindXmax::interpolateProfile(
+        dX * (0.5 + iMaximum), dX * (1.5 + iMaximum), dX * (2.5 + iMaximum),
+        profile_[iMaximum + 0].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) /
+            1_GeV,
+        profile_[iMaximum + 1].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) /
+            1_GeV,
+        profile_[iMaximum + 2].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) /
+            1_GeV);
+
+    summary_["shower_" + std::to_string(showerId)]["sum_dEdX"] = getEnergyLost() / 1_GeV;
+    summary_["shower_" + std::to_string(showerId)]["Xmax"] = Xmax;
+    summary_["shower_" + std::to_string(showerId)]["dEdXmax"] = dEdXmax;
+
     int iRow{0};
     for (dEdX_output::Profile const& row : profile_) {
       // here: write to underlying writer (e.g. parquet)
@@ -203,37 +233,7 @@ namespace corsika {
   template <typename TOutput>
   inline YAML::Node EnergyLossWriter<TOutput>::getSummary() const {
 
-    // determined Xmax and dEdXmax from quadratic interpolation
-    double maximum = 0;
-    size_t iMaximum = 0;
-    for (size_t i = 0; i < profile_.size() - 3; ++i) {
-      double value =
-          (profile_[i + 0].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) +
-           profile_[i + 1].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) +
-           profile_[i + 2].at(static_cast<int>(dEdX_output::ProfileIndex::Total))) /
-          1_GeV;
-      if (value > maximum) {
-        maximum = value;
-        iMaximum = i;
-      }
-    }
-
-    double const dX = dX_ / 1_g * square(1_cm);
-
-    auto [Xmax, dEdXmax] = FindXmax::interpolateProfile(
-        dX * (0.5 + iMaximum), dX * (1.5 + iMaximum), dX * (2.5 + iMaximum),
-        profile_[iMaximum + 0].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) /
-            1_GeV,
-        profile_[iMaximum + 1].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) /
-            1_GeV,
-        profile_[iMaximum + 2].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) /
-            1_GeV);
-
-    YAML::Node summary;
-    summary["sum_dEdX"] = getEnergyLost() / 1_GeV;
-    summary["Xmax"] = Xmax;
-    summary["dEdXmax"] = dEdXmax;
-    return summary;
+    return summary_;
   }
 
 } // namespace corsika

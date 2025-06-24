@@ -51,14 +51,20 @@ primary_config = lib.get("primary").config
 pr_config = lib.get("profile").config  # meta information
 pr = lib.get("profile").astype("pandas")  # particle-number values
 
+# Get the contents of the "production" sub-directory
+pr_prod_config = lib.get("production_profile").config  # meta information
+pr_prod = lib.get("production_profile").astype("pandas")  # particle-number values
+pr_prod_max = lib.get("production_profile").xmumax
+
 # Get the contents of the "energyloss" sub-directory
 prdx_config = lib.get("energyloss").config  # meta information
 prdx = lib.get("energyloss").astype("pandas")  # energy loss spectrum
+prdx_max = lib.get("energyloss").xmax
 
 title = f"Primary: {primary.name}," + r" E$_{\rm tot}$:"
 title += f" {primary.total_energy:.2e} {primary_config['units']['energy']},"
 title += f" Zen: {np.rad2deg(np.pi - np.arccos(primary.nz)):0.1f} deg"
-
+title += f" Xmax: {prdx_max} g/cm²"
 
 def draw_profiles(pr, pr_config):
     # Plots the number of particles as a function of slant depth
@@ -81,6 +87,27 @@ def draw_profiles(pr, pr_config):
     print("Saving", plot_path)
     fig.savefig(plot_path)
 
+def draw_production_profiles(pr, pr_config, pr_max):
+    # Plots the number of muons that are produced as a function of slant depth
+    # individual distributions are made for each particle type
+    fig, ax = plt.subplots(1, 1)
+    for part in pr.keys():
+        # Skip shower id number and slant depth columns
+        if "shower" == part or "X" == part:
+            continue
+        plot_avg_profile(pr, part, ax)
+    ax.set_title(pr_config["type"] + "\n" + title + r"$\langle X_{\mu}^{\rm max}\rangle=%6.2f$" % np.mean(pr_max))
+    unit_grammage_str = pr_config["units"]["grammage"]  # get units of simulation output
+    ax.set_xlabel(f"slant depth, X ({unit_grammage_str})")
+    ax.set_ylabel("N(X)")
+    ax.legend()
+    ax.set_yscale("log")
+    sel = (pr["all"]>0)
+    ax.set_xlim(min(pr["X"]), max(pr["X"][sel]))
+
+    plot_path = os.path.join(args.output_dir, "shower_profile_prod_profiles.png")
+    print("Saving", plot_path)
+    fig.savefig(plot_path)
 
 def draw_energyloss(prdx, prdx_config):
     # Plots the energy deposition as a function of slant depth
@@ -99,4 +126,5 @@ def draw_energyloss(prdx, prdx_config):
 
 
 draw_profiles(pr, pr_config)
+draw_production_profiles(pr_prod, pr_prod_config, pr_prod_max)
 draw_energyloss(prdx, prdx_config)

@@ -106,6 +106,11 @@ namespace corsika {
     return particle::detail::isHadron[static_cast<CodeIntType>(code)];
   }
 
+  inline bool constexpr is_kaon(Code const c) {
+    return c == Code::KPlus || c == Code::KMinus || c == Code::K0Long ||
+           c == Code::K0Short;
+  }
+
   inline bool constexpr is_em(Code const c) {
     return c == Code::Electron || c == Code::Positron || c == Code::Photon;
   }

@@ -127,7 +127,7 @@ TEST_CASE("EnergyLossWriter") {
   CHECK(config["grammage_threshold"].as<double>() == Approx(0.0001));
 
   auto const summary = test.getSummary();
-  CHECK(summary["sum_dEdX"].as<double>() == 600);
+  CHECK(summary["shower_0"]["sum_dEdX"].as<double>() == 600);
 
   // clean up
   if (boost::filesystem::exists(outputDir)) { boost::filesystem::remove_all(outputDir); }

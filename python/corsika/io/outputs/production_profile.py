@@ -1,5 +1,5 @@
 """
-Read data written by EnergyLoss.
+Read data written by ProductionProfile.
 
 (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
 
@@ -18,14 +18,14 @@ from ..converters import arrow_to_numpy
 from .output import Output
 
 
-class EnergyLoss(Output):
+class ProductionProfile(Output):
     """
-    Read particle data from a EnergyLoss process.
+    Read particle data from an ProductionProfile.
     """
 
     def __init__(self, path: str):
         """
-        Load the particle data into a parquet table.
+        Load the muon production data into a parquet table.
 
         Parameters
         ----------
@@ -36,19 +36,18 @@ class EnergyLoss(Output):
 
         # try and load our data
         try:
-            self.__data = pq.read_table(op.join(path, "dEdX.parquet"))
+            self.__data = pq.read_table(op.join(path, "profile.parquet"))
             with open(op.join(path, "summary.yaml"), "r") as f:
                 temp = yaml.load(f, Loader=yaml.Loader)
-                self.__xmax = [x["Xmax"] for x in temp.values()]
-
+                self.__xmumax = [x["XmuMax"] for x in temp.values()]
         except Exception as e:
             logging.getLogger("corsika").warn(
-                f"An error occured loading a EnergyLoss: {e}"
+                f"An error occured loading a ProductionProfile: {e}"
             )
 
     @property
-    def xmax(self) -> list:
-        return self.__xmax
+    def xmumax(self) -> list:
+        return self.__xmumax
 
     def is_good(self) -> bool:
         """
@@ -64,7 +63,7 @@ class EnergyLoss(Output):
 
     def astype(self, dtype: str = "pandas", **kwargs: Any) -> Any:
         """
-        Load the particle data from this track writer.
+        Load the particle data from this production profile.
 
         All additional keyword arguments are passed to `parquet.read_table`
 
@@ -87,7 +86,7 @@ class EnergyLoss(Output):
         else:
             raise ValueError(
                 (
-                    f"Unknown format '{dtype}' for EnergyLoss. "
+                    f"Unknown format '{dtype}' for ProductionProfile. "
                     "We currently only support ['arrow', 'pandas', 'numpy']."
                 )
             )
@@ -96,4 +95,4 @@ class EnergyLoss(Output):
         """
         Return a string representation of this class.
         """
-        return f"EnergyLoss('{self.config['name']}')"
+        return f"ProductionProfile('{self.config['name']}')"
