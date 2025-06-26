@@ -476,7 +476,6 @@ install (DIRECTORY modules/data DESTINATION ${CMAKE_INSTALL_DATADIR}/corsika)
 #
 add_subdirectory (tools)
 
-
 #+++++++++++++++++++++++++++++++
 #
 # final summary output
