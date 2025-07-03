@@ -42,7 +42,6 @@ class RadioProcess(Output):
 
         # try and load our data
         try:
-            print("Trying to load data")
             self.__data = self.load_data(path)
         except Exception as e:
             logging.getLogger("corsika").warn(
