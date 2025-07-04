@@ -42,12 +42,16 @@ class EnergyLoss(Output):
                 self.__xmax = [x["Xmax"] for x in temp.values()]
 
         except Exception as e:
-            logging.getLogger("corsika").warn(
+            logging.getLogger("corsika").warning(
                 f"An error occured loading a EnergyLoss: {e}"
             )
 
     @property
     def xmax(self) -> list:
+        if not self.is_good():
+            msg = "Requesting xmax from uninitialized EnergyLoss. Check that"
+            msg += "your output includes a valid dEdX.parquet file."
+            raise RuntimeError(msg)
         return self.__xmax
 
     def is_good(self) -> bool:
