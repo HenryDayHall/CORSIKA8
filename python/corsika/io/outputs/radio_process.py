@@ -59,16 +59,12 @@ class RadioProcess(Output):
 
         """
         data = pq.read_table(op.join(path, "observers.parquet"))
-        nshowers = int(data.to_pandas()["shower"].iloc[-1] + 1)
-        observers = list(self.config["observers"].keys())
-
-        # check that we got some events
-        if nshowers == 0:
-            logging.warn(f"Radio Process {self.config['name']} contains 0 showers.")
-
-        # if there are no observers,
-        if len(observers) == 0:
-            logging.warn(f"No observers were found for {self.config['name']}")
+        if not len(data.to_pandas()["shower"]):
+            nshowers = 0
+            observers = []
+        else:
+            nshowers = int(data.to_pandas()["shower"].iloc[-1] + 1)
+            observers = list(self.config["observers"].keys())
 
         obs_nr = 0
         dictionary = {}
@@ -104,7 +100,7 @@ class RadioProcess(Output):
         bool:
             True if this is a good output.
         """
-        return self.__data is not None
+        return self.__data is not None and "observers" in self.config
 
     def astype(self, dtype: str = "pandas", **kwargs: Any) -> Any:
         """
@@ -134,6 +130,8 @@ class RadioProcess(Output):
         """
         Return a list with the names of the observers of this RadioProcess.
         """
+        if not self.is_good():
+            return []
         observers = list(self.config["observers"].keys())
         return observers
 
@@ -144,7 +142,7 @@ class RadioProcess(Output):
         type, start time of detection, detection duration, number of bins,
         sampling frequency, location x, location y, location z.
         """
-        observers = list(self.config["observers"].keys())
+        observers = self.get_observers_list()
         dictionary = {}
         # loop over each of the observers
         for name in observers:
