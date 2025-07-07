@@ -98,8 +98,9 @@ namespace corsika::proposal {
     }
 
     // rotation of zenith by moliere_angle
-    EigenTransform const rotation1{
-        Eigen::AngleAxisd(scattering_angle, axis1.getEigenVector().normalized())};
+    Eigen::Matrix3d const rotation1{
+        Eigen::AngleAxisd(scattering_angle, axis1.getEigenVector().normalized())
+            .toRotationMatrix()};
     std::uniform_real_distribution<double> distr_azimuth(0., 2 * M_PI);
 
     // rotation of azimuth by random angle between 0 and 2*PI
@@ -109,24 +110,21 @@ namespace corsika::proposal {
       throw std::runtime_error("null-vector given as axis parameter");
     }
 
-    EigenTransform const rotation2{
-        Eigen::AngleAxisd(random_angle, axis2.getEigenVector().normalized())};
+    Eigen::Matrix3d const rotation2{
+        Eigen::AngleAxisd(random_angle, axis2.getEigenVector().normalized())
+            .toRotationMatrix()};
 
-    EigenTransform t = EigenTransform::Identity();
-    t = t * rotation2.inverse(Eigen::TransformTraits::Isometry);
-    t = t * rotation1.inverse(Eigen::TransformTraits::Isometry);
+    Eigen::Matrix3d t = rotation2.transpose() * rotation1.transpose();
     // Rotation to get the scattered_particle_dir
     QuantityVector<dimensionless_d> new_rotation = QuantityVector<dimensionless_d>(
-        t.linear() * initial_particle_dir.getComponents().getEigenVector());
+        t * initial_particle_dir.getComponents().getEigenVector());
 
     // update particle direction after continuous loss caused by multiple
     // scattering
-    EigenTransform t2 = EigenTransform::Identity();
-    t2 = rotation2 * t2;
-    t2 = rotation1 * t2;
+    Eigen::Matrix3d t2 = rotation1 * rotation2;
     // Rotation to get initial_particle_dir that was rebase with the second rotation
     QuantityVector<dimensionless_d> back_rotation =
-        QuantityVector<dimensionless_d>(t2.linear() * new_rotation.getEigenVector());
+        QuantityVector<dimensionless_d>(t2 * new_rotation.getEigenVector());
 
     DirectionVector diff_dir_{root, new_rotation - back_rotation};
     step.add_dU(diff_dir_);
