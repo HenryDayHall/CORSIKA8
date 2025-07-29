@@ -106,9 +106,6 @@ namespace corsika::proposal {
     // rotation of azimuth by random angle between 0 and 2*PI
     double const random_angle = distr_azimuth(RNG_);
     auto const axis2 = initial_particle_dir.getComponents();
-    if (axis2.getEigenVector().isZero()) {
-      throw std::runtime_error("null-vector given as axis parameter");
-    }
 
     Eigen::Matrix3d const rotation2{
         Eigen::AngleAxisd(random_angle, axis2.getEigenVector().normalized())
