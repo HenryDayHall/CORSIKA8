@@ -121,12 +121,7 @@ namespace corsika::proposal {
 
     // update particle direction after continuous loss caused by multiple
     // scattering
-    Eigen::Matrix3d t2 = rotation1 * rotation2;
-    // Rotation to get initial_particle_dir that was rebase with the second rotation
-    QuantityVector<dimensionless_d> back_rotation =
-        QuantityVector<dimensionless_d>(t2 * new_rotation.getEigenVector());
-
-    DirectionVector diff_dir_{root, new_rotation - back_rotation};
+    DirectionVector diff_dir_{root, new_rotation - axis2.getEigenVector()};
     step.add_dU(diff_dir_);
   }
 
