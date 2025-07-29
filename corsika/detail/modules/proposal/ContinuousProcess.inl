@@ -113,12 +113,12 @@ namespace corsika::proposal {
 
     Eigen::Matrix3d t = rotation2.transpose() * rotation1.transpose();
     // Rotation to get the scattered_particle_dir
-    QuantityVector<dimensionless_d> new_rotation = QuantityVector<dimensionless_d>(
+    QuantityVector<dimensionless_d> scattered_vector = QuantityVector<dimensionless_d>(
         t * initial_particle_dir.getComponents().getEigenVector());
 
     // update particle direction after continuous loss caused by multiple
     // scattering
-    DirectionVector diff_dir_{root, new_rotation - axis2.getEigenVector()};
+    DirectionVector diff_dir_{root, scattered_vector - axis2.getEigenVector()};
     step.add_dU(diff_dir_);
   }
 
