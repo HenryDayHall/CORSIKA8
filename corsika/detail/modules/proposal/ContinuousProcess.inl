@@ -99,7 +99,7 @@ namespace corsika::proposal {
 
     // rotation of zenith by moliere_angle
     Eigen::Matrix3d const rotation1{
-        Eigen::AngleAxisd(scattering_angle, axis1.getEigenVector().normalized())
+        Eigen::AngleAxisd(-scattering_angle, axis1.getEigenVector().normalized())
             .toRotationMatrix()};
     std::uniform_real_distribution<double> distr_azimuth(0., 2 * M_PI);
 
@@ -108,13 +108,12 @@ namespace corsika::proposal {
     auto const axis2 = initial_particle_dir.getComponents();
 
     Eigen::Matrix3d const rotation2{
-        Eigen::AngleAxisd(random_angle, axis2.getEigenVector().normalized())
+        Eigen::AngleAxisd(-random_angle, axis2.getEigenVector().normalized())
             .toRotationMatrix()};
 
-    Eigen::Matrix3d t = rotation2.transpose() * rotation1.transpose();
     // Rotation to get the scattered_particle_dir
     QuantityVector<dimensionless_d> scattered_vector = QuantityVector<dimensionless_d>(
-        t * initial_particle_dir.getComponents().getEigenVector());
+        rotation2 * rotation1 * initial_particle_dir.getComponents().getEigenVector());
 
     // update particle direction after continuous loss caused by multiple
     // scattering
