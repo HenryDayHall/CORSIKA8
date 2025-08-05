@@ -10,6 +10,7 @@ See file LICENSE for a full version of the license.
 import logging
 import os
 import os.path as op
+import re
 import tarfile
 import tempfile
 from typing import Any, Dict, List, Optional, Union
@@ -17,6 +18,22 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 
 from . import outputs
+
+
+def parse_runtime_to_seconds(runtime_str: str) -> float:
+    pattern = r"\+?(\d+)d\s+(\d{1,2}):(\d{2}):([\d.]+)"
+    match = re.match(pattern, runtime_str)
+    if not match:
+        raise ValueError(f"Invalid runtime format: {runtime_str}")
+
+    days, hours, minutes, seconds = match.groups()
+    total_seconds = (
+        int(days) * 86400 +
+        int(hours) * 3600 +
+        int(minutes) * 60 +
+        float(seconds)
+    )
+    return total_seconds
 
 
 class Library(object):
@@ -72,6 +89,11 @@ class Library(object):
             msg += " The simulation may not have finished. Will not load library"
             logging.getLogger("corsika").warning(msg)
             return
+
+        raw_runtime = self.summary.get("runtime")
+        if isinstance(raw_runtime, str):
+            self.summary["runtime"] = parse_runtime_to_seconds(raw_runtime)
+        print(self.summary)
 
         if "output_dirs" in self.summary.keys():
             output_dirs = self.summary["output_dirs"]
