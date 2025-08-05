@@ -92,21 +92,32 @@ namespace corsika::proposal {
           root, {0, -initial_particle_dir.getZ(root), initial_particle_dir.getY(root)}};
     }
 
+    auto const axis1 = normal_vec.getComponents();
+    if (axis1.getEigenVector().isZero()) {
+      throw std::runtime_error("null-vector given as axis parameter");
+    }
+
     // rotation of zenith by moliere_angle
-    CoordinateSystemPtr rotated1 =
-        make_rotation(root, normal_vec.getComponents(), scattering_angle);
+    Eigen::Matrix3d const rotation1{
+        Eigen::AngleAxisd(-scattering_angle, axis1.getEigenVector().normalized())
+            .toRotationMatrix()};
+    std::uniform_real_distribution<double> distr_azimuth(0., 2 * M_PI);
 
     // rotation of azimuth by random angle between 0 and 2*PI
-    std::uniform_real_distribution<double> distr_azimuth(0., 2 * M_PI);
-    CoordinateSystemPtr rotated2 = make_rotation(
-        rotated1, initial_particle_dir.getComponents(), distr_azimuth(RNG_));
+    double const random_angle = distr_azimuth(RNG_);
+    auto const axis2 = initial_particle_dir.getComponents();
 
-    DirectionVector scattered_particle_dir{root,
-                                           initial_particle_dir.getComponents(rotated2)};
+    Eigen::Matrix3d const rotation2{
+        Eigen::AngleAxisd(-random_angle, axis2.getEigenVector().normalized())
+            .toRotationMatrix()};
+
+    // Rotation to get the scattered_particle_dir
+    QuantityVector<dimensionless_d> scattered_vector = QuantityVector<dimensionless_d>(
+        rotation2 * rotation1 * initial_particle_dir.getComponents().getEigenVector());
 
     // update particle direction after continuous loss caused by multiple
     // scattering
-    DirectionVector diff_dir_ = scattered_particle_dir - initial_particle_dir;
+    DirectionVector diff_dir_{root, scattered_vector - axis2.getEigenVector()};
     step.add_dU(diff_dir_);
   }
 
