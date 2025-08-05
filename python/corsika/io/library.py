@@ -90,13 +90,6 @@ class Library(object):
             logging.getLogger("corsika").warning(msg)
             return
 
-        # Normalize runtime to seconds (float), since YAML may parse short
-        # durations as float and longer ones as strings.
-        raw_runtime = self.summary.get("runtime")
-        if isinstance(raw_runtime, str):
-            self.summary["runtime"] = parse_runtime_to_seconds(raw_runtime)
-        print(self.summary)
-
         if "output_dirs" in self.summary.keys():
             output_dirs = self.summary["output_dirs"]
             msg = f"Reading in sub-directories: {output_dirs}"
@@ -197,7 +190,14 @@ class Library(object):
 
         """
 
-        return Library.__load_yaml(path, "summary.yaml")
+        summary = Library.__load_yaml(path, "summary.yaml")
+        if summary is not None:
+            # Normalize runtime to seconds (float), since YAML may parse short
+            # durations as float and longer ones as strings.
+            raw_runtime = summary.get("runtime")
+            if isinstance(raw_runtime, str):
+                summary["runtime"] = parse_runtime_to_seconds(raw_runtime)
+        return summary
 
     @staticmethod
     def __valid_library(path: str) -> bool:
