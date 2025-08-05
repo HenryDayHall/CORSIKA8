@@ -90,6 +90,8 @@ class Library(object):
             logging.getLogger("corsika").warning(msg)
             return
 
+        # Normalize runtime to seconds (float), since YAML may parse short
+        # durations as float and longer ones as strings.
         raw_runtime = self.summary.get("runtime")
         if isinstance(raw_runtime, str):
             self.summary["runtime"] = parse_runtime_to_seconds(raw_runtime)
