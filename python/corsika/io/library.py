@@ -28,10 +28,7 @@ def parse_runtime_to_seconds(runtime_str: str) -> float:
 
     days, hours, minutes, seconds = match.groups()
     total_seconds = (
-        int(days) * 86400 +
-        int(hours) * 3600 +
-        int(minutes) * 60 +
-        float(seconds)
+        int(days) * 86400 + int(hours) * 3600 + int(minutes) * 60 + float(seconds)
     )
     return total_seconds
 
