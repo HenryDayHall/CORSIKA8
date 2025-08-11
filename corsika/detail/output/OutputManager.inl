@@ -162,8 +162,11 @@ namespace corsika {
     // add the time and duration info
     summary["start time"] = timeToString(start_time);
     summary["end time"] = timeToString(end_time);
-    summary["runtime"] = (durationDays ? fmt::format("+{}d ", durationDays) : "") +
-                         fmt::format("{:%H:%M:%S}", end_time - start_time);
+    summary["runtime"] =
+        std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time)
+            .count();
+    summary["runtime_human"] = (durationDays ? fmt::format("+{}d ", durationDays) : "") +
+                               fmt::format("{:%H:%M:%S}", end_time - start_time);
 
     std::vector<std::string> output_dirs;
     for (auto const& outs : outputs_) { output_dirs.push_back(outs.first); }
