@@ -23,7 +23,10 @@ namespace corsika {
    * The ObservationPlane writes PDG codes, kinetic energies, locations and momentum unit
    * vectors of particles with respect to the central point of the plane into its output
    * file. By default, the particles are considered "absorbed" afterwards. You can also
-   * set the ObservationPlane as non-absorbing.
+   * set the ObservationPlane as non-absorbing. The plane's normal vector defines the
+   * "positive side" from which particles are "caught." Only particles crossing the plane
+   * from the positive normal side are recorded. The direction vector `x_dir` should be
+   * orthogonal to the normal vector but otherwise arbitrary.
    *
    * The default output format is parquet.
    *
