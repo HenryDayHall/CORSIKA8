@@ -20,19 +20,6 @@ import yaml
 from . import outputs
 
 
-def parse_runtime_to_seconds(runtime_str: str) -> float:
-    pattern = r"\+?(\d+)d\s+(\d{1,2}):(\d{2}):([\d.]+)"
-    match = re.match(pattern, runtime_str)
-    if not match:
-        raise ValueError(f"Invalid runtime format: {runtime_str}")
-
-    days, hours, minutes, seconds = match.groups()
-    total_seconds = (
-        int(days) * 86400 + int(hours) * 3600 + int(minutes) * 60 + float(seconds)
-    )
-    return total_seconds
-
-
 class Library(object):
     """
     Represents a library ("run") of showers produced by C8.
@@ -187,14 +174,7 @@ class Library(object):
 
         """
 
-        summary = Library.__load_yaml(path, "summary.yaml")
-        if summary is not None:
-            # Normalize runtime to seconds (float), since YAML may parse short
-            # durations as float and longer ones as strings.
-            raw_runtime = summary.get("runtime")
-            if isinstance(raw_runtime, str):
-                summary["runtime"] = parse_runtime_to_seconds(raw_runtime)
-        return summary
+        return Library.__load_yaml(path, "summary.yaml")
 
     @staticmethod
     def __valid_library(path: str) -> bool:
