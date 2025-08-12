@@ -10,7 +10,6 @@ See file LICENSE for a full version of the license.
 import logging
 import os
 import os.path as op
-import re
 import tarfile
 import tempfile
 from typing import Any, Dict, List, Optional, Union
