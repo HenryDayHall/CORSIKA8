@@ -163,7 +163,7 @@ namespace corsika {
     summary["start time"] = timeToString(start_time);
     summary["end time"] = timeToString(end_time);
     summary["runtime"] = (durationDays ? fmt::format("+{}d ", durationDays) : "") +
-                               fmt::format("{:%H:%M:%S}", end_time - start_time);
+                         fmt::format("{:%H:%M:%S}", end_time - start_time);
     summary["runtime_raw"] =
         std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time)
             .count();
