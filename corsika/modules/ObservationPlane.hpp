@@ -26,7 +26,7 @@ namespace corsika {
    * set the ObservationPlane as non-absorbing. The plane's normal vector defines the
    * "positive side" from which particles are "caught." Only particles crossing the plane
    * from the positive normal side are recorded. The direction vector `x_dir` should be
-   * orthogonal to the normal vector but otherwise arbitrary.
+   * orthogonal to the normal vector and defines the x/y coordinate system for the output
    *
    * The default output format is parquet.
    *
