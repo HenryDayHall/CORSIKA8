@@ -152,11 +152,6 @@ namespace corsika {
                (std::fabs(postDoppler_) < approxThreshold_))) {
             CORSIKA_LOG_DEBUG("Used ZHS-like approximation in CoREAS - radio");
 
-            // clear the existing paths for this particle and track, since we don't need
-            // them anymore
-            paths1.clear();
-            paths2.clear();
-
             auto const halfVector_{(startPoint_ - endPoint_) * 0.5};
             auto const midPoint_{endPoint_ + halfVector_};
 
