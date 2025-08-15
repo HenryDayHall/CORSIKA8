@@ -58,9 +58,9 @@ namespace corsika {
           // Checks if we are in fraunhoffer domain
           if (fraunhLimit > 1.0) {
             /// code for dividing track and calculating field.
-            double const nSubTracks{sqrt(fraunhLimit) + 1};
-            auto const step_{(endPoint - startPoint) / nSubTracks};
-            TimeType const timeStep{(endTime - startTime) / nSubTracks};
+            int const nSubTracks = sqrt(fraunhLimit) + 1.0;
+            auto const step_{(endPoint - startPoint) / double(nSubTracks)};
+            TimeType const timeStep{(endTime - startTime) / double(nSubTracks)};
             // energy should be divided up when it is possible to get the energy at end of
             // track!!!!
             auto point1{startPoint};
