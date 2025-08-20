@@ -115,5 +115,44 @@ namespace corsika {
       }
       return std::make_tuple(0, 0);
     }
+
+    static std::tuple<double, double> fitParabola(const std::vector<double>& x,
+                                                  const std::vector<double>& y) {
+      assert(x.size() == y.size());
+      size_t N = x.size();
+
+      // accumulate sums
+      double Sx2 = 0, Sx3 = 0, Sx4 = 0, Sx = 0, Sx2y = 0, Sxy = 0, Sy = 0;
+      for (size_t i = 0; i < N; i++) {
+        double xi = x[i], yi = y[i];
+        double xi2 = xi * xi;
+        Sx += xi;
+        Sx2 += xi2;
+        Sx3 += xi2 * xi;
+        Sx4 += xi2 * xi2;
+        Sy += yi;
+        Sxy += xi * yi;
+        Sx2y += xi2 * yi;
+      }
+
+      // solve normal equations for [a b c]^T
+      // | Sx4 Sx3 Sx2 |   |a|   |Sx2y|
+      // | Sx3 Sx2 Sx  | * |b| = |Sxy |
+      // | Sx2 Sx  N   |   |c|   |Sy  |
+
+      double A[3][3] = {{Sx4, Sx3, Sx2}, {Sx3, Sx2, Sx}, {Sx2, Sx, (double)N}};
+      double rhs[3] = {Sx2y, Sxy, Sy};
+      double coef[3];
+      solve3by3(rhs, A, coef);
+
+      double a = coef[0], b = coef[1], c = coef[2];
+
+      if (a < 0) {
+        double Xmax = -b / (2 * a);
+        double Ymax = a * Xmax * Xmax + b * Xmax + c;
+        return {Xmax, Ymax};
+      }
+      return std::make_tuple(0, 0);
+    }
   };
 } // namespace corsika
