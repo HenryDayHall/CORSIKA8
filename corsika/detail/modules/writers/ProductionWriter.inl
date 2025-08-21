@@ -61,22 +61,26 @@ namespace corsika {
     double maximum = 0;
     size_t iMaximum = 0;
 
+    constexpr size_t window_size = 20;
     constexpr int HadronIdx =
         static_cast<int>(corsika::production_profile::ProjectileIndex::Hadron);
 
     auto x_at = [&](size_t i) { return (i + 0.5) * (dX_ / 1_g * square(1_cm)); };
     auto y_at = [&](size_t i) { return profile_[i].at(HadronIdx); };
 
-    for (size_t i = 0; i < profile_.size() - 3; ++i) {
-      double value = y_at(i) + y_at(i + 1) + y_at(i + 2) + y_at(i + 3) + y_at(i + 4);
-      if (value > maximum) {
-        maximum = value;
-        iMaximum = i;
-      }
+    for (size_t i = 0; i <= profile_.size() - window_size; ++i) {
+        double value = 0;
+        for (size_t j = 0; j < window_size; ++j) {
+            value += y_at(i + j);
+        }
+        if (value > maximum) {
+            maximum = value;
+            iMaximum = i;
+        }
     }
 
     std::vector<double> xs, ys;
-    for (int j = -2; j <= 2; j++) {
+    for (size_t j = 0; j < window_size; ++j) {
       xs.push_back(x_at(iMaximum + j));
       ys.push_back(y_at(iMaximum + j));
     }
