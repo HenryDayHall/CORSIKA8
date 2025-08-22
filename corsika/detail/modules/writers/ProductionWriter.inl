@@ -69,14 +69,12 @@ namespace corsika {
     auto y_at = [&](size_t i) { return profile_[i].at(HadronIdx); };
 
     for (size_t i = 0; i <= profile_.size() - window_size; ++i) {
-        double value = 0;
-        for (size_t j = 0; j < window_size; ++j) {
-            value += y_at(i + j);
-        }
-        if (value > maximum) {
-            maximum = value;
-            iMaximum = i;
-        }
+      double value = 0;
+      for (size_t j = 0; j < window_size; ++j) { value += y_at(i + j); }
+      if (value > maximum) {
+        maximum = value;
+        iMaximum = i;
+      }
     }
 
     std::vector<double> xs, ys;
