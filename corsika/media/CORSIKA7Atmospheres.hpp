@@ -109,7 +109,7 @@ namespace corsika {
            {40_km, grammage(1307.826), 645330_cm},
            {100_km, grammage(763.1139), 720851.4_cm},
            {112.8_km, grammage(1), 1e9_cm}}},
-         {{{4_km, grammage(113.3362), 923077_cm},
+         {{{4_km, grammage(1103.3362), 923077_cm},
            {10_km, grammage(1226.5761), 1109960_cm},
            {40_km, grammage(1382.6933), 630217_cm},
            {100_km, grammage(685.6073), 726901.3_cm},
