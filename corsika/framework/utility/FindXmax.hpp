@@ -73,7 +73,7 @@ namespace corsika {
      * M.Unger 12/1/05
      *
      ****************************************************/
-    static bool solve3by3(double y[3], double A[3][3], double x[3]) {
+    static bool solve3by3(double const y[3], double A[3][3], double x[3]) {
       if (invert3by3(A)) {
 
         for (int i = 0; i < 3; i++)
@@ -116,16 +116,23 @@ namespace corsika {
       return std::make_tuple(0, 0);
     }
 
-    static std::tuple<double, double> fitParabola(const std::vector<double>& x,
-                                                  const std::vector<double>& y) {
+    static std::tuple<double, double> EstimateParabolaParameters(
+        const std::vector<double>& x, const std::vector<double>& y) {
       assert(x.size() == y.size());
-      size_t N = x.size();
+      size_t const N = x.size();
 
       // accumulate sums
-      double Sx2 = 0, Sx3 = 0, Sx4 = 0, Sx = 0, Sx2y = 0, Sxy = 0, Sy = 0;
+      double Sx = 0;
+      double Sx2 = 0;
+      double Sx3 = 0;
+      double Sx4 = 0;
+      double Sy = 0;
+      double Sxy = 0;
+      double Sx2y = 0;
       for (size_t i = 0; i < N; i++) {
-        double xi = x[i], yi = y[i];
-        double xi2 = xi * xi;
+        double const xi = x[i];
+        double const yi = y[i];
+        double const xi2 = xi * xi;
         Sx += xi;
         Sx2 += xi2;
         Sx3 += xi2 * xi;
@@ -141,15 +148,17 @@ namespace corsika {
       // | Sx2 Sx  N   |   |c|   |Sy  |
 
       double A[3][3] = {{Sx4, Sx3, Sx2}, {Sx3, Sx2, Sx}, {Sx2, Sx, (double)N}};
-      double rhs[3] = {Sx2y, Sxy, Sy};
+      double const rhs[3] = {Sx2y, Sxy, Sy};
       double coef[3];
       solve3by3(rhs, A, coef);
 
-      double a = coef[0], b = coef[1], c = coef[2];
+      double const a = coef[0];
+      double const b = coef[1];
+      double const c = coef[2];
 
       if (a < 0) {
-        double Xmax = -b / (2 * a);
-        double Ymax = a * Xmax * Xmax + b * Xmax + c;
+        double const Xmax = -b / (2 * a);
+        double const Ymax = a * Xmax * Xmax + b * Xmax + c;
         return {Xmax, Ymax};
       }
       return std::make_tuple(0, 0);

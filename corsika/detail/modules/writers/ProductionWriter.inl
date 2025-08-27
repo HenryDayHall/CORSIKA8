@@ -61,8 +61,8 @@ namespace corsika {
     double maximum = 0;
     size_t iMaximum = 0;
 
-    constexpr size_t window_size = 20;
-    constexpr int HadronIdx =
+    size_t constexpr window_size = 20;
+    int constexpr HadronIdx =
         static_cast<int>(corsika::production_profile::ProjectileIndex::Hadron);
 
     auto x_at = [&](size_t i) { return (i + 0.5) * (dX_ / 1_g * square(1_cm)); };
@@ -83,7 +83,7 @@ namespace corsika {
       ys.push_back(y_at(iMaximum + j));
     }
 
-    auto [Xmumax, dNdXmumax] = FindXmax::fitParabola(xs, ys);
+    auto [Xmumax, dNdXmumax] = FindXmax::EstimateParabolaParameters(xs, ys);
     summary_["shower_" + std::to_string(showerId)]["XmuMax"] = Xmumax;
     summary_["shower_" + std::to_string(showerId)]["dNdXmuMax"] = dNdXmumax;
 
