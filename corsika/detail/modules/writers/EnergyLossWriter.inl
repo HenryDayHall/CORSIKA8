@@ -63,8 +63,7 @@ namespace corsika {
     size_t iMaximum = 0;
 
     size_t constexpr window_size = 20;
-    int constexpr TotalIdx =
-        static_cast<int>(dEdX_output::ProfileIndex::Total);
+    int constexpr TotalIdx = static_cast<int>(dEdX_output::ProfileIndex::Total);
 
     auto x_at = [&](size_t i) { return (i + 0.5) * (dX_ / 1_g * square(1_cm)); };
     auto y_at = [&](size_t i) { return profile_[i].at(TotalIdx) / 1_GeV; };
