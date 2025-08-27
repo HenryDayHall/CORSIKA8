@@ -61,29 +61,30 @@ namespace corsika {
     // determined Xmax and dEdXmax from quadratic interpolation
     double maximum = 0;
     size_t iMaximum = 0;
-    for (size_t i = 0; i < profile_.size() - 3; ++i) {
-      double value =
-          (profile_[i + 0].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) +
-           profile_[i + 1].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) +
-           profile_[i + 2].at(static_cast<int>(dEdX_output::ProfileIndex::Total))) /
-          1_GeV;
+
+    size_t constexpr window_size = 20;
+    int constexpr TotalIdx =
+        static_cast<int>(dEdX_output::ProfileIndex::Total);
+
+    auto x_at = [&](size_t i) { return (i + 0.5) * (dX_ / 1_g * square(1_cm)); };
+    auto y_at = [&](size_t i) { return profile_[i].at(TotalIdx) / 1_GeV; };
+
+    for (size_t i = 0; i <= profile_.size() - window_size; ++i) {
+      double value = 0;
+      for (size_t j = 0; j < window_size; ++j) { value += y_at(i + j); }
       if (value > maximum) {
         maximum = value;
         iMaximum = i;
       }
     }
 
-    double const dX = dX_ / 1_g * square(1_cm);
+    std::vector<double> xs, ys;
+    for (size_t j = 0; j < window_size; ++j) {
+      xs.push_back(x_at(iMaximum + j));
+      ys.push_back(y_at(iMaximum + j));
+    }
 
-    auto [Xmax, dEdXmax] = FindXmax::interpolateProfile(
-        dX * (0.5 + iMaximum), dX * (1.5 + iMaximum), dX * (2.5 + iMaximum),
-        profile_[iMaximum + 0].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) /
-            1_GeV,
-        profile_[iMaximum + 1].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) /
-            1_GeV,
-        profile_[iMaximum + 2].at(static_cast<int>(dEdX_output::ProfileIndex::Total)) /
-            1_GeV);
-
+    auto [Xmax, dEdXmax] = FindXmax::EstimateParabolaParameters(xs, ys);
     summary_["shower_" + std::to_string(showerId)]["sum_dEdX"] = getEnergyLost() / 1_GeV;
     summary_["shower_" + std::to_string(showerId)]["Xmax"] = Xmax;
     summary_["shower_" + std::to_string(showerId)]["dEdXmax"] = dEdXmax;
