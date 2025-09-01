@@ -113,7 +113,6 @@ namespace corsika::tauola {
     /**
      * Set up RNG members to interface cleanly with TAUOLA
      */
-    default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("tauola");
     static corsika::rng_function_type rngFcn_;
     static double WrappedRNG();
   };

@@ -51,7 +51,8 @@ namespace corsika::tauola {
 
       // connect the C8 RNG manager to the TAUOLA RNG manager
       corsika::connect_random_stream(
-          RNG_, [](corsika::rng_function_type f) { Decay::rngFcn_ = f; });
+          RNGManager<>::getInstance().getRandomStream("tauola"),
+          [](corsika::rng_function_type f) { Decay::rngFcn_ = std::move(f); });
       Tpp::Tauola::setRandomGenerator(Decay::WrappedRNG);
     }
   }
