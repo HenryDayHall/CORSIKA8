@@ -38,6 +38,7 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
 TEST_CASE("TAUOLA", "modules") {
   //  Tpp::Tauola::setSeed(0,0,0);
   logging::set_level(logging::level::info);
+  RNGManager<>::getInstance().registerRandomStream("tauola");
 
   // test that we can create and initialize the TAUOLA library.
   SECTION("Create TAUOLA Process") {

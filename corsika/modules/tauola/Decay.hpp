@@ -11,6 +11,7 @@
 #include <corsika/modules/tauola/TauolaInterfaceParticle.hpp>
 #include <corsika/framework/process/DecayProcess.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/modules/Random.hpp>
 
 namespace corsika::tauola {
 
@@ -107,7 +108,18 @@ namespace corsika::tauola {
     std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_tauola_decay");
 
     int count_ = 0; ///< The number of taus decayed with TAUOLA.
+
+  private:
+    /**
+     * Set up RNG members to interface cleanly with TAUOLA
+     */
+    default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("tauola");
+    static corsika::rng_function_type rngFcn_;
+    static double WrappedRNG();
   };
+
+  // Define static member outside the class
+  corsika::rng_function_type Decay::rngFcn_ = nullptr;
 
 } // namespace corsika::tauola
 
