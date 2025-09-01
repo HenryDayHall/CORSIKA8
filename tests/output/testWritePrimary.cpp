@@ -26,7 +26,8 @@ auto setupWritePrimaryEnv() {
 
   ObservationPlane<setup::Tracking, ParticleWriterParquet> obsPlane{
       plane, DirectionVector(rootCS, {1., 0., 0.}),
-      true, // plane should "absorb" particles
+      true,       // plane should "absorb" particles
+      1e-6 * 1_m, // ignored for absorbing planes
       false};
 
   return std::make_tuple(std::move(env), &rootCS, obsPlane);

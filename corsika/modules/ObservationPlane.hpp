@@ -48,11 +48,15 @@ namespace corsika {
      * @param plane The plane.
      * @param x_dir The x-direction/axis.
      * @param absorbing Flag to make the plane absorbing.
-     * @param outputArgs
+     * @param padding if absorbing, particles will be placed this far past the observation
+     * plane to avoid machine-precision issues. Should choose this value to be small based
+     * on the medium
+     * @param outputArgs arguments that will be given to the particle writer
      */
     template <typename... TArgs>
     ObservationPlane(Plane const& plane, DirectionVector const& x_dir,
-                     bool const absorbing = true, TArgs&&... outputArgs);
+                     bool const absorbing = true, LengthType const padding = 1e-6 * 1_m,
+                     TArgs&&... outputArgs);
 
     ~ObservationPlane() {}
 
@@ -73,6 +77,7 @@ namespace corsika {
     DirectionVector const xAxis_;
     DirectionVector const yAxis_;
     bool const deleteOnHit_;
+    LengthType const padding_;
   };
   //! @}
 } // namespace corsika

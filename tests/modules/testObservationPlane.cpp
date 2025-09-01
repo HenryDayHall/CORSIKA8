@@ -53,8 +53,8 @@ TEST_CASE("ObservationPlane", "interface") {
   SECTION("horizontal plane") {
 
     Plane const obsPlane(Point(cs, {10_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
-    ObservationPlane<setup::Tracking, WriterOff> obs(obsPlane,
-                                                     DirectionVector(cs, {0., 1., 0.}));
+    ObservationPlane<setup::Tracking, WriterOff> obs(
+        obsPlane, DirectionVector(cs, {0., 1., 0.}), true, 1e-6 * 1_m);
 
     Step step(particle, no_used_track);
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
@@ -84,7 +84,7 @@ TEST_CASE("ObservationPlane", "interface") {
   SECTION("transparent plane") {
     Plane const obsPlane(Point(cs, {1_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
     ObservationPlane<setup::Tracking, WriterOff> obs(
-        obsPlane, DirectionVector(cs, {0., 0., 1.}), false);
+        obsPlane, DirectionVector(cs, {0., 0., 1.}), false, 1e-6 * 1_m);
 
     Step step(particle, no_used_track);
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
@@ -105,8 +105,8 @@ TEST_CASE("ObservationPlane", "interface") {
 
     Plane const obsPlane(Point(cs, {10_m, 5_m, 5_m}),
                          DirectionVector(cs, {1, 0.1, -0.05}));
-    ObservationPlane<setup::Tracking, WriterOff> obs(obsPlane,
-                                                     DirectionVector(cs, {0., 1., 0.}));
+    ObservationPlane<setup::Tracking, WriterOff> obs(
+        obsPlane, DirectionVector(cs, {0., 1., 0.}), true, 1e-6 * 1_m);
 
     Step step(particle, no_used_track);
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
@@ -119,7 +119,7 @@ TEST_CASE("ObservationPlane", "interface") {
   SECTION("output") {
     Plane const obsPlane(Point(cs, {1_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
     ObservationPlane<setup::Tracking, WriterOff> obs(
-        obsPlane, DirectionVector(cs, {0., 0., 1.}), false);
+        obsPlane, DirectionVector(cs, {0., 0., 1.}), false, 1e-6 * 1_m);
     auto const cfg = obs.getConfig();
     CHECK(cfg["type"]);
   }
