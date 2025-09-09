@@ -32,7 +32,13 @@ namespace corsika {
     if (isRegistered(pStreamName)) {
       return rngs_.at(pStreamName);
     } else { // this stream name is not in the map
-      throw std::runtime_error("'" + pStreamName + "' is not a registered stream.");
+      throw std::runtime_error(
+          "'" + pStreamName +
+          "' is not a registered stream. Ensure that you have called\n"
+          " RNGManager<>::getInstance().registerRandomStream(\"" +
+          pStreamName +
+          "\");\nbefore initializing instances of the class "
+          "that need this stream.");
     }
   }
 

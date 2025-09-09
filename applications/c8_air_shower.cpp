@@ -120,6 +120,7 @@ long registerRandomStreams(long seed) {
   RNGManager<>::getInstance().registerRandomStream("fluka");
   RNGManager<>::getInstance().registerRandomStream("proposal");
   RNGManager<>::getInstance().registerRandomStream("thinning");
+  RNGManager<>::getInstance().registerRandomStream("tauola");
   RNGManager<>::getInstance().registerRandomStream("primary_particle");
   if (seed == 0) {
     std::random_device rd;

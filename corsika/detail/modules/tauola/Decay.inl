@@ -48,6 +48,12 @@ namespace corsika::tauola {
 
       // initialize the TAUOLA library
       Tpp::Tauola::initialize();
+
+      // connect the C8 RNG manager to the TAUOLA RNG manager
+      corsika::connect_random_stream(
+          RNGManager<>::getInstance().getRandomStream("tauola"),
+          [](corsika::rng_function_type f) { Decay::rngFcn_ = std::move(f); });
+      Tpp::Tauola::setRandomGenerator(Decay::WrappedRNG);
     }
   }
 
@@ -223,5 +229,11 @@ namespace corsika::tauola {
   }
 
   void Decay::PrintSummary() const { Tpp::Tauola::summary(); }
+
+  inline double Decay::WrappedRNG() {
+    double val;
+    rngFcn_(&val, 1); // Fill one value
+    return val;
+  }
 
 } // namespace corsika::tauola
