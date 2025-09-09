@@ -67,9 +67,7 @@ namespace corsika {
       // due to numerical precision of tracker, can fall into a Zeno's paradox
       // ensure that the particle is on the far side to avoid continuously hitting this
       // plane
-      step.add_displacement(step.getDisplacement() +
-                            step.getDisplacement().normalized() * padding_);
-
+      step.add_displacement(step.getDisplacement().normalized() * padding_);
       return ProcessReturn::Ok;
     }
   } // namespace corsika
