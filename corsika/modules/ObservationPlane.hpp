@@ -23,7 +23,10 @@ namespace corsika {
    * The ObservationPlane writes PDG codes, kinetic energies, locations and momentum unit
    * vectors of particles with respect to the central point of the plane into its output
    * file. By default, the particles are considered "absorbed" afterwards. You can also
-   * set the ObservationPlane as non-absorbing.
+   * set the ObservationPlane as non-absorbing. The plane's normal vector defines the
+   * "positive side" from which particles are "caught." Only particles crossing the plane
+   * from the positive normal side are recorded. The direction vector `x_dir` should be
+   * orthogonal to the normal vector and defines the x/y coordinate system for the output
    *
    * The default output format is parquet.
    *
@@ -48,11 +51,15 @@ namespace corsika {
      * @param plane The plane.
      * @param x_dir The x-direction/axis.
      * @param absorbing Flag to make the plane absorbing.
-     * @param outputArgs
+     * @param padding if absorbing, particles will be placed this far past the observation
+     * plane to avoid machine-precision issues. Should choose this value to be small based
+     * on the medium
+     * @param outputArgs arguments that will be given to the particle writer
      */
     template <typename... TArgs>
     ObservationPlane(Plane const& plane, DirectionVector const& x_dir,
-                     bool const absorbing = true, TArgs&&... outputArgs);
+                     bool const absorbing = true, LengthType const padding = 1e-6 * 1_m,
+                     TArgs&&... outputArgs);
 
     ~ObservationPlane() {}
 
@@ -73,6 +80,7 @@ namespace corsika {
     DirectionVector const xAxis_;
     DirectionVector const yAxis_;
     bool const deleteOnHit_;
+    LengthType const padding_;
   };
   //! @}
 } // namespace corsika

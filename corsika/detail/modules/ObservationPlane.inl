@@ -12,12 +12,14 @@ namespace corsika {
   ObservationPlane<TTracking, TOutput>::ObservationPlane(Plane const& obsPlane,
                                                          DirectionVector const& x_axis,
                                                          bool const deleteOnHit,
+                                                         LengthType const padding,
                                                          TArgs&&... args)
       : TOutput(std::forward<TArgs>(args)...)
       , plane_(obsPlane)
       , xAxis_(x_axis.normalized())
       , yAxis_(obsPlane.getNormal().cross(xAxis_))
-      , deleteOnHit_(deleteOnHit) {}
+      , deleteOnHit_(deleteOnHit)
+      , padding_(padding) {}
 
   template <typename TTracking, typename TOutput>
   template <typename TParticle>
@@ -65,18 +67,7 @@ namespace corsika {
       // due to numerical precision of tracker, can fall into a Zeno's paradox
       // ensure that the particle is on the far side to avoid continuously hitting this
       // plane
-      double epsilon = 1.0;
-      while ((step.getPositionPost() - plane_.getCenter()).dot(plane_.getNormal()) >
-             0_m) {
-        auto const travelDist =
-            -(step.getPositionPost() - plane_.getCenter()).dot(plane_.getNormal()) /
-            step.getDirectionPost().dot(plane_.getNormal()) * step.getDirectionPost();
-        // should be numerically close to plane after tracking to this extra length
-        // should also be numerically close to zero
-        step.add_displacement(travelDist * (1.0 + epsilon * 1e-4));
-        epsilon *= 2.0;
-      }
-
+      step.add_displacement(step.getDisplacement().normalized() * padding_);
       return ProcessReturn::Ok;
     }
   } // namespace corsika
@@ -148,6 +139,7 @@ namespace corsika {
     node["y-axis"].push_back(yAxis_coords.getZ().magnitude());
 
     node["delete_on_hit"] = deleteOnHit_;
+    node["padding"] = padding_ / 1_m;
 
     return node;
   }

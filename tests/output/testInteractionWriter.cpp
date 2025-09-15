@@ -65,7 +65,8 @@ TEST_CASE("InteractionWriter", "process") {
 
   ObservationPlane<setup::Tracking, ParticleWriterParquet> obsPlane{
       plane, DirectionVector(rootCS, {1., 0., 0.}),
-      true, // plane should "absorb" particles
+      true,       // plane should "absorb" particles
+      1e-6 * 1_m, // particles should be placed slightly past the plane
       false};
 
   InteractionWriter<setup::Tracking, ParticleWriterParquet> writer(axis, obsPlane);
