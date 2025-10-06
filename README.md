@@ -101,7 +101,7 @@ pip install conan particle==0.25.1 numpy
 
 For legal reasons we do not distribute/bundle FLUKA together with CORSIKA 8.
 As FLUKA is the standard low-energy hadronic interaction model for CORSIKA 8, you have to download
-it separately from (http://www.fluka.org/), which requires registering there as FLUKA user.
+it separately from (http://www.fluka.eu/), which requires registering there as FLUKA user.
 The following should be done *before* compiling CORSIKA 8:
 
  1. Note your system's version of gfortran (`gfortran --version`) and glibc (`ldd --version`)
