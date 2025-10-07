@@ -49,6 +49,8 @@ if ("x_${USE_Pythia8_C8}" STREQUAL "x_SYSTEM")
   message (STATUS "Pythia8 (system) at ${Pythia8_PREFIX}")
 
 else ()
+  # pythia uses rsync during build/install, better check availabiliy early on
+  find_program(RSYNC NAMES rsync REQUIRED)
 
   set (_C8_Pythia8_Download_Dir "https://pythia.org/download/pythia83")
   set (_C8_Pythia8_VERSION "8315")
