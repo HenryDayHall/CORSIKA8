@@ -54,6 +54,18 @@ The agreement can be discussed, and eventually improved if necessary.
     https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in
     touch with the project.
 
+## Using CORSIKA 8 Container Releases
+
+CORSIKA 8 is distributed not only as source code but also as a pre-built container image for use with Apptainer.
+This container release provides a fully configured and portable runtime environment that includes all necessary dependencies and is ideal for users who want to run CORSIKA 8 without building from source.
+For development or contributing to the framework, please refer to the installation instructions below.
+
+You can download the latest container release [here](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/releases). To execute CORSIKA 8 inside the container, use the `apptainer exec` command, specifying the `.sif` file and the CORSIKA 8 executable to run.
+An example is shown below:
+
+```shell
+apptainer exec /path/to/corsika8-v1.0-beta1.sif /opt/corsika8/install/bin/c8_air_shower -E 1e3 -p 2212 -f output/path/test
+```
 
 ## Installation
 
@@ -90,7 +102,7 @@ source /path/to/new/virtual/environment/corsika-8/bin/activate
 You will need to load the environment each time that you open a new terminal.
 
 CORSIKA 8 uses the [conan](https://conan.io/) package manager to
-manage our dependencies. Currently, version 2.50.0 or higher is required.
+manage our dependencies. Currently, version 2.0.0 or higher is required.
 **Note**: if you are NOT using a virtual environment, you may want to use the `pip install --user` flag.
 
 ``` shell
@@ -127,30 +139,6 @@ Once Conan is installed and FLUKA provided, follow these steps to download and i
 cd ./top/directory/for/corsika/installation
 git clone --recursive git@gitlab.iap.kit.edu:AirShowerPhysics/corsika.git
 # Or for https: git clone --recursive https://gitlab.iap.kit.edu/AirShowerPhysics/corsika.git
-mkdir corsika-build
-cd corsika-build
-../corsika/conan-install.sh --source-directory ../corsika --release-with-debug
-# conan-install.sh takes required options from command line to install dependencies for 'Debug', 'Release' and 'RelWithDebInfo' builds.
-../corsika/corsika-cmake.sh -c "-DCMAKE_BUILD_TYPE="RelWithDebInfo" -DWITH_FLUKA=ON -DCMAKE_INSTALL_PREFIX=../corsika-install"
-make -j4  #The number should match the number of available cores on your machine
-make install
-```
-
-## Alternate installation using docker containers
-
-There are docker containers prepared that bring all the environment and packages you need to run CORSIKA. See [docker hub](https://hub.docker.com/repository/docker/corsika/devel) for a complete overview.
-
-### Prerequisites
-
-You only need docker, e.g. on Ubuntu: `sudo apt-get install docker` and of course root access.
-
-### Compiling
-
-Follow these steps to download and install CORSIKA 8, master development version
-```shell
-cd ./top/directory/for/corsika/installation
-git clone --recursive git@gitlab.iap.kit.edu:AirShowerPhysics/corsika.git
-sudo docker run -v $PWD:/corsika -it corsika/devel:clang-8 /bin/bash
 mkdir corsika-build
 cd corsika-build
 ../corsika/conan-install.sh --source-directory ../corsika --release-with-debug
