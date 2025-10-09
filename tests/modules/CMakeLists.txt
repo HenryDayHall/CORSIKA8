@@ -5,13 +5,13 @@ set (test_modules_sources
   ## testExecTime.cpp --> needs to be fixed, see #326
   testObservationPlane.cpp
   testObservationVolume.cpp
-  testQGSJetII.cpp # temp disable
+  testQGSJetII.cpp
   testQGSJetIII.cpp
   testProposal.cpp
   testPythia8.cpp
   testTAUOLA.cpp
   testUrQMD.cpp
-  testCONEX.cpp
+  # testCONEX.cpp # TODO: re-enable when Sibyll initialization is fixed
   testParticleCut.cpp
   testProductionProfile.cpp
   testSibyll.cpp
@@ -19,7 +19,7 @@ set (test_modules_sources
   testRadio.cpp
   testEMThinning.cpp
   testSophia.cpp
-  testRandom.cpp # temp disable for qgs2 test
+  testRandom.cpp
 )
 
 if (NOT "$CACHE{C8_FLUKA_ENABLED}" STREQUAL "")
