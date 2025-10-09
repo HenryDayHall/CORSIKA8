@@ -11,7 +11,7 @@ set (test_modules_sources
   testPythia8.cpp
   testTAUOLA.cpp
   testUrQMD.cpp
-  #  testCONEX.cpp TODO re-enable
+  testCONEX.cpp
   testParticleCut.cpp
   testProductionProfile.cpp
   testSibyll.cpp
@@ -19,7 +19,7 @@ set (test_modules_sources
   testRadio.cpp
   testEMThinning.cpp
   testSophia.cpp
-  #testRandom.cpp # temp disable for qgs2 test
+  testRandom.cpp # temp disable for qgs2 test
 )
 
 if (NOT "$CACHE{C8_FLUKA_ENABLED}" STREQUAL "")
