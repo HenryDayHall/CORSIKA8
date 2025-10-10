@@ -38,19 +38,4 @@ namespace EPOS_LHCR {
           extern HAD10 * const had10_;
           extern HADR2 * const hadr2_;
           extern HADR1 * const hadr1_;
-
-
-          /**
-   Small helper class to provide a data-directory name in the format eposlhc expects
-  */
-  class datadir {
-  private:
-    datadir operator=(const std::string& dir);
-    datadir operator=(const datadir&);
-
-  public:
-    datadir(const std::string& dir);
-    char data[500];
-    int length;
-  };
 }

@@ -414,19 +414,5 @@ namespace EPOS_LHCR {
     int icltar;
     int iclegy;
   } had10_;
-
-  /**
-   Small helper class to provide a data-directory name in the format eposlhc expects
-  */
-  class datadir {
-  private:
-    datadir operator=(const std::string& dir);
-    datadir operator=(const datadir&);
-
-  public:
-    datadir(const std::string& dir);
-    char data[500];
-    int length;
-  };
   }
 } // namespace epos
