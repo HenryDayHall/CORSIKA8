@@ -8,7 +8,6 @@ namespace EPOS_LHCR {
       &::epos::set_rng_function;
       
     extern void (*const aaset_)(int&) = &::aaset_;
-    extern double (*const lhcparameters_)() = &::lhcparameters_;
     extern void (*const crseaaepos_)(float&, float&, float&, float&) = &::crseaaepos_;
   extern float (*const eposcrse_)(float&, int&, int&, int&) = &::eposcrse_;
   extern float (*const eposelacrse_)(float&, int&, int&, int&) = &::eposelacrse_ ;

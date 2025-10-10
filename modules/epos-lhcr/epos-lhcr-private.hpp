@@ -41,7 +41,6 @@ void ainit_();
 void aepos_(int&);
 void afinal_();
 void alistf_(char* str, int str_length); // hidden str length
-double lhcparameters_();
 void hnbspd_(int&);
 void hnbpajini_();
 void conini_();
