@@ -52,19 +52,6 @@ extern struct {
   int nwp;
 } qgarr55_;
 
-/**
- * Small helper class to provide a data-directory name in the format qgsjetIII expects.
- */
-class datadir {
-private:
-  datadir operator=(const std::string& dir);
-  datadir operator=(const datadir&);
-
-public:
-  datadir(const std::string& dir);
-  char data[132];
-};
-
 // functions
 void qgset_();
 void qgaini_(

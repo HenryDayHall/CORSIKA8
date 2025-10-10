@@ -15,6 +15,8 @@
 #include <corsika/modules/Random.hpp>
 #include <corsika/framework/utility/CorsikaData.hpp>
 
+#include <datadir.hpp>
+
 #include <epos-lhcr-public.hpp>
 
 #include <string>
@@ -132,7 +134,8 @@ namespace corsika::EPOS_LHCR {
         1; // !include quasi elastic events but strict calculation of xs
     ::EPOS_LHCR::cjinti_->iorsce = 0; // !color exchange turned on(1) or off(0)
     ::EPOS_LHCR::cjinti_->iorsdf = 3; //  !droplet formation turned on(>0) or off(0)
-    ::EPOS_LHCR::cjinti_->iorshh = 0; //    !other hadron-hadron int. turned on(1) or off(0)
+    ::EPOS_LHCR::cjinti_->iorshh =
+        0; //    !other hadron-hadron int. turned on(1) or off(0)
 
     ::EPOS_LHCR::othe1_->istore = 0; // do not produce epos output file
     ::EPOS_LHCR::nucl6_->infragm =
@@ -145,27 +148,27 @@ namespace corsika::EPOS_LHCR {
     // ::EPOS_LHCR::othe2_->idecay = 0; // no decays in epos
 
     // set paths to tables in corsika data
-    //using EPOSDatadir = datadir<500>;
-    //EPOSDatadir BASE(data_path_);
-    ::EPOS_LHCR::datadir BASE(data_path_);
-    strcpy(::EPOS_LHCR::fname_->fnnx, BASE.data);
-    ::EPOS_LHCR::nfname_->nfnnx = BASE.length;
+    using EPOSDatadir = datadir<500>;
+    // EPOSDatadir BASE(data_path_);
+    EPOSDatadir BASE(data_path_);
+    strcpy(::EPOS_LHCR::fname_->fnnx, BASE.data());
+    ::EPOS_LHCR::nfname_->nfnnx = BASE.length();
 
-    ::EPOS_LHCR::datadir TL(data_path_ + "epos.initl");
-    strcpy(::EPOS_LHCR::fname_->fnii, TL.data);
-    ::EPOS_LHCR::nfname_->nfnii = TL.length;
+    EPOSDatadir TL(data_path_ + "epos.initl");
+    strcpy(::EPOS_LHCR::fname_->fnii, TL.data());
+    ::EPOS_LHCR::nfname_->nfnii = TL.length();
 
-    ::EPOS_LHCR::datadir EV(data_path_ + "epos.iniev");
-    strcpy(::EPOS_LHCR::fname_->fnie, EV.data);
-    ::EPOS_LHCR::nfname_->nfnie = EV.length;
+    EPOSDatadir EV(data_path_ + "epos.iniev");
+    strcpy(::EPOS_LHCR::fname_->fnie, EV.data());
+    ::EPOS_LHCR::nfname_->nfnie = EV.length();
 
-    ::EPOS_LHCR::datadir RJ(data_path_ + "epos.inirj"); // lhcparameters adds ".lhc"
-    strcpy(::EPOS_LHCR::fname_->fnrj, RJ.data);
-    ::EPOS_LHCR::nfname_->nfnrj = RJ.length;
+    EPOSDatadir RJ(data_path_ + "epos.inirj"); // lhcparameters adds ".lhc"
+    strcpy(::EPOS_LHCR::fname_->fnrj, RJ.data());
+    ::EPOS_LHCR::nfname_->nfnrj = RJ.length();
 
-    ::EPOS_LHCR::datadir CS(data_path_ + "epos.inics"); // lhcparameters adds ".lhc"
-    strcpy(::EPOS_LHCR::fname_->fncs, CS.data);
-    ::EPOS_LHCR::nfname_->nfncs = CS.length;
+    EPOSDatadir CS(data_path_ + "epos.inics"); // lhcparameters adds ".lhc"
+    strcpy(::EPOS_LHCR::fname_->fncs, CS.data());
+    ::EPOS_LHCR::nfname_->nfncs = CS.length();
 
     // initializes maximum energy and mass
     initializeEventCoM(
@@ -189,8 +192,8 @@ namespace corsika::EPOS_LHCR {
 
     ::EPOS_LHCR::enrgy_->ecms = EcmNN / 1_GeV; // -> c.m.s. frame
 
-    CORSIKA_LOGGER_TRACE(logger_, "inside EPOS: Ecm={}, Elab={}", ::EPOS_LHCR::enrgy_->ecms,
-                         ::EPOS_LHCR::enrgy_->elab);
+    CORSIKA_LOGGER_TRACE(logger_, "inside EPOS: Ecm={}, Elab={}",
+                         ::EPOS_LHCR::enrgy_->ecms, ::EPOS_LHCR::enrgy_->elab);
 
     configureParticles(idBeam, iBeamA, iBeamZ, idTarget, iTargetA, iTargetZ);
     ::EPOS_LHCR::ainit_();
