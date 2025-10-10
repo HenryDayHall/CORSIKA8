@@ -6,6 +6,7 @@
  */
 
 #include <corsika/media/DensityFunction.hpp>
+#include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/IMediumModel.hpp>
 #include <corsika/media/NuclearComposition.hpp>
@@ -25,7 +26,7 @@ using Catch::Approx;
 
 const auto density = 1_kg / (1_m * 1_m * 1_m);
 
-auto setupEnvironment(Code vTargetCode) {
+auto setupEnvironmentHomogenous(Code vTargetCode) {
   // setup environment, geometry
   auto env = std::make_unique<Environment<IMediumModel>>();
   auto& universe = *(env->getUniverse());
@@ -48,7 +49,7 @@ TEST_CASE("Homogeneous Density") {
 
   logging::set_level(logging::level::info);
 
-  auto [env, csPtr, nodePtr] = setupEnvironment(Code::Nitrogen);
+  auto [env, csPtr, nodePtr] = setupEnvironmentHomogenous(Code::Nitrogen);
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
   [[maybe_unused]] auto const& node_dummy = nodePtr;
@@ -88,4 +89,100 @@ TEST_CASE("Homogeneous Density") {
   CHECK(showerAxisNoThrow.getX(-1_m) == showerAxis.getMinimumX());
   CHECK(showerAxisNoThrow.getX((injectionPos - showerCore).getNorm() + 1_m) ==
         showerAxis.getMaximumX());
+}
+
+auto setupEnvironmentExponential() {
+  // setup environment, geometry
+  auto env = std::make_unique<Environment<IMediumModel>>();
+  auto& universe = *(env->getUniverse());
+  const CoordinateSystemPtr& cs = env->getCoordinateSystem();
+
+  auto theMedium = Environment<IMediumModel>::createNode<Sphere>(
+      Point{cs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+
+  auto const point = Point{cs, 0_m, 0_m, 0_m};
+  auto const axis = DirectionVector{cs, {0, 0, 1}};
+  auto const lambda = 2_m;
+
+  using MyExponentialModel = FlatExponential<IMediumModel>;
+  theMedium->setModelProperties<MyExponentialModel>(
+      point, axis, density, lambda, NuclearComposition({Code::Nitrogen}, {1.}));
+
+  auto const* nodePtr = theMedium.get();
+  universe.addChild(std::move(theMedium));
+
+  return std::make_tuple(std::move(env), &cs, nodePtr, point, axis, lambda);
+}
+
+TEST_CASE("Exponential Density") {
+  logging::set_level(logging::level::trace);
+
+  // rho_0 Exp[ (r - x0) \cdot n / lambda ].
+  auto [env, csPtr, nodePtr, start, axis, lambda] = setupEnvironmentExponential();
+
+  auto const totalLength = 5 * abs(lambda);
+  auto const end = start + axis * totalLength;
+  ShowerAxis const showerAxis{start, end, *env,
+                              true, // -> throw exceptions
+                              50};  // -> number of bins
+
+  CHECK(showerAxis.getSteplength() == totalLength / 50.0);
+  CHECK(showerAxis.getMinimumX() == 0_g / square(1_m));
+  CHECK(showerAxis.getMaximumX() ==
+        density * lambda * (std::exp(totalLength / lambda) - 1.0));
+  auto const units = 1_kg / square(1_m);
+  CHECK(showerAxis.getMaximumX() / units ==
+        Approx(showerAxis.getX(totalLength - 1_nm) / units).epsilon(1e-6));
+  CHECK(showerAxis.getX(abs(lambda)) / units ==
+        Approx(density * abs(lambda) * (std::exp(1.0) - 1.0) / units).epsilon(1e-8));
+}
+
+auto setupEnvironmentHardBoundary(Code vTargetCode) {
+
+  // setup environment, geometry
+  auto env = std::make_unique<Environment<IMediumModel>>();
+  auto& universe = *(env->getUniverse());
+  const CoordinateSystemPtr& cs = env->getCoordinateSystem();
+
+  auto theMedium = Environment<IMediumModel>::createNode<Sphere>(
+      Point{cs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+
+  using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
+  theMedium->setModelProperties<MyHomogeneousModel>(
+      density, NuclearComposition({vTargetCode}, {1.}));
+
+  auto notDenseMedium =
+      Environment<IMediumModel>::createNode<Sphere>(Point{cs, 0_m, 0_m, 0_m}, 1_m);
+  using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
+  notDenseMedium->setModelProperties<MyHomogeneousModel>(
+      density * 1e-9, NuclearComposition({vTargetCode}, {1.}));
+
+  theMedium->addChild(std::move(notDenseMedium));
+  universe.addChild(std::move(theMedium));
+
+  return std::make_tuple(std::move(env), &cs);
+}
+
+TEST_CASE("Hard Boundary") {
+  auto [env, csPtr] = setupEnvironmentHardBoundary(Code::Nitrogen);
+  auto const& cs = *csPtr;
+
+  Point const start(cs, 0_m, 0_m, 0_m);
+  Point const end(cs, 0_m, 0_m, 2_m);
+  ShowerAxis const showerAxis{start, end, *env,
+                              true, // -> throw exceptions
+                              50};  // -> number of bins
+
+  auto const units = 1_kg / square(1_m);
+  // Integrate out to the hard boundary to confirm not-dense region's existance
+  CHECK(showerAxis.getX(1_m - 1_nm) / units ==
+        Approx(density * 1e-9 * 1_m / units).epsilon(1e-8));
+
+  // Integrating just beyond the boundary essentially equal to just the dense portion
+  auto delta = 0.1 * 1_m;
+  CHECK(showerAxis.getX(1_m + delta) / units ==
+        Approx(density * delta / units).epsilon(1e-6));
+  delta = 0.99 * 1_m;
+  CHECK(showerAxis.getX(1_m + delta) / units ==
+        Approx(density * delta / units).epsilon(1e-6));
 }
