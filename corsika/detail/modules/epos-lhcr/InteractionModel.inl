@@ -116,8 +116,6 @@ namespace corsika::EPOS_LHCR {
     ::EPOS_LHCR::enrgy_->egymin = minEnergyCoM_ / 1_GeV; // 6.;
     ::EPOS_LHCR::enrgy_->egymax = maxEnergyCoM_ / 1_GeV; // 2.e6;
 
-    ::EPOS_LHCR::lhcparameters_();
-
     ::EPOS_LHCR::hadr6_->isigma = 0; // do not show cross section
     ::EPOS_LHCR::hadr6_->isetcs = 3; /*  !option to obtain pomeron parameters
       ! 0.....determine parameters but do not use Kfit
