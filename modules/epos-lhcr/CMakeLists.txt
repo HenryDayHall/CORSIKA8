@@ -11,6 +11,7 @@ add_library (EPOS_LHCR_static STATIC
   epos-dky-lhcr.f  epos-ids-lhcr.f  epos-qsh-lhcr.f  epos-xpr-lhcr.f
   epos-dro-lhcr.f  epos-int-lhcr.f  epos-rsh-lhcr.f
   epos-ems-lhcr.f  epos_j.f         epos-sem-lhcr.f
+  al.cpp           memory.c
   )
 target_link_libraries(EPOS_LHCR_static PUBLIC modules_common)
 target_compile_options(EPOS_LHCR_static PRIVATE "-mcmodel=large")
