@@ -2,6 +2,8 @@ set (CMAKE_BUILT_TYPE Debug)
 #set (CMAKE_Fortran_FLAGS "-std=legacy -Wfunction-elimination -O0")
 
 enable_language (Fortran)
+enable_language (C)
+
 add_library (EPOS_LHCR_static STATIC
   epos-lhcr-private.cpp
   epos-af-lhcr.f   epos-fra-lhcr.f  epos-jps-lhcr.f  epos-tim-lhcr.f
