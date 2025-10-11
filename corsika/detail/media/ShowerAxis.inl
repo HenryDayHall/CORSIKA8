@@ -71,7 +71,7 @@ namespace corsika {
 
   inline GrammageType ShowerAxis::getX(LengthType l) const {
     double const fractionalBin = l / steplength_;
-    int const lower = fractionalBin; // indices of nearest X support points
+    int const lower = std::floor(fractionalBin); // indices of nearest X support points
     double const fraction = fractionalBin - lower;
     unsigned int const upper = lower + 1;
 
