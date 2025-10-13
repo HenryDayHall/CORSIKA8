@@ -80,12 +80,13 @@ You will also need:
 - git
 - g++, gfortran, binutils, make
 - rsync
+- tar
 - optional: FLUKA (see below)
 
 
 On a bare Ubuntu machine, just add:
 ``` shell
-sudo apt-get install python3 python3-pip cmake g++ gfortran git doxygen graphviz rsync
+sudo apt-get install python3 python3-pip cmake g++ gfortran git doxygen graphviz rsync tar
 ```
 
 ### Creating a virtual environment and Conan
