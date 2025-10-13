@@ -16,7 +16,8 @@ cmake_minimum_required (VERSION 3.9)
 #   minor: no API changes
 #   patch: bug fix and small improvements
 #
-set (c8_version 8.0.0.0)
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/version.txt" VERSION_FILE_CONTENT)
+set (c8_version ${VERSION_FILE_CONTENT})
 project (
   corsika
   VERSION ${c8_version}
