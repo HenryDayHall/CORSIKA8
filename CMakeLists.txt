@@ -50,9 +50,9 @@ endif ()
 if (POLICY CMP0135)
     cmake_policy (SET CMP0135 OLD)
 endif ()
-# AUtomatically add extensions to filenames if needed (old behaviour)
+# explicit setting of extensions
 if (POLICY CMP0115)
-    cmake_policy (SET CMP0115 OLD)
+    cmake_policy (SET CMP0115 NEW)
 endif ()
 
 #+++++++++++++++++++++++++++++
@@ -134,7 +134,7 @@ add_subdirectory (externals/cnpy)
 # targets and settings needed to generate coverage reports
 #if (CMAKE_BUILD_TYPE STREQUAL Coverage)
 
-SET(COVERAGE_BUILD OFF CACHE BOOL "Activate coverage build")
+set (COVERAGE_BUILD OFF CACHE BOOL "Activate coverage build")
 
 if( COVERAGE_BUILD AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
 
@@ -238,7 +238,12 @@ endif (NOT DEFINED ENV{CI})
 # Externals
 #
 set (Python_ADDITIONAL_VERSIONS 3)
-find_package(Python COMPONENTS Interpreter Development)
+if (CMAKE_VERSION VERSION_LESS "3.12.0")
+  find_package (PythonInterp 3 REQUIRED)
+else()
+  find_package(Python3 COMPONENTS Interpreter)
+endif()
+
 
 # Required
 message("Finding required programs")
