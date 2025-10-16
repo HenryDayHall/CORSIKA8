@@ -42,6 +42,10 @@ namespace corsika {
   class ShowerAxis {
   public:
     template <typename TEnvModel>
+    ShowerAxis(Point const& pStart, Point const& pEnd, Environment<TEnvModel> const& env,
+               bool const doThrow = false, int const steps = 10'000);
+
+    template <typename TEnvModel>
     ShowerAxis(Point const& pStart, Vector<length_d> const& length,
                Environment<TEnvModel> const& env, bool const doThrow = false,
                int const steps = 10'000);
@@ -84,10 +88,6 @@ namespace corsika {
     LengthType const max_length_, steplength_;
     DirectionVector const axis_normalized_;
     std::vector<GrammageType> X_;
-
-    // for storing the lengths corresponding to equidistant X values
-    GrammageType const X_binning_ = 1_g / 1_cm / 1_cm;
-    std::vector<LengthType> d_;
   };
 } // namespace corsika
 

@@ -8,9 +8,17 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
+#include <boost/math/tools/minima.hpp>
+
 #include <string>
 
 namespace corsika {
+
+  template <typename TEnvModel>
+  inline ShowerAxis::ShowerAxis(Point const& pStart, Point const& pEnd,
+                                Environment<TEnvModel> const& env, bool const doThrow,
+                                int const steps)
+      : ShowerAxis(pStart, pEnd - pStart, env, doThrow, steps) {}
 
   template <typename TEnvModel>
   inline ShowerAxis::ShowerAxis(Point const& pStart, Vector<length_d> const& length,
@@ -23,45 +31,39 @@ namespace corsika {
       , steplength_(max_length_ / steps)
       , axis_normalized_(length / max_length_)
       , X_(steps + 1) {
+
     auto const* const universe = env.getUniverse().get();
 
-    auto rho = [pStart, length, universe, doThrow](double x) {
-      auto const p = pStart + length * x;
+    // lambda to get the density at a fractional distance, x, along axis
+    auto rho = [&](double x) {
+      auto const p = pointStart_ + length_ * x;
       auto const* node = universe->getContainingNode(p);
       if (!node->hasModelProperties()) {
         CORSIKA_LOG_CRITICAL(
             "Unable to construct ShowerAxis. ShowerAxis includes volume "
             "with no model properties at point {}.",
             p);
-        if (doThrow) throw std::runtime_error("Unable to construct ShowerAxis.");
+        throw std::runtime_error("Unable to construct ShowerAxis. Missing properties");
       }
       return node->getModelProperties().getMassDensity(p).magnitude();
     };
 
     double error;
-    int k = 0;
     X_[0] = GrammageType::zero();
     auto sum = GrammageType::zero();
 
     for (int i = 1; i <= steps; ++i) {
-      auto const x_prev = (i - 1.) / steps;
-      auto const d_prev = max_length_ * x_prev;
-      auto const x = double(i) / steps;
+      auto const frac_prev = (i - 1.0) / steps;
+      auto const frac = double(i) / steps;
       auto const r = boost::math::quadrature::gauss_kronrod<double, 15>::integrate(
-          rho, x_prev, x, 15, 1e-9, &error);
+          rho, frac_prev, frac, 15, 1e-9, &error);
       auto const result =
           MassDensityType(phys::units::detail::magnitude_tag, r) * max_length_;
-
       sum += result;
       X_[i] = sum;
-
-      for (; sum > k * X_binning_; ++k) {
-        d_.emplace_back(d_prev + k * X_binning_ * steplength_ / result);
-      }
     }
 
-    if (!std::is_sorted(X_.cbegin(), X_.cend()) ||
-        !std::is_sorted(d_.cbegin(), d_.cend())) {
+    if (!std::is_sorted(X_.cbegin(), X_.cend())) {
       CORSIKA_LOG_ERROR("Shower axis bins are not sorted");
       throw std::runtime_error("Bad ShowerAxis construction");
     }
@@ -69,7 +71,7 @@ namespace corsika {
 
   inline GrammageType ShowerAxis::getX(LengthType l) const {
     double const fractionalBin = l / steplength_;
-    int const lower = fractionalBin; // indices of nearest X support points
+    int const lower = std::floor(fractionalBin); // indices of nearest X support points
     double const fraction = fractionalBin - lower;
     unsigned int const upper = lower + 1;
 
