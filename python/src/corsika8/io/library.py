@@ -7,7 +7,6 @@ This software is distributed under the terms of the 3-clause BSD license.
 See file LICENSE for a full version of the license.
 """
 
-import logging
 import os
 import os.path as op
 import tarfile
@@ -17,9 +16,10 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 
 from . import outputs
+from .logger import c8_logger
 
 
-class Library(object):
+class Library:
     """
     Represents a library ("run") of showers produced by C8.
     """
@@ -39,20 +39,9 @@ class Library(object):
             If `path` does not contain a valid CORSIKA8 library.
         """
 
-        self.tempDir = None
-
         # If the path is a tarball, make a temp dir to open the file into
         if path.endswith(".tar"):
-            tar = tarfile.open(path, "r")
-            self.tempDir = tempfile.TemporaryDirectory(prefix="c8_temp_dir_")
-            msg = f"Unzipping corsika library {path} to {self.tempDir.name}"
-            logging.getLogger("corsika").info(msg)
-            tar.extractall(self.tempDir.name)
-            tar.close()
-
-            path = op.join(
-                self.tempDir.name, os.path.basename(path).replace(".tar", "")
-            )
+            path, self._temp_dir = self._extract_tar(path)
 
         # Check that this is a valid library
         if not self.__valid_library(path):
@@ -70,24 +59,48 @@ class Library(object):
         if self.summary is None:
             msg = f"Missing summary file in '{path}'."
             msg += " The simulation may not have finished. Will not load library"
-            logging.getLogger("corsika").warning(msg)
+            c8_logger.warning(msg)
             return
 
         if "output_dirs" in self.summary.keys():
             output_dirs = self.summary["output_dirs"]
             msg = f"Reading in sub-directories: {output_dirs}"
-            logging.getLogger("corsika").debug(msg)
+            c8_logger.debug(msg)
         else:
             msg = "Sub-directories not specified in summary.yaml file."
             msg += " Will find then dynamically"
-            logging.getLogger("corsika").debug(msg)
+            c8_logger.debug(msg)
 
         # build the list of outputs
         self.__outputs = self.__build_outputs(self.path, output_dirs)
 
-    def __del__(self) -> None:
-        if self.tempDir is not None:
-            self.tempDir.cleanup()
+    def _extract_tar(self, path: str) -> tuple[str, tempfile.TemporaryDirectory]:
+        temp_dir = tempfile.TemporaryDirectory(prefix="c8_temp_dir_")
+        msg = f"Unzipping corsika library {path} to {temp_dir.name}"
+        c8_logger.info(msg)
+
+        with tarfile.open(path, "r") as tar:
+            # filter not available <py3.12, but add back one day
+            # tar.extractall(temp_dir.name, filter="fully_trusted")
+            tar.extractall(temp_dir.name)
+
+        # Find the first directory inside the temp_dir
+        extracted_items = os.listdir(temp_dir.name)
+        if (
+            "summary.yaml" in extracted_items or "config.yaml" in extracted_items
+        ):  # does not include a directory as top level
+            extracted_path = temp_dir.name
+        else:
+            subdirs = [
+                item
+                for item in extracted_items
+                if op.isdir(op.join(temp_dir.name, item))
+            ]
+            if not subdirs:
+                raise ValueError(f"No directory found inside tarball '{path}'")
+            extracted_path = op.join(temp_dir.name, subdirs[0])
+
+        return extracted_path, temp_dir
 
     @property
     def names(self) -> List[str]:
@@ -104,7 +117,7 @@ class Library(object):
             return self.__outputs[name]
         else:
             msg = f"Output with name '{name}' not available in this library. Skipping."
-            logging.getLogger("corsika").warning(msg)
+            c8_logger.warning(msg)
             return None
 
     @staticmethod
@@ -202,7 +215,7 @@ class Library(object):
             return False
 
         # and check that the config's "writer" key is correct
-        return config["creator"] == "CORSIKA8"
+        return config.get("creator") == "CORSIKA8"
 
     @staticmethod
     def __build_outputs(
@@ -244,7 +257,7 @@ class Library(object):
             if config is None:
                 msg = "Could not find a configuration file in"
                 msg += f" {op.join(path, subdir)}. Skipping sub-directory"
-                logging.getLogger("corsika").warning(msg)
+                c8_logger.warning(msg)
                 continue
 
             # the name keyword is our unique identifier
@@ -259,7 +272,7 @@ class Library(object):
                     f"'{subdir}' does not contain a valid config."
                     "Missing 'type' or 'name' keyword."
                 )
-                logging.getLogger("corsika").warning(msg)
+                c8_logger.warning(msg)
                 continue  # skip to the next output, don't error
 
             # we now have a valid component type, get the corresponding
@@ -274,7 +287,7 @@ class Library(object):
                         f"'{name}' encountered an error while reading. "
                         "This process will be not be loaded."
                     )
-                    logging.getLogger("corsika").warning(msg)
+                    c8_logger.warning(msg)
                 else:
                     components[name] = component
 
@@ -283,8 +296,8 @@ class Library(object):
                     f"Unable to instantiate an instance of '{out_type}' "
                     f"for a process called '{name}'. Skipping '{subdir}'"
                 )
-                logging.getLogger("corsika").warning(msg)
-                logging.getLogger("corsika").warning(e)
+                c8_logger.warning(msg)
+                c8_logger.warning(e)
                 continue  # skip to the next output, don't error
 
         # and we are done building - return the constructed outputs

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import particle
 
-import corsika
+from corsika8.io import Library
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -27,12 +27,15 @@ if not os.path.isdir(args.output_dir):
     os.makedirs(args.output_dir)
 
 # Load the shower simulation output
-lib = corsika.Library(args.input_dir)
+lib = Library(args.input_dir)
+lib_interactions = lib.get("interactions")
+if lib_interactions is None:
+    raise RuntimeError("Error getting interactions lib from " + str(args.input_dir))
 
 # Load the primary particle information from the shower
-interactions = lib.get("interactions").data
-interaction_config = lib.get("interactions").config
-projectiles = lib.get("interactions").projectiles
+interactions = lib_interactions.data
+interaction_config = lib_interactions.config
+projectiles = lib_interactions.projectiles  # type: ignore
 
 shower_ids = np.unique(interactions["shower"])
 
@@ -49,7 +52,6 @@ if ax.shape == (1, 2):
     ax = ax.T
 
 for ish, sh_id in enumerate(shower_ids):
-
     # Find all of the secondary particles associated with this shower
     daughters = interactions[interactions["shower"] == sh_id]
 

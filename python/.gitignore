@@ -1,3 +1,7 @@
+# C8 specific
+out_test/
+*.tar
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

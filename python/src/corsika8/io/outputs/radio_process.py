@@ -7,13 +7,13 @@ This software is distributed under the terms of the 3-clause BSD license.
 See file LICENSE for a full version of the license.
 """
 
-import logging
 import os.path as op
 from typing import Any
 
 import pandas as pd
 import pyarrow.parquet as pq
 
+from ..logger import c8_logger
 from .output import Output
 
 
@@ -44,9 +44,7 @@ class RadioProcess(Output):
         try:
             self.__data = self.load_data(path)
         except Exception as e:
-            logging.getLogger("corsika").warn(
-                f"An error occured loading a RadioProcess: {e}"
-            )
+            c8_logger.warning(f"An error occured loading a RadioProcess: {e}")
 
     def load_data(self, path: str) -> dict:
         """

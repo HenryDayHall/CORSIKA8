@@ -1,29 +1,25 @@
 """
-Read data written by InteractionWriter.
+Read data written by PrimaryWriter.
 
-(c) Copyright 2024 CORSIKA Project, corsika-project@lists.kit.edu
+(c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
 
 This software is distributed under the terms of the 3-clause BSD license.
 See file LICENSE for a full version of the license.
 """
 
-import logging
 import os.path as op
 from typing import Any
 
-import pyarrow.parquet as pq
 import yaml
 
-from ..converters import arrow_to_numpy
+from ..logger import c8_logger
 from .output import Output
-from .primary import Particle
 
 
-class FirstInteraction(Particle):
+class Particle(object):
     """
-    Simple class that holds the information of the first interaction
-    This is a complete wrapper of the `Particle` class at the moment
-    but is "new" so that it can be distinguished using `type(thing)`
+    A very basic class that is essentially a wrapper for the fields
+    in the primary particle output file
     """
 
     def __init__(self, prop_dict: dict):
@@ -33,25 +29,38 @@ class FirstInteraction(Particle):
         prop_dict: dict
             the entry from the output yaml file for a single shower
         """
-        Particle.__init__(self, prop_dict)
+
+        # need to define for position/direction functions
+        self.x = self.y = self.z = None
+        self.nx = self.ny = self.nz = None
+        self.px = self.py = self.pz = None
+
+        # wrap the files of the dictionary so that there is a property
+        # assigned to each value, i.e. print(my_primary.pdg)
+        for key in prop_dict:
+            self.__dict__[key] = prop_dict[key]
 
     def __repr__(self) -> str:
         """
         Return a string representation of this class.
         """
-        out_str = "FirstInteraction:\n"
+        out_str = "PrimaryParticle:\n"
         for key in self.__dict__.keys():
             out_str += f"\t{key}: {self.__dict__[key]}\n"
         return out_str
 
     @property
-    def momentum(self) -> list:
-        return [self.px, self.py, self.pz]
+    def position(self) -> list:
+        return [self.x, self.y, self.z]
+
+    @property
+    def direction(self) -> list:
+        return [self.nx, self.ny, self.nz]
 
 
-class Interactions(Output):
+class PrimaryParticle(Output):
     """
-    Reads the interactions and secondaries
+    Read particle data from the ParimaryWriter summary.yaml file
     """
 
     def __init__(self, path: str):
@@ -67,18 +76,13 @@ class Interactions(Output):
 
         # try and load our data
         try:
-            self.__data = pq.read_table(op.join(path, "interactions.parquet"))
             with open(op.join(path, "summary.yaml"), "r") as f:
-                temp = yaml.load(f, Loader=yaml.Loader)
-                self.__projectiles = [FirstInteraction(x) for x in temp.values()]
-        except Exception as e:
-            logging.getLogger("corsika").warn(
-                f"An error occured loading an Interaction: {e}"
-            )
+                self.__data = yaml.load(f, Loader=yaml.Loader)
 
-    @property
-    def projectiles(self) -> list:
-        return self.__projectiles
+            self.__primaries = [Particle(x) for x in self.__data.values()]
+
+        except Exception as e:
+            c8_logger.warning(f"An error occured loading a PrimaryParticle: {e}")
 
     def is_good(self) -> bool:
         """
@@ -92,9 +96,9 @@ class Interactions(Output):
         """
         return self.__data is not None
 
-    def astype(self, dtype: str = "pandas", **kwargs: Any) -> Any:
+    def astype(self, dtype: str = "class", **kwargs: Any) -> Any:
         """
-        Load the particle data of the particle interactions.
+        Load the particle data from this particle cut instance.
 
         All additional keyword arguments are passed to `parquet.read_table`
 
@@ -108,17 +112,15 @@ class Interactions(Output):
         Any:
             The return type of this method is determined by `dtype`.
         """
-        if dtype == "arrow":
+        if dtype == "yaml":
             return self.__data
-        elif dtype == "pandas":
-            return self.__data.to_pandas()
-        elif dtype == "numpy":
-            return arrow_to_numpy.convert_to_numpy(self.__data)
+        elif dtype == "class":
+            return self.__primaries
         else:
             raise ValueError(
                 (
-                    f"Unknown format '{dtype}' for Interaction. "
-                    "We currently only support ['arrow', 'pandas', 'numpy']."
+                    f"Unknown format '{dtype}' for PrimaryParticle. "
+                    "We currently only support ['yaml', 'class']."
                 )
             )
 
@@ -126,4 +128,4 @@ class Interactions(Output):
         """
         Return a string representation of this class.
         """
-        return f"Interaction('{self.config['name']}')"
+        return f"PrimaryParticle('{self.config['name']}')"

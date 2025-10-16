@@ -6,7 +6,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-import corsika
+from corsika8.io import Library
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -26,18 +26,24 @@ if not os.path.isdir(args.output_dir):
     os.makedirs(args.output_dir)
 
 # Load the shower simulation output
-lib = corsika.Library(args.input_dir)
+lib = Library(args.input_dir)
 
 # Load the primary particle information from the shower
-primaries = lib.get("primary").data
+lib_prim = lib.get("primary")
+if lib_prim is None:
+    raise RuntimeError("Could not get primary lib from " + str(args.input_dir))
+primaries = lib_prim.data
 n_showers = len(primaries)
-primary_config = lib.get("primary").config
+primary_config = lib_prim.config
 
 found_zhs = False
 try:
-    waveforms_config_zhs = lib.get("ZHS").config  # meta information
-    waveforms_zhs = lib.get("ZHS").astype("pandas")
-    observers_zhs = lib.get("ZHS").get_observers()
+    zsh_lib = lib.get("ZHS")
+    if zsh_lib is None:
+        raise RuntimeError("Could not get ZSH lib from " + str(args.input_dir))
+    waveforms_config_zhs = zsh_lib.config  # meta information
+    waveforms_zhs = zsh_lib.astype("pandas")
+    observers_zhs = zsh_lib.get_observers()  # type: ignore
     found_zhs = True
 except Exception:
     print("No ZHS waveforms in this directory")
@@ -45,9 +51,12 @@ except Exception:
 
 found_coreas = False
 try:
-    waveforms_config_coreas = lib.get("CoREAS").config  # meta information
-    waveforms_coreas = lib.get("CoREAS").astype("pandas")
-    observers_coreas = lib.get("CoREAS").get_observers()
+    coreas_lib = lib.get("CoREAS")
+    if coreas_lib is None:
+        raise RuntimeError("Could not get CoREAS lib from " + str(args.input_dir))
+    waveforms_config_coreas = coreas_lib.config  # meta information
+    waveforms_coreas = coreas_lib.astype("pandas")
+    observers_coreas = coreas_lib.get_observers()  # type: ignore
     found_coreas = True
 except Exception:
     print("No CoREAS waveforms in this directory")

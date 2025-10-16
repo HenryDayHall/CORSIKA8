@@ -1,6 +1,6 @@
 import numpy as np
 
-import corsika
+import corsika8
 
 
 def GetPrimaryDict() -> dict:
@@ -19,7 +19,7 @@ def GetPrimaryDict() -> dict:
 
 def test_particle_init() -> None:
     prop_dict = GetPrimaryDict()
-    prim = corsika.io.outputs.Particle(prop_dict)
+    prim = corsika8.io.outputs.Particle(prop_dict)
 
     assert prim.x
     assert prim.y
@@ -43,6 +43,6 @@ def test_particle_init() -> None:
 def test_particle_init_extended() -> None:
     prop_dict = GetPrimaryDict()
     prop_dict["some_new_field"] = 77
-    prim = corsika.io.outputs.Particle(prop_dict)
+    prim = corsika8.io.outputs.Particle(prop_dict)
 
     assert prim.some_new_field == 77

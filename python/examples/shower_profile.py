@@ -6,7 +6,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-import corsika
+from corsika8.io import Library
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -40,7 +40,7 @@ def plot_avg_profile(dat, part, ax):
 
 
 # Load the shower simulation output
-lib = corsika.Library(args.input_dir)
+lib = Library(args.input_dir)
 
 # Load the primary particle information from the shower
 primaries = lib.get("primary").data
@@ -66,6 +66,7 @@ title += f" {primary.total_energy:.2e} {primary_config['units']['energy']},"
 title += f" Zen: {np.rad2deg(np.pi - np.arccos(primary.nz)):0.1f} deg"
 title += f" Xmax: {prdx_max} g/cm²"
 
+
 def draw_profiles(pr, pr_config):
     # Plots the number of particles as a function of slant depth
     # individual distributions are made for each particle type
@@ -87,6 +88,7 @@ def draw_profiles(pr, pr_config):
     print("Saving", plot_path)
     fig.savefig(plot_path)
 
+
 def draw_production_profiles(pr, pr_config, pr_max):
     # Plots the number of muons that are produced as a function of slant depth
     # individual distributions are made for each particle type
@@ -96,18 +98,24 @@ def draw_production_profiles(pr, pr_config, pr_max):
         if "shower" == part or "X" == part:
             continue
         plot_avg_profile(pr, part, ax)
-    ax.set_title(pr_config["type"] + "\n" + title + r"$\langle X_{\mu}^{\rm max}\rangle=%6.2f$" % np.mean(pr_max))
+    ax.set_title(
+        pr_config["type"]
+        + "\n"
+        + title
+        + r"$\langle X_{\mu}^{\rm max}\rangle=%6.2f$" % np.mean(pr_max)
+    )
     unit_grammage_str = pr_config["units"]["grammage"]  # get units of simulation output
     ax.set_xlabel(f"slant depth, X ({unit_grammage_str})")
     ax.set_ylabel("N(X)")
     ax.legend()
     ax.set_yscale("log")
-    sel = (pr["all"]>0)
+    sel = pr["all"] > 0
     ax.set_xlim(min(pr["X"]), max(pr["X"][sel]))
 
     plot_path = os.path.join(args.output_dir, "shower_profile_prod_profiles.png")
     print("Saving", plot_path)
     fig.savefig(plot_path)
+
 
 def draw_energyloss(prdx, prdx_config):
     # Plots the energy deposition as a function of slant depth

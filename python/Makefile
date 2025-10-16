@@ -13,18 +13,18 @@ PYTHON=`which python3`
 all: black flake isort mypy tests
 
 tests:
-	${PYTHON} -m pytest --cov=corsika tests
+	${PYTHON} -m pytest --cov=src/corsika8 tests
 
 flake:
-	${PYTHON} -m flake8 corsika tests examples
+	${PYTHON} -m flake8 src/corsika8 tests examples
 
 black:
-	${PYTHON} -m black -t py37 corsika tests examples
+	${PYTHON} -m black -t py37 src/corsika8 tests examples
 
 isort:
-	${PYTHON} -m isort --atomic corsika tests examples
+	${PYTHON} -m isort --atomic src/corsika8 tests examples
 
 mypy:
-	${PYTHON} -m mypy corsika
+	${PYTHON} -m mypy src/corsika8
 
 # end

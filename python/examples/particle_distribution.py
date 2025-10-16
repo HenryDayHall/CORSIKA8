@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import particle
 
-import corsika
+from corsika8.io import Library
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -28,16 +28,22 @@ if not os.path.isdir(args.output_dir):
     os.makedirs(args.output_dir)
 
 # Load the shower simulation output
-lib = corsika.Library(args.input_dir)
+lib = Library(args.input_dir)
 
 # Load the primary particle information from the shower
-primaries = lib.get("primary").data
+lib_prim = lib.get("primary")
+if lib_prim is None:
+    raise RuntimeError("Could not get primary lib from " + str(args.input_dir))
+primaries = lib_prim.data
 primary = primaries[0]
-primary_config = lib.get("primary").config
+primary_config = lib_prim.config
 
 # Get the contents of the "particles" sub-directory
-particles_config = lib.get("particles").config  # meta information
-particles = lib.get("particles").astype("pandas")  # particle info
+lib_particles = lib.get("particles")
+if lib_particles is None:
+    raise RuntimeError("Could not get particle lib from " + str(args.input_dir))
+particles_config = lib_particles.config  # meta information
+particles = lib_particles.astype("pandas")  # particle info
 
 # Quick sanity check
 if particles_config["plane"] != primary_config["plane"]:
