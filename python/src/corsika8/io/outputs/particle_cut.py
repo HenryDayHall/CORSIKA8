@@ -1,5 +1,5 @@
 """
-Read data written by ObservationPlane.
+Read data written by ParticleCut.
 
 (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
 
@@ -7,19 +7,19 @@ This software is distributed under the terms of the 3-clause BSD license.
 See file LICENSE for a full version of the license.
 """
 
-import logging
 import os.path as op
 from typing import Any
 
 import pyarrow.parquet as pq
 
 from ..converters import arrow_to_numpy
+from ..logger import c8_logger
 from .output import Output
 
 
-class ObservationPlane(Output):
+class ParticleCut(Output):
     """
-    Read particle data from an ObservationPlane.
+    Read particle data from an ParticleCut.
     """
 
     def __init__(self, path: str):
@@ -35,11 +35,9 @@ class ObservationPlane(Output):
 
         # try and load our data
         try:
-            self.__data = pq.read_table(op.join(path, "particles.parquet"))
+            self.__data = pq.read_table(op.join(path, "energyloss.parquet"))
         except Exception as e:
-            logging.getLogger("corsika").warn(
-                f"An error occured loading an ObservationPlane: {e}"
-            )
+            c8_logger.warning(f"An error occured loading a ParticleCut: {e}")
 
     def is_good(self) -> bool:
         """
@@ -55,7 +53,7 @@ class ObservationPlane(Output):
 
     def astype(self, dtype: str = "pandas", **kwargs: Any) -> Any:
         """
-        Load the particle data from this observation plane.
+        Load the particle data from this particle cut instance.
 
         All additional keyword arguments are passed to `parquet.read_table`
 
@@ -78,7 +76,7 @@ class ObservationPlane(Output):
         else:
             raise ValueError(
                 (
-                    f"Unknown format '{dtype}' for ObservationPlane. "
+                    f"Unknown format '{dtype}' for ParticleCut. "
                     "We currently only support ['arrow', 'pandas', 'numpy']."
                 )
             )
@@ -87,4 +85,4 @@ class ObservationPlane(Output):
         """
         Return a string representation of this class.
         """
-        return f"ObservationPlane('{self.config['name']}')"
+        return f"ParticleCut('{self.config['name']}')"

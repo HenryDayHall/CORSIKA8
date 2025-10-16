@@ -7,7 +7,6 @@ This software is distributed under the terms of the 3-clause BSD license.
 See file LICENSE for a full version of the license.
 """
 
-from .library import Library
+from .arrow_to_numpy import convert_to_numpy
 
-# all exported objects
-__all__ = ["Library"]
+__all__ = ["convert_to_numpy"]

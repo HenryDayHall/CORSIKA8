@@ -1,5 +1,5 @@
 """
-Read data written by ProductionProfile.
+Read data written by TrackWriter
 
 (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
 
@@ -7,25 +7,24 @@ This software is distributed under the terms of the 3-clause BSD license.
 See file LICENSE for a full version of the license.
 """
 
-import logging
 import os.path as op
 from typing import Any
 
 import pyarrow.parquet as pq
-import yaml
 
 from ..converters import arrow_to_numpy
+from ..logger import c8_logger
 from .output import Output
 
 
-class ProductionProfile(Output):
+class TrackWriter(Output):
     """
-    Read particle data from an ProductionProfile.
+    Read particle data from a TrackWriter
     """
 
     def __init__(self, path: str):
         """
-        Load the muon production data into a parquet table.
+        Load the particle data into a parquet table.
 
         Parameters
         ----------
@@ -36,18 +35,9 @@ class ProductionProfile(Output):
 
         # try and load our data
         try:
-            self.__data = pq.read_table(op.join(path, "profile.parquet"))
-            with open(op.join(path, "summary.yaml"), "r") as f:
-                temp = yaml.load(f, Loader=yaml.Loader)
-                self.__xmumax = [x["XmuMax"] for x in temp.values()]
+            self.__data = pq.read_table(op.join(path, "tracks.parquet"))
         except Exception as e:
-            logging.getLogger("corsika").warn(
-                f"An error occured loading a ProductionProfile: {e}"
-            )
-
-    @property
-    def xmumax(self) -> list:
-        return self.__xmumax
+            c8_logger.warning(f"An error occured loading a TrackWriter: {e}")
 
     def is_good(self) -> bool:
         """
@@ -63,7 +53,7 @@ class ProductionProfile(Output):
 
     def astype(self, dtype: str = "pandas", **kwargs: Any) -> Any:
         """
-        Load the particle data from this production profile.
+        Load the particle data from this track writer.
 
         All additional keyword arguments are passed to `parquet.read_table`
 
@@ -86,7 +76,7 @@ class ProductionProfile(Output):
         else:
             raise ValueError(
                 (
-                    f"Unknown format '{dtype}' for ProductionProfile. "
+                    f"Unknown format '{dtype}' for TrackWriter. "
                     "We currently only support ['arrow', 'pandas', 'numpy']."
                 )
             )
@@ -95,4 +85,4 @@ class ProductionProfile(Output):
         """
         Return a string representation of this class.
         """
-        return f"ProductionProfile('{self.config['name']}')"
+        return f"TrackWriter('{self.config['name']}')"

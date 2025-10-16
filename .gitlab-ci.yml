@@ -76,12 +76,15 @@ check-python-quality:
     - corsika
   script:
     - cd ${CI_PROJECT_DIR}/python  # change into the Python directory
-    - pip3 install --user -e '.[test]'  # install the package + test deps
     - python3 --version
-    - python3 -m black -t py37 --check corsika tests
-    - python3 -m flake8 -v corsika tests
-    - python3 -m isort --atomic --check-only corsika tests
-    - python3 -m mypy corsika
+    - python3 -m pip install --upgrade --user pip # upgrade pip
+    - pip3 install -v --user --no-cache-dir '.[test]'  # install the package + test deps
+    - python3 -c "import corsika8.io.library; print('Import successful')" # confirm install works
+    - python3 -c "from corsika8.io import Library; print('Import successful')"
+    - python3 -m black -t py37 --check src/corsika8 tests
+    - python3 -m flake8 -v src/corsika8 tests
+    - python3 -m isort --atomic --check-only src/corsika8 tests
+    - python3 -m mypy src/corsika8
   rules:
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_TAG
@@ -388,7 +391,6 @@ coverage:
 ################# SANITY #################
 ##########################################
 
-##########################################################
 sanity:
   image: corsika/devel:u-22.04
   needs:
@@ -409,13 +411,14 @@ sanity:
     - cmake --build . -- -j4
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for Code Review/' # run on merge requests, if label 'Ready for Code Review' is set
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: always
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       when: manual
       allow_failure: true
-    - if: $CI_MERGE_REQUEST_ID
+    - if: '$CI_MERGE_REQUEST_ID'
       when: manual
       allow_failure: true
-    - if: $CI_COMMIT_TAG
+    - if: '$CI_COMMIT_TAG'
       when: manual
       allow_failure: true
 
@@ -424,29 +427,31 @@ sanity:
 ################# Python #################
 ##########################################
 
-##########################################################
-# template for all Python jobs
+#####################
+# template for python
+#####################
 .python:
   stage: python
   tags:
     - corsika
-  script:
-    - cd ${CI_PROJECT_DIR}/python  # change into the Python directory
-    - pip3 install --user -e '.[test]'  # install the package + test deps
+  before_script:
+    - cd ${CI_PROJECT_DIR}/python
     - python3 --version
-    - python3 -m mypy corsika
-    - python3 -m isort --atomic --check-only corsika tests
-    - python3 -m black -t py37 corsika tests
-    - python3 -m flake8 corsika tests
-    - python3 -m pytest --cov=corsika tests
+    - python3 -m pip install --upgrade --user pip # upgrade pip
   coverage: '/^TOTAL\s*\d+\s*\d+\s*(.*\%)/'
 
+##############
+# python-tests
+##############
 python-tests:
   extends: .python
   image: corsika/devel:u-22.04
   needs:
     - job: build_test_example-u-22_04
       artifacts: true
+  script:
+    - pip3 install -v --user --no-cache-dir '.[test]' # install project
+    - python3 -m pytest --cov=src/corsika8 tests | tee python-test.log
   artifacts:
     when: always
     expire_in: 1 month
@@ -454,27 +459,27 @@ python-tests:
       - ${CI_PROJECT_DIR}/python/python-test.log
   allow_failure: false
 
+#################
+# python-examples
+#################
 python-examples:
-  stage: python
-  tags:
-    - corsika
+  extends: .python
   image: corsika/devel:u-22.04
   needs:
     - job: build_test_example-u-22_04
       artifacts: true
+  script:
+    - pip3 install -v --user --no-cache-dir '.[test,examples]' # install project
+    - cd ${CI_PROJECT_DIR}
+    - export EXAMPLE_DIR=${CI_PROJECT_DIR}/python/examples
+    - export EXAMPLE_SHOWER=${CI_PROJECT_DIR}/build/build_examples/example_outputs/c8_air_shower_output.tar
+    - python3 $EXAMPLE_DIR/particle_distribution.py --input-dir $EXAMPLE_SHOWER
+    - python3 $EXAMPLE_DIR/shower_profile.py --input-dir $EXAMPLE_SHOWER
+    - python3 $EXAMPLE_DIR/first_interactions.py --input-dir $EXAMPLE_SHOWER
+    - export EXAMPLE_RADIO_SHOWER_DIR=${CI_PROJECT_DIR}/build/build_examples/example_outputs/radio_em_shower_outputs
+    - python3 $EXAMPLE_DIR/radio_emission.py --input-dir $EXAMPLE_RADIO_SHOWER_DIR
   artifacts:
     when: always
     expire_in: 1 month
     paths:
       - ${CI_PROJECT_DIR}/python/examples/example_plots
-  script:
-    - export EXAMPLE_SHOWER=${CI_PROJECT_DIR}/build/build_examples/example_outputs/c8_air_shower_output.tar
-    - cd ${CI_PROJECT_DIR}/python
-    - pip3 install --user -e '.[test,examples]'
-    - cd ${CI_PROJECT_DIR}/python/examples
-    - python3 particle_distribution.py --input-dir $EXAMPLE_SHOWER
-    - python3 shower_profile.py --input-dir $EXAMPLE_SHOWER
-    - python3 first_interactions.py --input-dir $EXAMPLE_SHOWER
-    - export EXAMPLE_RADIO_SHOWER_DIR=${CI_PROJECT_DIR}/build/build_examples/example_outputs/radio_em_shower_outputs
-    - python3 radio_emission.py --input-dir $EXAMPLE_RADIO_SHOWER_DIR
-

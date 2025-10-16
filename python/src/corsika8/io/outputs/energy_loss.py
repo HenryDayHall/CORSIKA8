@@ -7,7 +7,6 @@ This software is distributed under the terms of the 3-clause BSD license.
 See file LICENSE for a full version of the license.
 """
 
-import logging
 import os.path as op
 from typing import Any
 
@@ -15,6 +14,7 @@ import pyarrow.parquet as pq
 import yaml
 
 from ..converters import arrow_to_numpy
+from ..logger import c8_logger
 from .output import Output
 
 
@@ -42,9 +42,7 @@ class EnergyLoss(Output):
                 self.__xmax = [x["Xmax"] for x in temp.values()]
 
         except Exception as e:
-            logging.getLogger("corsika").warning(
-                f"An error occured loading a EnergyLoss: {e}"
-            )
+            c8_logger.warning(f"An error occured loading a EnergyLoss: {e}")
 
     @property
     def xmax(self) -> list:
