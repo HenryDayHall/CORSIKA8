@@ -11,7 +11,7 @@
 Run clang-format with the style file in the CORSIKA repository.
 
 By default it finds new files and files with modifications with respect 
-to the current master and prints the filenames which need clang-formatting. 
+to the current main branch and prints the filenames which need clang-formatting. 
 Returns 1 if there are files which need modifications and 0 otherwise, 
 so it can be used as a test.
 """
@@ -27,7 +27,7 @@ do_progress = False
 try:    
     from progress.bar import ChargingBar
     do_progress = True
-except ImportError as e:
+except ImportError:
     do_progress = False
     # no progress bar
 
@@ -64,7 +64,7 @@ if args.all:
         raise SystemExit("Error: You specified --all, but file list is empty. "
                          "Did you run from the build directory?")
 else:
-    cmd = "git diff master --name-status"
+    cmd = "git diff main --name-status"
     for line in subp.check_output(cmd, shell=True).decode("utf8").strip().split("\n"):
         if line.startswith("D"): continue
         if line.startswith("R"):
@@ -118,13 +118,15 @@ if do_progress:
 if args.apply:
     changed = []
     for filename in filelist:        
-        if bar: bar.next()
+        if bar: 
+            bar.next()
         a = open(filename, "rb").read()
         subp.check_call(cmd.split() + ["-i", filename])
         b = open(filename, "rb").read()
         if a != b:
             changed.append(filename)
-    if bar: bar.finish()
+    if bar: 
+        bar.finish()
     if debug:
         print ("changed: ", changed)
     
@@ -132,11 +134,13 @@ else:
     # only print files which need formatting
     files_need_formatting = 0
     for filename in filelist:
-        if bar: bar.next()
+        if bar:
+            bar.next()
         a = open(filename, "rb").read()
         b = subp.check_output(cmd.split() + [filename])
         if a != b:
             files_need_formatting += 1
             print(filename)
-    if bar: bar.finish()            
+    if bar:
+        bar.finish()            
     sys.exit(1 if files_need_formatting > 0 else 0)

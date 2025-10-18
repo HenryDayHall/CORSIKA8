@@ -14,7 +14,7 @@ decisions of the user must be performed at compile time. At run time,
 model parameters can still be changed.
 
 CORSIKA 8 is by default released under the BSD 3-Clause License. See [license
-file](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/LICENSE)
+file](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/main/LICENSE)
 which is part of every release and the source code.
 
 If you use, or want to refer to, CORSIKA 8 please cite ["Towards a Next
@@ -30,12 +30,12 @@ whole community.
 
 CORSIKA 8 makes use of various third-party code, in particular interaction
 models. Please check the [using and collaborating
-agreement](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/USING_COLLABORATING.md)
+agreement](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/main/USING_COLLABORATING.md)
 for further information on this topic.
 
 If you plan to contribute to CORSIKA 8, please check the guidelines outlined here:
 [coding
-guidelines](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/CONTRIBUTING.md). Code
+guidelines](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/main/CONTRIBUTING.md). Code
 that fails the review by the CORSIKA 8 author group must be improved
 before it can be merged in the official code base. After your code has
 been accepted and merged, you become a contributor of the CORSIKA 8
@@ -43,7 +43,7 @@ project (code author).
 
 IMPORTANT: Before you contribute, you need to read and agree to the conditions set out in the
 [using and collaborating
-agreement](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/master/USING_COLLABORATING.md).
+agreement](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/blob/main/USING_COLLABORATING.md).
 The agreement can be discussed, and eventually improved if necessary.
 
 

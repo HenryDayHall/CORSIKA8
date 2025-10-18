@@ -19,7 +19,7 @@ change/improve them.
     created directly via the gitlab web interface. 
   - Proposed code to close one issue (located in a specific git
     branch) is reviewed, discussed, and eventually merged
-    into the master branch via a merge-request (MR) to close the issue.
+    into the main branch via a merge-request (MR) to close the issue.
   - all merge request will undergo a code review, and must be approved before merge, in order to ensure high code qualtiy: [Code Approval Procedure](https://gitlab.iap.kit.edu/AirShowerPhysics/corsika/-/wikis/Code-Approval-Procedure)
 
 
