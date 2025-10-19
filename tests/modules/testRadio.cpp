@@ -227,8 +227,8 @@ TEST_CASE("Radio", "[processes]") {
     // run end of shower and make sure that something extra was added
     auto const fileSizeC = boost::filesystem::file_size(outputFileC);
     coreas.endOfShower(0);
-    CHECK(boost::filesystem::file_size(outputFileC) > fileSizeC);
     coreas.endOfLibrary();
+    CHECK(boost::filesystem::file_size(outputFileC) > fileSizeC);
 
   } // END: SECTION("CoREAS process")
 
@@ -444,8 +444,8 @@ TEST_CASE("Radio", "[processes]") {
     // run end of shower and make sure that something extra was added
     auto const fileSizeZ = boost::filesystem::file_size(outputFileZ);
     zhs.endOfShower(0);
-    CHECK(boost::filesystem::file_size(outputFileZ) > fileSizeZ);
     zhs.endOfLibrary();
+    CHECK(boost::filesystem::file_size(outputFileZ) > fileSizeZ);
 
   } // END: SECTION("ZHS process")
 
