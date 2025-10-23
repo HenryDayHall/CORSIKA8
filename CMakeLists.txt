@@ -50,9 +50,9 @@ endif ()
 if (POLICY CMP0135)
     cmake_policy (SET CMP0135 OLD)
 endif ()
-# AUtomatically add extensions to filenames if needed (old behaviour)
+# explicit setting of extensions
 if (POLICY CMP0115)
-    cmake_policy (SET CMP0115 OLD)
+    cmake_policy (SET CMP0115 NEW)
 endif ()
 
 #+++++++++++++++++++++++++++++
@@ -134,7 +134,7 @@ add_subdirectory (externals/cnpy)
 # targets and settings needed to generate coverage reports
 #if (CMAKE_BUILD_TYPE STREQUAL Coverage)
 
-SET(COVERAGE_BUILD OFF CACHE BOOL "Activate coverage build")
+set (COVERAGE_BUILD OFF CACHE BOOL "Activate coverage build")
 
 if( COVERAGE_BUILD AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
 
@@ -210,23 +210,52 @@ endif ()
 # CTest config
 #
 enable_testing ()
-if (${CMAKE_VERSION} VERSION_LESS "3.12.0")
+
+if (CMAKE_VERSION VERSION_LESS "3.12.0")
   list (APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
-else (${CMAKE_VERSION} VERSION_LESS "3.12.0")
-  set (CTEST_OUTPUT_ON_FAILURE 1) # this is for new versions of cmake
-endif (${CMAKE_VERSION} VERSION_LESS "3.12.0")
-set (CTEST_CUSTOM_COVERAGE_EXCLUDE "./tests/" "./examples/" "./modules/" "test*.(hpp/cpp)$")
-# include this test only if NOT run on gitlab-ci; On CI this is a dedicated job:
+else()
+  set(CTEST_OUTPUT_ON_FAILURE 1)
+endif()
+
+set (CTEST_CUSTOM_COVERAGE_EXCLUDE 
+  "./tests/"
+  "./examples/"
+  "./modules/"
+  "test*.(hpp/cpp)$"
+  )
+
+  # include this test only if NOT run on gitlab-ci; On CI this is a dedicated job:
 if (NOT DEFINED ENV{CI})
   # add call to ./do-copyright.py to run as unit-test-case
-  add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  add_test (NAME 
+  copyright_notices 
+  COMMAND ./do-copyright.py 
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
 endif (NOT DEFINED ENV{CI})
 
 #+++++++++++++++++++++++++++++
 # Externals
 #
 set (Python_ADDITIONAL_VERSIONS 3)
-find_package (PythonInterp 3 REQUIRED)
+if (CMAKE_VERSION VERSION_LESS "3.12.0")
+  find_package (PythonInterp 3 REQUIRED)
+else()
+  find_package(Python3 COMPONENTS Interpreter)
+endif()
+
+
+# Required
+message("Finding required programs")
+set(REQUIRED_PROGRAMS g++ gfortran rsync tar)
+foreach(PROG ${REQUIRED_PROGRAMS})
+  find_program(${PROG}_EXECUTABLE ${PROG})
+  if(NOT ${PROG}_EXECUTABLE)
+    message(FATAL_ERROR "${PROG} is required but was not found.")
+  else()
+    message(STATUS "${PROG} found: ${${PROG}_EXECUTABLE}")
+  endif()
+endforeach()
 
 #+++++++++++++++++++++++++++++++
 # exporting of CMake targets
