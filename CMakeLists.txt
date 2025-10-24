@@ -11,12 +11,12 @@ cmake_minimum_required (VERSION 3.9)
 
 #+++++++++++++++++++++++++++++
 # project name
-# version is:  "8.major.minor.patch"
+# version is:  "major.minor.patch"
 #   major: API changes
 #   minor: no API changes
 #   patch: bug fix and small improvements
 #
-set (c8_version 8.0.2.0)
+set (c8_version 0.2.0)
 project (
   corsika
   VERSION ${c8_version}
