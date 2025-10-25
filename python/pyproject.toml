@@ -1,6 +1,6 @@
 [project]
 name = "corsika8-io"
-version = "8.1.0"
+version = "1.1.0"
 description = "The official python package for reading the output of CORSIKA 8."
 readme = "README.md"
 requires-python = ">=3.10,<4"
