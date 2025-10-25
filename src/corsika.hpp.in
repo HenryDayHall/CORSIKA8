@@ -22,7 +22,7 @@ namespace corsika {
    *
    * @mainpage Technical documentation of the CORSIKA 8 software framework.
    *
-   * Software documentatin and reference guide for the CORSIKA 8
+   * Software documentation and reference guide for the CORSIKA 8
    * software framework for air shower simulations. CORSIKA 8 is developed
    * at <a
    * href="https://gitlab.iap.kit.edu/AirShowerPhysics">https://gitlab.iap.kit.edu</a>. If
@@ -39,36 +39,30 @@ namespace corsika {
    */
 
   /*! Usage:
-   *  to get the version R.X.Y.Z,
+   *  to get the version X.Y.Z,
    *  x: major version
    *  y: minor version
    *  z: patch number
    */
-  static std::string const CORSIKA_VERSION = "@PROJECT_VERSION@";
-
-  /*!
-   *  The value of \p CORSIKA_RELEASE_VERSION encodes the
-   *  main release version number of CORSIKA. It is "8" right now.
-   */
-  static unsigned int const CORSIKA_RELEASE_NUMBER = @PROJECT_VERSION_MAJOR@;
+  static std::string const CORSIKA_VERSION = "@corsika_VERSION@";
 
   /*!
    * The value of \p CORSIKA_MAJOR_VERSION encodes the
    * major release version number of CORSIKA.
    */
-  static unsigned int const CORSIKA_MAJOR_NUMBER = @PROJECT_VERSION_MINOR@;
+  static unsigned int const CORSIKA_MAJOR_NUMBER = @corsika_VERSION_MAJOR@;
 
   /*!
    *  The value of \p CORSIKA_MINOR_NUMBER encodes the
    *  minor release number of the CORSIKA library.
    */
-  static unsigned int const CORSIKA_MINOR_NUMBER = @PROJECT_VERSION_PATCH@;
+  static unsigned int const CORSIKA_MINOR_NUMBER = @corsika_VERSION_MINOR@;
 
   /*!
    *  The value of \p CORSIKA_PATCH_NUMBER encodes the
    *  patch number of the CORSIKA library.
    */
-  static unsigned int const CORSIKA_PATCH_NUMBER = @PROJECT_VERSION_TWEAK@;
+  static unsigned int const CORSIKA_PATCH_NUMBER = @corsika_VERSION_PATCH@;
 
   /**
    *
