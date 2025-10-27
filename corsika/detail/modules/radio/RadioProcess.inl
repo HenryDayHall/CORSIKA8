@@ -146,10 +146,14 @@ namespace corsika {
 
       observer.reset();
     }
-    output_.closeStreamer();
 
     // increment our event counter
     showerId_++;
+  }
+
+  template <typename TObserverCollection, typename TRadioImpl, typename TPropagator>
+  inline void RadioProcess<TObserverCollection, TRadioImpl, TPropagator>::endOfLibrary() {
+    output_.closeStreamer();
   }
 
   template <typename TObserverCollection, typename TRadioImpl, typename TPropagator>

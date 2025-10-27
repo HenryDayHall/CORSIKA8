@@ -94,7 +94,7 @@ namespace corsika {
      * Called at the end of each library.
      *
      */
-    void endOfLibrary() final override {}
+    void endOfLibrary() final override;
 
     /**
      * Get the configuration of this output.
