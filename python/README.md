@@ -13,7 +13,7 @@ pip install 'git+https://gitlab.iap.kit.edu/AirShowerPhysics/corsika.git#subdire
 
 ## For developers
 
-If you are developing the CORSIKA 8 framework or more generally have installed the code directly from a cloned repo.
+If you are developing the CORSIKA 8 framework or, more generally, want to install the code directly from a cloned repo.
 **Note:** if you are NOT using a virtual environment, you may want to use the `pip install --user ...` instead.
 
 ``` shell
