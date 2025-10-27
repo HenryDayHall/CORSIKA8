@@ -45,7 +45,7 @@ namespace corsika {
       , forceInteraction_(false)
       , forceDecay_(false) {
     CORSIKA_LOG_INFO(c8_ascii_);
-    CORSIKA_LOG_INFO("This is CORSIKA {}.{}.{}", CORSIKA_MAJOR_NUMBER,
+    CORSIKA_LOG_INFO("This is CORSIKA8 {}.{}.{}", CORSIKA_MAJOR_NUMBER,
                      CORSIKA_MINOR_NUMBER, CORSIKA_PATCH_NUMBER);
     CORSIKA_LOG_INFO(
         "The C8 author list can be found at: "
