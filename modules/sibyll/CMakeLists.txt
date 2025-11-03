@@ -46,6 +46,9 @@ target_include_directories (
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/corsika_modules/sibyll23d>
 )
 
+# undefine CMake's NDEBUG because SIBYLL has a variable with that name
+target_compile_options(SIBYLL23d_static PRIVATE "$<$<COMPILE_LANGUAGE:Fortran>:-UNDEBUG>")
+
 target_link_libraries (
   SIBYLL23d_static
   PUBLIC
