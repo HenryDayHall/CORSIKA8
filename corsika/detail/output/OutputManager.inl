@@ -19,6 +19,8 @@
 #include <fmt/core.h>
 #include <fmt/chrono.h>
 
+#include <corsika/corsika.hpp>
+
 namespace corsika {
 
   inline OutputManager::OutputManager(std::string const& dir_path, const long& vseed = 0,
@@ -119,10 +121,10 @@ namespace corsika {
     YAML::Node config;
 
     // some basic info
-    config["path"] = root_.string();  // the simulation name
-    config["creator"] = "CORSIKA8";   // a tag to identify C8 libraries
-    config["version"] = "8.0.2";      // the current version
-    config["args"] = cmnd_line_args_; // the command line parameters
+    config["path"] = root_.string();     // the simulation name
+    config["creator"] = "CORSIKA8";      // a tag to identify C8 libraries
+    config["version"] = CORSIKA_VERSION; // the current version
+    config["args"] = cmnd_line_args_;    // the command line parameters
     return config;
   }
 
