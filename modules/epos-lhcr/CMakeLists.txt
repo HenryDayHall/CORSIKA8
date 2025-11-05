@@ -14,23 +14,18 @@ add_library (EPOS_LHCR_static STATIC
   epos-dro-lhcr.f  epos-int-lhcr.f  epos-rsh-lhcr.f
   epos-ems-lhcr.f  epos_j.f         epos-sem-lhcr.f
   al.cpp           memory.c
-  )
+)
+
 target_link_libraries(EPOS_LHCR_static PUBLIC modules_common)
 target_compile_options(EPOS_LHCR_static PRIVATE "-mcmodel=large")
-
-set (
-  MODEL_HEADERS
-  epos-lhcr.hpp
-  )
 
 add_library (EPOS_LHCR SHARED "epos-lhcr-public.cpp")
 target_link_libraries(EPOS_LHCR PRIVATE EPOS_LHCR_static)
 
-
 target_include_directories (EPOS_LHCR PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:include/corsika_modules/eposlhcr>
-  )
+)
+
 set_target_properties (
   EPOS_LHCR_static
   PROPERTIES
@@ -38,7 +33,12 @@ set_target_properties (
   CXX_VISIBILITY_PRESET hidden
   # unfortunately ignored by gfortran:
   Fortran_VISIBILITY_PRESET hidden
-  )
+)
+
+set_target_properties(EPOS_LHCR PROPERTIES
+  FRAMEWORK TRUE
+  PUBLIC_HEADER "epos-lhcr.hpp"
+)
 
 target_link_options(EPOS_LHCR PRIVATE "LINKER:--exclude-libs,ALL") # hide symbols from static/private lib
 target_include_directories (
@@ -49,17 +49,11 @@ target_include_directories (
 )
 
 install (
-  FILES
-  ${MODEL_HEADERS}
-  DESTINATION include/corsika_modules/eposlhcr
-  )
-
-install (
   TARGETS EPOS_LHCR
   EXPORT CORSIKA8PublicTargets
   ARCHIVE DESTINATION lib/corsika
-  INCLUDES DESTINATION include/corsika_modules/eposlhcr
-  )
+  PUBLIC_HEADER DESTINATION include/corsika_modules/eposlhcr
+)
 
 # add EPOS to CORSIKA8 build
 add_dependencies (CORSIKA8 EPOS_LHCR)
