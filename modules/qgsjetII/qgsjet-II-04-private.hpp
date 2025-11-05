@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include <string>
-
 #include <rng_decl.hpp>
+
+#include "qgsjet-II-04-types.hpp"
 
 /**
  * @file qgsjet-II.04.hpp
@@ -26,44 +26,13 @@ DECLARE_RNG(qgsjetII)
 
 extern "C" {
 
-// data memory layout
+extern QGARR12 qgarr12_;
 
-extern struct {
-  int nsp;
-} qgarr12_;
+extern QGARR14 qgarr14_;
 
-const int nptmax = 95000;
-const int iapmax = 208;
+extern QGARR13 qgarr13_;
 
-extern struct {
-  double esp[nptmax][4];
-  int ich[nptmax];
-} qgarr14_;
-
-extern struct {
-  // c nsf - number of secondary fragments;
-  // c iaf(i) - mass of the i-th fragment
-  int nsf;
-  int iaf[iapmax];
-} qgarr13_;
-
-extern struct {
-  int nwt;
-  int nwp;
-} qgarr55_;
-
-/**
- * Small helper class to provide a data-directory name in the format qgsjetII expects.
- */
-class datadir {
-private:
-  datadir operator=(const std::string& dir);
-  datadir operator=(const datadir&);
-
-public:
-  datadir(const std::string& dir);
-  char data[132];
-};
+extern QGARR55 qgarr55_;
 
 // functions
 void qgset_();

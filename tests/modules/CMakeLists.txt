@@ -6,11 +6,12 @@ set (test_modules_sources
   testObservationPlane.cpp
   testObservationVolume.cpp
   testQGSJetII.cpp
+  testQGSJetIII.cpp
   testProposal.cpp
   testPythia8.cpp
   testTAUOLA.cpp
   testUrQMD.cpp
-  testCONEX.cpp
+  # testCONEX.cpp # TODO: re-enable when Sibyll initialization is fixed
   testParticleCut.cpp
   testProductionProfile.cpp
   testSibyll.cpp

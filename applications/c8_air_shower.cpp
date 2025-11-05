@@ -53,6 +53,7 @@
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/QGSJetII.hpp>
+#include <corsika/modules/QGSJetIII.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/Sophia.hpp>
 #include <corsika/modules/StackInspector.hpp>
@@ -112,6 +113,7 @@ using Particle = StackType::particle_type;
 long registerRandomStreams(long seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
+  RNGManager<>::getInstance().registerRandomStream("qgsjetIII");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
   RNGManager<>::getInstance().registerRandomStream("sophia");
   RNGManager<>::getInstance().registerRandomStream("epos");
@@ -270,7 +272,8 @@ int main(int argc, char** argv) {
       ->group("Misc.");
   app.add_option("-M,--hadronModel", "High-energy hadronic interaction model")
       ->default_val("SIBYLL-2.3d")
-      ->check(CLI::IsMember({"SIBYLL-2.3d", "QGSJet-II.04", "EPOS-LHC", "Pythia8"}))
+      ->check(CLI::IsMember(
+          {"SIBYLL-2.3d", "QGSJet-II.04", "QGSJet-III", "EPOS-LHC", "Pythia8"}))
       ->group("Misc.");
   app.add_option("-T,--hadronModelTransitionEnergy",
                  "Transition between high-/low-energy hadronic interaction "
@@ -441,6 +444,9 @@ int main(int argc, char** argv) {
   } else if (modelStr == "QGSJet-II.04") {
     heModel = DynamicInteractionProcess<StackType>{
         std::make_shared<corsika::qgsjetII::Interaction>()};
+  } else if (modelStr == "QGSJet-III") {
+    heModel = DynamicInteractionProcess<StackType>{
+        std::make_shared<corsika::qgsjetIII::Interaction>()};
   } else if (modelStr == "EPOS-LHC") {
     heModel = DynamicInteractionProcess<StackType>{
         std::make_shared<corsika::epos::Interaction>(corsika::setup::C7trackedParticles)};
