@@ -35,7 +35,7 @@ namespace corsika::EPOS_LHCR {
     if (!isInitialized_) {
       isInitialized_ = true;
       if (dataPath == "") {
-        data_path_ = (std::string(corsika_data("EPOS").c_str()) + "/").c_str();
+        data_path_ = (std::string(corsika_data("EPOS.LHC-R").c_str()) + "/").c_str();
       }
       initialize();
       if (vList.empty()) {
