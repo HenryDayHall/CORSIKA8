@@ -1981,8 +1981,8 @@ c        print*,id
         goto 600                !nucleus
       endif
             
-      if(id.ge.-9900.and.id.le.9900)then
-        nl=nlidtbl(abs(id))
+      if(id.ge.-9900.and.id.le.9900)then        
+        nl=nlidtbl(abs(id))        
         amass=amtbl(nl)  !nl=0 -> should crash with backtrace
 c         print*,'Check mass',id,nl,amass
         if(nl.eq.0)stop'ERROR 07072016' 

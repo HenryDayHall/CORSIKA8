@@ -29,8 +29,20 @@ struct HADR6 {
     int isetcs;
 };
 
+struct HADR16 {
+    float fkainc;
+    float fkamax;
+    float zodinc;
+    float zbrmax[4];
+    float zdfinc;
+    float xzcut;
+    float ptvpom;
+};
+
+
   struct NUCL6 {
     int infragm;
+    int ibreit;
   };
 
   struct CJINTI {
@@ -38,6 +50,7 @@ struct HADR6 {
     int iorsdf;
     int iorshh;
     int ionudi;
+    int kexit;
   } ;
 
   struct NXSAIR {
@@ -202,6 +215,8 @@ struct HADR1 {
     int minfra;
     int maxfra;
     int kohevt;
+    int npglb;
+    int ntglb;
   } ;
 
    struct CSEED {
@@ -233,6 +248,7 @@ struct FILES {
     int ifdt;
     int ifcp;
     int ifdr;
+    int ifio;
   };
 
 struct FNAME {
@@ -290,7 +306,7 @@ struct FNAME {
 
 namespace EPOS_LHCR {
   inline unsigned int constexpr mmry = 1;
-  inline unsigned int constexpr mxptl = 200000 / mmry;
+  inline unsigned int constexpr mxptl = 300000 / mmry;
   inline unsigned int constexpr mxnody = 200;
   }
   
@@ -321,6 +337,7 @@ namespace EPOS_LHCR {
     float sigelaaa;
     float sigcutaa;
     float sigdd;
+    float sigcd;
   };
 
   struct NODCY {

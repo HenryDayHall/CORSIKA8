@@ -35,7 +35,7 @@ namespace corsika::EPOS_LHCR {
   };
   using EposXSClassIntType = std::underlying_type<EposXSClass>::type;
 
-#include <corsika/modules/epos/Generated.inc>
+#include <corsika/modules/epos-lhcr/Generated.inc>
 
   unsigned int constexpr get_nucleus_A(EposCode const eposId) {
     // 100ZZZAAA0 -> std. pdg code
@@ -60,7 +60,7 @@ namespace corsika::EPOS_LHCR {
     }
     auto const corsikaCode = epos2corsika[s - minEpos];
     if (corsikaCode == Code::Unknown) {
-      throw std::runtime_error(std::string("EPOS/CORSIKA conversion of ")
+      throw std::runtime_error(std::string("EPOS-LHCR/CORSIKA conversion of ")
                                    .append(std::to_string(s))
                                    .append(" impossible"));
     }
