@@ -100,6 +100,10 @@ int idtrafo_(char[3], char[3], int&);
 // common blocks as
 // defined in epos.inc
 
+extern CUNCERTMU cuncertmu_;
+extern CHACAS chacas_;
+extern LHCTUNE lhctune_;
+
 extern CICNT cicnt_;
 
 extern HADR6 hadr6_;

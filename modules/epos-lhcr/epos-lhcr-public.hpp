@@ -16,7 +16,10 @@ namespace EPOS_LHCR {
   extern void (*const idmass_)(int&, float&);
   extern int (*const idtrafo_)(char[3], char[3], int&);
   extern void (* const ainit_)();
-      
+  
+  extern CUNCERTMU* const cuncertmu_;
+  extern CHACAS* const chacas_;
+  extern LHCTUNE* const lhctune_;
       extern CPTL* const cptl_ ;
       extern NODCY* const nodcy_ ;
       extern PRNT1* const prnt1_;

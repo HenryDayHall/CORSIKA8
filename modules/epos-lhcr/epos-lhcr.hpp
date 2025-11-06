@@ -41,7 +41,6 @@ namespace EPOS_LHCR {
   void aepos_(int&);
   void afinal_();
   void alistf_(char* str, int str_length); // hidden str length
-  double lhcparameters_();
   void hnbspd_(int&);
   void hnbpajini_();
   void conini_();
@@ -100,6 +99,25 @@ namespace EPOS_LHCR {
 
   // common blocks as
   // defined in epos.inc
+
+  extern struct {
+    int ihacas;    
+  } chacas_;
+
+
+  extern struct {
+    int iLHC;
+    int ipytune;
+  } lhctune_;
+
+// common/hadr16/fkainc,fkamax,zodinc,zbrmax(4),zdfinc,xzcut,ptvpom
+
+  extern struct {
+    float delmrho;
+    float delpeta;
+    int irasym;        
+  } cuncertmu_;
+
 
   extern struct {
     int inicnt;
