@@ -24,9 +24,9 @@ using Catch::Approx;
 using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
 using DummyEnvironment = Environment<DummyEnvironmentInterface>;
 
-TEST_CASE("EposBasics", "module,process") {
+TEST_CASE("EposLhcrBasics", "module,process") {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::debug);
 
   SECTION("epos -> corsika") {
     CHECK(Code::Electron ==
@@ -99,9 +99,9 @@ auto sqs2elab(HEPEnergyType const sqs, HEPEnergyType const ma, HEPEnergyType con
   return (sqs * sqs - ma * ma - mb * mb) / 2. / mb;
 }
 
-TEST_CASE("Epos", "modules") {
+TEST_CASE("EposLhcr", "modules") {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::debug);
 
   RNGManager<>::getInstance().registerRandomStream("epos");
   InteractionModel model;

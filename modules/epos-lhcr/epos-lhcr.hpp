@@ -37,6 +37,8 @@ namespace EPOS_LHCR {
 
   void aaset_(int&);
   void atitle_();
+  void readidtable_();
+  void hnbcreate_();
   void ainit_();
   void aepos_(int&);
   void afinal_();
@@ -110,14 +112,21 @@ namespace EPOS_LHCR {
     int ipytune;
   } lhctune_;
 
-// common/hadr16/fkainc,fkamax,zodinc,zbrmax(4),zdfinc,xzcut,ptvpom
+  extern struct {
+    int fkainc;
+    int fkamax;
+    int zodinc;
+    int zbrmax[4];
+    int zdfinc;
+    int xzcut;
+    int ptvpom;
+  } hadr16_;
 
   extern struct {
     float delmrho;
     float delpeta;
     int irasym;        
   } cuncertmu_;
-
 
   extern struct {
     int inicnt;
@@ -132,6 +141,7 @@ namespace EPOS_LHCR {
 
   extern struct {
     int infragm;
+    int ibreit;
   } nucl6_;
 
   extern struct {
@@ -139,6 +149,7 @@ namespace EPOS_LHCR {
     int iorsdf;
     int iorshh;
     int ionudi;
+    int kexit;
   } cjinti_;
 
   extern struct {
@@ -154,6 +165,7 @@ namespace EPOS_LHCR {
     int model;
   } appli_;
 
+  // does this exist?
   extern struct {
     int iapplxs;
     int modelxs;
@@ -166,6 +178,7 @@ namespace EPOS_LHCR {
     int ninicon;
   } events_;
 
+  // does this exist still??
   extern struct {
     int neventxs;
     int iframexs;
@@ -303,6 +316,8 @@ namespace EPOS_LHCR {
     int minfra;
     int maxfra;
     int kohevt;
+    int npglb;
+    int ntglb;
   } cevt_;
 
   extern struct {
@@ -334,6 +349,7 @@ namespace EPOS_LHCR {
     int ifdt;
     int ifcp;
     int ifdr;
+    int ifio;
   } files_;
 
   extern struct {
@@ -391,7 +407,7 @@ namespace EPOS_LHCR {
   } prnt3_;
 
   unsigned int constexpr mmry = 1;
-  unsigned int constexpr mxptl = 200000 / mmry;
+  unsigned int constexpr mxptl = 300000 / mmry;
   extern struct {
     int nptl;
     float pptl[mxptl][5];
@@ -419,6 +435,7 @@ namespace EPOS_LHCR {
     float sigelaaa;
     float sigcutaa;
     float sigdd;
+    float sigcd;
   } hadr5_;
 
   unsigned int constexpr mxnody = 200;

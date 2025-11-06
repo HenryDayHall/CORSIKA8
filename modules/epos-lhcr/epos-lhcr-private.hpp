@@ -37,6 +37,8 @@ double drangen_();
 
 void aaset_(int&);
 void atitle_();
+void readidtable_();
+void hnbcreate_();
 void ainit_();
 void aepos_(int&);
 void afinal_();
@@ -107,6 +109,7 @@ extern LHCTUNE lhctune_;
 extern CICNT cicnt_;
 
 extern HADR6 hadr6_;
+extern HADR16 hadr16_;
 
 extern NUCL6 nucl6_;
 

@@ -98,9 +98,51 @@ namespace corsika::EPOS_LHCR {
 
     CORSIKA_LOGGER_DEBUG(logger_, "initializing...");
 
-    // corsika7 ini
+    // set paths to tables in corsika data
+    using EPOSDatadir = datadir<500>;
+    // EPOSDatadir BASE(data_path_);
+    EPOSDatadir BASE(data_path_);
+    strcpy(::EPOS_LHCR::fname_->fnnx, BASE.data());
+    ::EPOS_LHCR::nfname_->nfnnx = BASE.length();
+
+    ::EPOS_LHCR::readidtable_();
+    ::EPOS_LHCR::atitle_();    
+    ::EPOS_LHCR::hnbcreate_();
+
+    EPOSDatadir TL(data_path_ + "epos.initl");
+    strcpy(::EPOS_LHCR::fname_->fnii, TL.data());
+    ::EPOS_LHCR::nfname_->nfnii = TL.length();
+
+    EPOSDatadir EV(data_path_ + "epos.iniev");
+    strcpy(::EPOS_LHCR::fname_->fnie, EV.data());
+    ::EPOS_LHCR::nfname_->nfnie = EV.length();
+
+    EPOSDatadir RJ(data_path_ + "epos.inirj"); // lhcparameters adds ".lhc"
+    strcpy(::EPOS_LHCR::fname_->fnrj, RJ.data());
+    ::EPOS_LHCR::nfname_->nfnrj = RJ.length();
+
+    EPOSDatadir CS(data_path_ + "epos.inics"); // lhcparameters adds ".lhc"
+    strcpy(::EPOS_LHCR::fname_->fncs, CS.data());
+    ::EPOS_LHCR::nfname_->nfncs = CS.length();
+
     int iarg = 0;
-    ::EPOS_LHCR::aaset_(iarg);
+    ::EPOS_LHCR::aaset_(iarg);   
+
+    strcpy(::EPOS_LHCR::fname_->fnnx, BASE.data());
+    ::EPOS_LHCR::nfname_->nfnnx = BASE.length();
+
+    strcpy(::EPOS_LHCR::fname_->fnii, TL.data());
+    ::EPOS_LHCR::nfname_->nfnii = TL.length();
+
+    strcpy(::EPOS_LHCR::fname_->fnie, EV.data());
+    ::EPOS_LHCR::nfname_->nfnie = EV.length();
+
+    strcpy(::EPOS_LHCR::fname_->fnrj, RJ.data());
+    ::EPOS_LHCR::nfname_->nfnrj = RJ.length();
+
+    strcpy(::EPOS_LHCR::fname_->fncs, CS.data());
+    ::EPOS_LHCR::nfname_->nfncs = CS.length();
+
 
     // set LHC-R tune
     ::EPOS_LHCR::lhctune_->iLHC = 1;
@@ -155,29 +197,6 @@ namespace corsika::EPOS_LHCR {
     // decay settings
     // activate decays in epos for particles defined by set_stable/set_unstable
     // ::EPOS_LHCR::othe2_->idecay = 0; // no decays in epos
-
-    // set paths to tables in corsika data
-    using EPOSDatadir = datadir<500>;
-    // EPOSDatadir BASE(data_path_);
-    EPOSDatadir BASE(data_path_);
-    strcpy(::EPOS_LHCR::fname_->fnnx, BASE.data());
-    ::EPOS_LHCR::nfname_->nfnnx = BASE.length();
-
-    EPOSDatadir TL(data_path_ + "epos.initl");
-    strcpy(::EPOS_LHCR::fname_->fnii, TL.data());
-    ::EPOS_LHCR::nfname_->nfnii = TL.length();
-
-    EPOSDatadir EV(data_path_ + "epos.iniev");
-    strcpy(::EPOS_LHCR::fname_->fnie, EV.data());
-    ::EPOS_LHCR::nfname_->nfnie = EV.length();
-
-    EPOSDatadir RJ(data_path_ + "epos.inirj"); // lhcparameters adds ".lhc"
-    strcpy(::EPOS_LHCR::fname_->fnrj, RJ.data());
-    ::EPOS_LHCR::nfname_->nfnrj = RJ.length();
-
-    EPOSDatadir CS(data_path_ + "epos.inics"); // lhcparameters adds ".lhc"
-    strcpy(::EPOS_LHCR::fname_->fncs, CS.data());
-    ::EPOS_LHCR::nfname_->nfncs = CS.length();
 
     // initializes maximum energy and mass
     initializeEventCoM(
