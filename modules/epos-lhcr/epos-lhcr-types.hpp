@@ -7,6 +7,21 @@ extern "C" {
     int inicnt;
 };
 
+struct CUNCERTMU {
+  float delmrho;
+  float delpeta;  
+  int irasym;
+};
+
+struct CHACAS {
+  int ihacas;
+};
+
+struct LHCTUNE {
+ int iLHC;
+ int ipytune;
+};
+
 struct HADR6 {
     int intpol;
     int isigma;

@@ -102,6 +102,17 @@ namespace corsika::EPOS_LHCR {
     int iarg = 0;
     ::EPOS_LHCR::aaset_(iarg);
 
+    // set LHC-R tune
+    ::EPOS_LHCR::lhctune_->iLHC = 1;
+
+    // switch off hadronic rescattering (faster), invalid results for HEP
+    ::EPOS_LHCR::chacas_->ihacas = 0;
+
+    // set something with resonances...?
+    ::EPOS_LHCR::cuncertmu_->irasym=1;
+    ::EPOS_LHCR::cuncertmu_->delpeta=0.15;
+    ::EPOS_LHCR::cuncertmu_->delmrho=0.05;
+
     // debug output settings
     ::EPOS_LHCR::prnt1_->ish = 0;
     ::EPOS_LHCR::prnt3_->iwseed = 0; // 1: printout seeds, 0: off
