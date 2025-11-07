@@ -24,6 +24,7 @@ using Catch::Approx;
 using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
 using DummyEnvironment = Environment<DummyEnvironmentInterface>;
 
+/* These tests do not explicitly depend on the interaction model. No initialization needed. */
 TEST_CASE("EposLhcrBasics", "module,process") {
 
   logging::set_level(logging::level::debug);
@@ -65,11 +66,7 @@ TEST_CASE("EposLhcrBasics", "module,process") {
     CHECK(corsika::EPOS_LHCR::getEposXSCode(Code::Helium) == 2);
     CHECK(corsika::EPOS_LHCR::getEposXSCode(Code::Nucleus) == 2);
   }
-
-  SECTION("epos mass") {
-    CHECK_FALSE(corsika::EPOS_LHCR::getEposMass(Code::Electron) / 1_GeV == Approx(0));
-    CHECK_THROWS(corsika::EPOS_LHCR::getEposMass(Code::Unknown));
-  }
+  
 }
 
 #include <corsika/framework/geometry/Point.hpp>
@@ -105,6 +102,11 @@ TEST_CASE("EposLhcr", "modules") {
 
   RNGManager<>::getInstance().registerRandomStream("epos");
   InteractionModel model;
+
+  SECTION("epos mass") {
+    CHECK_FALSE(corsika::EPOS_LHCR::getEposMass(Code::Electron) / 1_GeV == Approx(0));
+    CHECK_THROWS(corsika::EPOS_LHCR::getEposMass(Code::Unknown));
+  }
 
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   auto const& cs = *csPtr;
