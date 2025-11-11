@@ -98,15 +98,17 @@ namespace corsika::EPOS_LHCR {
 
     CORSIKA_LOGGER_DEBUG(logger_, "initializing...");
 
+    int iarg = 0;
+    ::EPOS_LHCR::aaset_(iarg);
+
     // set paths to tables in corsika data
     using EPOSDatadir = datadir<500>;
-    // EPOSDatadir BASE(data_path_);
     EPOSDatadir BASE(data_path_);
     strcpy(::EPOS_LHCR::fname_->fnnx, BASE.data());
     ::EPOS_LHCR::nfname_->nfnnx = BASE.length();
 
     ::EPOS_LHCR::readidtable_();
-    ::EPOS_LHCR::atitle_();    
+    ::EPOS_LHCR::atitle_();
     ::EPOS_LHCR::hnbcreate_();
 
     EPOSDatadir TL(data_path_ + "epos.initl");
@@ -125,35 +127,11 @@ namespace corsika::EPOS_LHCR {
     strcpy(::EPOS_LHCR::fname_->fncs, CS.data());
     ::EPOS_LHCR::nfname_->nfncs = CS.length();
 
-    int iarg = 0;
-    ::EPOS_LHCR::aaset_(iarg);   
-
-    strcpy(::EPOS_LHCR::fname_->fnnx, BASE.data());
-    ::EPOS_LHCR::nfname_->nfnnx = BASE.length();
-
-    strcpy(::EPOS_LHCR::fname_->fnii, TL.data());
-    ::EPOS_LHCR::nfname_->nfnii = TL.length();
-
-    strcpy(::EPOS_LHCR::fname_->fnie, EV.data());
-    ::EPOS_LHCR::nfname_->nfnie = EV.length();
-
-    strcpy(::EPOS_LHCR::fname_->fnrj, RJ.data());
-    ::EPOS_LHCR::nfname_->nfnrj = RJ.length();
-
-    strcpy(::EPOS_LHCR::fname_->fncs, CS.data());
-    ::EPOS_LHCR::nfname_->nfncs = CS.length();
-
-
     // set LHC-R tune
     ::EPOS_LHCR::lhctune_->iLHC = 1;
 
     // switch off hadronic rescattering (faster), invalid results for HEP
     ::EPOS_LHCR::chacas_->ihacas = 0;
-
-    // set something with resonances...?
-    ::EPOS_LHCR::cuncertmu_->irasym=1;
-    ::EPOS_LHCR::cuncertmu_->delpeta=0.15;
-    ::EPOS_LHCR::cuncertmu_->delmrho=0.05;
 
     // debug output settings
     ::EPOS_LHCR::prnt1_->ish = 0;

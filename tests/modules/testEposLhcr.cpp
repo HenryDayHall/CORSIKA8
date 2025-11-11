@@ -24,7 +24,8 @@ using Catch::Approx;
 using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
 using DummyEnvironment = Environment<DummyEnvironmentInterface>;
 
-/* These tests do not explicitly depend on the interaction model. No initialization needed. */
+/* These tests do not explicitly depend on the interaction model. No initialization
+ * needed. */
 TEST_CASE("EposLhcrBasics", "module,process") {
 
   logging::set_level(logging::level::debug);
@@ -66,7 +67,6 @@ TEST_CASE("EposLhcrBasics", "module,process") {
     CHECK(corsika::EPOS_LHCR::getEposXSCode(Code::Helium) == 2);
     CHECK(corsika::EPOS_LHCR::getEposXSCode(Code::Nucleus) == 2);
   }
-  
 }
 
 #include <corsika/framework/geometry/Point.hpp>
