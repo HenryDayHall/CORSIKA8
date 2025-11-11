@@ -240,11 +240,7 @@ TEST_CASE("EposLhcr", "modules") {
   }
 
   SECTION("Decay config") {
-<<<<<<< HEAD
-    logging::set_level(logging::level::debug);
-=======
     logging::set_level(logging::level::info);
->>>>>>> dev-rebase-epos-lhcr
 
     InteractionModel model(std::set<Code>{Code::Proton, Code::PiPlus, Code::KPlus});
   }
