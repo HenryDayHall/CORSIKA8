@@ -28,7 +28,7 @@ using DummyEnvironment = Environment<DummyEnvironmentInterface>;
  * needed. */
 TEST_CASE("EposLhcrBasics", "module,process") {
 
-  logging::set_level(logging::level::debug);
+  logging::set_level(logging::level::info);
 
   SECTION("epos -> corsika") {
     CHECK(Code::Electron ==
@@ -92,13 +92,9 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
   return sum;
 }
 
-auto sqs2elab(HEPEnergyType const sqs, HEPEnergyType const ma, HEPEnergyType const mb) {
-  return (sqs * sqs - ma * ma - mb * mb) / 2. / mb;
-}
-
 TEST_CASE("EposLhcr", "modules") {
 
-  logging::set_level(logging::level::debug);
+  logging::set_level(logging::level::info);
 
   RNGManager<>::getInstance().registerRandomStream("epos");
   InteractionModel model;
@@ -244,7 +240,7 @@ TEST_CASE("EposLhcr", "modules") {
   }
 
   SECTION("Decay config") {
-    logging::set_level(logging::level::debug);
+    logging::set_level(logging::level::info);
 
     InteractionModel model(std::set<Code>{Code::Proton, Code::PiPlus, Code::KPlus});
   }

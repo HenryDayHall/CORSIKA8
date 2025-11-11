@@ -16,8 +16,8 @@ add_custom_command (
   VERBATIM
   )
 
-add_custom_target (SourceDirLinkEpos DEPENDS ${output_dir}/Generated.inc)
-add_dependencies (CORSIKA8 SourceDirLinkEpos)
+add_custom_target (SourceDirLinkEposLhcr DEPENDS ${output_dir}/Generated.inc)
+add_dependencies (CORSIKA8 SourceDirLinkEposLhcr)
 
 install (
   FILES ${output_dir}/Generated.inc
