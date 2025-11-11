@@ -102,75 +102,41 @@ int idtrafo_(char[3], char[3], int&);
 // common blocks as
 // defined in epos.inc
 
-extern CUNCERTMU cuncertmu_;
-extern CHACAS chacas_;
-extern LHCTUNE lhctune_;
-
-extern CICNT cicnt_;
-
-extern HADR6 hadr6_;
-extern HADR16 hadr16_;
-
-extern NUCL6 nucl6_;
-
-extern CJINTI cjinti_;
-
-extern NXSAIR nxsair_;
-
-extern APPLI appli_;
-
-extern XSAPPLI xsappli_;
-
-extern EVENTS events_;
-
-extern XSEVENT xsevent_;
-
-//   common/metr1/iospec,iocova,iopair,iozero,ioflac,iomom
-extern METR1 metr1_;
-
-extern OTHE2 othe2_;
-
-extern METR7 metr7_;
-
-extern HAD12 had12_;
-
-extern NUCL1 nucl1_;
-
-extern CHADRON chadron_;
-
-extern HADR2 hadr2_;
-
-extern HADR25 hadr25_;
-
-extern LEPT1 lept1_;
-
-extern ENRGY enrgy_;
-
-extern HADR1 hadr1_;
-
-extern DPARAM Dparam_;
-
-extern CEVT cevt_;
-
-extern CSEED cseed_;
-
-extern OTHE1 othe1_;
-
-extern FILES files_;
-
-extern FNAME fname_;
-
-extern NFNAME nfname_;
-
-extern PRNT1 prnt1_;
-
-extern PRNT3 prnt3_;
-
-extern CPTL cptl_;
-
-extern HADR5 hadr5_;
-
-extern NODCY nodcy_;
-
-extern HAD10 had10_;
+extern EPOS_LHCR::CUNCERTMU cuncertmu_;
+extern EPOS_LHCR::CHACAS chacas_;
+extern EPOS_LHCR::LHCTUNE lhctune_;
+extern EPOS_LHCR::CICNT cicnt_;
+extern EPOS_LHCR::HADR6 hadr6_;
+extern EPOS_LHCR::HADR16 hadr16_;
+extern EPOS_LHCR::NUCL6 nucl6_;
+extern EPOS_LHCR::CJINTI cjinti_;
+extern EPOS_LHCR::NXSAIR nxsair_;
+extern EPOS_LHCR::APPLI appli_;
+extern EPOS_LHCR::XSAPPLI xsappli_;
+extern EPOS_LHCR::EVENTS events_;
+extern EPOS_LHCR::XSEVENT xsevent_;
+extern EPOS_LHCR::METR1 metr1_;
+extern EPOS_LHCR::OTHE2 othe2_;
+extern EPOS_LHCR::METR7 metr7_;
+extern EPOS_LHCR::HAD12 had12_;
+extern EPOS_LHCR::NUCL1 nucl1_;
+extern EPOS_LHCR::CHADRON chadron_;
+extern EPOS_LHCR::HADR2 hadr2_;
+extern EPOS_LHCR::HADR25 hadr25_;
+extern EPOS_LHCR::LEPT1 lept1_;
+extern EPOS_LHCR::ENRGY enrgy_;
+extern EPOS_LHCR::HADR1 hadr1_;
+extern EPOS_LHCR::DPARAM Dparam_;
+extern EPOS_LHCR::CEVT cevt_;
+extern EPOS_LHCR::CSEED cseed_;
+extern EPOS_LHCR::OTHE1 othe1_;
+extern EPOS_LHCR::FILES files_;
+extern EPOS_LHCR::FNAME fname_;
+extern EPOS_LHCR::NFNAME nfname_;
+extern EPOS_LHCR::PRNT1 prnt1_;
+extern EPOS_LHCR::PRNT3 prnt3_;
+extern EPOS_LHCR::CPTL cptl_;
+extern EPOS_LHCR::HADR5 hadr5_;
+extern EPOS_LHCR::NODCY nodcy_;
+extern EPOS_LHCR::HAD10 had10_;
 }
