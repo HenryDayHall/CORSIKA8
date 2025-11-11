@@ -15,7 +15,7 @@ set (test_modules_sources
   testParticleCut.cpp
   testProductionProfile.cpp
   testSibyll.cpp
-  #testEpos.cpp
+  testEpos.cpp
   testEposLhcr.cpp
   testRadio.cpp
   testEMThinning.cpp
