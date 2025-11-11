@@ -96,7 +96,7 @@ TEST_CASE("EposLhcr", "modules") {
 
   logging::set_level(logging::level::info);
 
-  RNGManager<>::getInstance().registerRandomStream("epos");
+  RNGManager<>::getInstance().registerRandomStream("epos-lhcr");
   InteractionModel model;
 
   SECTION("epos mass") {
