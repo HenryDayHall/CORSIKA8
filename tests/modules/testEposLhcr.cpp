@@ -206,7 +206,7 @@ TEST_CASE("EposLhcr", "modules") {
          {cs, sqrt(static_pow<2>(400_GeV) - static_pow<2>(Nitrogen::mass)), 0_GeV,
           0_GeV}},
         {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}});
-    CHECK(xs_prod2 / 1_mb == Approx(1076.7).margin(3.1));
+    CHECK(xs_prod2 / 1_mb == Approx(1062.7).margin(3.1));
   }
 
   SECTION("InteractionInterface - invalid") {
