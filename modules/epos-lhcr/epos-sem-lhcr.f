@@ -6823,7 +6823,7 @@ c---------------------------------------
 
       if(ish.ge.4)write(ifch,*)'semihard eikonals ...'
 5     continue
-      inquire(file=fnrj,exist=lcalc)
+      inquire(file=fnrj(1:nfnrj),exist=lcalc)
       if(lcalc)then
        if(inicnt.eq.1)then
         write(ifmt,'(3a)')'read from ',fnrj(1:nfnrj),' ...'
@@ -7195,7 +7195,7 @@ c---------------------------------------
 
       if(ish.ge.4)write(ifch,*)'cross sections ...'
  6    continue
-      inquire(file=fncs,exist=lcalc)
+      inquire(file=fncs(1:nfncs),exist=lcalc)      
       if(lcalc)then
        if(inicnt.eq.1)then
         write(ifmt,'(3a)')'read from ',fncs(1:nfncs),' ...'
