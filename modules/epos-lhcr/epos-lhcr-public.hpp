@@ -5,12 +5,13 @@
 #include "epos-lhcr-types.hpp"
 
 namespace EPOS_LHCR {
-    extern void (*const set_rng_function)(std::function<void(double*, std::size_t)>);
-    extern void (*const aaset_)(int&) ;
-    extern void (*const atitle_)();
-    extern void (*const readidtable_)();
-    extern void (*const hnbcreate_)();
-    extern void (*const crseaaepos_)(float&, float&, float&, float&);
+  extern void (*const set_rng_function)(std::function<void(double*, std::size_t)>);
+  extern void (*const aaset_)(int&) ;
+  extern void (*const atitle_)();
+  extern void (*const readidtable_)();
+  extern void (*const hnbcreate_)();
+  extern void (*const hnbdestroy_)();
+  extern void (*const crseaaepos_)(float&, float&, float&, float&);
   extern float (*const eposcrse_)(float&, int&, int&, int&);
   extern float (*const eposelacrse_)(float&, int&, int&, int&) ;
   extern void (*const aepos_)(int&) ;

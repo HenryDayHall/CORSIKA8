@@ -109,7 +109,6 @@ namespace corsika::EPOS_LHCR {
 
     ::EPOS_LHCR::readidtable_();
     ::EPOS_LHCR::atitle_();
-    ::EPOS_LHCR::hnbcreate_();
 
     EPOSDatadir TL(data_path_ + "epos.initl");
     strcpy(::EPOS_LHCR::fname_->fnii, TL.data());
@@ -180,6 +179,8 @@ namespace corsika::EPOS_LHCR {
     initializeEventCoM(
         maxNucleus_, get_nucleus_A(maxNucleus_), get_nucleus_Z(maxNucleus_), maxNucleus_,
         get_nucleus_A(maxNucleus_), get_nucleus_Z(maxNucleus_), maxEnergyCoM_);
+
+    ::EPOS_LHCR::hnbcreate_();
   }
 
   inline void InteractionModel::initializeEventCoM(Code const idBeam, int const iBeamA,
@@ -261,6 +262,7 @@ namespace corsika::EPOS_LHCR {
 
   inline InteractionModel::~InteractionModel() {
     CORSIKA_LOGGER_DEBUG(logger_, "n={} ", count_);
+    ::EPOS_LHCR::hnbdestroy_();
   }
 
   inline std::tuple<CrossSectionType, CrossSectionType>

@@ -11,6 +11,7 @@ namespace EPOS_LHCR {
     extern void (*const atitle_)() = &::atitle_;
     extern void (*const readidtable_)() = &::readidtable_;
     extern void (*const hnbcreate_)() = &::hnbcreate_;
+    extern void (*const hnbdestroy_)() = &::hnbdestroy_;
     extern void (*const crseaaepos_)(float&, float&, float&, float&) = &::crseaaepos_;
     extern float (*const eposcrse_)(float&, int&, int&, int&) = &::eposcrse_;
     extern float (*const eposelacrse_)(float&, int&, int&, int&) = &::eposelacrse_ ;

@@ -13,9 +13,9 @@
 #include "epos-lhcr-types.hpp"
 
 /**
- * \file epos.hpp
+ * \file epos-lhcr.hpp
  *
- * Interface file for the EPOS library.
+ * Interface file for the EPOS LHCR library.
  */
 
 DECLARE_RNG(epos)
@@ -39,6 +39,7 @@ void aaset_(int&);
 void atitle_();
 void readidtable_();
 void hnbcreate_();
+void hnbdestroy_();
 void ainit_();
 void aepos_(int&);
 void afinal_();
