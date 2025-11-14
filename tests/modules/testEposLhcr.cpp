@@ -205,18 +205,6 @@ TEST_CASE("EposLhcr", "modules") {
     CHECK(xs_prod2 / 1_mb == Approx(1062.7).margin(3.1));
   }
 
-  SECTION("InteractionInterface - invalid") {
-    Code const pid = Code::Electron;
-    HEPEnergyType const P0 = 10_TeV;
-    auto [stack, viewPtr] = setup::testing::setup_stack(
-        pid, P0, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
-    test::StackView& view = *viewPtr;
-    CHECK_THROWS(model.doInteraction(
-        view, pid, Code::Oxygen,
-        {sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid))), {cs, P0, 0_GeV, 0_GeV}},
-        {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}}));
-  }
-
   SECTION("InteractionInterface - valid projectile target combinations") {
 
     HEPMomentumType const P0 = 10_TeV;
@@ -237,6 +225,18 @@ TEST_CASE("EposLhcr", "modules") {
     //  simply check if stack is not empty after the event. Energy and momentum
     //  conservation will be tested elsewhere
     CHECK(view.getSize() > 0);
+  }
+
+  SECTION("InteractionInterface - invalid") {
+    Code const pid = Code::Electron;
+    HEPEnergyType const P0 = 10_TeV;
+    auto [stack, viewPtr] = setup::testing::setup_stack(
+        pid, P0, (DummyEnvironment::BaseNodeType* const)nodePtr, cs);
+    test::StackView& view = *viewPtr;
+    CHECK_THROWS(model.doInteraction(
+        view, pid, Code::Oxygen,
+        {sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid))), {cs, P0, 0_GeV, 0_GeV}},
+        {Oxygen::mass, {cs, 0_GeV, 0_GeV, 0_GeV}}));
   }
 
   SECTION("Decay config") {

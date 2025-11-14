@@ -32,7 +32,10 @@ namespace corsika::EPOS_LHCR {
       , epos_listing_(epos_printout_on) {
     // initialize Eposlhc
     corsika::connect_random_stream(RNG_, ::EPOS_LHCR::set_rng_function);
+    CORSIKA_LOGGER_DEBUG(logger_, "Constructing EPOS LHCR.. is initialized = {}",
+                         isInitialized_);
     if (!isInitialized_) {
+      CORSIKA_LOGGER_DEBUG(logger_, "Initializing EPOS LHCR.. ");
       isInitialized_ = true;
       if (dataPath == "") {
         data_path_ = (std::string(corsika_data("EPOS.LHC-R").c_str()) + "/").c_str();
@@ -46,6 +49,9 @@ namespace corsika::EPOS_LHCR {
         CORSIKA_LOGGER_DEBUG(logger_, "set specific particles stable inside EPOS..");
         setParticleListStable(vList);
       }
+    } else {
+      // call only hnbcreate
+      ::EPOS_LHCR::hnbcreate_();
     }
   }
 
