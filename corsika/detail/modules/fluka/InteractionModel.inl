@@ -107,6 +107,14 @@ namespace corsika::fluka {
     return xs;
   }
 
+  inline std::tuple<CrossSectionType, CrossSectionType>
+  InteractionModel::getCrossSectionInelEla(Code projCode, Code targetCode,
+                                           FourMomentum const& proj4mom,
+                                           FourMomentum const& target4mom) const {
+    return {getCrossSection(projCode, targetCode, proj4mom, target4mom),
+            CrossSectionType::zero()};
+  }
+
   template <typename TSecondaryView>
   inline void InteractionModel::doInteraction(TSecondaryView& view,
                                               Code const projectileId,
