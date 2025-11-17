@@ -2357,7 +2357,6 @@ C CLEAN FRAGMENT NOT TO HAVE MORE P THAN  SQRT(35*N) WHEN Z < 35
       NFIN = JC-JFIN
       
  25   CONTINUE
-      NNUC = 0
       IF ( NFIN .GT. 1 ) THEN
        FAC = MIN(DBLE(PNULLX),10D0)
        IF(ish.ge.7)WRITE(ifch,*) 
@@ -2371,7 +2370,6 @@ C  EVAPORATION WITH PT AFTER PARAMETRIZED JACEE DATA
             PFR(MF) = 0d0
             PFRZ(MF)= 0d0
           ELSE
-            NNUC = NNUC + 1 
             IARM=1
             PFR(MF) = RANNORM(0.0888D0,0.0444D0) !RANNORM(0.088D0,0.044D0)
             PFRZ(MF)= RANNORM(0.D0,0.450D0*FAC) !Fermi motion about 300 MeV
@@ -2394,7 +2392,7 @@ C  THE VALUE 0.090 [GEV] IS EXPERIMENTALLY DETERMINED SIGMA(0)
           IF(ish.ge.7)WRITE(ifch,*) MF,ITYP(MF),SNGL(PFR(MF))
      &                                         ,SNGL(PFRZ(MF))
         ENDDO
-      ELSE
+       ELSE
 C  EVAPORATION WITHOUT TRANSVERSE MOMENTUM
         DO  MF = 1, NFIN
           ITYP(MF) = ITYP(MF+JFIN)
@@ -2410,13 +2408,15 @@ C  CALCULATE RESIDUAL TRANSVERSE MOMENTUM
        SPFRY = 0.D0
        SPFRZ = 0.D0
        CALL RMMARD( RD,JFIN,lseq )
+       NNUC = 0
        DO  MF = 1, JFIN
-        PHIFR = PI * RD(MF)
-        PFRX(MF) = PFR(MF) * COS( PHIFR )
-        PFRY(MF) = PFR(MF) * SIN( PHIFR )
-        SPFRY = SPFRY + PFRY(MF)
-        SPFRX = SPFRX + PFRX(MF)
-        SPFRZ = SPFRZ + PFRZ(MF)
+         NNUC = NNUC + 1 
+         PHIFR = PI * RD(MF)
+         PFRX(MF) = PFR(MF) * COS( PHIFR )
+         PFRY(MF) = PFR(MF) * SIN( PHIFR )
+         SPFRY = SPFRY + PFRY(MF)
+         SPFRX = SPFRX + PFRX(MF)
+         SPFRZ = SPFRZ + PFRZ(MF)
        ENDDO
 C  CORRECT ALL MOMENTA FOR MOMENTUM CONSERVATION
        SPFRX = SPFRX / NNUC !JFIN
