@@ -65,34 +65,34 @@ namespace corsika {
           "MPD profile too small (size={}) for window {}. Skipping Xmax estimation.",
           profile_.size(), window_size);
     } else {
-        // determined XMumax and dNdXmax from quadratic interpolation
-        double maximum = 0;
-        size_t iMaximum = 0;
+      // determined XMumax and dNdXmax from quadratic interpolation
+      double maximum = 0;
+      size_t iMaximum = 0;
 
-        int constexpr HadronIdx =
-            static_cast<int>(corsika::production_profile::ProjectileIndex::Hadron);
+      int constexpr HadronIdx =
+          static_cast<int>(corsika::production_profile::ProjectileIndex::Hadron);
 
-        auto x_at = [&](size_t i) { return (i + 0.5) * (dX_ / 1_g * square(1_cm)); };
-        auto y_at = [&](size_t i) { return profile_[i].at(HadronIdx); };
+      auto x_at = [&](size_t i) { return (i + 0.5) * (dX_ / 1_g * square(1_cm)); };
+      auto y_at = [&](size_t i) { return profile_[i].at(HadronIdx); };
 
-        for (size_t i = 0; i <= profile_.size() - window_size; ++i) {
-          double value = 0;
-          for (size_t j = 0; j < window_size; ++j) { value += y_at(i + j); }
-          if (value > maximum) {
-            maximum = value;
-            iMaximum = i;
-          }
+      for (size_t i = 0; i <= profile_.size() - window_size; ++i) {
+        double value = 0;
+        for (size_t j = 0; j < window_size; ++j) { value += y_at(i + j); }
+        if (value > maximum) {
+          maximum = value;
+          iMaximum = i;
         }
+      }
 
-        std::vector<double> xs, ys;
-        for (size_t j = 0; j < window_size; ++j) {
-          xs.push_back(x_at(iMaximum + j));
-          ys.push_back(y_at(iMaximum + j));
-        }
+      std::vector<double> xs, ys;
+      for (size_t j = 0; j < window_size; ++j) {
+        xs.push_back(x_at(iMaximum + j));
+        ys.push_back(y_at(iMaximum + j));
+      }
 
-        auto [Xmumax, dNdXmumax] = FindXmax::EstimateParabolaParameters(xs, ys);
-        summary_["shower_" + std::to_string(showerId)]["XmuMax"] = Xmumax;
-        summary_["shower_" + std::to_string(showerId)]["dNdXmuMax"] = dNdXmumax;
+      auto [Xmumax, dNdXmumax] = FindXmax::EstimateParabolaParameters(xs, ys);
+      summary_["shower_" + std::to_string(showerId)]["XmuMax"] = Xmumax;
+      summary_["shower_" + std::to_string(showerId)]["dNdXmuMax"] = dNdXmumax;
     }
 
     // write profile to file
