@@ -1,6 +1,12 @@
 set (CMAKE_BUILT_TYPE Debug)
 #set (CMAKE_Fortran_FLAGS "-std=legacy -Wfunction-elimination -O0")
 
+set (
+  MODEL_HEADERS
+  epos-lhcr-public.hpp
+  epos-lhcr-types.hpp
+)
+
 enable_language (Fortran)
 enable_language (C)
 
@@ -37,7 +43,7 @@ set_target_properties (
 
 set_target_properties(EPOS_LHCR PROPERTIES
   FRAMEWORK TRUE
-  PUBLIC_HEADER "epos-lhcr.hpp"
+  PUBLIC_HEADER "${MODEL_HEADERS}"
 )
 
 target_link_options(EPOS_LHCR PRIVATE "LINKER:--exclude-libs,ALL") # hide symbols from static/private lib
@@ -45,14 +51,14 @@ target_include_directories (
   EPOS_LHCR
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:include/corsika_modules/eposlhcr>
+  $<INSTALL_INTERFACE:include/corsika_modules/epos-lhcr>
 )
 
 install (
   TARGETS EPOS_LHCR
   EXPORT CORSIKA8PublicTargets
   ARCHIVE DESTINATION lib/corsika
-  PUBLIC_HEADER DESTINATION include/corsika_modules/eposlhcr
+  PUBLIC_HEADER DESTINATION include/corsika_modules/epos-lhcr
 )
 
 # add EPOS to CORSIKA8 build
