@@ -1,6 +1,11 @@
 #pragma once
 
 namespace EPOS_LHCR {
+
+  inline unsigned int constexpr mxnody = 200;
+  inline unsigned int constexpr mmry = 1;
+  inline unsigned int constexpr mxptl = 300000 / mmry;
+
   // common blocks as
   // defined in epos.inc
   extern "C" {
@@ -165,26 +170,6 @@ namespace EPOS_LHCR {
       float wtarg;
     } ;
 
-    inline unsigned int constexpr idxD0 = 0;
-    inline unsigned int constexpr idxD1 = 2;
-    inline unsigned int constexpr idxD = 1;
-    inline unsigned int constexpr nclha = 4;
-    inline unsigned int constexpr nclegy = 100;
-
-    struct DPARAM {
-      float alpD[nclha][nclha][idxD1 - idxD0 + 1];
-      float alpdp[nclha][nclha][idxD1 - idxD0 + 1];
-      float alpDpp[nclha][nclha][idxD1 - idxD0 + 1];
-      float betD[nclha][nclha][idxD1 - idxD0 + 1];
-      float betDp[nclha][nclha][idxD1 - idxD0 + 1];
-      float betDpp[nclha][nclha][idxD1 - idxD0 + 1];
-      float gamD[nclha][nclha][idxD1 - idxD0 + 1];
-      float delD[nclha][nclha][idxD1 - idxD0 + 1];
-      int idxDmin;
-      float bmxdif[nclha][nclha];
-      float bkmxndif;
-    } ;
-
     struct CEVT {
       float phievt;
       int nevt;
@@ -301,9 +286,9 @@ namespace EPOS_LHCR {
     };
 
 
-    inline unsigned int constexpr mmry = 1;
-    inline unsigned int constexpr mxptl = 300000 / mmry;
-    inline unsigned int constexpr mxnody = 200;
+    // inline unsigned int constexpr mmry = 1;
+    // inline unsigned int constexpr mxptl = 300000 / mmry;
+    // inline unsigned int constexpr mxnody = 200;
     
     struct CPTL {
       int nptl;
@@ -317,7 +302,7 @@ namespace EPOS_LHCR {
       float xorptl[EPOS_LHCR::mxptl][4];
       int ibptl[EPOS_LHCR::mxptl][4];
       int ityptl[EPOS_LHCR::mxptl];
-    } ;
+    } ;    
 
     struct  HADR5 {
       float sigtot;

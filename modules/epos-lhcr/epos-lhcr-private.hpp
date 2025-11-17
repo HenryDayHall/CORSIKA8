@@ -127,7 +127,6 @@ extern EPOS_LHCR::HADR25 hadr25_;
 extern EPOS_LHCR::LEPT1 lept1_;
 extern EPOS_LHCR::ENRGY enrgy_;
 extern EPOS_LHCR::HADR1 hadr1_;
-extern EPOS_LHCR::DPARAM Dparam_;
 extern EPOS_LHCR::CEVT cevt_;
 extern EPOS_LHCR::CSEED cseed_;
 extern EPOS_LHCR::OTHE1 othe1_;
