@@ -14,8 +14,6 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <epos-lhcr-public.hpp>
-
 #include <string>
 
 namespace corsika::EPOS_LHCR {
