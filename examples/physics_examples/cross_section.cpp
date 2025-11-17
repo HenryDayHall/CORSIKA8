@@ -11,8 +11,10 @@
 #include <corsika/modules/QGSJetII.hpp>
 #include <corsika/modules/QGSJetIII.hpp>
 #include <corsika/modules/Pythia8.hpp>
+// CI does not have FLUKA yet
+#ifdef WITH_FLUKA
 #include <corsika/modules/FLUKA.hpp>
-
+#endif
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
@@ -149,12 +151,13 @@ int main(int argc, char** argv) {
     auto model = std::make_shared<corsika::pythia8::InteractionModel>();
     calculate_cross_sections(model, int_model_name);
 
+#ifdef WITH_FLUKA
   } else if (int_model_name == "fluka") {
     RNGManager<>::getInstance().registerRandomStream("fluka");
     auto const all_elements = {Code::Oxygen, Code::Nitrogen, Code::Argon};
     auto model = std::make_shared<corsika::fluka::InteractionModel>(all_elements);
     calculate_cross_sections(model, int_model_name);
-
+#endif
   } else if (int_model_name == "epos") {
     RNGManager<>::getInstance().registerRandomStream("epos");
     auto model = std::make_shared<corsika::epos::InteractionModel>(
