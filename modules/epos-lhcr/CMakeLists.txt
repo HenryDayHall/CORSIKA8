@@ -57,8 +57,9 @@ target_include_directories (
 install (
   TARGETS EPOS_LHCR
   EXPORT CORSIKA8PublicTargets
-  ARCHIVE DESTINATION lib/corsika
-  PUBLIC_HEADER DESTINATION include/corsika_modules/epos-lhcr
+#  ARCHIVE DESTINATION lib/corsika
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/corsika"
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/corsika_modules/epos-lhcr
 )
 
 # add EPOS to CORSIKA8 build
