@@ -128,11 +128,23 @@ namespace corsika::pythia8 {
     static std::array constexpr validTargets_ = {
         Code::Proton, Code::Carbon, Code::Nitrogen, Code::Oxygen, Code::Argon};
 
+    // map anti-baryons to their particle partner. used for cross section
     std::unordered_map<corsika::Code, corsika::Code> const xs_map_ = {
         {Code::SigmaMinus, Code::SigmaPlus},
         {Code::SigmaMinusBar, Code::SigmaPlus},
         {Code::SigmaPlusBar, Code::SigmaPlus},
         {Code::Xi0Bar, Code::Xi0}};
+
+    // map isotopes to a specific (A,Z). this is needed because pythia produces all kinds
+    // of combinations of (A,Z) which are not known in corsika
+    std::unordered_map<int, int> const xs_nuc_map_ = {
+        {2, 1},   {3, 2},   {4, 2},   {6, 3},   {7, 3},   {9, 4},   {10, 5},  {11, 5},
+        {12, 6},  {13, 6},  {14, 7},  {15, 7},  {16, 8},  {17, 8},  {18, 8},  {19, 9},
+        {20, 10}, {21, 10}, {22, 10}, {23, 11}, {24, 12}, {25, 12}, {26, 12}, {27, 13},
+        {28, 14}, {29, 14}, {30, 14}, {31, 15}, {32, 16}, {33, 16}, {34, 16}, {35, 17},
+        {37, 17}, {36, 18}, {38, 18}, {39, 19}, {41, 19}, {40, 20}, {42, 20}, {43, 20},
+        {44, 20}, {45, 21}, {46, 22}, {47, 22}, {48, 22}, {49, 22}, {50, 23}, {51, 23},
+        {52, 24}, {53, 24}, {55, 25}, {54, 26}, {56, 26}};
 
     Pythia8::Pythia pythia_;
 
