@@ -101,70 +101,37 @@ int idtrafo_(char[3], char[3], int&);
 // common blocks as
 // defined in epos.inc
 
-extern CICNT cicnt_;
-
-extern HADR6 hadr6_;
-
-extern NUCL6 nucl6_;
-
-extern CJINTI cjinti_;
-
-extern NXSAIR nxsair_;
-
-extern APPLI appli_;
-
-extern XSAPPLI xsappli_;
-
-extern EVENTS events_;
-
-extern XSEVENT xsevent_;
-
-//   common/metr1/iospec,iocova,iopair,iozero,ioflac,iomom
-extern METR1 metr1_;
-
-extern OTHE2 othe2_;
-
-extern METR7 metr7_;
-
-extern HAD12 had12_;
-
-extern NUCL1 nucl1_;
-
-extern CHADRON chadron_;
-
-extern HADR2 hadr2_;
-
-extern HADR25 hadr25_;
-
-extern LEPT1 lept1_;
-
-extern ENRGY enrgy_;
-
-extern HADR1 hadr1_;
-
-extern DPARAM Dparam_;
-
-extern CEVT cevt_;
-
-extern CSEED cseed_;
-
-extern OTHE1 othe1_;
-
-extern FILES files_;
-
-extern FNAME fname_;
-
-extern NFNAME nfname_;
-
-extern PRNT1 prnt1_;
-
-extern PRNT3 prnt3_;
-
-extern CPTL cptl_;
-
-extern HADR5 hadr5_;
-
-extern NODCY nodcy_;
-
-extern HAD10 had10_;
+extern EPOS_LHC::CICNT cicnt_;
+extern EPOS_LHC::HADR6 hadr6_;
+extern EPOS_LHC::NUCL6 nucl6_;
+extern EPOS_LHC::CJINTI cjinti_;
+extern EPOS_LHC::NXSAIR nxsair_;
+extern EPOS_LHC::APPLI appli_;
+extern EPOS_LHC::XSAPPLI xsappli_;
+extern EPOS_LHC::EVENTS events_;
+extern EPOS_LHC::XSEVENT xsevent_;
+extern EPOS_LHC::METR1 metr1_;
+extern EPOS_LHC::OTHE2 othe2_;
+extern EPOS_LHC::METR7 metr7_;
+extern EPOS_LHC::HAD12 had12_;
+extern EPOS_LHC::NUCL1 nucl1_;
+extern EPOS_LHC::CHADRON chadron_;
+extern EPOS_LHC::HADR2 hadr2_;
+extern EPOS_LHC::HADR25 hadr25_;
+extern EPOS_LHC::LEPT1 lept1_;
+extern EPOS_LHC::ENRGY enrgy_;
+extern EPOS_LHC::HADR1 hadr1_;
+extern EPOS_LHC::DPARAM Dparam_;
+extern EPOS_LHC::CEVT cevt_;
+extern EPOS_LHC::CSEED cseed_;
+extern EPOS_LHC::OTHE1 othe1_;
+extern EPOS_LHC::FILES files_;
+extern EPOS_LHC::FNAME fname_;
+extern EPOS_LHC::NFNAME nfname_;
+extern EPOS_LHC::PRNT1 prnt1_;
+extern EPOS_LHC::PRNT3 prnt3_;
+extern EPOS_LHC::CPTL cptl_;
+extern EPOS_LHC::HADR5 hadr5_;
+extern EPOS_LHC::NODCY nodcy_;
+extern EPOS_LHC::HAD10 had10_;
 }

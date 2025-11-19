@@ -6,11 +6,15 @@
  */
 
 #include <corsika/modules/Epos.hpp>
+#include <corsika/modules/EposLhcr.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/QGSJetII.hpp>
 #include <corsika/modules/QGSJetIII.hpp>
 #include <corsika/modules/Pythia8.hpp>
-
+// CI does not have FLUKA yet
+#ifdef WITH_FLUKA
+#include <corsika/modules/FLUKA.hpp>
+#endif
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
@@ -65,9 +69,9 @@ void calculate_cross_sections(TModel& model, std::string const& model_name) {
 
   CoordinateSystemPtr const& cs = get_root_CoordinateSystem();
 
-  float const amin = 2;
+  float const amin = 1;
   float const amax = 11;
-  int const nebins = 15;
+  int const nebins = 50;
   float const da = (amax - amin) / (float)nebins;
 
   for (int i = 0; i < nebins; ++i) {
@@ -147,11 +151,25 @@ int main(int argc, char** argv) {
     auto model = std::make_shared<corsika::pythia8::InteractionModel>();
     calculate_cross_sections(model, int_model_name);
 
+#ifdef WITH_FLUKA
+  } else if (int_model_name == "fluka") {
+    RNGManager<>::getInstance().registerRandomStream("fluka");
+    auto const all_elements = {Code::Oxygen, Code::Nitrogen, Code::Argon};
+    auto model = std::make_shared<corsika::fluka::InteractionModel>(all_elements);
+    calculate_cross_sections(model, int_model_name);
+#endif
   } else if (int_model_name == "epos") {
     RNGManager<>::getInstance().registerRandomStream("epos");
     auto model = std::make_shared<corsika::epos::InteractionModel>(
         corsika::setup::C7trackedParticles);
     calculate_cross_sections(model, int_model_name);
+
+  } else if (int_model_name == "epos-lhcr") {
+    RNGManager<>::getInstance().registerRandomStream("epos-lhcr");
+    auto model = std::make_shared<corsika::EPOS_LHCR::InteractionModel>(
+        corsika::setup::C7trackedParticles);
+    calculate_cross_sections(model, int_model_name);
+
   } else if (int_model_name == "qgsjetII") {
     RNGManager<>::getInstance().registerRandomStream("qgsjet");
     auto model = std::make_shared<corsika::qgsjetII::InteractionModel>();

@@ -2,11 +2,17 @@
 
 // common blocks as
   // defined in epos.inc
+
+
+  namespace EPOS_LHC {
 extern "C" {
+
+  
+
    struct CICNT {
     int inicnt;
 };
-
+  
 struct HADR6 {
     int intpol;
     int isigma;
@@ -273,11 +279,11 @@ struct FNAME {
     int ixgeometry;
   };
 
-namespace EPOS_LHC {
+
   inline unsigned int constexpr mmry = 1;
   inline unsigned int constexpr mxptl = 200000 / mmry;
   inline unsigned int constexpr mxnody = 200;
-  }
+
   
    struct CPTL {
     int nptl;
@@ -318,4 +324,5 @@ namespace EPOS_LHC {
     int icltar;
     int iclegy;
   };
+}
 }

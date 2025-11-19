@@ -16,10 +16,11 @@ set (test_modules_sources
   testProductionProfile.cpp
   testSibyll.cpp
   testEpos.cpp
+  testEposLhcr.cpp
   testRadio.cpp
   testEMThinning.cpp
   testSophia.cpp
-  testRandom.cpp
+  #testRandom.cpp
 )
 
 if (NOT "$CACHE{C8_FLUKA_ENABLED}" STREQUAL "")

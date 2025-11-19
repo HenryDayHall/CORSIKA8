@@ -334,6 +334,7 @@ add_subdirectory (modules/qgsjetIII)
 add_subdirectory (modules/urqmd)
 add_subdirectory (modules/conex)
 add_subdirectory (modules/epos-lhc)
+add_subdirectory (modules/epos-lhcr)
 add_subdirectory (modules/tauola)
 add_subdirectory (modules/fluka)
 
@@ -475,7 +476,6 @@ install (DIRECTORY modules/data DESTINATION ${CMAKE_INSTALL_DATADIR}/corsika)
 # tools
 #
 add_subdirectory (tools)
-
 
 #+++++++++++++++++++++++++++++++
 #
