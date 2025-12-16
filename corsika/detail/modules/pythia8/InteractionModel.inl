@@ -124,7 +124,6 @@ namespace corsika::pythia8 {
     }
     // add nuclear projectiles
     for (int nuclA = 2; nuclA < 57; ++nuclA) {
-      if (nuclA == 5 || nuclA == 8) continue; // skip missing projectiles fix me
       int const nuclZ = xs_nuc_map_.find(nuclA)->second;
       Code nucProj = get_nucleus_code(nuclA, nuclZ);
       for (Code const target : validTargets_) {
@@ -195,7 +194,6 @@ namespace corsika::pythia8 {
       CORSIKA_LOG_DEBUG("projectile: {}", get_nucleus_name(projectileId));
     auto const Aprojectile =
         (is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1.);
-    if (Aprojectile == 5 || Aprojectile == 8) return false; // these nuclei do not exist
 
     if (!canInteract(projectileId)) return false;
 
@@ -364,12 +362,6 @@ namespace corsika::pythia8 {
         auto const volatile id = static_cast<PDGCode>(p8p.id());
 
         auto particleId = convert_from_PDG(id);
-        // switch fragment nuclei to known isotopes
-        if (is_nucleus(particleId)) {
-          auto const Anew = get_nucleus_A(particleId);
-          auto const Znew = xs_nuc_map_.find(Anew)->second;
-          particleId = get_nucleus_code(Anew, Znew);
-        }
 
         MomentumVector const pyPcom(
             rotCS, {p8p.px() * 1_GeV, p8p.py() * 1_GeV, p8p.pz() * 1_GeV});
