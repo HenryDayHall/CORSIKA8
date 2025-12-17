@@ -119,21 +119,32 @@ namespace corsika::pythia8 {
      */
 
     static std::array constexpr validProjectiles_ = {
-        Code::PiPlus,       Code::PiMinus,   Code::Pi0,           Code::Proton,
-        Code::AntiProton,   Code::Neutron,   Code::AntiNeutron,   Code::KPlus,
-        Code::KMinus,       Code::K0Long,    Code::K0Short,       Code::SigmaMinus,
-        Code::SigmaPlusBar, Code::SigmaPlus, Code::SigmaMinusBar, Code::Xi0,
-        Code::Xi0Bar};
+        Code::PiPlus,        Code::PiMinus,    Code::Pi0,          Code::Proton,
+        Code::AntiProton,    Code::Neutron,    Code::AntiNeutron,  Code::KPlus,
+        Code::KMinus,        Code::K0Long,     Code::K0Short,      Code::Lambda,
+        Code::LambdaBar,     Code::SigmaMinus, Code::SigmaPlusBar, Code::SigmaPlus,
+        Code::SigmaMinusBar, Code::Xi0,        Code::Xi0Bar,       Code::XiMinus,
+        Code::XiPlusBar,     Code::OmegaMinus, Code::OmegaPlusBar, Code::D0,
+        Code::D0Bar,         Code::DPlus,      Code::DMinus,       Code::B0,
+        Code::B0Bar,         Code::BPlus,      Code::BMinus};
 
     static std::array constexpr validTargets_ = {
         Code::Proton, Code::Carbon, Code::Nitrogen, Code::Oxygen, Code::Argon};
 
-    // map anti-baryons to their particle partner. used for cross section
+    // map anti-baryons to their particle partner. particles without explicit cross
+    // section table are/can be mapped to closest other particle. used for cross section
     std::unordered_map<corsika::Code, corsika::Code> const xs_map_ = {
-        {Code::SigmaMinus, Code::SigmaPlus},
+        {Code::LambdaBar, Code::Lambda},
         {Code::SigmaMinusBar, Code::SigmaPlus},
-        {Code::SigmaPlusBar, Code::SigmaPlus},
-        {Code::Xi0Bar, Code::Xi0}};
+        {Code::SigmaPlusBar, Code::SigmaMinus},
+        {Code::XiPlusBar, Code::Xi0}, // Xi+: -3312 table not available, map to Xi0:3322
+        {Code::XiMinus, Code::Xi0},   // Xi-: 3312 table not available, map to Xi0:3322
+        {Code::Xi0Bar, Code::Xi0},
+        {Code::D0Bar, Code::D0},
+        {Code::DMinus, Code::DPlus},
+        {Code::B0Bar, Code::B0},
+        {Code::BMinus, Code::BPlus},
+        {Code::OmegaPlusBar, Code::OmegaMinus}};
 
     // map isotopes to a specific (A,Z). this is needed because pythia produces all kinds
     // of combinations of (A,Z) which are not known in corsika

@@ -223,6 +223,11 @@ int main(int argc, char** argv) {
   bool track_neutrinos = false;
   app.add_flag("--track-neutrinos", track_neutrinos, "switch on tracking of neutrinos")
       ->group("Config");
+  bool track_charm = false;
+  app.add_flag("--track-charm", track_charm,
+               "switch on tracking of charmed hadrons. Only Sibyll, Pythia8, EPOS-LHC-R "
+               "or QGSJET-III")
+      ->group("Config");
 
   //////// Misc options ////////
 
@@ -435,10 +440,14 @@ int main(int argc, char** argv) {
 
   DynamicInteractionProcess<StackType> heModel;
 
+  set<Code> const trackedParticles =
+      (track_charm ? corsika::setup::C7trackedParticlesAndCharm
+                   : corsika::setup::C7trackedParticles);
+
   auto const all_elements = corsika::get_all_elements_in_universe(env);
   // have SIBYLL always for PROPOSAL photo-hadronic interactions
-  auto sibyll = std::make_shared<corsika::sibyll::Interaction>(
-      all_elements, corsika::setup::C7trackedParticles);
+  auto sibyll =
+      std::make_shared<corsika::sibyll::Interaction>(all_elements, trackedParticles);
 
   if (auto const modelStr = app["--hadronModel"]->as<std::string>();
       modelStr == "SIBYLL-2.3d") {
@@ -451,15 +460,13 @@ int main(int argc, char** argv) {
         std::make_shared<corsika::qgsjetIII::Interaction>()};
   } else if (modelStr == "EPOS-LHC") {
     heModel = DynamicInteractionProcess<StackType>{
-        std::make_shared<corsika::epos::Interaction>(corsika::setup::C7trackedParticles)};
+        std::make_shared<corsika::epos::Interaction>(trackedParticles)};
   } else if (modelStr == "EPOS-LHC-R") {
     heModel = DynamicInteractionProcess<StackType>{
-        std::make_shared<corsika::EPOS_LHCR::Interaction>(
-            corsika::setup::C7trackedParticles)};
+        std::make_shared<corsika::EPOS_LHCR::Interaction>(trackedParticles)};
   } else if (modelStr == "Pythia8") {
     heModel = DynamicInteractionProcess<StackType>{
-        std::make_shared<corsika::pythia8::Interaction>(
-            corsika::setup::C7trackedParticles)};
+        std::make_shared<corsika::pythia8::Interaction>(trackedParticles)};
   } else {
     CORSIKA_LOG_CRITICAL("invalid choice \"{}\"; also check argument parser", modelStr);
     return EXIT_FAILURE;
@@ -493,8 +500,7 @@ int main(int argc, char** argv) {
     NC = true;
     CC = true;
   }
-  corsika::pythia8::NeutrinoInteraction neutrinoPrimaryPythia(
-      corsika::setup::C7trackedParticles, NC, CC);
+  corsika::pythia8::NeutrinoInteraction neutrinoPrimaryPythia(trackedParticles, NC, CC);
 
   // hadronic photon interactions in resonance region
   corsika::sophia::InteractionModel sophia;
