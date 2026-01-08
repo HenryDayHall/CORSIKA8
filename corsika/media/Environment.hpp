@@ -26,7 +26,7 @@ namespace corsika {
 
   template <typename IEnvironmentModel>
   std::set<Code> const get_all_elements_in_universe(
-      Environment<IEnvironmentModel> const& env);
+      media::Environment<IEnvironmentModel> const& env);
 
   /**
    * Base Environment class.

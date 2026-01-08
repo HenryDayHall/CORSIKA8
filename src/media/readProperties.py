@@ -291,7 +291,7 @@ def gen_classes(media_db):
   class {cname} {{
      /** @cond EXCLUDE_DOXY */
     public:
-     static constexpr Medium medium() {{ return Medium::{cname}; }}
+     static constexpr Medium medium() {{ return media::Medium::{cname}; }}
 
      static std::string const getName() {{ return data_.getName(); }}
      static std::string const getPrettyName() {{ return data_.getPrettyName(); }}
@@ -362,7 +362,7 @@ def gen_data_array(media_db):
 
     string = """
   // array of MediumData entries
-  static const std::array<const MediumData, static_cast<MediumIntType>(Medium::Last)+1> medium_data = {
+  static const std::array<const MediumData, static_cast<MediumIntType>(media::Medium::Last)+1> medium_data = {
     """
 
     comma=""

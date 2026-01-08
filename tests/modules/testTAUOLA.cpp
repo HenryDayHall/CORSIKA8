@@ -25,8 +25,8 @@ using namespace corsika;
 using namespace boost::histogram;
 using Catch::Approx;
 
-using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+using DummyEnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
 template <typename TStackView>
 auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {

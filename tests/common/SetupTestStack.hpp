@@ -13,8 +13,8 @@
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
 
 #include <corsika/media/UniformMagneticField.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <tests/common/SetupStack.hpp>
 #include <SetupStack.hpp>
 
@@ -27,8 +27,8 @@
 namespace corsika {
 
   using DummyEnvironmentInterface =
-      IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-  using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+      media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+  using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
   namespace setup::testing {
 

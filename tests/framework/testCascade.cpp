@@ -21,8 +21,8 @@
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 
 #include <corsika/output/DummyOutputManager.hpp>
 

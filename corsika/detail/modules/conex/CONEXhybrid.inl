@@ -26,7 +26,7 @@ namespace corsika {
 
   template <typename TOutputE, typename TOutputN>
   inline CONEXhybrid<TOutputE, TOutputN>::CONEXhybrid(
-      Point const& center, ShowerAxis const& showerAxis, LengthType groundDist,
+      Point const& center, media::ShowerAxis const& showerAxis, LengthType groundDist,
       LengthType injectionHeight, HEPEnergyType primaryEnergy, PDGCode primaryPDG,
       TOutputE& args1, TOutputN& args2)
       : SubWriter<TOutputE>(args1)

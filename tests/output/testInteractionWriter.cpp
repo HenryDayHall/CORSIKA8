@@ -17,7 +17,7 @@
 #include <corsika/framework/geometry/Vector.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 
 #include <corsika/setup/SetupTrajectory.hpp>
 
@@ -27,18 +27,18 @@
 using namespace corsika;
 using Catch::Approx;
 
-using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+using DummyEnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
 TEST_CASE("InteractionWriter", "process") {
   logging::set_level(logging::level::info);
 
-  auto env = std::make_unique<Environment<IMediumModel>>();
+  auto env = std::make_unique<media::Environment<media::IMediumModel>>();
   auto& universe = *(env->getUniverse());
   CoordinateSystemPtr const& rootCS = env->getCoordinateSystem();
-  auto theMedium = Environment<IMediumModel>::createNode<Sphere>(
+  auto theMedium = media::Environment<media::IMediumModel>::createNode<Sphere>(
       Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
-  using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
+  using MyHomogeneousModel = HomogeneousMedium<media::IMediumModel>;
   const auto density = 1_kg / (1_m * 1_m * 1_m);
   theMedium->setModelProperties<MyHomogeneousModel>(
       density, NuclearComposition({Code::Nitrogen}, {1.}));
@@ -58,7 +58,7 @@ TEST_CASE("InteractionWriter", "process") {
   auto start = Point(rootCS, -1_m, 0_m, 0_m);
   auto stop = Point(rootCS, 1_m, 0_m, 0_m);
   auto length = stop - start;
-  ShowerAxis axis(start, length, *env);
+  media::ShowerAxis axis(start, length, *env);
 
   Plane const plane(Point(rootCS, {0_m, 0_m, 0_m}),
                     DirectionVector(rootCS, {0., 0., 1.}));

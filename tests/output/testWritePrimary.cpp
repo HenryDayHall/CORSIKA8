@@ -18,7 +18,7 @@ using Catch::Approx;
 
 auto setupWritePrimaryEnv() {
   // Set up all of the background
-  auto env = std::make_unique<Environment<IMediumModel>>();
+  auto env = std::make_unique<media::Environment<media::IMediumModel>>();
   const CoordinateSystemPtr& rootCS = env->getCoordinateSystem();
 
   Plane const plane(Point(rootCS, {0_m, 0_m, 0_m}),

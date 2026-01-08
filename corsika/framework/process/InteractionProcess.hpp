@@ -9,7 +9,7 @@
 
 #include <corsika/framework/process/BaseProcess.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 
 #include <corsika/detail/framework/process/InteractionProcess.hpp> // for extra traits, method/interface checking
 

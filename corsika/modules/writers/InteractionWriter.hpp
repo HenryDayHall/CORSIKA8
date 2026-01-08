@@ -29,7 +29,7 @@ namespace corsika {
      * @param axis - axis used for calculating slant depth of interaction
      * @param obsPlane - used to define the location of the particles
      */
-    InteractionWriter(ShowerAxis const& axis,
+    InteractionWriter(media::ShowerAxis const& axis,
                       ObservationPlane<TTracking, TOutput> const& obsPlane);
 
     /**
@@ -52,7 +52,7 @@ namespace corsika {
 
   private:
     ObservationPlane<TTracking, TOutput> const obsPlane_;
-    ShowerAxis const& showerAxis_;
+    media::ShowerAxis const& showerAxis_;
 
     unsigned int interactionCounter_;
     unsigned int showerId_;

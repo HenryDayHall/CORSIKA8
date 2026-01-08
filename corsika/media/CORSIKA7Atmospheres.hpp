@@ -10,7 +10,7 @@
 #include <corsika/media/IRefractiveIndexModel.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/framework/utility/ImplementsMixin.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 
 // for detail namespace, NoExtraModelInner, NoExtraModel and traits
 #include <corsika/detail/media/LayeredSphericalAtmosphereBuilder.hpp>
@@ -83,7 +83,7 @@ namespace corsika {
 
     std::array<AtmosphereParameters,
                static_cast<uint8_t>(
-                   AtmosphereId::LastAtmosphere)> constexpr atmosphereParameterList{
+                   media::AtmosphereId::LastAtmosphere)> constexpr atmosphereParameterList{
         {{{{4_km, grammage(1222.6562), 994186.38_cm},
            {10_km, grammage(1144.9069), 878153.55_cm},
            {40_km, grammage(1305.5948), 636143.04_cm},

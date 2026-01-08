@@ -6,7 +6,7 @@
  */
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <corsika/media/IMediumModel.hpp>
 
 #include <corsika/framework/geometry/Sphere.hpp>
@@ -35,9 +35,9 @@ int main() {
   feenableexcept(FE_INVALID);
 
   // setup environment, geometry
-  using EnvType = Environment<IMediumModel>;
+  using EnvType = media::Environment<media::IMediumModel>;
   EnvType env;
-  env.getUniverse()->setModelProperties<HomogeneousMedium<IMediumModel>>(
+  env.getUniverse()->setModelProperties<HomogeneousMedium<media::IMediumModel>>(
       1_g / cube(1_cm), NuclearComposition{{Code::Unknown}, {1.f}});
 
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();

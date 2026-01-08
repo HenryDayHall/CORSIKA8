@@ -10,11 +10,11 @@
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/media/FlatExponential.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <corsika/media/IMediumModel.hpp>
 #include <corsika/media/InhomogeneousMedium.hpp>
-#include <corsika/media/NuclearComposition.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
 #include <corsika/media/MediumProperties.hpp>
 
 #include <catch2/catch_all.hpp>
@@ -31,7 +31,7 @@ TEST_CASE("MediumProperties") {
 
   // test access of medium properties via enum and class types
 
-  const Medium type = Medium::AirDry1Atm;
+  const Medium type = media::Medium::AirDry1Atm;
   const MediumData& air = mediumData(type);
   CHECK(air.getIeff() == 85.7);
   CHECK(air.getCbar() == 10.5961);
@@ -51,7 +51,7 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
   Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 
   // setup our interface types
-  using IModelInterface = IMediumPropertyModel<IMediumModel>;
+  using IModelInterface = media::IMediumPropertyModel<media::IMediumModel>;
   using AtmModel = MediumPropertyModel<HomogeneousMedium<IModelInterface>>;
 
   // the constant density
@@ -61,7 +61,7 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
   NuclearComposition const protonComposition({Code::Proton}, {1.});
 
   // the refrative index that we use
-  const Medium type = corsika::Medium::AirDry1Atm;
+  const Medium type = corsika::media::Medium::AirDry1Atm;
 
   // create the atmospheric model
   AtmModel medium(type, density, protonComposition);
@@ -70,7 +70,7 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
   CHECK(type == medium.getMedium());
 
   // a new refractive index
-  const Medium type2 = corsika::Medium::StandardRock;
+  const Medium type2 = corsika::media::Medium::StandardRock;
 
   // update the refractive index of this atmospheric model
   medium.setMedium(type2);

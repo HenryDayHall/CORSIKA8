@@ -23,8 +23,8 @@
 
 using namespace corsika;
 
-using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+using DummyEnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
 TEST_CASE("ProductionProfile", "process,secondary") {
 
@@ -83,7 +83,7 @@ TEST_CASE("ProductionProfile", "process,secondary") {
 
 #include <corsika/modules/writers/ProductionWriter.hpp>
 
-#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 
 #include <corsika/framework/geometry/Point.hpp>
@@ -99,14 +99,14 @@ const auto density = 1_kg / (1_m * 1_m * 1_m);
 
 auto setupEnvironment2(Code vTargetCode) {
   // setup environment, geometry
-  auto env = std::make_unique<Environment<IMediumModel>>();
+  auto env = std::make_unique<media::Environment<media::IMediumModel>>();
   auto& universe = *(env->getUniverse());
   const CoordinateSystemPtr& cs = env->getCoordinateSystem();
 
-  auto theMedium = Environment<IMediumModel>::createNode<Sphere>(
+  auto theMedium = media::Environment<media::IMediumModel>::createNode<Sphere>(
       Point{cs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
+  using MyHomogeneousModel = HomogeneousMedium<media::IMediumModel>;
   theMedium->setModelProperties<MyHomogeneousModel>(
       density, NuclearComposition({vTargetCode}, {1.}));
 
@@ -118,7 +118,7 @@ auto setupEnvironment2(Code vTargetCode) {
 
 class TestProduction : public corsika::ProductionWriter<> {
 public:
-  TestProduction(corsika::ShowerAxis const& axis)
+  TestProduction(corsika::media::ShowerAxis const& axis)
       : ProductionWriter(axis) {}
 };
 
@@ -137,7 +137,7 @@ TEST_CASE("ProductionWriter") {
   Point const showerCore{cs, 0_m, 0_m, observationHeight};
   Point const injectionPos = showerCore + DirectionVector{cs, {0, 0, 1}} * t;
 
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
                               false, // -> throw exceptions
                               1000}; // -> number of bins
 

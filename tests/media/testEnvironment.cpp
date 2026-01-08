@@ -13,18 +13,18 @@
 
 #include <corsika/media/DensityFunction.hpp>
 #include <corsika/media/FlatExponential.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
 #include <corsika/media/IMediumModel.hpp>
 #include <corsika/media/IMediumPropertyModel.hpp>
-#include <corsika/media/IMagneticFieldModel.hpp>
+#include <corsika/media/interfaces/IMagneticFieldModel.hpp>
 #include <corsika/media/IRefractiveIndexModel.hpp>
 #include <corsika/media/InhomogeneousMedium.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/media/LinearApproximationIntegrator.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/SlidingPlanarExponential.hpp>
 #include <corsika/media/SlidingPlanarTabular.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
@@ -43,14 +43,14 @@ Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 
 TEST_CASE("VolumeTree") {
   logging::set_level(logging::level::info);
-  Environment<IEmpty> env;
+  media::Environment<IEmpty> env;
   auto& universe = *(env.getUniverse());
-  auto world = Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 0_m}, 150_km);
+  auto world = media::Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 0_m}, 150_km);
   // volume cut partly by "world"
   auto vol1 =
-      Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 140_km}, 20_km);
+      media::Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 140_km}, 20_km);
   // partly overlap with "vol1"
-  auto vol2 = Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 120_km}, 5_km);
+  auto vol2 = media::Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 120_km}, 5_km);
 
   vol1->excludeOverlapWith(vol2);
   world->addChild(std::move(vol1));
@@ -77,7 +77,7 @@ TEST_CASE("VolumeTree") {
   // contained in world
   auto nestingPoint = Point{gCS, 0_m, 0_m, -50_km};
   auto r3 = 3_km;
-  auto vol3 = Environment<IEmpty>::createNode<Sphere>(nestingPoint, r3);
+  auto vol3 = media::Environment<IEmpty>::createNode<Sphere>(nestingPoint, r3);
   world->addChildToContainingNode(nestingPoint, std::move(vol3));
   // check that vol3 has been added correctly
   CHECK(dynamic_cast<Sphere const&>(world->getContainingNode(nestingPoint)->getVolume())
@@ -88,7 +88,7 @@ TEST_CASE("VolumeTree") {
             .getRadius() == 150_km);
 
   auto r4 = 1_km;
-  auto vol4 = Environment<IEmpty>::createNode<Sphere>(nestingPoint, r4);
+  auto vol4 = media::Environment<IEmpty>::createNode<Sphere>(nestingPoint, r4);
   world->addChildToContainingNode(nestingPoint, std::move(vol4));
   // check that vol4 has been added correctly
   CHECK(dynamic_cast<Sphere const&>(world->getContainingNode(nestingPoint)->getVolume())
@@ -111,7 +111,7 @@ TEST_CASE("HomogeneousMedium") {
   logging::set_level(logging::level::info);
 
   NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
-  HomogeneousMedium<IMediumModel> const medium(19.2_g / cube(1_cm), protonComposition);
+  HomogeneousMedium<media::IMediumModel> const medium(19.2_g / cube(1_cm), protonComposition);
 
   CHECK_THROWS(NuclearComposition({Code::Proton}, {1.1}));
   CHECK_THROWS(NuclearComposition({Code::Proton}, {0.99}));
@@ -126,7 +126,7 @@ TEST_CASE("FlatExponential") {
   Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
   LengthType const lambda = 3_m;
   auto const rho0 = 1_g / cube(1_cm);
-  FlatExponential<IMediumModel> const medium(gOrigin, axis, rho0, lambda,
+  FlatExponential<media::IMediumModel> const medium(gOrigin, axis, rho0, lambda,
                                              protonComposition);
   SpeedType const speed = 20_m / second;
   LengthType const length = 2_m;
@@ -206,7 +206,7 @@ TEST_CASE("SlidingPlanarExponential") {
   auto const rho0 = 1_g / static_pow<3>(1_cm);
   auto const tEnd = 5_s;
 
-  SlidingPlanarExponential<IMediumModel> const medium(gOrigin, rho0, lambda,
+  SlidingPlanarExponential<media::IMediumModel> const medium(gOrigin, rho0, lambda,
                                                       protonComposition);
 
   SECTION("density") {
@@ -217,7 +217,7 @@ TEST_CASE("SlidingPlanarExponential") {
 
   SECTION("vertical") {
     Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
-    FlatExponential<IMediumModel> const flat(gOrigin, axis, rho0, lambda,
+    FlatExponential<media::IMediumModel> const flat(gOrigin, axis, rho0, lambda,
                                              protonComposition);
     Line const line({gCS, {0_m, 0_m, 1_m}},
                     Vector<SpeedType::dimension_type>(
@@ -285,7 +285,7 @@ TEST_CASE("SlidingPlanarTabular") {
   NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
 
   RhoFuncConst rhoFunc;
-  SlidingPlanarTabular<IMediumModel> const medium(gOrigin, rhoFunc, 1000, 10_m,
+  SlidingPlanarTabular<media::IMediumModel> const medium(gOrigin, rhoFunc, 1000, 10_m,
                                                   protonComposition);
 
   SECTION("not possible") {
@@ -423,7 +423,7 @@ TEST_CASE("SlidingPlanarTabular") {
    */
 
   RhoFuncExp rhoFuncExp;
-  SlidingPlanarTabular<IMediumModel> const mediumExp(gOrigin, rhoFuncExp, 1000, 10_m,
+  SlidingPlanarTabular<media::IMediumModel> const mediumExp(gOrigin, rhoFuncExp, 1000, 10_m,
                                                      protonComposition, 1000_km);
 
   SECTION("exponential") {
@@ -619,7 +619,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
             univ->getContainingNode(Point(gCS, 0_m, 0_m, R + 24_km))->getVolume())
             .getRadius() == R + 30_km);
 
-  CHECK(corsika::get_all_elements_in_universe(builtEnv).size() > 0);
+  CHECK(corsika::media::get_all_elements_in_universe(builtEnv).size() > 0);
 }
 
 TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
@@ -627,7 +627,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
   logging::set_level(logging::level::info);
 
   // setup our interface types
-  using ModelInterface = IMagneticFieldModel<IMediumModel>;
+  using ModelInterface = media::IMagneticFieldModel<media::IMediumModel>;
 
   // the composition we use for the homogenous medium
   NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
@@ -683,10 +683,10 @@ TEST_CASE("media", "LayeredSphericalAtmosphereBuilder USStd") {
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
   builder.addLinearLayer(1_g / (1_cm * 1_cm), 1e9_cm, 112.8_km);
 
-  Environment<IMediumModel> env;
+  media::Environment<media::IMediumModel> env;
   builder.assemble(env);
 
-  typedef typename Environment<IMediumModel>::BaseNodeType::VTN_type node_type;
+  typedef typename media::Environment<media::IMediumModel>::BaseNodeType::VTN_type node_type;
   node_type const* universe = env.getUniverse().get();
 
   // far out there is the universe

@@ -17,10 +17,10 @@
 #include <corsika/output/OutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/IMagneticFieldModel.hpp>
-#include <corsika/media/NuclearComposition.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMagneticFieldModel.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
 
@@ -69,10 +69,10 @@ int main() {
 
   // create a suitable environment
   using IModelInterface =
-      IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+      media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
   using AtmModel = UniformRefractiveIndex<
-      MediumPropertyModel<UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
-  using EnvType = Environment<AtmModel>;
+      MediumPropertyModel<media::UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
+  using EnvType = media::Environment<AtmModel>;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
@@ -86,7 +86,7 @@ int main() {
   // create a Sphere for the medium
   auto world = EnvType::createNode<Sphere>(center, 150_km);
   // set the environment properties
-  world->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B,
+  world->setModelProperties<AtmModel>(ri_, media::Medium::AirDry1Atm, B,
                                       1_kg / (1_m * 1_m * 1_m), Composition);
   // bind things together
   env.getUniverse()->addChild(std::move(world));

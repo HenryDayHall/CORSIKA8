@@ -19,7 +19,7 @@ using Catch::Approx;
 /*
 class TestEnergyLoss : public corsika::EnergyLossWriter<> {
 public:
-  TestEnergyLoss(corsika::ShowerAxis const& axis)
+  TestEnergyLoss(corsika::media::ShowerAxis const& axis)
       : EnergyLossWriter(axis) {}
 
   YAML::Node getConfig() const { return YAML::Node(); }

@@ -451,7 +451,7 @@ namespace corsika {
   inline ProcessReturn
   ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1, IndexProcess2>::
       selectInteraction(TSecondaryView&& view, FourMomentum const& projectileP4,
-                        [[maybe_unused]] NuclearComposition const& composition,
+                        [[maybe_unused]] media::NuclearComposition const& composition,
                         [[maybe_unused]] TRNG&& rng,
                         [[maybe_unused]] CrossSectionType const cx_select,
                         [[maybe_unused]] CrossSectionType cx_sum) {

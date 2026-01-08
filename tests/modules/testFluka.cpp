@@ -15,7 +15,7 @@
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 
 #include <catch2/catch_all.hpp>
 
@@ -53,8 +53,8 @@ TEST_CASE("FLUKACodeConversion") {
 
 auto setupEnvironment() {
   using DummyEnvironmentInterface =
-      IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-  using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+      media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+  using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
   using MyHomogeneousModel = MediumPropertyModel<
       UniformMagneticField<HomogeneousMedium<DummyEnvironmentInterface>>>;
   RNGManager<>::getInstance().registerRandomStream("fluka");
@@ -62,7 +62,7 @@ auto setupEnvironment() {
   auto& universe = *env.getUniverse();
   CoordinateSystemPtr const& cs = env.getCoordinateSystem();
   universe.setModelProperties<MyHomogeneousModel>(
-      Medium::AirDry1Atm, Vector(cs, 0_T, 0_T, 0_T), 1_kg / (1_m * 1_m * 1_m),
+      media::Medium::AirDry1Atm, Vector(cs, 0_T, 0_T, 0_T), 1_kg / (1_m * 1_m * 1_m),
       NuclearComposition{
           std::vector<Code>{Code::Hydrogen, Code::Oxygen, Code::Nitrogen, Code::Argon},
           std::vector<double>{.25, .25, .25, .25}});
@@ -73,7 +73,7 @@ auto setupEnvironment() {
 static auto const env = setupEnvironment();
 static auto const& cs = env.getCoordinateSystem();
 
-auto nuccomp = corsika::get_all_elements_in_universe(env);
+auto nuccomp = corsika::media::get_all_elements_in_universe(env);
 // Unfortunately FLUKA can be initialized only once during a run. If instantiated
 // inside a test case, this would happend multiple times, causing crashes.
 static corsika::fluka::InteractionModel flukaModel{nuccomp};

@@ -18,7 +18,7 @@
 namespace corsika {
 
   template <typename TOutput>
-  inline EnergyLossWriter<TOutput>::EnergyLossWriter(ShowerAxis const& axis,
+  inline EnergyLossWriter<TOutput>::EnergyLossWriter(media::ShowerAxis const& axis,
                                                      GrammageType dX,
                                                      GrammageType dX_threshold)
       : EnergyLossWriter<TOutput>{axis,
@@ -26,7 +26,7 @@ namespace corsika {
                                   dX, dX_threshold} {}
 
   template <typename TOutput>
-  inline EnergyLossWriter<TOutput>::EnergyLossWriter(ShowerAxis const& axis,
+  inline EnergyLossWriter<TOutput>::EnergyLossWriter(media::ShowerAxis const& axis,
                                                      unsigned int const nBins,
                                                      GrammageType dX,
                                                      GrammageType dX_threshold)

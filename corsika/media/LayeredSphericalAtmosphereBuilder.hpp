@@ -11,7 +11,7 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
 
 // for detail namespace, NoExtraModelInner, NoExtraModel and traits
@@ -80,7 +80,7 @@ namespace corsika {
     typedef typename VolumeTreeNode<TMediumInterface>::VTN_type volume_tree_node;
     typedef typename VolumeTreeNode<TMediumInterface>::VTNUPtr volume_tree_node_uptr;
 
-    void setNuclearComposition(NuclearComposition const& composition);
+    void setNuclearComposition(media::NuclearComposition const& composition);
     volume_tree_node* addExponentialLayer(GrammageType const b,
                                           LengthType const scaleHeight,
                                           LengthType const upperBoundary);
@@ -93,8 +93,8 @@ namespace corsika {
 
     int getSize() const { return layers_.size(); }
 
-    void assemble(Environment<TMediumInterface>& env);
-    Environment<TMediumInterface> assemble();
+    void assemble(media::Environment<TMediumInterface>& env);
+    media::Environment<TMediumInterface> assemble();
 
     /**
      * Get the current planet radius.

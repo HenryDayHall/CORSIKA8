@@ -11,7 +11,7 @@
 
 #include <corsika/modules/writers/LongitudinalWriter.hpp>
 
-#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 
 #include <corsika/framework/geometry/StraightTrajectory.hpp>
@@ -31,14 +31,14 @@ const auto density = 1_kg / (1_m * 1_m * 1_m);
 
 auto setupEnvironment2(Code vTargetCode) {
   // setup environment, geometry
-  auto env = std::make_unique<Environment<IMediumModel>>();
+  auto env = std::make_unique<media::Environment<media::IMediumModel>>();
   auto& universe = *(env->getUniverse());
   const CoordinateSystemPtr& cs = env->getCoordinateSystem();
 
-  auto theMedium = Environment<IMediumModel>::createNode<Sphere>(
+  auto theMedium = media::Environment<media::IMediumModel>::createNode<Sphere>(
       Point{cs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
+  using MyHomogeneousModel = HomogeneousMedium<media::IMediumModel>;
   theMedium->setModelProperties<MyHomogeneousModel>(
       density, NuclearComposition({vTargetCode}, {1.}));
 
@@ -50,7 +50,7 @@ auto setupEnvironment2(Code vTargetCode) {
 
 class TestLongitudinal : public corsika::LongitudinalWriter<> {
 public:
-  TestLongitudinal(corsika::ShowerAxis const& axis)
+  TestLongitudinal(corsika::media::ShowerAxis const& axis)
       : LongitudinalWriter(axis) {}
 };
 
@@ -69,7 +69,7 @@ TEST_CASE("LongitudinalWriter") {
   Point const showerCore{cs, 0_m, 0_m, observationHeight};
   Point const injectionPos = showerCore + DirectionVector{cs, {0, 0, 1}} * t;
 
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
                               false, // -> throw exceptions
                               1000}; // -> number of bins
 

@@ -17,10 +17,10 @@
 #include <corsika/output/OutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/IMagneticFieldModel.hpp>
-#include <corsika/media/NuclearComposition.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMagneticFieldModel.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
 
@@ -71,8 +71,8 @@ int main() {
 
   // set up the environment
   using EnvironmentInterface =
-      IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-  using EnvType = Environment<EnvironmentInterface>;
+      media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+  using EnvType = media::Environment<media::EnvironmentInterface>;
   EnvType env;
   auto& universe = *(env.getUniverse());
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
@@ -80,7 +80,7 @@ int main() {
   auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
 
   using MyHomogeneousModel = UniformRefractiveIndex<
-      MediumPropertyModel<UniformMagneticField<HomogeneousMedium<EnvironmentInterface>>>>;
+      MediumPropertyModel<media::UniformMagneticField<HomogeneousMedium<media::EnvironmentInterface>>>>;
 
   auto const Bmag{0.0003809_T};
   MagneticFieldVector B{rootCS, 0_T, 0_T, Bmag};
@@ -89,7 +89,7 @@ int main() {
   NuclearComposition const nitrogenComposition({Code::Nitrogen}, {1.});
 
   world->setModelProperties<MyHomogeneousModel>(
-      1, Medium::AirDry1Atm, B, 1_kg / (1_m * 1_m * 1_m), nitrogenComposition);
+      1, media::Medium::AirDry1Atm, B, 1_kg / (1_m * 1_m * 1_m), nitrogenComposition);
 
   universe.addChild(std::move(world));
 

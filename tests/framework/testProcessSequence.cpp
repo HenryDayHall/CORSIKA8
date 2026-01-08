@@ -16,7 +16,7 @@
 
 #include <corsika/framework/utility/COMBoost.hpp>
 
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 
 #include <catch2/catch_all.hpp>
 

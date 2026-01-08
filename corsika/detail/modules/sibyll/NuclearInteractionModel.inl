@@ -8,7 +8,7 @@
 #pragma once
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/modules/Random.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/EnergyMomentumOperations.hpp>

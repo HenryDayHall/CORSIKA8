@@ -13,13 +13,13 @@
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
 #include <corsika/media/ExponentialRefractiveIndex.hpp>
-#include <corsika/media/GladstoneDaleRefractiveIndex.hpp>
+#include <corsika/media/refractivity/GladstoneDaleRefractiveIndex.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
 
 #include <SetupTestTrajectory.hpp>
@@ -32,10 +32,10 @@ using Catch::Approx;
 
 template <typename TInterface>
 using MyExtraEnv =
-    ExponentialRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
+    ExponentialRefractiveIndex<media::MediumPropertyModel<media::UniformMagneticField<TInterface>>>;
 template <typename TInterface2>
 using MyExtraEnv2 =
-    GladstoneDaleRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface2>>>;
+    media::GladstoneDaleRefractiveIndex<media::MediumPropertyModel<media::UniformMagneticField<TInterface2>>>;
 
 TEST_CASE("UniformRefractiveIndex w/ Homogeneous medium") {
 
@@ -46,7 +46,7 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous medium") {
   Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 
   // set up our interface types
-  using IModelInterface = IRefractiveIndexModel<IMediumModel>;
+  using IModelInterface = media::IRefractiveIndexModel<media::IMediumModel>;
   using AtmModel = UniformRefractiveIndex<HomogeneousMedium<IModelInterface>>;
 
   // the constant density
@@ -115,7 +115,7 @@ TEST_CASE("ExponentialRefractiveIndex w/ Homogeneous medium") {
   Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 
   // setup interface types
-  using IModelInterface = IRefractiveIndexModel<IMediumModel>;
+  using IModelInterface = media::IRefractiveIndexModel<media::IMediumModel>;
   using AtmModel = ExponentialRefractiveIndex<HomogeneousMedium<IModelInterface>>;
 
   // the constant density
@@ -201,13 +201,13 @@ TEST_CASE("ExponentialRefractiveIndex w/ 5-layered atmosphere") {
 
   // setup a 5-layered environment
   using EnvironmentInterface =
-      IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-  using EnvType = Environment<EnvironmentInterface>;
+      media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+  using EnvType = media::Environment<media::EnvironmentInterface>;
   EnvType env;
 
-  create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-      env, AtmosphereId::LinsleyUSStd, center_, n0, lambda, center_,
-      constants::EarthRadius::Mean, Medium::AirDry1Atm,
+  media::create_5layer_atmosphere<media::EnvironmentInterface, MyExtraEnv>(
+      env, media::AtmosphereId::LinsleyUSStd, center_, n0, lambda, center_,
+      constants::EarthRadius::Mean, media::Medium::AirDry1Atm,
       MagneticFieldVector{gCS, 0_T, 50_uT, 0_T});
 
   // get the universe for this environment
@@ -229,8 +229,8 @@ TEST_CASE("GladstoneDaleRefractiveIndex w/ Homogeneous medium") {
   Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 
   // setup interface types
-  using IModelInterface = IRefractiveIndexModel<IMediumModel>;
-  using AtmModel = GladstoneDaleRefractiveIndex<HomogeneousMedium<IModelInterface>>;
+  using IModelInterface = media::IRefractiveIndexModel<media::IMediumModel>;
+  using AtmModel = media::GladstoneDaleRefractiveIndex<HomogeneousMedium<IModelInterface>>;
 
   // the constant density
   const auto density{19.2_g / cube(1_cm)};
@@ -275,12 +275,12 @@ TEST_CASE("GladstoneDaleRefractiveIndex w/ 5-layered atmosphere") {
 
   // setup a 5-layered environment
   using EnvironmentInterface =
-      IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-  using EnvType = Environment<EnvironmentInterface>;
+      media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+  using EnvType = media::Environment<media::EnvironmentInterface>;
   EnvType env;
 
-  create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv2>(
-      env, AtmosphereId::LinsleyUSStd, center_, n0, surface_, Medium::AirDry1Atm,
+  media::create_5layer_atmosphere<media::EnvironmentInterface, MyExtraEnv2>(
+      env, media::AtmosphereId::LinsleyUSStd, center_, n0, surface_, media::Medium::AirDry1Atm,
       MagneticFieldVector{gCS, 0_T, 50_uT, 0_T});
 
   // get the universe for this environment

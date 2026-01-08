@@ -29,7 +29,7 @@
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 
@@ -142,10 +142,10 @@ private:
 /**
  * Selection of environment interface implementation:
  */
-using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-using EnvType = Environment<EnvironmentInterface>;
+using EnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using EnvType = media::Environment<media::EnvironmentInterface>;
 template <typename T>
-using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
+using MyExtraEnv = MediumPropertyModel<media::UniformMagneticField<T>>;
 using StackType = setup::Stack<EnvType>;
 using TrackingType = setup::Tracking;
 
@@ -175,8 +175,8 @@ int main(int argc, char** argv) {
 
   // build a Linsley US Standard atmosphere into `env`
   MagneticFieldVector bField{rootCS, 50_uT, 0_T, 0_T};
-  create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-      env, AtmosphereId::LinsleyUSStd, center, Medium::AirDry1Atm, bField);
+  media::create_5layer_atmosphere<media::EnvironmentInterface, MyExtraEnv>(
+      env, media::AtmosphereId::LinsleyUSStd, center, media::Medium::AirDry1Atm, bField);
 
   unsigned short const A = std::stoi(std::string(argv[1]));
   unsigned short const Z = std::stoi(std::string(argv[2]));
@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
       showerCore +
       Vector<dimensionless_d>{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
                               false, 1000};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
 
@@ -245,7 +245,7 @@ int main(int argc, char** argv) {
 
   // SETUP PROCESSES, DECAYS, INTERACTIONS
 
-  corsika::sibyll::Interaction sibyll(corsika::get_all_elements_in_universe(env),
+  corsika::sibyll::Interaction sibyll(corsika::media::get_all_elements_in_universe(env),
                                       corsika::setup::C7trackedParticles);
   InteractionCounter sibyllCounted{sibyll};
 

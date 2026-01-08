@@ -19,7 +19,7 @@
 #include <Eigen/Dense>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/EnergyMomentumOperations.hpp>

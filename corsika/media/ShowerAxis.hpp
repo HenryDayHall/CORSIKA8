@@ -29,7 +29,7 @@ namespace corsika {
   /**
    * \class ShowerAxis
    *
-   * The environment::ShowerAxis is created from a Point and
+   * The environment::media::ShowerAxis is created from a Point and
    * a Vector and inside an Environment. It internally uses
    * a table with steps=10000 (default) rows for interpolation.
    *
@@ -39,15 +39,15 @@ namespace corsika {
    **/
 
   ///\todo documentation needs update ...
-  class ShowerAxis {
+  class media::ShowerAxis {
   public:
     template <typename TEnvModel>
-    ShowerAxis(Point const& pStart, Point const& pEnd, Environment<TEnvModel> const& env,
+    ShowerAxis(Point const& pStart, Point const& pEnd, media::Environment<TEnvModel> const& env,
                bool const doThrow = false, int const steps = 10'000);
 
     template <typename TEnvModel>
     ShowerAxis(Point const& pStart, Vector<length_d> const& length,
-               Environment<TEnvModel> const& env, bool const doThrow = false,
+               media::Environment<TEnvModel> const& env, bool const doThrow = false,
                int const steps = 10'000);
 
     LengthType getSteplength() const;

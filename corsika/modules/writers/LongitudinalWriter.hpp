@@ -69,7 +69,7 @@ namespace corsika {
    * class to collect all of them into a single output stream:
    *
    * \code {.cpp}
-   * # showerAxis must be a ShowerAxis object
+   * # media::ShowerAxis must be a media::ShowerAxis object
    * # the X binning can be specified.
    * LongitudinalWriter profile{showerAxis, 10_g / square(1_cm), 200};
    * # add to OutputManager:
@@ -93,10 +93,10 @@ namespace corsika {
     /**
      * Construct a new writer.
      */
-    LongitudinalWriter(ShowerAxis const& axis,
+    LongitudinalWriter(media::ShowerAxis const& axis,
                        GrammageType dX = 10_g / square(1_cm)); // profile binning
 
-    LongitudinalWriter(ShowerAxis const& axis, size_t nbins,
+    LongitudinalWriter(media::ShowerAxis const& axis, size_t nbins,
                        GrammageType dX = 10_g / square(1_cm));
 
     void startOfLibrary(boost::filesystem::path const& directory) final override;
@@ -134,7 +134,7 @@ namespace corsika {
     }
 
   private:
-    ShowerAxis const& showerAxis_; ///< conversion between geometry and grammage
+    media::ShowerAxis const& showerAxis_; ///< conversion between geometry and grammage
     GrammageType const dX_;        ///< binning of profile.
     size_t const nBins_;           ///< number of profile bins.
     std::vector<number_profile::ProfileData> profile_; // longitudinal profile

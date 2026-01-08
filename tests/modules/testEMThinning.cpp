@@ -25,8 +25,8 @@
 using namespace corsika;
 using Catch::Approx;
 
-using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+using DummyEnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
 TEST_CASE("EMThinning", "process,secondary") {
   RNGManager<>::getInstance().registerRandomStream("thinning");

@@ -22,9 +22,9 @@
 #include <corsika/framework/core/EnergyMomentumOperations.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 
@@ -39,8 +39,8 @@
 
 using namespace corsika;
 
-using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-using EnvType = Environment<EnvironmentInterface>;
+using EnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using EnvType = media::Environment<media::EnvironmentInterface>;
 
 template <typename TModel>
 void create_events(TModel& model, std::string const& model_name, Code const projectileId,
@@ -65,9 +65,9 @@ void create_events(TModel& model, std::string const& model_name, Code const proj
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
   using MyHomogeneousModel =
-      MediumPropertyModel<UniformMagneticField<HomogeneousMedium<EnvironmentInterface>>>;
+      MediumPropertyModel<media::UniformMagneticField<HomogeneousMedium<media::EnvironmentInterface>>>;
   auto const props = world->setModelProperties<MyHomogeneousModel>(
-      Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 0_T),
+      media::Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 0_T),
       1_kg / (1_m * 1_m * 1_m), NuclearComposition({targetId}, {1.}));
   world->setModelProperties(props);
   universe.addChild(std::move(world));

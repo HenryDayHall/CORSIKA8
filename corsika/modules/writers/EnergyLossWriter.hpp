@@ -33,7 +33,7 @@ namespace corsika {
    * of them into a single output stream:
    *
    * \code {.cpp}
-   * # showerAxis must be a ShowerAxis object
+   * # media::ShowerAxis must be a media::ShowerAxis object
    * # the X binning can be specified.
    * EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
    * # add to OutputManager:
@@ -87,7 +87,7 @@ namespace corsika {
    * class to collect all of them into a single output stream:
    *
    * \code {.cpp}
-   * # showerAxis must be a ShowerAxis object
+   * # media::ShowerAxis must be a media::ShowerAxis object
    * # the X binning can be specified.
    * EnergyLossWriter dEdX{showerAxis, 10_g / square(1_cm), 200};
    * # add to OutputManager:
@@ -112,13 +112,13 @@ namespace corsika {
      */
 
     // Number of bins defined explicitly
-    EnergyLossWriter(ShowerAxis const& axis,
+    EnergyLossWriter(media::ShowerAxis const& axis,
                      GrammageType dX = 10_g / square(1_cm), // profile binning
                      GrammageType dX_threshold = 0.0001_g /
                                                  square(1_cm)); // ignore too short tracks
 
     // Number of bins defined explicitly
-    EnergyLossWriter(ShowerAxis const& axis,
+    EnergyLossWriter(media::ShowerAxis const& axis,
                      unsigned int const nBins,              // number of bins
                      GrammageType dX = 10_g / square(1_cm), // profile binning
                      GrammageType dX_threshold = 0.0001_g /
@@ -168,7 +168,7 @@ namespace corsika {
     YAML::Node getConfig() const override;
 
   private:
-    ShowerAxis const& showerAxis_; ///< conversion between geometry and grammage
+    media::ShowerAxis const& showerAxis_; ///< conversion between geometry and grammage
     GrammageType dX_;              ///< binning of profile.
     size_t nBins_;                 ///< number of profile bins.
     GrammageType dX_threshold_;    ///< too short tracks are discarded.

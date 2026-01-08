@@ -28,9 +28,9 @@
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/ShowerAxis.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
@@ -88,11 +88,11 @@ void registerRandomStreams(int seed) {
 }
 
 using EnvironmentInterface =
-    IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-using EnvType = Environment<EnvironmentInterface>;
+    media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+using EnvType = media::Environment<media::EnvironmentInterface>;
 template <typename TInterface>
 using MyExtraEnv =
-    UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
+    UniformRefractiveIndex<media::MediumPropertyModel<media::UniformMagneticField<TInterface>>>;
 using StackType = setup::Stack<EnvType>;
 using TrackingType = setup::Tracking;
 
@@ -120,8 +120,8 @@ int main(int argc, char** argv) {
 
   double const refractive_index = 1.000327;
   MagneticFieldVector const bField{rootCS, 50_uT, 0_T, 0_T};
-  create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-      env, AtmosphereId::LinsleyUSStd, center, refractive_index, Medium::AirDry1Atm,
+  media::create_5layer_atmosphere<media::EnvironmentInterface, MyExtraEnv>(
+      env, media::AtmosphereId::LinsleyUSStd, center, refractive_index, media::Medium::AirDry1Atm,
       bField);
 
   std::unordered_map<Code, HEPEnergyType> energy_resolution = {
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
   Point const injectionPos =
       showerCore + DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
                               false, 1000};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
 
@@ -233,7 +233,7 @@ int main(int argc, char** argv) {
   ParticleCut<SubWriter<decltype(energyloss)>> cut(5_MeV, 5_MeV, 100_GeV, 100_GeV,
                                                    100_GeV, true, energyloss);
 
-  corsika::sibyll::Interaction sibyll(corsika::get_all_elements_in_universe(env),
+  corsika::sibyll::Interaction sibyll(corsika::media::get_all_elements_in_universe(env),
                                       corsika::setup::C7trackedParticles);
   corsika::sophia::InteractionModel sophia;
   HEPEnergyType heThresholdNN = 80_GeV;
