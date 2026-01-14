@@ -282,7 +282,7 @@ int main(int argc, char** argv) {
   HEPEnergyType mass = get_mass(beamCode);
   // convert Elab to Plab
   HEPMomentumType P0 = calculate_momentum(E0, mass);
-  auto plab = MomentumVector(rootCS, P0 * downVec.getNorm());
+  auto plab = MomentumVector(rootCS, {0_GeV, 0_GeV, -P0});
 
   // print our primary parameters all in one place
   if (app["--pdg"]->count() > 0) {
