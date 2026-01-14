@@ -7,7 +7,7 @@
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
-#include <corsika/media/IMediumModel.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
 
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/modules/BetheBlochPDG.hpp>
@@ -37,8 +37,8 @@ int main() {
   // setup environment, geometry
   using EnvType = media::Environment<media::IMediumModel>;
   EnvType env;
-  env.getUniverse()->setModelProperties<HomogeneousMedium<media::IMediumModel>>(
-      1_g / cube(1_cm), NuclearComposition{{Code::Unknown}, {1.f}});
+  env.getUniverse()->setModelProperties<media::HomogeneousMedium<media::IMediumModel>>(
+      1_g / cube(1_cm), media::NuclearComposition{{Code::Unknown}, {1.f}});
 
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 

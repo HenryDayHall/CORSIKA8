@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <corsika/media/IRefractiveIndexModel.hpp>
+#include <corsika/media/interfaces/IRefractiveIndexModel.hpp>
 
 namespace corsika {
   namespace media {

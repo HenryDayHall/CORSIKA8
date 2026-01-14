@@ -11,22 +11,22 @@
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 
-#include <corsika/media/DensityFunction.hpp>
-#include <corsika/media/FlatExponential.hpp>
+#include <corsika/media/density/DensityFunction.hpp>
+#include <corsika/media/density_and_composition/FlatExponential.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <corsika/media/medium/MediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
-#include <corsika/media/UniformRefractiveIndex.hpp>
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/IMediumPropertyModel.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
+#include <corsika/media/refractivity/UniformRefractiveIndex.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/interfaces/IMediumPropertyModel.hpp>
 #include <corsika/media/interfaces/IMagneticFieldModel.hpp>
-#include <corsika/media/IRefractiveIndexModel.hpp>
-#include <corsika/media/InhomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IRefractiveIndexModel.hpp>
+#include <corsika/media/density_and_composition/InhomogeneousMedium.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
-#include <corsika/media/LinearApproximationIntegrator.hpp>
+#include <corsika/media/density/integrator/LinearApproximationIntegrator.hpp>
 #include <corsika/media/composition/NuclearComposition.hpp>
-#include <corsika/media/SlidingPlanarExponential.hpp>
-#include <corsika/media/SlidingPlanarTabular.hpp>
+#include <corsika/media/density_and_composition/SlidingPlanarExponential.hpp>
+#include <corsika/media/density_and_composition/SlidingPlanarTabular.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
 
 #include <SetupTestTrajectory.hpp>
@@ -35,6 +35,7 @@
 #include <catch2/catch_all.hpp>
 
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
 CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
@@ -110,7 +111,7 @@ TEST_CASE("HomogeneousMedium") {
 
   logging::set_level(logging::level::info);
 
-  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
+  media::NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
   HomogeneousMedium<media::IMediumModel> const medium(19.2_g / cube(1_cm), protonComposition);
 
   CHECK_THROWS(NuclearComposition({Code::Proton}, {1.1}));
@@ -121,7 +122,7 @@ TEST_CASE("FlatExponential") {
 
   logging::set_level(logging::level::info);
 
-  NuclearComposition const protonComposition({Code::Proton}, {1.});
+  media::NuclearComposition const protonComposition({Code::Proton}, {1.});
 
   Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
   LengthType const lambda = 3_m;
@@ -200,7 +201,7 @@ TEST_CASE("SlidingPlanarExponential") {
 
   logging::set_level(logging::level::info);
 
-  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
+  media::NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
 
   LengthType const lambda = 3_m;
   auto const rho0 = 1_g / static_pow<3>(1_cm);
@@ -282,7 +283,7 @@ TEST_CASE("SlidingPlanarTabular") {
 
   logging::set_level(logging::level::info);
 
-  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
+  media::NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
 
   RhoFuncConst rhoFunc;
   SlidingPlanarTabular<media::IMediumModel> const medium(gOrigin, rhoFunc, 1000, 10_m,
@@ -554,7 +555,7 @@ TEST_CASE("InhomogeneousMedium") {
 
   LengthType const length = tEnd * speed;
 
-  NuclearComposition const composition{{Code::Proton}, {1.}};
+  media::NuclearComposition const composition{{Code::Proton}, {1.}};
   InhomogeneousMedium<IMediumModel, decltype(rho)> const inhMedium(composition, rho);
 
   CORSIKA_LOG_INFO("test={} l={} {} {}", rho.getIntegrateGrammage(trajectory), length,
@@ -630,12 +631,12 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
   using ModelInterface = media::IMagneticFieldModel<media::IMediumModel>;
 
   // the composition we use for the homogenous medium
-  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
+  media::NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
 
   // create magnetic field vectors
   Vector B0(gCS, 0_T, 0_T, 1_T);
 
-  LayeredSphericalAtmosphereBuilder builder = make_layered_spherical_atmosphere_builder<
+  LayeredSphericalAtmosphereBuilder builder = media::make_layered_spherical_atmosphere_builder<
       ModelInterface, UniformMagneticField>::create(gOrigin, constants::EarthRadius::Mean,
                                                     B0);
 
@@ -670,7 +671,7 @@ TEST_CASE("media", "LayeredSphericalAtmosphereBuilder USStd") {
   Point const center{gCS, 0_m, 0_m, 0_m};
 
   // setup our interface types
-  auto builder = make_layered_spherical_atmosphere_builder<>::create(
+  auto builder = media::make_layered_spherical_atmosphere_builder<>::create(
       center, constants::EarthRadius::Mean);
 
   builder.setNuclearComposition(

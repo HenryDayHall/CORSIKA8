@@ -98,7 +98,7 @@ using namespace std;
 
 using EnvironmentInterface =
     media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
-using EnvType = media::Environment<media::EnvironmentInterface>;
+using EnvType = media::Environment<EnvironmentInterface>;
 using StackType = setup::Stack<EnvType>;
 using TrackingType = setup::Tracking;
 using Particle = StackType::particle_type;
@@ -351,7 +351,7 @@ int main(int argc, char** argv) {
 
   // build an atmosphere with Keilhauer's parametrization of the
   // US standard atmosphere into `env`
-  media::create_5layer_atmosphere<media::EnvironmentInterface, MyExtraEnv>(
+  media::create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
       env, media::AtmosphereId::USStdBK, center, 1.000327, surface_, media::Medium::AirDry1Atm,
       MagneticFieldVector{rootCS, 50_uT, 0_T, 0_T});
 

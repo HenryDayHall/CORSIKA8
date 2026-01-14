@@ -11,12 +11,14 @@
 #include <limits>
 
 namespace corsika {
+  namespace media {
 
-  struct Universe : public corsika::Sphere {
-    Universe(corsika::CoordinateSystemPtr const& pCS);
-    bool contains(corsika::Point const&) const override;
-  };
+    struct Universe : public corsika::Sphere {
+      Universe(corsika::CoordinateSystemPtr const& pCS);
+      bool contains(corsika::Point const&) const override;
+    };
 
+  } // namespace media
 } // namespace corsika
 
 #include <corsika/detail/media/Universe.inl>

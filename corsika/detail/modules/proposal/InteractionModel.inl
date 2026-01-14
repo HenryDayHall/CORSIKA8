@@ -5,7 +5,7 @@
  * See file LICENSE for a full version of the license.
  */
 
-#include <corsika/media/IMediumModel.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
 #include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>

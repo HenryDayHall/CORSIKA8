@@ -25,6 +25,7 @@
 #include <SetupTestTrajectory.hpp>
 
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
 using DummyEnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;

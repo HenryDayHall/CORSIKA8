@@ -75,7 +75,7 @@ TEST_CASE("Sophia", "modules") {
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <corsika/media/composition/NuclearComposition.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
 
 template <typename TStackView>
 auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {

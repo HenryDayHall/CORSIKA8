@@ -22,7 +22,7 @@ using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <corsika/media/composition/NuclearComposition.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
 
 class DummyHadronicModel {
 public:

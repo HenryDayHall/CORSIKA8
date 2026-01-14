@@ -26,7 +26,7 @@
 #include <corsika/media/medium/MediumPropertyModel.hpp>
 #include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/ShowerAxis.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupC7trackedParticles.hpp>
@@ -40,7 +40,7 @@
 using namespace corsika;
 
 using EnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
-using EnvType = media::Environment<media::EnvironmentInterface>;
+using EnvType = media::Environment<EnvironmentInterface>;
 
 template <typename TModel>
 void create_events(TModel& model, std::string const& model_name, Code const projectileId,
@@ -65,10 +65,10 @@ void create_events(TModel& model, std::string const& model_name, Code const proj
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
   using MyHomogeneousModel =
-      MediumPropertyModel<media::UniformMagneticField<HomogeneousMedium<media::EnvironmentInterface>>>;
+      media::MediumPropertyModel<media::UniformMagneticField<media::HomogeneousMedium<EnvironmentInterface>>>;
   auto const props = world->setModelProperties<MyHomogeneousModel>(
       media::Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 0_T),
-      1_kg / (1_m * 1_m * 1_m), NuclearComposition({targetId}, {1.}));
+      1_kg / (1_m * 1_m * 1_m), media::NuclearComposition({targetId}, {1.}));
   world->setModelProperties(props);
   universe.addChild(std::move(world));
 

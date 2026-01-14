@@ -13,7 +13,7 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/BaseTrajectory.hpp>
 #include <corsika/media/composition/NuclearComposition.hpp>
-#include <corsika/media/BaseTabular.hpp>
+#include <corsika/media/density/BaseTabular.hpp>
 
 namespace corsika {
   namespace media {
@@ -53,10 +53,10 @@ namespace corsika {
                                           GrammageType grammage) const override;
 
     private:
-      NuclearComposition const nuclComp_;
+      media::NuclearComposition const nuclComp_;
     };
 
   } // namespace media
 } // namespace corsika
 
-#include <corsika/detail/media/SlidingPlanarTabular.inl>
+#include <corsika/detail/media/density_and_composition/SlidingPlanarTabular.inl>

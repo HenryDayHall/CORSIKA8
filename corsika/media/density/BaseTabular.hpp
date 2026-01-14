@@ -55,4 +55,4 @@ namespace corsika {
   } // namespace media
 } // namespace corsika
 
-#include <corsika/detail/media/BaseTabular.inl>
+#include <corsika/detail/media/density/BaseTabular.inl>

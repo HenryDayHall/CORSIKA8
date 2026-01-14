@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <corsika/media/MediumProperties.hpp>
+#include <corsika/media/medium/MediumProperties.hpp>
 
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>

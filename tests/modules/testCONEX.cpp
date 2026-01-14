@@ -10,7 +10,7 @@
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/media/medium/MediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
 
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
@@ -40,7 +40,7 @@ using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 const std::string refDataDir = std::string(REFDATADIR); // from cmake
 
 template <typename T>
-using MExtraEnvirnoment = MediumPropertyModel<media::UniformMagneticField<T>>;
+using MExtraEnvirnoment = media::MediumPropertyModel<media::UniformMagneticField<T>>;
 
 struct DummyStack {};
 
@@ -61,7 +61,7 @@ TEST_CASE("CONEX") {
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
 
-  auto builder = make_layered_spherical_atmosphere_builder<
+  auto builder = media::make_layered_spherical_atmosphere_builder<
       DummyEnvironmentInterface, MExtraEnvirnoment>::create(center,
                                                             corsika::conex::earthRadius,
                                                             media::Medium::AirDry1Atm,

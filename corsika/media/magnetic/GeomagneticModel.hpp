@@ -24,7 +24,7 @@ namespace corsika {
      * IGRF: https://www.ngdc.noaa.gov/IAGA/vmod/igrf.html
      */
 
-    class media::GeomagneticModel {
+    class GeomagneticModel {
 
       /**
        * Internal data structure for a single shell of the spherical harmonic
@@ -75,4 +75,4 @@ namespace corsika {
   } // namespace media
 } // namespace corsika
 
-#include <corsika/detail/media/GeomagneticModel.inl>
+#include <corsika/detail/media/magnetic/GeomagneticModel.inl>

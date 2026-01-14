@@ -13,6 +13,7 @@
 #include <catch2/catch_all.hpp>
 
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
 struct DummyRNG {
@@ -30,15 +31,15 @@ TEST_CASE("NuclearComposition") {
 
   // incompatible input: wrong vectors
   CHECK_THROWS(
-      NuclearComposition({Code::Oxygen, Code::Carbon}, {0.20, 0.05, 1 - 0.20 - 0.05}));
+      media::NuclearComposition({Code::Oxygen, Code::Carbon}, {0.20, 0.05, 1 - 0.20 - 0.05}));
   // incompatible input: wrong fractions
   CHECK_THROWS(
-      NuclearComposition({Code::Oxygen, Code::Carbon}, {0.21, 0.05, 1 - 0.20 - 0.05}));
+      media::NuclearComposition({Code::Oxygen, Code::Carbon}, {0.21, 0.05, 1 - 0.20 - 0.05}));
   // incompatible input: wrong fractions
   CHECK_THROWS(
-      NuclearComposition({Code::Oxygen, Code::Carbon}, {0.19, 0.05, 1 - 0.20 - 0.05}));
+      media::NuclearComposition({Code::Oxygen, Code::Carbon}, {0.19, 0.05, 1 - 0.20 - 0.05}));
 
-  NuclearComposition const testComposition({Code::Oxygen, Code::Carbon, Code::Nitrogen},
+  media::NuclearComposition const testComposition({Code::Oxygen, Code::Carbon, Code::Nitrogen},
                                            {0.20, 0.05, 1 - 0.20 - 0.05});
 
   CHECK(testComposition.getSize() == 3);

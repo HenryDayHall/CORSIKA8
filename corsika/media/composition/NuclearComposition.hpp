@@ -108,4 +108,4 @@ namespace corsika {
   } // namespace media
 } // namespace corsika
 
-#include <corsika/detail/media/NuclearComposition.inl>
+#include <corsika/detail/media/composition/NuclearComposition.inl>

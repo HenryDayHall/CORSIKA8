@@ -22,7 +22,7 @@
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <corsika/media/composition/NuclearComposition.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
 #include <corsika/media/medium/MediumPropertyModel.hpp>
 
 #include <corsika/modules/TrackWriter.hpp>
@@ -83,7 +83,7 @@ int main() {
 
   // setup environment, geometry
   using EnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
-  using EnvType = media::Environment<media::EnvironmentInterface>;
+  using EnvType = media::Environment<EnvironmentInterface>;
   EnvType env;
   auto& universe = *(env.getUniverse());
 
@@ -93,11 +93,11 @@ int main() {
   auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 100_km);
 
   using MyHomogeneousModel =
-      MediumPropertyModel<media::UniformMagneticField<HomogeneousMedium<media::EnvironmentInterface>>>;
+      media::MediumPropertyModel<media::UniformMagneticField<media::HomogeneousMedium<EnvironmentInterface>>>;
 
   auto const props = world->setModelProperties<MyHomogeneousModel>(
       media::Medium::AirDry1Atm, Vector(rootCS, 0_T, 0_T, 0_T), 1_kg / (1_m * 1_m * 1_m),
-      NuclearComposition({Code::Proton}, {1.}));
+      media::NuclearComposition({Code::Proton}, {1.}));
 
   // add a "target" sphere with 5km readius at 0,0,0
   auto target = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5_km);

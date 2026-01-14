@@ -22,10 +22,11 @@
 #include <boost/type_index.hpp>
 
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
-using DummyEnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
-using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
+using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
+using DummyEnvironment = Environment<DummyEnvironmentInterface>;
 
 struct NonExistingDummyObject : public IVolume {
   NonExistingDummyObject const& getVolume() const { return *this; }
@@ -137,25 +138,25 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
     auto target_2_partly_behind = DummyEnvironment::createNode<Sphere>(
         Point(cs, {-radius * 3 / 4 + radius * 0.1, 0_m, 0_m}), radius * 0.2);
 
-    using MyHomogeneousModel = MediumPropertyModel<
-        UniformMagneticField<HomogeneousMedium<DummyEnvironmentInterface>>>;
+    using MyHomogeneousModel = media::MediumPropertyModel<
+        UniformMagneticField<media::HomogeneousMedium<DummyEnvironmentInterface>>>;
 
     MagneticFieldVector magneticfield(cs, 0_T, 0_T, Bfield);
     target->setModelProperties<MyHomogeneousModel>(
-        media::Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
-        NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
+        Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
+        media::NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
     target_neutral->setModelProperties<MyHomogeneousModel>(
-        media::Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
-        NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
+        Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
+        media::NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
     target_2->setModelProperties<MyHomogeneousModel>(
-        media::Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
-        NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
+        Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
+        media::NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
     target_2_behind->setModelProperties<MyHomogeneousModel>(
-        media::Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
-        NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
+        Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
+        media::NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
     target_2_partly_behind->setModelProperties<MyHomogeneousModel>(
-        media::Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
-        NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
+        Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
+        media::NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
     auto* targetPtr = target.get();
     auto* targetPtr_2 = target_2.get();
     auto* targetPtr_neutral = target_neutral.get();
@@ -246,8 +247,8 @@ TEST_CASE("TrackingLeapFrogCurved") {
 
   corsika::Code PID = Code::MuPlus;
 
-  using MyHomogeneousModel = MediumPropertyModel<
-      UniformMagneticField<HomogeneousMedium<DummyEnvironmentInterface>>>;
+  using MyHomogeneousModel = media::MediumPropertyModel<
+      UniformMagneticField<media::HomogeneousMedium<DummyEnvironmentInterface>>>;
 
   SECTION("infinite sphere / universe") {
 
@@ -288,8 +289,8 @@ TEST_CASE("TrackingLeapFrogCurved") {
 
     MagneticFieldVector magneticfield(cs, 100_T, 0_T, 0_uT);
     target->setModelProperties<MyHomogeneousModel>(
-        media::Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
-        NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
+        Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
+        media::NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
     auto* targetPtr = target.get();
     worldPtr->addChild(std::move(target));
 

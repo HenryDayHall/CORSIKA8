@@ -5,10 +5,10 @@
  * See file LICENSE for a full version of the license.
  */
 
-#include <corsika/media/DensityFunction.hpp>
-#include <corsika/media/FlatExponential.hpp>
+#include <corsika/media/density/DensityFunction.hpp>
+#include <corsika/media/density_and_composition/FlatExponential.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
-#include <corsika/media/IMediumModel.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
 #include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
@@ -22,6 +22,7 @@
 
 // using namespace
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
 const auto density = 1_kg / (1_m * 1_m * 1_m);

@@ -143,10 +143,12 @@ namespace corsika {
     //! @}
 
   } // namespace media
+} // namespace corsika
 
 #include <corsika/media/GeneratedMediaProperties.inc>
 
-  namespace corsika {
+namespace corsika {
+  namespace media {
 
     /**
      * @file MediaProperties.hpp
@@ -158,10 +160,10 @@ namespace corsika {
      */
 
     constexpr MediumData const& mediumData(Medium const m) {
-      return corsika::detail::medium_data[static_cast<MediumIntType>(m)];
+      return corsika::media::detail::medium_data[static_cast<MediumIntType>(m)];
     }
 
     //! @}
 
-  } // namespace corsika
+  } // namespace media
 } // namespace corsika

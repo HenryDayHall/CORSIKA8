@@ -25,20 +25,21 @@
 #include <string>
 
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
 const auto density = 1_kg / (1_m * 1_m * 1_m);
 
 auto setupEnvironment2(Code vTargetCode) {
   // setup environment, geometry
-  auto env = std::make_unique<media::Environment<media::IMediumModel>>();
+  auto env = std::make_unique<Environment<IMediumModel>>();
   auto& universe = *(env->getUniverse());
   const CoordinateSystemPtr& cs = env->getCoordinateSystem();
 
-  auto theMedium = media::Environment<media::IMediumModel>::createNode<Sphere>(
+  auto theMedium = Environment<IMediumModel>::createNode<Sphere>(
       Point{cs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = HomogeneousMedium<media::IMediumModel>;
+  using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
   theMedium->setModelProperties<MyHomogeneousModel>(
       density, NuclearComposition({vTargetCode}, {1.}));
 
@@ -50,7 +51,7 @@ auto setupEnvironment2(Code vTargetCode) {
 
 class TestLongitudinal : public corsika::LongitudinalWriter<> {
 public:
-  TestLongitudinal(corsika::media::ShowerAxis const& axis)
+  TestLongitudinal(ShowerAxis const& axis)
       : LongitudinalWriter(axis) {}
 };
 

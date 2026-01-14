@@ -98,4 +98,4 @@ namespace corsika {
   } // namespace media
 } // namespace corsika
 
-#include <corsika/detail/media/BaseExponential.inl>
+#include <corsika/detail/media/density/BaseExponential.inl>

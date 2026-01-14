@@ -37,10 +37,10 @@ namespace corsika {
 
     private:
       MassDensityType const density_;
-      NuclearComposition const nuclComp_;
+      media::NuclearComposition const nuclComp_;
     };
 
   } // namespace media
 } // namespace corsika
 
-#include <corsika/detail/media/HomogeneousMedium.inl>
+#include <corsika/detail/media/density_and_composition/HomogeneousMedium.inl>

@@ -26,18 +26,18 @@
 #include <iostream>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/FlatExponential.hpp>
+#include <corsika/media/density_and_composition/FlatExponential.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <corsika/media/interfaces/IMagneticFieldModel.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/medium/MediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
-#include <corsika/media/SlidingPlanarExponential.hpp>
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/IRefractiveIndexModel.hpp>
-#include <corsika/media/UniformRefractiveIndex.hpp>
-#include <corsika/media/ExponentialRefractiveIndex.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
+#include <corsika/media/density_and_composition/SlidingPlanarExponential.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/interfaces/IRefractiveIndexModel.hpp>
+#include <corsika/media/refractivity/UniformRefractiveIndex.hpp>
+#include <corsika/media/refractivity/ExponentialRefractiveIndex.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
 #include <corsika/media/refractivity/GladstoneDaleRefractiveIndex.hpp>
@@ -55,17 +55,18 @@
 #include <corsika/output/OutputManager.hpp>
 
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
 double constexpr absMargin = 1.0e-7;
 
 template <typename TInterface>
 using MyExtraEnv =
-    UniformRefractiveIndex<media::MediumPropertyModel<media::UniformMagneticField<TInterface>>>;
+    UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
 
 template <typename TInterface2>
 using MyExtraEnv2 =
-    media::GladstoneDaleRefractiveIndex<media::MediumPropertyModel<media::UniformMagneticField<TInterface2>>>;
+    GladstoneDaleRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface2>>>;
 
 // Dummy process for testing LimitedRadioProcess
 // If it is run, returns ProcessReturn::Interacted
@@ -95,10 +96,10 @@ TEST_CASE("Radio", "[processes]") {
 
     // Environment
     using IModelInterface =
-        media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+        IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
     using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<media::UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
-    using EnvType = media::Environment<AtmModel>;
+        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using EnvType = Environment<AtmModel>;
     EnvType envCoREAS;
     CoordinateSystemPtr const& rootCS = envCoREAS.getCoordinateSystem();
     Point const center{rootCS, 0_m, 0_m, 0_m};
@@ -140,13 +141,13 @@ TEST_CASE("Radio", "[processes]") {
         plab.normalized(), pos, 0_ns))};
 
     Vector B1(rootCS, 0_T, 0_T, 1_T);
-    NuclearComposition const protonComposition({Code::Proton}, {1.});
+    media::NuclearComposition const protonComposition({Code::Proton}, {1.});
     const double refractiveIndex{1.000327};
     const auto density{1_g / cube(1_cm)};
     auto Medium = EnvType::createNode<Sphere>(
         center, 10_km * std::numeric_limits<double>::infinity());
     auto const props = Medium->setModelProperties<AtmModel>(
-        refractiveIndex, media::Medium::AirDry1Atm, B1, density, protonComposition);
+        refractiveIndex, Medium::AirDry1Atm, B1, density, protonComposition);
     particle1.setNode(Medium.get());
     envCoREAS.getUniverse()->addChild(std::move(Medium));
 
@@ -234,10 +235,10 @@ TEST_CASE("Radio", "[processes]") {
 
   SECTION("CoREAS Edge Cases") {
     using IModelInterface =
-        media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+        IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
     using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<media::UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
-    using EnvType = media::Environment<AtmModel>;
+        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using EnvType = Environment<AtmModel>;
     EnvType envCoREAS;
     CoordinateSystemPtr const& rootCS = envCoREAS.getCoordinateSystem();
     Point const center{rootCS, 0_m, 0_m, 0_m};
@@ -274,13 +275,13 @@ TEST_CASE("Radio", "[processes]") {
         plab.normalized(), pos, 0_ns))};
 
     Vector B1(rootCS, 0_T, 0_T, 1_T);
-    NuclearComposition const protonComposition({Code::Proton}, {1.});
+    media::NuclearComposition const protonComposition({Code::Proton}, {1.});
     const double refractiveIndex{1.000327};
     const auto density{1_g / cube(1_cm)};
     auto Medium = EnvType::createNode<Sphere>(
         center, 10_km * std::numeric_limits<double>::infinity());
     auto const props = Medium->setModelProperties<AtmModel>(
-        refractiveIndex, media::Medium::AirDry1Atm, B1, density, protonComposition);
+        refractiveIndex, Medium::AirDry1Atm, B1, density, protonComposition);
     particle1.setNode(Medium.get());
     envCoREAS.getUniverse()->addChild(std::move(Medium));
 
@@ -337,10 +338,10 @@ TEST_CASE("Radio", "[processes]") {
     // This section serves as a compiler test for any changes in the ZHS algorithm
     // Environment
     using IModelInterface =
-        media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+        IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
     using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<media::UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
-    using EnvType = media::Environment<AtmModel>;
+        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using EnvType = Environment<AtmModel>;
     EnvType envZHS;
     CoordinateSystemPtr const& rootCS = envZHS.getCoordinateSystem();
     // get the center point
@@ -390,7 +391,7 @@ TEST_CASE("Radio", "[processes]") {
     const auto density{19.2_g / cube(1_cm)};
 
     // the composition we use for the homogeneous medium
-    NuclearComposition const protonComposition({Code::Proton}, {1.});
+    media::NuclearComposition const protonComposition({Code::Proton}, {1.});
 
     // create magnetic field vector
     Vector B1(rootCS, 0_T, 0_T, 1_T);
@@ -398,7 +399,7 @@ TEST_CASE("Radio", "[processes]") {
     auto Medium = EnvType::createNode<Sphere>(
         center, 1_km * std::numeric_limits<double>::infinity());
 
-    auto const props = Medium->setModelProperties<AtmModel>(ri_, media::Medium::AirDry1Atm, B1,
+    auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1,
                                                             density, protonComposition);
     particle1.setNode(Medium.get());
     envZHS.getUniverse()->addChild(std::move(Medium));
@@ -453,10 +454,10 @@ TEST_CASE("Radio", "[processes]") {
 
     // Environment
     using IModelInterface =
-        media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+        IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
     using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<media::UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
-    using EnvType = media::Environment<AtmModel>;
+        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using EnvType = Environment<AtmModel>;
     EnvType envRadio;
     CoordinateSystemPtr const& rootCSRadio = envRadio.getCoordinateSystem();
     // get the center point
@@ -493,7 +494,7 @@ TEST_CASE("Radio", "[processes]") {
     const auto density{19.2_g / cube(1_cm)};
 
     // the composition we use for the homogeneous medium
-    NuclearComposition const protonComposition({Code::Proton}, {1.});
+    media::NuclearComposition const protonComposition({Code::Proton}, {1.});
 
     // create magnetic field vector
     Vector B1(rootCSRadio, 0_T, 50_uT, 0_T);
@@ -501,7 +502,7 @@ TEST_CASE("Radio", "[processes]") {
     auto Medium = EnvType::createNode<Sphere>(
         center, 1_km * std::numeric_limits<double>::infinity());
 
-    auto const props = Medium->setModelProperties<AtmModel>(ri_, media::Medium::AirDry1Atm, B1,
+    auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1,
                                                             density, protonComposition);
     particle_stack.setNode(Medium.get());
     particle_stack_proton.setNode(Medium.get());
@@ -614,22 +615,22 @@ TEST_CASE("Radio", "[processes]") {
 
   SECTION("Process Library") {
     using IModelInterface =
-        media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+        IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
     using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<media::UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
-    using EnvType = media::Environment<AtmModel>;
+        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using EnvType = Environment<AtmModel>;
     EnvType envCoREAS;
     CoordinateSystemPtr const& rootCS = envCoREAS.getCoordinateSystem();
     Point const center{rootCS, 0_m, 0_m, 0_m};
 
     Vector B1(rootCS, 0_T, 0_T, 1_T);
-    NuclearComposition const protonComposition({Code::Proton}, {1.});
+    media::NuclearComposition const protonComposition({Code::Proton}, {1.});
     const double refractiveIndex{1.000327};
     const auto density{1_g / cube(1_cm)};
     auto Medium = EnvType::createNode<Sphere>(
         center, 10_km * std::numeric_limits<double>::infinity());
     auto const props = Medium->setModelProperties<AtmModel>(
-        refractiveIndex, media::Medium::AirDry1Atm, B1, density, protonComposition);
+        refractiveIndex, Medium::AirDry1Atm, B1, density, protonComposition);
     envCoREAS.getUniverse()->addChild(std::move(Medium));
 
     // create the detector
@@ -706,7 +707,7 @@ TEST_CASE("Radio", "[processes]") {
 
     TestRadioProcess wrappedRadioProcess;
 
-    media::Environment<IEmpty> env;
+    Environment<IEmpty> env;
     CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
     Point const origin(rootCS, {0_m, 0_m, 0_m});
     Point const outside(rootCS, {1000_m, 0_m, 0_m});
@@ -736,7 +737,7 @@ TEST_CASE("Radio", "[processes]") {
     StraightTrajectory const trajectoryInside(lineInside, 0_ns);
     StraightTrajectory const trajectoryOutside(lineOutside, 0_ns);
 
-    setup::Stack<media::Environment<IEmpty>> stack;
+    setup::Stack<Environment<IEmpty>> stack;
 
     /////// Electron case //////
 
@@ -772,7 +773,7 @@ TEST_CASE("Radio", "[processes]") {
 TEST_CASE("observers") {
 
   SECTION("TimeDomainObserver Constructor") {
-    media::Environment<media::IRefractiveIndexModel<media::IMediumModel>> env;
+    Environment<IRefractiveIndexModel<IMediumModel>> env;
     const auto rootCS = env.getCoordinateSystem();
     auto const obsPos = Point(rootCS, {0_m, 0_m, 0_m});
     TimeType const tStart(0_s);
@@ -803,7 +804,7 @@ TEST_CASE("observers") {
   } // END: SECTION("TimeDomainObserver Constructor")
 
   SECTION("TimeDomainObserver Bad Constructor") {
-    media::Environment<media::IRefractiveIndexModel<media::IMediumModel>> env;
+    Environment<IRefractiveIndexModel<IMediumModel>> env;
     const auto rootCS = env.getCoordinateSystem();
     auto const obsPos = Point(rootCS, {0_m, 0_m, 0_m});
     TimeType const tStart(0_s);
@@ -823,7 +824,7 @@ TEST_CASE("observers") {
   SECTION("TimeDomainObserver Receive Efield") {
     // Checks that the basic functionality of the receive function is working properly
 
-    using EnvType = media::Environment<media::IRefractiveIndexModel<media::IMediumModel>>;
+    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
     EnvType env;
 
     const auto rootCS = env.getCoordinateSystem();
@@ -901,7 +902,7 @@ TEST_CASE("observers") {
   SECTION("TimeDomainObserver Receive Vector Potential") {
     // Checks that the basic functionality of the receive function is working properly
 
-    using EnvType = media::Environment<media::IRefractiveIndexModel<media::IMediumModel>>;
+    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
     EnvType env;
 
     const auto rootCS = env.getCoordinateSystem();
@@ -976,11 +977,11 @@ TEST_CASE("observers") {
   SECTION("TimeDomainObserver ObserverCollection") {
 
     // create an environment so we can get a coordinate system
-    using EnvType = media::Environment<media::IRefractiveIndexModel<media::IMediumModel>>;
+    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
     EnvType env6;
 
     using UniRIndex =
-        UniformRefractiveIndex<HomogeneousMedium<media::IRefractiveIndexModel<media::IMediumModel>>>;
+        UniformRefractiveIndex<media::HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
 
     // the observer location
     const auto point1{Point(env6.getCoordinateSystem(), 1_m, 2_m, 3_m)};
@@ -1049,7 +1050,7 @@ TEST_CASE("observers") {
 
   SECTION("TimeDomainObserver Config File") {
     // Runs checks that the file readers are working properly
-    media::Environment<media::IRefractiveIndexModel<media::IMediumModel>> env;
+    Environment<IRefractiveIndexModel<IMediumModel>> env;
     const auto rootCS = env.getCoordinateSystem();
     auto const obsPos = Point(rootCS, {0_m, 0_m, 0_m});
     TimeType const tStart(0_s);
@@ -1084,10 +1085,10 @@ TEST_CASE("Propagators") {
 
     // create a suitable environment
     using IModelInterface =
-        media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+        IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
     using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<media::UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
-    using EnvType = media::Environment<AtmModel>;
+        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using EnvType = Environment<AtmModel>;
     EnvType env;
     CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 
@@ -1119,14 +1120,14 @@ TEST_CASE("Propagators") {
     // the constobs density
     const auto density{19.2_g / cube(1_cm)};
     // the composition we use for the homogeneous medium
-    NuclearComposition const Composition({Code::Nitrogen}, {1.});
+    media::NuclearComposition const Composition({Code::Nitrogen}, {1.});
     // create magnetic field vector
     Vector B1(rootCS, 0_T, 0_T, 0.3809_T);
     // create a Sphere for the medium
     auto Medium = EnvType::createNode<Sphere>(
         center, 1_km * std::numeric_limits<double>::infinity());
     // set the environment properties
-    auto const props = Medium->setModelProperties<AtmModel>(ri_, media::Medium::AirDry1Atm, B1,
+    auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1,
                                                             density, Composition);
     particle1.setNode(Medium.get());
     // bind things together
@@ -1173,10 +1174,10 @@ TEST_CASE("Propagators") {
 
     // create a suitable environment
     using IModelInterface =
-        media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+        IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
     using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<media::UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
-    using EnvType = media::Environment<AtmModel>;
+        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using EnvType = Environment<AtmModel>;
     EnvType env;
     CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 
@@ -1208,14 +1209,14 @@ TEST_CASE("Propagators") {
     // the constobs density
     const auto density{19.2_g / cube(1_cm)};
     // the composition we use for the homogeneous medium
-    NuclearComposition const Composition({Code::Nitrogen}, {1.});
+    media::NuclearComposition const Composition({Code::Nitrogen}, {1.});
     // create magnetic field vector
     Vector B1(rootCS, 0_T, 0_T, 0.3809_T);
     // create a Sphere for the medium
     auto Medium = EnvType::createNode<Sphere>(
         center, 1_km * std::numeric_limits<double>::infinity());
     // set the environment properties
-    auto const props = Medium->setModelProperties<AtmModel>(ri_, media::Medium::AirDry1Atm, B1,
+    auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1,
                                                             density, Composition);
     particle1.setNode(Medium.get());
     // bind things together
@@ -1301,9 +1302,9 @@ TEST_CASE("Propagators") {
 
     // create an environment with exponential refractive index (n_0 = 1 & lambda = 0)
     using ExpoRIndex = ExponentialRefractiveIndex<
-        HomogeneousMedium<media::IRefractiveIndexModel<media::IMediumModel>>>;
+        HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
 
-    using EnvType = media::Environment<media::IRefractiveIndexModel<media::IMediumModel>>;
+    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
     EnvType env1;
 
     // get another coordinate system
@@ -1339,7 +1340,7 @@ TEST_CASE("Propagators") {
 
     auto const props1 = Medium1->setModelProperties<ExpoRIndex>(
         1, 0 / 1_m, center1_, radius_, 1_kg / (1_m * 1_m * 1_m),
-        NuclearComposition({Code::Nitrogen}, {1.}));
+        media::NuclearComposition({Code::Nitrogen}, {1.}));
     particle1.setNode(Medium1.get());
 
     env1.getUniverse()->addChild(std::move(Medium1));
@@ -1394,9 +1395,9 @@ TEST_CASE("Propagators") {
 
     // create an environment with exponential refractive index (n_0 = 2 & lambda = 2)
     using ExpoRIndex = ExponentialRefractiveIndex<
-        HomogeneousMedium<media::IRefractiveIndexModel<media::IMediumModel>>>;
+        HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
 
-    using EnvType = media::Environment<media::IRefractiveIndexModel<media::IMediumModel>>;
+    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
     EnvType env2;
 
     // get another coordinate system
@@ -1410,7 +1411,7 @@ TEST_CASE("Propagators") {
 
     auto const props2 = Medium2->setModelProperties<ExpoRIndex>(
         2, 2 / 1_m, center2_, radius_, 1_kg / (1_m * 1_m * 1_m),
-        NuclearComposition({Code::Nitrogen}, {1.}));
+        media::NuclearComposition({Code::Nitrogen}, {1.}));
     particle1.setNode(Medium2.get());
 
     env2.getUniverse()->addChild(std::move(Medium2));
@@ -1463,12 +1464,12 @@ TEST_CASE("Propagators") {
 
     // setup a 5-layered environment
     using EnvironmentInterface =
-        media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
-    using EnvType = media::Environment<media::EnvironmentInterface>;
+        IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+    using EnvType = Environment<EnvironmentInterface>;
     EnvType env;
 
-    media::create_5layer_atmosphere<media::EnvironmentInterface, MyExtraEnv>(
-        env, media::AtmosphereId::LinsleyUSStd, center_, n0, media::Medium::AirDry1Atm,
+    create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
+        env, AtmosphereId::LinsleyUSStd, center_, n0, Medium::AirDry1Atm,
         MagneticFieldVector{rootCS, 0_T, 50_uT, 0_T});
 
     // create a particle
@@ -1548,12 +1549,12 @@ TEST_CASE("Propagators") {
 
     // setup a 5-layered environment
     using EnvironmentInterface =
-        media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
-    using EnvType = media::Environment<media::EnvironmentInterface>;
+        IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+    using EnvType = Environment<EnvironmentInterface>;
     EnvType env;
 
-    media::create_5layer_atmosphere<media::EnvironmentInterface, MyExtraEnv2>(
-        env, media::AtmosphereId::LinsleyUSStd, center_, n0, surface_, media::Medium::AirDry1Atm,
+    create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv2>(
+        env, AtmosphereId::LinsleyUSStd, center_, n0, surface_, Medium::AirDry1Atm,
         MagneticFieldVector{rootCS, 0_T, 0_uT, 0_T});
 
     // create a particle

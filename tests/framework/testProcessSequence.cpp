@@ -33,6 +33,7 @@
  */
 
 using namespace corsika;
+using namespace media;
 using namespace std;
 using Catch::Approx;
 
@@ -721,7 +722,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
 
     DummyRNG rng;
     FourMomentum const projectileP4{10_GeV, {rootCS, {0_eV, 0_eV, 0_eV}}};
-    NuclearComposition const noComposition({Code::Nitrogen}, {1});
+    media::NuclearComposition const noComposition({Code::Nitrogen}, {1});
     sequence3.selectInteraction(view, projectileP4, noComposition, rng, cx_select);
     sequence3.selectDecay(view, time_select);
     CHECK(checkInteract == 0b100); // this is Process3
@@ -1097,7 +1098,7 @@ TEST_CASE("SelectInteractionZeroCrossSection", "ProcessSequence") {
   CrossSectionType cx_select =
       sequence.getCrossSection(particle, Code::Nitrogen, projectileP4);
   CHECK(cx_select == 0_mb); // should be zero
-  NuclearComposition const noComposition({Code::Nitrogen}, {1});
+  media::NuclearComposition const noComposition({Code::Nitrogen}, {1});
   DummyRNG rng;
 
   auto retValue =

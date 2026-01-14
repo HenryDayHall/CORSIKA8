@@ -10,7 +10,7 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/media/BaseExponential.hpp>
+#include <corsika/media/density/BaseExponential.hpp>
 #include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/framework/geometry/BaseTrajectory.hpp>
 
@@ -51,10 +51,10 @@ namespace corsika {
 
     private:
       DirectionVector const axis_;
-      NuclearComposition const nuclComp_;
+      media::NuclearComposition const nuclComp_;
     };
 
   } // namespace media
 } // namespace corsika
 
-#include <corsika/detail/media/FlatExponential.inl>
+#include <corsika/detail/media/density_and_composition/FlatExponential.inl>

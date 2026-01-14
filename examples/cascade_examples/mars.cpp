@@ -34,15 +34,15 @@
 #include <corsika/output/OutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/FlatExponential.hpp>
+#include <corsika/media/density_and_composition/FlatExponential.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <corsika/media/interfaces/IMagneticFieldModel.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/media/medium/MediumPropertyModel.hpp>
 #include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/ShowerAxis.hpp>
-#include <corsika/media/SlidingPlanarExponential.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/density_and_composition/SlidingPlanarExponential.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
@@ -74,7 +74,7 @@ using namespace corsika;
 using namespace std;
 
 using EnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
-using EnvType = media::Environment<media::EnvironmentInterface>;
+using EnvType = media::Environment<EnvironmentInterface>;
 using StackType = setup::Stack<EnvType>;
 using TrackingType = setup::Tracking;
 using Particle = StackType::particle_type;
@@ -126,7 +126,7 @@ void registerRandomStreams(int seed) {
 }
 
 template <typename T>
-using MyExtraEnv = MediumPropertyModel<media::UniformMagneticField<T>>;
+using MyExtraEnv = media::MediumPropertyModel<media::UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
@@ -220,7 +220,7 @@ int main(int argc, char** argv) {
   Point const center{rootCS, 0_m, 0_m, 0_m};
   LengthType const radiusMars = 3389.5_km;
   auto builder =
-      make_layered_spherical_atmosphere_builder<media::EnvironmentInterface, MyExtraEnv>::create(
+      media::make_layered_spherical_atmosphere_builder<EnvironmentInterface, MyExtraEnv>::create(
           center,
           radiusMars,                                   // Mars
           media::Medium::AirDry1Atm,                           // Mars, close enough

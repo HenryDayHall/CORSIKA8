@@ -17,8 +17,8 @@
 #include <corsika/media/interfaces/IMagneticFieldModel.hpp>
 #include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/medium/MediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
-#include <corsika/media/UniformRefractiveIndex.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
+#include <corsika/media/refractivity/UniformRefractiveIndex.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -46,8 +46,8 @@ int main() {
   // create a suitable environment
   using IModelInterface =
       media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
-  using AtmModel = UniformRefractiveIndex<
-      MediumPropertyModel<media::UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
+  using AtmModel = media::UniformRefractiveIndex<
+      media::MediumPropertyModel<media::UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
   using EnvType = media::Environment<AtmModel>;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
@@ -57,7 +57,7 @@ int main() {
   // the constant density
   const auto density{19.2_g / cube(1_cm)};
   // the composition we use for the homogeneous medium
-  NuclearComposition const Composition({Code::Nitrogen}, {1.});
+  media::NuclearComposition const Composition({Code::Nitrogen}, {1.});
   // create magnetic field vector
   Vector B1(rootCS, 0_T, 0_T, 0.3809_T);
   // create a Sphere for the medium

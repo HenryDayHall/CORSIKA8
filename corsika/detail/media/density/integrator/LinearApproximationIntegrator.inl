@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <corsika/media/LinearApproximationIntegrator.hpp>
+#include <corsika/media/density/integrator/LinearApproximationIntegrator.hpp>
 
 namespace corsika {
 

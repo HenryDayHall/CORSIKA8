@@ -10,14 +10,15 @@
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/utility/CorsikaData.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
 #include <corsika/media/interfaces/IMagneticFieldModel.hpp>
 #include <corsika/media/magnetic/GeomagneticModel.hpp>
 
 #include <catch2/catch_all.hpp>
 
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
 const std::string refDataDir = std::string(REFDATADIR); // from cmake
@@ -33,10 +34,10 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
 
     // setup our interface types
     using IModelInterface = media::IMagneticFieldModel<media::IMediumModel>;
-    using AtmModel = UniformMagneticField<HomogeneousMedium<IModelInterface>>;
+    using AtmModel = UniformMagneticField<media::HomogeneousMedium<IModelInterface>>;
 
     // the composition we use for the homogenous medium
-    NuclearComposition const protonComposition({Code::Proton}, {1.});
+    media::NuclearComposition const protonComposition({Code::Proton}, {1.});
 
     // create a magnetic field vector
     Vector B0(gCS, 0_T, 0_T, 0_T);

@@ -17,8 +17,8 @@
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/MediumProperties.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/medium/MediumProperties.hpp>
 #include <corsika/media/medium/MediumPropertyModel.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
@@ -168,13 +168,13 @@ int main(int argc, char** argv) {
   {
     Point const center{rootCS, 0_m, 0_m, 0_m};
     auto sphere = std::make_unique<Sphere>(center, 100_m);
-    auto node = std::make_unique<VolumeTreeNode<IMediumType>>(std::move(sphere));
-    NuclearComposition const nuclearComposition{{Code::Hydrogen, Code::Oxygen},
+    auto node = std::make_unique<media::VolumeTreeNode<IMediumType>>(std::move(sphere));
+    media::NuclearComposition const nuclearComposition{{Code::Hydrogen, Code::Oxygen},
                                                 {2.0 / 3.0, 1.0 / 3.0}};
     // density of sea water
     auto density = 1.02_g / (1_cm * 1_cm * 1_cm);
     auto water_medium =
-        std::make_shared<media::MediumPropertyModel<HomogeneousMedium<IMediumType>>>(
+        std::make_shared<media::MediumPropertyModel<media::HomogeneousMedium<IMediumType>>>(
             media::Medium::WaterLiquid, density, nuclearComposition);
     node->setModelProperties(water_medium);
     universe->addChild(std::move(node));

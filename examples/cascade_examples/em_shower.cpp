@@ -29,7 +29,7 @@
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/media/medium/MediumPropertyModel.hpp>
 #include <corsika/media/ShowerAxis.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
 
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
@@ -68,9 +68,9 @@ void registerRandomStreams(int seed) {
 }
 
 using EnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
-using EnvType = media::Environment<media::EnvironmentInterface>;
+using EnvType = media::Environment<EnvironmentInterface>;
 template <typename T>
-using MyExtraEnv = MediumPropertyModel<media::UniformMagneticField<T>>;
+using MyExtraEnv = media::MediumPropertyModel<media::UniformMagneticField<T>>;
 using StackType = setup::Stack<EnvType>;
 using TrackingType = setup::Tracking;
 
@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
 
   // build a Linsley US Standard atmosphere into `env`
   MagneticFieldVector bField{rootCS, 50_uT, 0_T, 0_T};
-  media::create_5layer_atmosphere<media::EnvironmentInterface, MyExtraEnv>(
+  media::create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
       env, media::AtmosphereId::LinsleyUSStd, center, media::Medium::AirDry1Atm, bField);
 
   std::unordered_map<Code, HEPEnergyType> energy_resolution = {

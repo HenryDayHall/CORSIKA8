@@ -7,8 +7,8 @@
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/MediumProperties.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/medium/MediumProperties.hpp>
 #include <corsika/media/medium/MediumPropertyModel.hpp>
 
 using namespace corsika;
@@ -34,17 +34,17 @@ int main() {
   auto sphere = std::make_unique<Sphere>(center, radius);
 
   // create node from geometry object
-  auto node = std::make_unique<VolumeTreeNode<MyMediumInterface>>(std::move(sphere));
+  auto node = std::make_unique<media::VolumeTreeNode<MyMediumInterface>>(std::move(sphere));
 
   // set medium properties to our node, say it is water
-  NuclearComposition const nucl_comp{{Code::Hydrogen, Code::Oxygen}, {0.11, 0.89}};
+  media::NuclearComposition const nucl_comp{{Code::Hydrogen, Code::Oxygen}, {0.11, 0.89}};
   MassDensityType const density = 1_g / (1_cm * 1_cm * 1_cm);
 
   // create concrete implementation of MyMediumInterface by combining parts that
   // implement the corresponding interfaces. HomogeneousMedium implements IMediumModel,
   // MediumPropertyModel implements IMediumPropertyModel.
   auto const medium =
-      std::make_shared<media::MediumPropertyModel<HomogeneousMedium<MyMediumInterface>>>(
+      std::make_shared<media::MediumPropertyModel<media::HomogeneousMedium<MyMediumInterface>>>(
           media::Medium::WaterLiquid, density, nucl_comp);
   node->setModelProperties(medium);
 
@@ -52,7 +52,7 @@ int main() {
   // note: this has to be done after setting node model properties, since
   // std::move will make our previous defined node, which is a unique pointer
   // un-referenceable in the context
-  VolumeTreeNode<MyMediumInterface>* const universe = env.getUniverse().get();
+  media::VolumeTreeNode<MyMediumInterface>* const universe = env.getUniverse().get();
   universe->addChild(std::move(node));
 
   // example to explore the media properties of the node

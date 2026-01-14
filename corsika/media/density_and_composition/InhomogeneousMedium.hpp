@@ -37,11 +37,11 @@ namespace corsika {
                                           GrammageType grammage) const override;
 
     private:
-      NuclearComposition const nuclComp_;
+      media::NuclearComposition const nuclComp_;
       TDensityFunction const densityFunction_;
     };
 
   } // namespace media
 } // namespace corsika
 
-#include <corsika/detail/media/InhomogeneousMedium.inl>
+#include <corsika/detail/media/density_and_composition/InhomogeneousMedium.inl>

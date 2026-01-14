@@ -16,7 +16,7 @@ namespace corsika {
                                   Point const& center, TArgs... args) {
 
       // construct the atmosphere builder
-      auto builder = make_layered_spherical_atmosphere_builder<
+      auto builder = media::make_layered_spherical_atmosphere_builder<
           TEnvironmentInterface, TExtraEnv>::create(center, constants::EarthRadius::Mean,
                                                     std::forward<TArgs>(args)...);
 

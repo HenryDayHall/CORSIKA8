@@ -22,6 +22,7 @@
 #include <corsika/framework/core/Logging.hpp>
 
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
 const auto density = 1_kg / (1_m * 1_m * 1_m);

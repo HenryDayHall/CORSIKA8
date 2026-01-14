@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <corsika/media/IMediumPropertyModel.hpp>
+#include <corsika/media/interfaces/IMediumPropertyModel.hpp>
 
 namespace corsika {
   namespace media {

@@ -9,7 +9,7 @@
 
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/media/LinearApproximationIntegrator.hpp>
+#include <corsika/media/density/integrator/LinearApproximationIntegrator.hpp>
 
 namespace corsika {
   namespace media {

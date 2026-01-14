@@ -14,7 +14,7 @@
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/IMediumModel.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 
 #include <catch2/catch_all.hpp>
@@ -26,6 +26,7 @@
 #include <SetupTestEnvironment.hpp>
 
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
 template <typename TStackView>
@@ -55,15 +56,15 @@ auto setupEnvironment() {
   using DummyEnvironmentInterface =
       media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
   using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
-  using MyHomogeneousModel = MediumPropertyModel<
-      UniformMagneticField<HomogeneousMedium<DummyEnvironmentInterface>>>;
+  using MyHomogeneousModel = media::MediumPropertyModel<
+      UniformMagneticField<media::HomogeneousMedium<DummyEnvironmentInterface>>>;
   RNGManager<>::getInstance().registerRandomStream("fluka");
   DummyEnvironment env;
   auto& universe = *env.getUniverse();
   CoordinateSystemPtr const& cs = env.getCoordinateSystem();
   universe.setModelProperties<MyHomogeneousModel>(
       media::Medium::AirDry1Atm, Vector(cs, 0_T, 0_T, 0_T), 1_kg / (1_m * 1_m * 1_m),
-      NuclearComposition{
+      media::NuclearComposition{
           std::vector<Code>{Code::Hydrogen, Code::Oxygen, Code::Nitrogen, Code::Argon},
           std::vector<double>{.25, .25, .25, .25}});
 

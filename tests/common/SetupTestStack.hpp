@@ -12,7 +12,7 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
 
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
 #include <corsika/media/medium/MediumPropertyModel.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <tests/common/SetupStack.hpp>

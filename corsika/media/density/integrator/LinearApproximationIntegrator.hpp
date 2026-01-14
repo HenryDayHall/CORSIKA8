@@ -72,4 +72,4 @@ namespace corsika {
   } // namespace media
 } // namespace corsika
 
-#include <corsika/detail/media/LinearApproximationIntegrator.inl>
+#include <corsika/detail/media/density/integrator/LinearApproximationIntegrator.inl>

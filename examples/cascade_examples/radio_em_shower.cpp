@@ -31,8 +31,8 @@
 #include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/medium/MediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
-#include <corsika/media/UniformRefractiveIndex.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
+#include <corsika/media/refractivity/UniformRefractiveIndex.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
 
 #include <corsika/modules/LongitudinalProfile.hpp>
@@ -89,10 +89,10 @@ void registerRandomStreams(int seed) {
 
 using EnvironmentInterface =
     media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
-using EnvType = media::Environment<media::EnvironmentInterface>;
+using EnvType = media::Environment<EnvironmentInterface>;
 template <typename TInterface>
 using MyExtraEnv =
-    UniformRefractiveIndex<media::MediumPropertyModel<media::UniformMagneticField<TInterface>>>;
+    media::UniformRefractiveIndex<media::MediumPropertyModel<media::UniformMagneticField<TInterface>>>;
 using StackType = setup::Stack<EnvType>;
 using TrackingType = setup::Tracking;
 
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
 
   double const refractive_index = 1.000327;
   MagneticFieldVector const bField{rootCS, 50_uT, 0_T, 0_T};
-  media::create_5layer_atmosphere<media::EnvironmentInterface, MyExtraEnv>(
+  media::create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
       env, media::AtmosphereId::LinsleyUSStd, center, refractive_index, media::Medium::AirDry1Atm,
       bField);
 

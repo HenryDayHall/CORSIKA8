@@ -52,10 +52,10 @@ namespace corsika {
                                           GrammageType const grammage) const override;
 
     private:
-      NuclearComposition const nuclComp_;
+      media::NuclearComposition const nuclComp_;
     };
 
   } // namespace media
 } // namespace corsika
 
-#include <corsika/detail/media/SlidingPlanarExponential.inl>
+#include <corsika/detail/media/density_and_composition/SlidingPlanarExponential.inl>

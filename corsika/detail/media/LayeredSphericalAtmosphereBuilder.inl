@@ -9,10 +9,10 @@
 
 #include <corsika/framework/core/Logging.hpp>
 
-#include <corsika/media/FlatExponential.hpp>
+#include <corsika/media/density_and_composition/FlatExponential.hpp>
 #include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
-#include <corsika/media/SlidingPlanarExponential.hpp>
-#include <corsika/media/SlidingPlanarTabular.hpp>
+#include <corsika/media/density_and_composition/SlidingPlanarExponential.hpp>
+#include <corsika/media/density_and_composition/SlidingPlanarTabular.hpp>
 
 namespace corsika {
   namespace media {
@@ -50,7 +50,7 @@ namespace corsika {
       checkRadius(radius);
       previousRadius_ = radius;
 
-      auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
+      auto node = std::make_unique<media::VolumeTreeNode<TMediumInterface>>(
           std::make_unique<Sphere>(center_, radius));
 
       auto const rho0 = b / scaleHeight;
@@ -86,7 +86,7 @@ namespace corsika {
       checkRadius(radius);
       previousRadius_ = radius;
 
-      auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
+      auto node = std::make_unique<media::VolumeTreeNode<TMediumInterface>>(
           std::make_unique<Sphere>(center_, radius));
 
       auto const rho0 = b / scaleHeight;
@@ -94,7 +94,7 @@ namespace corsika {
       if constexpr (detail::has_extra_models<TMediumModelExtra>::value) {
         // helper lambda in which the last 2 arguments to make_shared<...> are bound
         auto lastBound = [&](auto... argPack) {
-          return std::make_shared<TMediumModelExtra<HomogeneousMedium<TMediumInterface>>>(
+          return std::make_shared<TMediumModelExtra<media::HomogeneousMedium<TMediumInterface>>>(
               argPack..., rho0, *composition_);
         };
 
@@ -102,7 +102,7 @@ namespace corsika {
         auto model = std::apply(lastBound, additionalModelArgs_);
         node->setModelProperties(std::move(model));
       } else {
-        node->template setModelProperties<HomogeneousMedium<TMediumInterface>>(
+        node->template setModelProperties<media::HomogeneousMedium<TMediumInterface>>(
             rho0, *composition_);
       }
 
@@ -121,7 +121,7 @@ namespace corsika {
       checkRadius(radius);
       previousRadius_ = radius;
 
-      auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
+      auto node = std::make_unique<media::VolumeTreeNode<TMediumInterface>>(
           std::make_unique<Sphere>(center_, radius));
 
       if constexpr (detail::has_extra_models<TMediumModelExtra>::value) {

@@ -403,9 +403,10 @@ def inc_start():
 
 #pragma once
 namespace corsika {
-  /** @ingroup MediaProperties 
-      @{ 
-     */ 
+    namespace media {
+        /** @ingroup MediaProperties 
+        @{ 
+        */ 
 """
     return string
 
@@ -431,6 +432,7 @@ def detail_end():
 # 
 def inc_end():
     string = """
+    \n} // end namespace media
 \n} // end namespace corsika
 // since this was automatic code, we didn't attempt to generate automatic unit testing, too: LCOV_EXCL_STOP
 """

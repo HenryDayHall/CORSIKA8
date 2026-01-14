@@ -32,6 +32,7 @@
 #include <catch2/catch_all.hpp>
 
 using namespace corsika;
+using namespace corsika::media;
 
 #include <limits>
 using namespace std;
@@ -56,7 +57,7 @@ auto make_dummy_env() {
       Point{env.getCoordinateSystem(), 0_m, 0_m, 0_m},
       1_km * std::numeric_limits<double>::infinity());
 
-  NuclearComposition const composition({Code::Proton}, {1.});
+  media::NuclearComposition const composition({Code::Proton}, {1.});
   world->setModelProperties<TestEnvironmentInterface>(19.2_g / cube(1_cm), composition);
 
   universe.addChild(std::move(world));
