@@ -8,6 +8,7 @@
 #pragma once
 
 #include <corsika/media/interfaces/IRefractiveIndexModel.hpp>
+#include <corsika/media/geometry_transformer/planar.hpp>
 
 namespace corsika {
   namespace media {
@@ -19,7 +20,7 @@ namespace corsika {
      * for all evaluated locations.
      *
      */
-    template <typename T>
+    template <typename T, class TGeometry = PlanarTransformer>
     class ExponentialRefractiveIndex : public T {
 
       double n0_;                ///< n0 constant.

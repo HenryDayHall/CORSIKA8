@@ -12,19 +12,19 @@
 namespace corsika {
   namespace media {
 
-    template <typename T>
-    template <typename... Args>
-    ExponentialRefractiveIndex<T>::ExponentialRefractiveIndex(
+    template <typename T, typename TGeometry>
+    template <typename... TArgs>
+    ExponentialRefractiveIndex<T, TGeometry>::ExponentialRefractiveIndex(
         double const n0, InverseLengthType const lambda, Point const center,
-        LengthType const radius, Args&&... args)
-        : T(std::forward<Args>(args)...)
+        LengthType const radius, TArgs&&... args)
+        : T(std::forward<TArgs>(args)...)
         , n0_(n0)
         , lambda_(lambda)
         , center_(center)
         , radius_(radius) {}
 
-    template <typename T>
-    inline double ExponentialRefractiveIndex<T>::getRefractiveIndex(
+    template <typename T, typename TGeometry>
+    inline double ExponentialRefractiveIndex<T, TGeometry>::getRefractiveIndex(
         Point const& point) const {
       return n0_ * exp((-lambda_) * (distance(point, center_) - radius_));
     }

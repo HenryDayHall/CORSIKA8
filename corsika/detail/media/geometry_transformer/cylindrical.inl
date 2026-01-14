@@ -10,15 +10,20 @@
 namespace corsika {
   namespace media {
 
-    CylindricalTransformer::CylindricalTransformer(LengthType radius) {
+    CylindricalTransformer::CylindricalTransformer(CoordinateSystemPtr const& cs,
+                                                   LengthType radius)
+        : IGeometryTransformer(cs) {
       radius_ = radius;
     }
 
-    LengthType CylindricalTransformer::getEffectiveHeight(
-        const PointType& position) const {
+    LengthType CylindricalTransformer::getEffectiveHeight(Point const& point) const {
 
-      double ref = std::sqrt(pos[0] * pos[0] + pos[1] * pos[1]);
-      Eigen::Vector3d normal = {ref, 0, pos[2] + radius_};
+      double x = point.getX(cs_); // Surface Vector
+      double y = point.getY(cs_); // Surface Vector
+      double z = point.getZ(cs_); // Up down
+
+      double ref = std::sqrt(x * x + y * y);
+      Eigen::Vector3d normal = {ref, 0, z + radius_};
 
       return normal.norm() - radius_;
     }

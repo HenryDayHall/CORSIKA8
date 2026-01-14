@@ -15,13 +15,12 @@
 namespace corsika {
   namespace media {
     class PlanarTransformer : public IGeometryTransformer {
+    private:
     public:
-      PlanarTransformer() = default;
+      PlanarTransformer(CoordinateSystemPtr const& cs);
       ~PlanarTransformer() = default;
 
-      LengthType getEffectiveHeight(const PointType& position) const {
-        return position.z();
-      }
+      LengthType getEffectiveHeight(Point const& position) const;
     };
 
   } // namespace media

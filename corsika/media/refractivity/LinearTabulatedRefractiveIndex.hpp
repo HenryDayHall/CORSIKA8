@@ -9,6 +9,9 @@
 #pragma once
 
 #include <corsika/media/interfaces/IRefractiveIndexModel.hpp>
+#include <corsika/media/interfaces/IGeometryTransformer.hpp>
+#include <corsika/media/geometry_transformer/planar.hpp>
+#include <filesystem>
 
 namespace corsika {
   namespace media {
@@ -19,24 +22,27 @@ namespace corsika {
      * for all evaluated locations.
      *
      */
-    template <typename T, typename geometry_transform>
+    template <typename T, typename TGeometry = PlanarTransformer>
     class LinearTabulatedRefractiveIndex : public T {
 
-      std::string tabulated_amosphere_;
+      std::filesystem::path tabulated_amosphere_;
 
-      struct RefractiveIndexData {
-        double height;
+      struct table_row_data {
+        double altitude;
+        double density;
+        double grammage;
         double refractive_index;
       };
 
       std::array<double, 120000> refractive_index_profile_;
 
-      CoordinateSystemPtr local_cs;
+      const TGeometry& transformer_;
 
     protected:
-      std::vector<RefractiveIndexData> parse_file(
-          std::string_view const& tabulated_amosphere_path);
-      void interpolate(std::vector<RefractiveIndexData> const& refractive_index_data);
+      std::vector<typename LinearTabulatedRefractiveIndex<T, TGeometry>::table_row_data>
+      parse_file(std::string_view const& tabulated_amosphere_path);
+      void interpolate(std::vector<typename LinearTabulatedRefractiveIndex<
+                           T, TGeometry>::table_row_data> const& refractive_index_data);
 
     public:
       /**
@@ -49,8 +55,8 @@ namespace corsika {
        * @param field    The refractive index to return to a given point.
        */
       template <typename... Args>
-      LinearTabulatedRefractiveIndex(std::string const& tabulated_amosphere_path,
-                                     LengthType const radius, Args&&... args);
+      LinearTabulatedRefractiveIndex(std::filesystem::path const& tabulated_amosphere_path,
+                                     TGeometry const&, Args&&... args);
 
       /**
        * Evaluate the refractive index at a given location using its z-coordinate.

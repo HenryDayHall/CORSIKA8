@@ -12,8 +12,10 @@ namespace corsika {
 
     SphericalTransformer::SphericalTransformer(LengthType radius) { radius_ = radius; }
 
-    LengthType SphericalTransformer::getEffectiveHeight(const PointType& position) const {
-      return (pos + Eigen::Vector3d(0., 0., radius_)).norm() - radius_;
+    LengthType SphericalTransformer::getEffectiveHeight(Point const&) const {
+      distance(point, center_).magnitude() -
+             radius_; // If from surface a simple position.z() would work and be much
+                      // faster;
     }
 
   } // namespace media

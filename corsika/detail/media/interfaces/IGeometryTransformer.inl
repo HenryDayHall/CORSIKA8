@@ -10,12 +10,8 @@
 namespace corsika {
   namespace media {
 
-    inline PlanarTransformer::PlanarTransformer(CoordinateSystemPtr const& cs)
-        : IGeometryTransformer(cs) {}
-
-    inline LengthType PlanarTransformer::getEffectiveHeight(Point const& point) const {
-      return point.getZ(cs_);
-    }
+    inline IGeometryTransformer::IGeometryTransformer(CoordinateSystemPtr const& cs)
+        : cs_(cs) {}
 
   } // namespace media
 } // namespace corsika
