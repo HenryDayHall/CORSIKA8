@@ -19,7 +19,7 @@ namespace corsika {
 
     class IGeometryTransformer {
     protected:
-      CoordinateSystemPtr const& cs_;
+      CoordinateSystemPtr const cs_;
 
     public:
       IGeometryTransformer(CoordinateSystemPtr const& cs);

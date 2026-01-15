@@ -1,9 +1,8 @@
 /*
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
- * This software is distributed under the terms of the GNU General Public
- * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
- * the license.
+ * This software is distributed under the terms of the 3-clause BSD license.
+ * See file LICENSE for a full version of the license.
  */
 
 #pragma once
@@ -36,7 +35,7 @@ namespace corsika {
 
       std::array<double, 120000> refractive_index_profile_;
 
-      const TGeometry& transformer_;
+      const TGeometry transformer_;
 
     protected:
       std::vector<typename LinearTabulatedRefractiveIndex<T, TGeometry>::table_row_data>
@@ -55,8 +54,9 @@ namespace corsika {
        * @param field    The refractive index to return to a given point.
        */
       template <typename... Args>
-      LinearTabulatedRefractiveIndex(std::filesystem::path const& tabulated_amosphere_path,
-                                     TGeometry const&, Args&&... args);
+      LinearTabulatedRefractiveIndex(
+          std::filesystem::path const& tabulated_amosphere_path, TGeometry const&,
+          Args&&... args);
 
       /**
        * Evaluate the refractive index at a given location using its z-coordinate.

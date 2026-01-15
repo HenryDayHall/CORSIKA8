@@ -1,9 +1,8 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2026 CORSIKA Project, corsika-project@lists.kit.edu
  *
- * This software is distributed under the terms of the GNU General Public
- * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
- * the license.
+ * This software is distributed under the terms of the 3-clause BSD license.
+ * See file LICENSE for a full version of the license.
  */
 
 #pragma once
@@ -26,22 +25,28 @@ namespace corsika {
     template <typename T, typename TGeometry>
     template <typename... Args>
     LinearTabulatedRefractiveIndex<T, TGeometry>::LinearTabulatedRefractiveIndex(
-        std::filesystem::path const& tabulated_amosphere_path, TGeometry const& transformer,
-        Args&&... args)
+        std::filesystem::path const& tabulated_amosphere_path,
+        TGeometry const& transformer, Args&&... args)
         : T(std::forward<Args>(args)...)
         , tabulated_amosphere_(tabulated_amosphere_path)
         , transformer_(transformer) {
 
       // Interpolate between the tabulated points in higher precision
+      auto file_data = this->parse_file(tabulated_amosphere_.string());
+      this->interpolate(file_data);
     }
 
     template <typename T, typename TGeometry>
-    std::vector<typename LinearTabulatedRefractiveIndex<T, TGeometry>::table_row_data> LinearTabulatedRefractiveIndex<T, TGeometry>::parse_file(
+    std::vector<typename LinearTabulatedRefractiveIndex<T, TGeometry>::table_row_data>
+    LinearTabulatedRefractiveIndex<T, TGeometry>::parse_file(
         std::string_view const& tabulated_amosphere_path) {
       // CSV read from file
-      std::ifstream file(tabulated_amosphere_path);
+      std::ifstream file(tabulated_amosphere_path.data());
 
-      if (!file) { throw std::runtime_error("Failed to open file: " + std::string(tabulated_amosphere_path)); }
+      if (!file) {
+        throw std::runtime_error("Failed to open file: " +
+                                 std::string(tabulated_amosphere_path));
+      }
 
       std::string line;
       std::vector<table_row_data> refractive_index_data;
@@ -72,11 +77,15 @@ namespace corsika {
                                    std::to_string(lineNumber));
         }
 
+        row.altitude = row.altitude * 1000.0; // convert km to m
+        row.refractive_index =
+            row.refractive_index + 1.0; // refractive index is already in correct units
         refractive_index_data.push_back(row);
       }
 
       if (refractive_index_data.size() < 2) {
-        throw std::runtime_error("Less than two rows found in: " + tabulated_amosphere_.string());
+        throw std::runtime_error("Less than two rows found in: " +
+                                 tabulated_amosphere_.string());
       }
 
       std::sort(refractive_index_data.begin(), refractive_index_data.end(),
@@ -89,7 +98,9 @@ namespace corsika {
 
     template <typename T, typename TGeometry>
     void LinearTabulatedRefractiveIndex<T, TGeometry>::interpolate(
-        std::vector<typename LinearTabulatedRefractiveIndex<T, TGeometry>::table_row_data> const& refractive_index_data) {
+        std::vector<
+            typename LinearTabulatedRefractiveIndex<T, TGeometry>::table_row_data> const&
+            refractive_index_data) {
 
       if (refractive_index_data[0].altitude > refractive_index_data[1].altitude) {
         std::cerr << "Error in tabulated atmosphere file: heights are not sorted in "
@@ -100,7 +111,7 @@ namespace corsika {
             "in ascending order"));
       }
 
-      for (int j = 1; j < refractive_index_data.size(); j++) {
+      for (unsigned int j = 1; j < refractive_index_data.size(); j++) {
 
         double data_height1 = refractive_index_data[j - 1].altitude;
         double data_height2 = refractive_index_data[j].altitude;
@@ -110,8 +121,8 @@ namespace corsika {
         double data_refractive_index2 =
             std::log(refractive_index_data[j].refractive_index);
 
-        for (int interpol_height = 0; interpol_height < refractive_index_profile_.size();
-             interpol_height++) {
+        for (unsigned int interpol_height = 0;
+             interpol_height < refractive_index_profile_.size(); interpol_height++) {
 
           if (interpol_height >= data_height2) { break; }
 
@@ -135,10 +146,13 @@ namespace corsika {
         throw(std::runtime_error(
             "LinearTabulatedRefractiveIndex: point is inside the earth"));
       }
-      if (altitude > 120'000) { return 1.0; }
+      if (altitude >= 120'000) { return 1.0; }
 
-      int lower = std::floor(altitude / 1.0);
-      int upper = std::ceil(altitude / 1.0);
+      int lower = std::floor(altitude);
+      int upper = std::ceil(altitude);
+      int max_index = refractive_index_profile_.size() - 1;
+      lower = std::max(0, std::min(max_index, lower));
+      upper = std::max(0, std::min(max_index, upper));
       double lower_index = refractive_index_profile_[lower];
       double upper_index = refractive_index_profile_[upper];
       double fraction = altitude - lower;

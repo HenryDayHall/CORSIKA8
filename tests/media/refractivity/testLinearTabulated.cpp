@@ -53,40 +53,31 @@ TEST_CASE("Linear Tabulated Refractive Index Profile") {
   // the composition we use for the homogenous medium
   media::NuclearComposition const protonComposition({Code::Proton}, {1.});
 
-  // a new refractive index
-  const double n0{1};
-  const InverseLengthType lambda{6 / 1_m};
-
   // the center of the earth
   Point const center_{gCS, 0_m, 0_m, 0_m};
   // earth's radius
-  LengthType const radius_{constants::EarthRadius::Mean};
 
   // create the atmospheric model and check refractive index
-  const auto transformer =
-      PlanarTransformer(make_translation(gCS, {0_m, 0_m, radius_})); //, center_, radius_);
+  const auto transformer = PlanarTransformer(
+      make_translation(gCS, {0_m, 0_m, constants::EarthRadius::Mean})); //, center_, radius_);
   AtmModel medium(corsika_data("CHERENKOV/atmosphere/atmprof1.dat").string(), transformer,
                   density, protonComposition);
 
-  CHECK(n0 - medium.getRefractiveIndex(
-                 Point(gCS, 0_m, 0_m, constants::EarthRadius::Mean)) ==
-        Approx(0));
+  CHECK(medium.getRefractiveIndex(Point(gCS, 0_m, 0_m, constants::EarthRadius::Mean)) ==
+        Approx(1.0 + 0.27072E-03));
 
   // another refractive index test with the same file
-  const double n0_{1};
-  const InverseLengthType lambda_{1 / 1_km};
-
-  // distance from the center
-  LengthType const dist_{4_km};
 
   // create the atmospheric model with a different transformer and check refractive index
   auto transformer2 =
-      PlanarTransformer(make_translation(gCS, {0_m, 0_m, radius_}));
-  AtmModel medium_(corsika_data("CHERENKOV/atmosphere/atmprof1.dat").string(), transformer2,
-                  density, protonComposition);
+      PlanarTransformer(make_translation(gCS, {0_m, 0_m, constants::EarthRadius::Mean}));
+  AtmModel medium_(corsika_data("CHERENKOV/atmosphere/atmprof1.dat").string(),
+                   transformer2, density, protonComposition);
 
-  // Note: the refractive index depends on altitude from the file, not on the custom parameters
-  CHECK(medium_.getRefractiveIndex(Point(gCS, 4_km, 3_km, 0_km)) == Approx(0.3678794412));
+  // Note: the refractive index depends on altitude from the file, not on the custom
+  // parameters
+  CHECK(medium_.getRefractiveIndex(
+            Point(gCS, 0_m, 0_m, constants::EarthRadius::Mean + 120_km)) == Approx(1));
 
   // define axis vector
   Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
