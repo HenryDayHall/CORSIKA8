@@ -33,7 +33,9 @@ namespace corsika {
         double refractive_index;
       };
 
-      std::array<double, 120000> refractive_index_profile_;
+      double max_height_;
+
+      std::vector<double> refractive_index_profile_;
 
       const TGeometry transformer_;
 
@@ -42,6 +44,9 @@ namespace corsika {
       parse_file(std::string_view const& tabulated_amosphere_path);
       void interpolate(std::vector<typename LinearTabulatedRefractiveIndex<
                            T, TGeometry>::table_row_data> const& refractive_index_data);
+
+      double log_interpolate_between(double heigh1, double value1, double height2,
+                                     double value2, double query_height) const;
 
     public:
       /**

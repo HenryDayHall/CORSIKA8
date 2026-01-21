@@ -79,10 +79,12 @@ namespace corsika {
 
         row.altitude = row.altitude * 1000.0; // convert km to m
         row.refractive_index =
-            row.refractive_index + 1.0; // refractive index is already in correct units
+            row.refractive_index; // refractive index is already in correct units
+
         refractive_index_data.push_back(row);
       }
 
+      // Check if we have at least two data points
       if (refractive_index_data.size() < 2) {
         throw std::runtime_error("Less than two rows found in: " +
                                  tabulated_amosphere_.string());
@@ -92,6 +94,24 @@ namespace corsika {
                 [](table_row_data const& a, table_row_data const& b) {
                   return a.altitude < b.altitude;
                 });
+
+      // Check for duplicate altitudes
+      for (size_t i = 1; i < refractive_index_data.size(); ++i) {
+        if (refractive_index_data[i].altitude == refractive_index_data[i - 1].altitude) {
+          throw std::runtime_error("Duplicate altitude at line " + std::to_string(i) +
+                                   " in file: " + tabulated_amosphere_.string());
+        }
+      }
+
+      // Check if first entry starts at 0 m
+      if (refractive_index_data.front().altitude > 0) {
+        CORSIKA_LOG_WARN(
+            "First altitude in tabulated atmosphere is greater than 0 m. "
+            "Filling lower altitudes with first entry's refractive index.");
+      }
+
+      // Initialize max_height_
+      max_height_ = refractive_index_data.back().altitude;
 
       return refractive_index_data;
     }
@@ -103,39 +123,67 @@ namespace corsika {
             refractive_index_data) {
 
       if (refractive_index_data[0].altitude > refractive_index_data[1].altitude) {
-        std::cerr << "Error in tabulated atmosphere file: heights are not sorted in "
-                     "ascending order"
-                  << std::endl;
+        logging::error(
+            "Error in tabulated atmosphere file: heights are not sorted in ascending "
+            "order");
+
         throw(std::runtime_error(
             "Error in tabulated atmosphere file: heights are not sorted "
             "in ascending order"));
       }
 
-      for (unsigned int j = 1; j < refractive_index_data.size(); j++) {
+      auto data1 = refractive_index_data[0];
+      auto data2 = refractive_index_data[1];
+      int data_idx = 2;
 
-        double data_height1 = refractive_index_data[j - 1].altitude;
-        double data_height2 = refractive_index_data[j].altitude;
+      refractive_index_profile_.resize(static_cast<size_t>(this->max_height_ + 0.5f));
 
-        double data_refractive_index1 =
-            std::log(refractive_index_data[j - 1].refractive_index);
-        double data_refractive_index2 =
-            std::log(refractive_index_data[j].refractive_index);
+      for (unsigned int interpol_height = 0;
+           interpol_height < static_cast<size_t>(this->max_height_ + 0.5f);
+           interpol_height++) {
 
-        for (unsigned int interpol_height = 0;
-             interpol_height < refractive_index_profile_.size(); interpol_height++) {
+          if (interpol_height > data2.altitude) {
+            if (data_idx < refractive_index_data.size()) { // Load new data points if possible 
+              data1 = data2;
+              data2 = refractive_index_data[data_idx];
+              data_idx++;
+            } 
+            else  // No new data points available, use last known refractive index
+            {
+              refractive_index_profile_[interpol_height] = data2.refractive_index;
+              continue;
+            }
+          } 
 
-          if (interpol_height >= data_height2) { break; }
-
-          double height_diff = data_height2 - data_height1;
-          double refractive_index_diff = data_refractive_index2 - data_refractive_index1;
-
-          double fraction =
-              (static_cast<double>(interpol_height) - data_height1) / height_diff;
-
-          refractive_index_profile_[interpol_height] =
-              std::exp(data_refractive_index1 + fraction * refractive_index_diff);
+        if (interpol_height < data1.altitude) { // Before first data point, fill with first value
+          refractive_index_profile_[interpol_height] = data1.refractive_index;
+          continue;
         }
+        
+        // Default case: interpolate between data1 and data2
+
+        double interpolated_value = this->log_interpolate_between(
+            data1.altitude, data1.refractive_index, data2.altitude,
+            data2.refractive_index, static_cast<double>(interpol_height));
+
+        refractive_index_profile_[interpol_height] = 1.0 + interpolated_value;
       }
+    }
+
+    template <typename T, typename TGeometry>
+    inline double LinearTabulatedRefractiveIndex<T, TGeometry>::log_interpolate_between(
+        double heigh1, double value1, double height2, double value2,
+        double query_height) const {
+
+      double log_value1 = std::log(value1);
+      double log_value2 = std::log(value2);
+
+      double height_diff = height2 - heigh1;
+      double log_value_diff = log_value2 - log_value1;
+
+      double fraction = (query_height - heigh1) / height_diff;
+
+      return std::exp(log_value1 + fraction * log_value_diff);
     }
 
     template <typename T, typename TGeometry>
@@ -146,7 +194,7 @@ namespace corsika {
         throw(std::runtime_error(
             "LinearTabulatedRefractiveIndex: point is inside the earth"));
       }
-      if (altitude >= 120'000) { return 1.0; }
+      if (altitude > this->max_height_) { return this->refractive_index_profile_.back(); }
 
       int lower = std::floor(altitude);
       int upper = std::ceil(altitude);
