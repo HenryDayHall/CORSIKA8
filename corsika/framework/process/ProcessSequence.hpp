@@ -33,7 +33,9 @@
 namespace corsika {
 
   class COMBoost;           // fwd-decl
-  class media::NuclearComposition; // fwd-decl
+  namespace media {
+    class NuclearComposition; // fwd-decl
+  }
 
   /**
    * count_processes traits specialization to increase process count by
