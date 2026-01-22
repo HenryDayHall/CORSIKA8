@@ -70,8 +70,8 @@ namespace corsika {
         if (logArg > -1) {
           return lambda_ / uDotA * log1p(logArg);
         } else {
-          return std::numeric_limits<
-                     typename decltype(grammage)::value_type>::infinity() *
+          return std::numeric_limits<typename decltype(
+                     grammage)::value_type>::infinity() *
                  meter;
         }
       }

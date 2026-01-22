@@ -42,8 +42,8 @@ namespace corsika {
        * @param  point    The location to evaluate the field at (not used internally).
        * @returns    The magnetic field vector.
        */
-      MagneticFieldVector getMagneticField(
-          [[maybe_unused]] Point const& point) const final override {
+      MagneticFieldVector getMagneticField([
+          [maybe_unused]] Point const& point) const final override {
         return B_;
       }
 
