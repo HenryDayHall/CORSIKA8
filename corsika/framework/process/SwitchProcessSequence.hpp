@@ -154,8 +154,8 @@ namespace corsika {
     template <typename TSecondaryView, typename TRNG>
     ProcessReturn selectInteraction(TSecondaryView& view,
                                     FourMomentum const& projectileP4,
-                                    NuclearComposition const& composition, TRNG& rng,
-                                    CrossSectionType const cx_select,
+                                    media::NuclearComposition const& composition,
+                                    TRNG& rng, CrossSectionType const cx_select,
                                     CrossSectionType cx_sum = CrossSectionType::zero());
 
     template <typename TParticle>

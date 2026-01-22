@@ -36,15 +36,15 @@
 
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/GeomagneticModel.hpp>
-#include <corsika/media/GladstoneDaleRefractiveIndex.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/IMagneticFieldModel.hpp>
+#include <corsika/media/magnetic/GeomagneticModel.hpp>
+#include <corsika/media/refractivity/GladstoneDaleRefractiveIndex.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMagneticFieldModel.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/ShowerAxis.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/Epos.hpp>
@@ -96,9 +96,9 @@
 using namespace corsika;
 using namespace std;
 
-using EnvironmentInterface =
-    IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-using EnvType = Environment<EnvironmentInterface>;
+using EnvironmentInterface = media::IRefractiveIndexModel<
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+using EnvType = media::Environment<EnvironmentInterface>;
 using StackType = setup::Stack<EnvType>;
 using TrackingType = setup::Tracking;
 using Particle = StackType::particle_type;
@@ -138,8 +138,8 @@ long registerRandomStreams(long seed) {
 }
 
 template <typename T>
-using MyExtraEnv =
-    GladstoneDaleRefractiveIndex<MediumPropertyModel<UniformMagneticField<T>>>;
+using MyExtraEnv = media::GladstoneDaleRefractiveIndex<
+    media::MediumPropertyModel<media::UniformMagneticField<T>>>;
 
 int main(int argc, char** argv) {
 
@@ -347,13 +347,13 @@ int main(int argc, char** argv) {
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
   Point const surface_{rootCS, 0_m, 0_m, constants::EarthRadius::Mean};
-  GeomagneticModel wmm(center, corsika_data("GeoMag/WMM.COF"));
+  media::GeomagneticModel wmm(center, corsika_data("GeoMag/WMM.COF"));
 
   // build an atmosphere with Keilhauer's parametrization of the
   // US standard atmosphere into `env`
-  create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-      env, AtmosphereId::USStdBK, center, 1.000327, surface_, Medium::AirDry1Atm,
-      MagneticFieldVector{rootCS, 50_uT, 0_T, 0_T});
+  media::create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
+      env, media::AtmosphereId::USStdBK, center, 1.000327, surface_,
+      media::Medium::AirDry1Atm, MagneticFieldVector{rootCS, 50_uT, 0_T, 0_T});
 
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
@@ -424,7 +424,8 @@ int main(int argc, char** argv) {
 
   // we make the axis much longer than the inj-core distance since the
   // profile will go beyond the core, depending on zenith angle
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2,
+                                     env};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
   /* === END: CONSTRUCT GEOMETRY === */
 
@@ -444,7 +445,7 @@ int main(int argc, char** argv) {
       (track_charm ? corsika::setup::C7trackedParticlesAndCharm
                    : corsika::setup::C7trackedParticles);
 
-  auto const all_elements = corsika::get_all_elements_in_universe(env);
+  auto const all_elements = corsika::media::get_all_elements_in_universe(env);
   // have SIBYLL always for PROPOSAL photo-hadronic interactions
   auto sibyll =
       std::make_shared<corsika::sibyll::Interaction>(all_elements, trackedParticles);

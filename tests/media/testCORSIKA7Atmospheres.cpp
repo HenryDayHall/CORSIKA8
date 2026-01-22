@@ -23,12 +23,14 @@ TEST_CASE("CORSIKA7Atmospheres") {
   CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
   Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 
-  Environment<IMediumModel> env;
+  media::Environment<media::IMediumModel> env;
 
   // build a Linsley US Standard atmosphere into `env`
-  create_5layer_atmosphere<IMediumModel>(env, AtmosphereId::LinsleyUSStd, gOrigin);
+  media::create_5layer_atmosphere<media::IMediumModel>(
+      env, media::AtmosphereId::LinsleyUSStd, gOrigin);
 
-  typedef typename Environment<IMediumModel>::BaseNodeType::VTN_type node_type;
+  typedef
+      typename media::Environment<media::IMediumModel>::BaseNodeType::VTN_type node_type;
   node_type const* universe = env.getUniverse().get();
 
   Point const p(gCS, {constants::EarthRadius::Mean, 0_m, 0_m});

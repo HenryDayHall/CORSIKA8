@@ -271,7 +271,8 @@ namespace corsika {
       TCondition, TSequence, USequence, IndexStart, IndexProcess1,
       IndexProcess2>::selectInteraction(TSecondaryView& view,
                                         FourMomentum const& projectileP4,
-                                        NuclearComposition const& composition, TRNG& rng,
+                                        media::NuclearComposition const& composition,
+                                        TRNG& rng,
                                         [[maybe_unused]] CrossSectionType const cx_select,
                                         [[maybe_unused]] CrossSectionType cx_sum) {
 

@@ -20,14 +20,14 @@
 namespace corsika {
 
   template <typename TOutput>
-  inline ProductionWriter<TOutput>::ProductionWriter(ShowerAxis const& axis,
+  inline ProductionWriter<TOutput>::ProductionWriter(media::ShowerAxis const& axis,
                                                      GrammageType dX)
       : ProductionWriter<TOutput>{
             axis, static_cast<unsigned int>(axis.getMaximumX() / dX) + 1, dX} {}
 
   template <typename TOutput>
-  inline ProductionWriter<TOutput>::ProductionWriter(ShowerAxis const& axis, size_t nbins,
-                                                     GrammageType dX)
+  inline ProductionWriter<TOutput>::ProductionWriter(media::ShowerAxis const& axis,
+                                                     size_t nbins, GrammageType dX)
       : TOutput(production_profile::ProjectileIndexNames)
       , showerAxis_(axis)
       , dX_(dX)

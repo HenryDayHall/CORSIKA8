@@ -32,8 +32,10 @@
 
 namespace corsika {
 
-  class COMBoost;           // fwd-decl
-  class NuclearComposition; // fwd-decl
+  class COMBoost; // fwd-decl
+  namespace media {
+    class NuclearComposition; // fwd-decl
+  }
 
   /**
    * count_processes traits specialization to increase process count by
@@ -308,7 +310,7 @@ namespace corsika {
     template <typename TSecondaryView, typename TRNG>
     inline ProcessReturn selectInteraction(
         TSecondaryView&& view, FourMomentum const& projectileP4,
-        NuclearComposition const& composition, TRNG&& rng,
+        media::NuclearComposition const& composition, TRNG&& rng,
         CrossSectionType const cx_select,
         CrossSectionType cx_sum = CrossSectionType::zero());
 

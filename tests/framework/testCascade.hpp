@@ -8,16 +8,17 @@
 #pragma once
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 
 #include <corsika/framework/stack/CombinedStack.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/stack/GeometryNodeStackExtension.hpp>
 #include <corsika/stack/VectorStack.hpp>
 
-using TestEnvironmentInterface = corsika::HomogeneousMedium<corsika::IMediumModel>;
-using TestEnvironmentType = corsika::Environment<TestEnvironmentInterface>;
+using TestEnvironmentInterface =
+    corsika::media::HomogeneousMedium<corsika::media::IMediumModel>;
+using TestEnvironmentType = corsika::media::Environment<TestEnvironmentInterface>;
 
 template <typename T>
 using SetupGeometryDataInterface =

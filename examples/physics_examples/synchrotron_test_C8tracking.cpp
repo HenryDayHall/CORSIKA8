@@ -17,12 +17,12 @@
 #include <corsika/output/OutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/IMagneticFieldModel.hpp>
-#include <corsika/media/NuclearComposition.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
-#include <corsika/media/UniformRefractiveIndex.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMagneticFieldModel.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
+#include <corsika/media/refractivity/UniformRefractiveIndex.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -70,26 +70,26 @@ int main() {
   OutputManager output("synchrotron_radiation_C8tracking-output");
 
   // set up the environment
-  using EnvironmentInterface =
-      IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-  using EnvType = Environment<EnvironmentInterface>;
+  using EnvironmentInterface = media::IRefractiveIndexModel<
+      media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+  using EnvType = media::Environment<EnvironmentInterface>;
   EnvType env;
   auto& universe = *(env.getUniverse());
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 
   auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
 
-  using MyHomogeneousModel = UniformRefractiveIndex<
-      MediumPropertyModel<UniformMagneticField<HomogeneousMedium<EnvironmentInterface>>>>;
+  using MyHomogeneousModel = media::UniformRefractiveIndex<media::MediumPropertyModel<
+      media::UniformMagneticField<media::HomogeneousMedium<EnvironmentInterface>>>>;
 
   auto const Bmag{0.0003809_T};
   MagneticFieldVector B{rootCS, 0_T, 0_T, Bmag};
 
   // the composition we use for the homogeneous medium
-  NuclearComposition const nitrogenComposition({Code::Nitrogen}, {1.});
+  media::NuclearComposition const nitrogenComposition({Code::Nitrogen}, {1.});
 
   world->setModelProperties<MyHomogeneousModel>(
-      1, Medium::AirDry1Atm, B, 1_kg / (1_m * 1_m * 1_m), nitrogenComposition);
+      1, media::Medium::AirDry1Atm, B, 1_kg / (1_m * 1_m * 1_m), nitrogenComposition);
 
   universe.addChild(std::move(world));
 

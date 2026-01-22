@@ -10,7 +10,7 @@
 #include <corsika/modules/HadronicElasticModel.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/random/ExponentialDistribution.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>

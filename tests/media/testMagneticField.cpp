@@ -9,15 +9,16 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/utility/CorsikaData.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
-#include <corsika/media/IMagneticFieldModel.hpp>
-#include <corsika/media/GeomagneticModel.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
+#include <corsika/media/interfaces/IMagneticFieldModel.hpp>
+#include <corsika/media/magnetic/GeomagneticModel.hpp>
 
 #include <catch2/catch_all.hpp>
 
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
 const std::string refDataDir = std::string(REFDATADIR); // from cmake
@@ -32,11 +33,11 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   SECTION("UniformMagneticField interface") {
 
     // setup our interface types
-    using IModelInterface = IMagneticFieldModel<IMediumModel>;
-    using AtmModel = UniformMagneticField<HomogeneousMedium<IModelInterface>>;
+    using IModelInterface = media::IMagneticFieldModel<media::IMediumModel>;
+    using AtmModel = UniformMagneticField<media::HomogeneousMedium<IModelInterface>>;
 
     // the composition we use for the homogenous medium
-    NuclearComposition const protonComposition({Code::Proton}, {1.});
+    media::NuclearComposition const protonComposition({Code::Proton}, {1.});
 
     // create a magnetic field vector
     Vector B0(gCS, 0_T, 0_T, 0_T);
@@ -80,7 +81,7 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
     CHECK_THROWS(GeomagneticModel(gOrigin, refDataDir + "/EmptyGeomagneticData.COF"));
 
     {
-      GeomagneticModel wmm(gOrigin, corsika_data("GeoMag/WMM.COF"));
+      media::GeomagneticModel wmm(gOrigin, corsika_data("GeoMag/WMM.COF"));
 
       // create earth magnetic field vector
       MagneticFieldVector WMM_B_1 = wmm.getField(2022.5, 100_km, -80, -120);
@@ -102,7 +103,7 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
     }
 
     {
-      GeomagneticModel igrf(gOrigin, corsika_data("GeoMag/IGRF13.COF"));
+      media::GeomagneticModel igrf(gOrigin, corsika_data("GeoMag/IGRF13.COF"));
 
       // create earth magnetic field vector
       MagneticFieldVector IGRF_B_1 = igrf.getField(2022.5, 100_km, -80, -120);

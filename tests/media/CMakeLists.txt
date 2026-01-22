@@ -4,7 +4,10 @@ set (test_media_sources
   testEnvironment.cpp
   testShowerAxis.cpp
   testMedium.cpp
-  testRefractiveIndex.cpp
+  refractivity/testExponential.cpp
+  refractivity/testGladstoneDale.cpp
+  refractivity/testLinearTabulated.cpp
+  refractivity/testUniform.cpp
   testMagneticField.cpp
   testCORSIKA7Atmospheres.cpp
   )

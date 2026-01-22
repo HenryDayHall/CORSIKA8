@@ -9,8 +9,8 @@
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
 
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
@@ -34,13 +34,14 @@
 using namespace corsika;
 using Catch::Approx;
 
-using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+using DummyEnvironmentInterface =
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
 const std::string refDataDir = std::string(REFDATADIR); // from cmake
 
 template <typename T>
-using MExtraEnvirnoment = MediumPropertyModel<UniformMagneticField<T>>;
+using MExtraEnvirnoment = media::MediumPropertyModel<media::UniformMagneticField<T>>;
 
 struct DummyStack {};
 
@@ -61,10 +62,10 @@ TEST_CASE("CONEX") {
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
 
-  auto builder = make_layered_spherical_atmosphere_builder<
+  auto builder = media::make_layered_spherical_atmosphere_builder<
       DummyEnvironmentInterface, MExtraEnvirnoment>::create(center,
                                                             corsika::conex::earthRadius,
-                                                            Medium::AirDry1Atm,
+                                                            media::Medium::AirDry1Atm,
                                                             Vector{rootCS, 0_T, 50_mT,
                                                                    0_T});
 
@@ -93,7 +94,8 @@ TEST_CASE("CONEX") {
   Point const injectionPos =
       showerCore + DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env};
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02,
+                                     env};
 
   inisibyll_();
 

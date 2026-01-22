@@ -13,12 +13,12 @@
 #include <corsika/output/OutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/IMagneticFieldModel.hpp>
-#include <corsika/media/NuclearComposition.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
-#include <corsika/media/UniformRefractiveIndex.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMagneticFieldModel.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
+#include <corsika/media/refractivity/UniformRefractiveIndex.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -44,11 +44,11 @@ using namespace std;
 int main() {
 
   // create a suitable environment
-  using IModelInterface =
-      IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-  using AtmModel = UniformRefractiveIndex<
-      MediumPropertyModel<UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
-  using EnvType = Environment<AtmModel>;
+  using IModelInterface = media::IRefractiveIndexModel<
+      media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+  using AtmModel = media::UniformRefractiveIndex<media::MediumPropertyModel<
+      media::UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+  using EnvType = media::Environment<AtmModel>;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
@@ -57,15 +57,15 @@ int main() {
   // the constant density
   const auto density{19.2_g / cube(1_cm)};
   // the composition we use for the homogeneous medium
-  NuclearComposition const Composition({Code::Nitrogen}, {1.});
+  media::NuclearComposition const Composition({Code::Nitrogen}, {1.});
   // create magnetic field vector
   Vector B1(rootCS, 0_T, 0_T, 0.3809_T);
   // create a Sphere for the medium
   auto Medium =
       EnvType::createNode<Sphere>(center, 1_km * std::numeric_limits<double>::infinity());
   // set the environment properties
-  auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1,
-                                                          density, Composition);
+  auto const props = Medium->setModelProperties<AtmModel>(ri_, media::Medium::AirDry1Atm,
+                                                          B1, density, Composition);
   // bind things together
   env.getUniverse()->addChild(std::move(Medium));
   auto const& node_ = env.getUniverse()->getChildNodes().front();

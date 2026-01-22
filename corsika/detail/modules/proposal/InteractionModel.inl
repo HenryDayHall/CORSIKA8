@@ -5,8 +5,8 @@
  * See file LICENSE for a full version of the license.
  */
 
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
@@ -179,7 +179,7 @@ namespace corsika::proposal {
     //
     // determine the volume where the particle is (last) known to be
     auto const* currentLogicalNode = projectile.getNode();
-    NuclearComposition const& composition =
+    media::NuclearComposition const& composition =
         currentLogicalNode->getModelProperties().getNuclearComposition();
     auto const meanMass = composition.getAverageMassNumber() * constants::u;
     // ==============================================

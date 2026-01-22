@@ -16,10 +16,10 @@
 #include <corsika/framework/process/SwitchProcessSequence.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/MediumProperties.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/medium/MediumProperties.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
@@ -50,8 +50,8 @@
 
 using namespace corsika;
 
-using IMediumType = IMediumPropertyModel<IMediumModel>;
-using EnvType = Environment<IMediumType>;
+using IMediumType = media::IMediumPropertyModel<media::IMediumModel>;
+using EnvType = media::Environment<IMediumType>;
 using StackType = setup::Stack<EnvType>;
 using TrackingType = tracking_line::Tracking;
 using Particle = StackType::particle_type;
@@ -168,14 +168,14 @@ int main(int argc, char** argv) {
   {
     Point const center{rootCS, 0_m, 0_m, 0_m};
     auto sphere = std::make_unique<Sphere>(center, 100_m);
-    auto node = std::make_unique<VolumeTreeNode<IMediumType>>(std::move(sphere));
-    NuclearComposition const nuclearComposition{{Code::Hydrogen, Code::Oxygen},
-                                                {2.0 / 3.0, 1.0 / 3.0}};
+    auto node = std::make_unique<media::VolumeTreeNode<IMediumType>>(std::move(sphere));
+    media::NuclearComposition const nuclearComposition{{Code::Hydrogen, Code::Oxygen},
+                                                       {2.0 / 3.0, 1.0 / 3.0}};
     // density of sea water
     auto density = 1.02_g / (1_cm * 1_cm * 1_cm);
-    auto water_medium =
-        std::make_shared<MediumPropertyModel<HomogeneousMedium<IMediumType>>>(
-            Medium::WaterLiquid, density, nuclearComposition);
+    auto water_medium = std::make_shared<
+        media::MediumPropertyModel<media::HomogeneousMedium<IMediumType>>>(
+        media::Medium::WaterLiquid, density, nuclearComposition);
     node->setModelProperties(water_medium);
     universe->addChild(std::move(node));
   }
@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
       Plane{Point{injectCS, {0_m, 0_m, -50_m}}, upVec}, leftVec, true);
 
   // * longitutional profile
-  ShowerAxis const showerAxis{injectionPos, 1.2 * injectorLength * downVec, env};
+  media::ShowerAxis const showerAxis{injectionPos, 1.2 * injectorLength * downVec, env};
   auto const dX = 1_g / square(1_cm); // Binning of the writers along the shower axis
   LongitudinalWriter longiWriter{showerAxis, dX};
   LongitudinalProfile<SubWriter<decltype(longiWriter)>> longprof{longiWriter};
@@ -224,10 +224,10 @@ int main(int argc, char** argv) {
 
   // hadronic interactions
   HEPEnergyType heHadronModelThreshold = std::pow(10, 1.9) * 1_GeV;
-  corsika::sibyll::Interaction sibyll(corsika::get_all_elements_in_universe(env),
+  corsika::sibyll::Interaction sibyll(corsika::media::get_all_elements_in_universe(env),
                                       corsika::setup::C7trackedParticles);
 
-  auto const all_elements = corsika::get_all_elements_in_universe(env);
+  auto const all_elements = corsika::media::get_all_elements_in_universe(env);
   corsika::fluka::Interaction leIntModel{all_elements};
   InteractionCounter leIntCounted{leIntModel};
   struct EnergySwitch {

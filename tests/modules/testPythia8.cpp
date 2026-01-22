@@ -20,8 +20,9 @@
 using namespace corsika;
 using Catch::Approx;
 
-using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+using DummyEnvironmentInterface =
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
 TEST_CASE("Pythia8", "modules") {
 
@@ -82,8 +83,8 @@ TEST_CASE("Pythia8", "modules") {
 #include <corsika/setup/SetupTrajectory.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 
 using namespace corsika;
 

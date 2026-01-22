@@ -5,11 +5,11 @@
  * See file LICENSE for a full version of the license.
  */
 
-#include <corsika/media/DensityFunction.hpp>
-#include <corsika/media/FlatExponential.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/density/DensityFunction.hpp>
+#include <corsika/media/density_and_composition/FlatExponential.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
 #include <corsika/framework/geometry/Line.hpp>
@@ -22,20 +22,21 @@
 
 // using namespace
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
 const auto density = 1_kg / (1_m * 1_m * 1_m);
 
 auto setupEnvironmentHomogenous(Code vTargetCode) {
   // setup environment, geometry
-  auto env = std::make_unique<Environment<IMediumModel>>();
+  auto env = std::make_unique<media::Environment<media::IMediumModel>>();
   auto& universe = *(env->getUniverse());
   const CoordinateSystemPtr& cs = env->getCoordinateSystem();
 
-  auto theMedium = Environment<IMediumModel>::createNode<Sphere>(
+  auto theMedium = media::Environment<media::IMediumModel>::createNode<Sphere>(
       Point{cs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
+  using MyHomogeneousModel = HomogeneousMedium<media::IMediumModel>;
   theMedium->setModelProperties<MyHomogeneousModel>(
       density, NuclearComposition({vTargetCode}, {1.}));
 
@@ -60,9 +61,9 @@ TEST_CASE("Homogeneous Density") {
   Point const showerCore{cs, 0_m, 0_m, observationHeight};
   Point const injectionPos = showerCore + Vector<dimensionless_d>{cs, {0, 0, 1}} * t;
 
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
-                              true, // -> throw exceptions
-                              20};  // -> number of bins
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
+                                     true, // -> throw exceptions
+                                     20};  // -> number of bins
 
   CHECK(showerAxis.getSteplength() == 500_m);
 
@@ -83,9 +84,10 @@ TEST_CASE("Homogeneous Density") {
   CHECK_THROWS(showerAxis.getX(-1_m));
   CHECK_THROWS(showerAxis.getX((injectionPos - showerCore).getNorm() + 1_m));
 
-  ShowerAxis const showerAxisNoThrow{injectionPos, (showerCore - injectionPos), *env,
-                                     false, // -> do not throw exceptions
-                                     20};   // -> number of bins
+  media::ShowerAxis const showerAxisNoThrow{injectionPos, (showerCore - injectionPos),
+                                            *env,
+                                            false, // -> do not throw exceptions
+                                            20};   // -> number of bins
   CHECK(showerAxisNoThrow.getX(-1_m) == showerAxis.getMinimumX());
   CHECK(showerAxisNoThrow.getX((injectionPos - showerCore).getNorm() + 1_m) ==
         showerAxis.getMaximumX());
@@ -93,18 +95,18 @@ TEST_CASE("Homogeneous Density") {
 
 auto setupEnvironmentExponential() {
   // setup environment, geometry
-  auto env = std::make_unique<Environment<IMediumModel>>();
+  auto env = std::make_unique<media::Environment<media::IMediumModel>>();
   auto& universe = *(env->getUniverse());
   const CoordinateSystemPtr& cs = env->getCoordinateSystem();
 
-  auto theMedium = Environment<IMediumModel>::createNode<Sphere>(
+  auto theMedium = media::Environment<media::IMediumModel>::createNode<Sphere>(
       Point{cs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
   auto const point = Point{cs, 0_m, 0_m, 0_m};
   auto const axis = DirectionVector{cs, {0, 0, 1}};
   auto const lambda = 2_m;
 
-  using MyExponentialModel = FlatExponential<IMediumModel>;
+  using MyExponentialModel = FlatExponential<media::IMediumModel>;
   theMedium->setModelProperties<MyExponentialModel>(
       point, axis, density, lambda, NuclearComposition({Code::Nitrogen}, {1.}));
 
@@ -122,9 +124,9 @@ TEST_CASE("Exponential Density") {
 
   auto const totalLength = 5 * abs(lambda);
   auto const end = start + axis * totalLength;
-  ShowerAxis const showerAxis{start, end, *env,
-                              true, // -> throw exceptions
-                              50};  // -> number of bins
+  media::ShowerAxis const showerAxis{start, end, *env,
+                                     true, // -> throw exceptions
+                                     50};  // -> number of bins
 
   CHECK(showerAxis.getSteplength() == totalLength / 50.0);
   CHECK(showerAxis.getMinimumX() == 0_g / square(1_m));
@@ -140,20 +142,20 @@ TEST_CASE("Exponential Density") {
 auto setupEnvironmentHardBoundary(Code vTargetCode) {
 
   // setup environment, geometry
-  auto env = std::make_unique<Environment<IMediumModel>>();
+  auto env = std::make_unique<media::Environment<media::IMediumModel>>();
   auto& universe = *(env->getUniverse());
   const CoordinateSystemPtr& cs = env->getCoordinateSystem();
 
-  auto theMedium = Environment<IMediumModel>::createNode<Sphere>(
+  auto theMedium = media::Environment<media::IMediumModel>::createNode<Sphere>(
       Point{cs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
+  using MyHomogeneousModel = HomogeneousMedium<media::IMediumModel>;
   theMedium->setModelProperties<MyHomogeneousModel>(
       density, NuclearComposition({vTargetCode}, {1.}));
 
-  auto notDenseMedium =
-      Environment<IMediumModel>::createNode<Sphere>(Point{cs, 0_m, 0_m, 0_m}, 1_m);
-  using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
+  auto notDenseMedium = media::Environment<media::IMediumModel>::createNode<Sphere>(
+      Point{cs, 0_m, 0_m, 0_m}, 1_m);
+  using MyHomogeneousModel = HomogeneousMedium<media::IMediumModel>;
   notDenseMedium->setModelProperties<MyHomogeneousModel>(
       density * 1e-9, NuclearComposition({vTargetCode}, {1.}));
 
@@ -169,9 +171,9 @@ TEST_CASE("Hard Boundary") {
 
   Point const start(cs, 0_m, 0_m, 0_m);
   Point const end(cs, 0_m, 0_m, 2_m);
-  ShowerAxis const showerAxis{start, end, *env,
-                              true, // -> throw exceptions
-                              50};  // -> number of bins
+  media::ShowerAxis const showerAxis{start, end, *env,
+                                     true, // -> throw exceptions
+                                     50};  // -> number of bins
 
   auto const units = 1_kg / square(1_m);
   // Integrate out to the hard boundary to confirm not-dense region's existance

@@ -8,20 +8,21 @@
 #pragma once
 
 namespace corsika {
+  namespace media {
 
-  namespace detail {
+    namespace detail {
 
-    struct NoExtraModelInner {};
+      struct NoExtraModelInner {};
 
-    template <typename M>
-    struct NoExtraModel {};
+      template <typename M>
+      struct NoExtraModel {};
 
-    template <template <typename> typename M>
-    struct has_extra_models : std::true_type {};
+      template <template <typename> typename M>
+      struct has_extra_models : std::true_type {};
 
-    template <>
-    struct has_extra_models<NoExtraModel> : std::false_type {};
+      template <>
+      struct has_extra_models<NoExtraModel> : std::false_type {};
 
-  } // namespace detail
-
+    } // namespace detail
+  }   // namespace media
 } // namespace corsika

@@ -13,120 +13,122 @@
 #include <string>
 
 namespace corsika {
+  namespace media {
 
-  template <typename TEnvModel>
-  inline ShowerAxis::ShowerAxis(Point const& pStart, Point const& pEnd,
-                                Environment<TEnvModel> const& env, bool const doThrow,
-                                int const steps)
-      : ShowerAxis(pStart, pEnd - pStart, env, doThrow, steps) {}
+    template <typename TEnvModel>
+    inline ShowerAxis::ShowerAxis(Point const& pStart, Point const& pEnd,
+                                  media::Environment<TEnvModel> const& env,
+                                  bool const doThrow, int const steps)
+        : ShowerAxis(pStart, pEnd - pStart, env, doThrow, steps) {}
 
-  template <typename TEnvModel>
-  inline ShowerAxis::ShowerAxis(Point const& pStart, Vector<length_d> const& length,
-                                Environment<TEnvModel> const& env, bool const doThrow,
-                                int const steps)
-      : pointStart_(pStart)
-      , length_(length)
-      , throw_(doThrow)
-      , max_length_(length_.getNorm())
-      , steplength_(max_length_ / steps)
-      , axis_normalized_(length / max_length_)
-      , X_(steps + 1) {
+    template <typename TEnvModel>
+    inline ShowerAxis::ShowerAxis(Point const& pStart, Vector<length_d> const& length,
+                                  media::Environment<TEnvModel> const& env,
+                                  bool const doThrow, int const steps)
+        : pointStart_(pStart)
+        , length_(length)
+        , throw_(doThrow)
+        , max_length_(length_.getNorm())
+        , steplength_(max_length_ / steps)
+        , axis_normalized_(length / max_length_)
+        , X_(steps + 1) {
 
-    auto const* const universe = env.getUniverse().get();
+      auto const* const universe = env.getUniverse().get();
 
-    // lambda to get the density at a fractional distance, x, along axis
-    auto rho = [&](double x) {
-      auto const p = pointStart_ + length_ * x;
-      auto const* node = universe->getContainingNode(p);
-      if (!node->hasModelProperties()) {
-        CORSIKA_LOG_CRITICAL(
-            "Unable to construct ShowerAxis. ShowerAxis includes volume "
-            "with no model properties at point {}.",
-            p);
-        throw std::runtime_error("Unable to construct ShowerAxis. Missing properties");
+      // lambda to get the density at a fractional distance, x, along axis
+      auto rho = [&](double x) {
+        auto const p = pointStart_ + length_ * x;
+        auto const* node = universe->getContainingNode(p);
+        if (!node->hasModelProperties()) {
+          CORSIKA_LOG_CRITICAL(
+              "Unable to construct ShowerAxis. media::ShowerAxis includes volume "
+              "with no model properties at point {}.",
+              p);
+          throw std::runtime_error("Unable to construct ShowerAxis. Missing properties");
+        }
+        return node->getModelProperties().getMassDensity(p).magnitude();
+      };
+
+      double error;
+      X_[0] = GrammageType::zero();
+      auto sum = GrammageType::zero();
+
+      for (int i = 1; i <= steps; ++i) {
+        auto const frac_prev = (i - 1.0) / steps;
+        auto const frac = double(i) / steps;
+        auto const r = boost::math::quadrature::gauss_kronrod<double, 15>::integrate(
+            rho, frac_prev, frac, 15, 1e-9, &error);
+        auto const result =
+            MassDensityType(phys::units::detail::magnitude_tag, r) * max_length_;
+        sum += result;
+        X_[i] = sum;
       }
-      return node->getModelProperties().getMassDensity(p).magnitude();
-    };
 
-    double error;
-    X_[0] = GrammageType::zero();
-    auto sum = GrammageType::zero();
-
-    for (int i = 1; i <= steps; ++i) {
-      auto const frac_prev = (i - 1.0) / steps;
-      auto const frac = double(i) / steps;
-      auto const r = boost::math::quadrature::gauss_kronrod<double, 15>::integrate(
-          rho, frac_prev, frac, 15, 1e-9, &error);
-      auto const result =
-          MassDensityType(phys::units::detail::magnitude_tag, r) * max_length_;
-      sum += result;
-      X_[i] = sum;
-    }
-
-    if (!std::is_sorted(X_.cbegin(), X_.cend())) {
-      CORSIKA_LOG_ERROR("Shower axis bins are not sorted");
-      throw std::runtime_error("Bad ShowerAxis construction");
-    }
-  }
-
-  inline GrammageType ShowerAxis::getX(LengthType l) const {
-    double const fractionalBin = l / steplength_;
-    int const lower = std::floor(fractionalBin); // indices of nearest X support points
-    double const fraction = fractionalBin - lower;
-    unsigned int const upper = lower + 1;
-
-    if (fractionalBin < 0) {
-      CORSIKA_LOG_TRACE("cannot extrapolate to points behind point of injection l={} m",
-                        l / 1_m);
-      if (throw_) {
-        throw std::runtime_error(
-            "cannot extrapolate to points behind point of injection");
+      if (!std::is_sorted(X_.cbegin(), X_.cend())) {
+        CORSIKA_LOG_ERROR("Shower axis bins are not sorted");
+        throw std::runtime_error("Bad media::ShowerAxis construction");
       }
-      return getMinimumX();
     }
 
-    if (upper >= X_.size()) {
-      CORSIKA_LOG_TRACE(
-          "shower axis too short, cannot extrapolate (l / max_length_ = {} )",
-          l / max_length_);
-      if (throw_) {
-        const std::string err = fmt::format(
+    inline GrammageType ShowerAxis::getX(LengthType l) const {
+      double const fractionalBin = l / steplength_;
+      int const lower = std::floor(fractionalBin); // indices of nearest X support points
+      double const fraction = fractionalBin - lower;
+      unsigned int const upper = lower + 1;
+
+      if (fractionalBin < 0) {
+        CORSIKA_LOG_TRACE("cannot extrapolate to points behind point of injection l={} m",
+                          l / 1_m);
+        if (throw_) {
+          throw std::runtime_error(
+              "cannot extrapolate to points behind point of injection");
+        }
+        return getMinimumX();
+      }
+
+      if (upper >= X_.size()) {
+        CORSIKA_LOG_TRACE(
             "shower axis too short, cannot extrapolate (l / max_length_ = {} )",
             l / max_length_);
-        throw std::runtime_error(err.c_str());
+        if (throw_) {
+          const std::string err = fmt::format(
+              "shower axis too short, cannot extrapolate (l / max_length_ = {} )",
+              l / max_length_);
+          throw std::runtime_error(err.c_str());
+        }
+        return getMaximumX();
       }
-      return getMaximumX();
+      CORSIKA_LOG_TRACE("showerAxis::X frac={}, fractionalBin={}, lower={}, upper={}",
+                        fraction, fractionalBin, lower, upper);
+
+      if (!(0 <= fraction && fraction <= 1.)) {
+        CORSIKA_LOG_ERROR("Fraction must be 0 <= {} <= 1", fraction);
+        throw std::runtime_error("Fraction out of range");
+      }
+
+      CORSIKA_LOG_TRACE("ShowerAxis::getX l={} m, lower={}, fraction={}, upper={}",
+                        l / 1_m, lower, fraction, upper);
+
+      // linear interpolation between getX[lower] and X[upper]
+      return X_[upper] * fraction + X_[lower] * (1 - fraction);
     }
-    CORSIKA_LOG_TRACE("showerAxis::X frac={}, fractionalBin={}, lower={}, upper={}",
-                      fraction, fractionalBin, lower, upper);
 
-    if (!(0 <= fraction && fraction <= 1.)) {
-      CORSIKA_LOG_ERROR("Fraction must be 0 <= {} <= 1", fraction);
-      throw std::runtime_error("Fraction out of range");
+    inline LengthType ShowerAxis::getSteplength() const { return steplength_; }
+
+    inline GrammageType ShowerAxis::getMaximumX() const { return *X_.rbegin(); }
+
+    inline GrammageType ShowerAxis::getMinimumX() const { return GrammageType::zero(); }
+
+    inline GrammageType ShowerAxis::getProjectedX(Point const& p) const {
+      auto const projectedLength = (p - pointStart_).dot(axis_normalized_);
+      return getX(projectedLength);
     }
 
-    CORSIKA_LOG_TRACE("ShowerAxis::getX l={} m, lower={}, fraction={}, upper={}", l / 1_m,
-                      lower, fraction, upper);
+    inline DirectionVector const& ShowerAxis::getDirection() const {
+      return axis_normalized_;
+    }
 
-    // linear interpolation between getX[lower] and X[upper]
-    return X_[upper] * fraction + X_[lower] * (1 - fraction);
-  }
+    inline Point const& ShowerAxis::getStart() const { return pointStart_; }
 
-  inline LengthType ShowerAxis::getSteplength() const { return steplength_; }
-
-  inline GrammageType ShowerAxis::getMaximumX() const { return *X_.rbegin(); }
-
-  inline GrammageType ShowerAxis::getMinimumX() const { return GrammageType::zero(); }
-
-  inline GrammageType ShowerAxis::getProjectedX(Point const& p) const {
-    auto const projectedLength = (p - pointStart_).dot(axis_normalized_);
-    return getX(projectedLength);
-  }
-
-  inline DirectionVector const& ShowerAxis::getDirection() const {
-    return axis_normalized_;
-  }
-
-  inline Point const& ShowerAxis::getStart() const { return pointStart_; }
-
+  } // namespace media
 } // namespace corsika

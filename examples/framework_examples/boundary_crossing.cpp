@@ -20,10 +20,10 @@
 #include <corsika/setup/SetupTrajectory.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/NuclearComposition.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
 
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/ParticleCut.hpp>
@@ -82,8 +82,9 @@ int main() {
   RNGManager<>::getInstance().registerRandomStream("cascade");
 
   // setup environment, geometry
-  using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-  using EnvType = Environment<EnvironmentInterface>;
+  using EnvironmentInterface =
+      media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+  using EnvType = media::Environment<EnvironmentInterface>;
   EnvType env;
   auto& universe = *(env.getUniverse());
 
@@ -92,12 +93,12 @@ int main() {
   // create "world" as infinite sphere filled with protons
   auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 100_km);
 
-  using MyHomogeneousModel =
-      MediumPropertyModel<UniformMagneticField<HomogeneousMedium<EnvironmentInterface>>>;
+  using MyHomogeneousModel = media::MediumPropertyModel<
+      media::UniformMagneticField<media::HomogeneousMedium<EnvironmentInterface>>>;
 
   auto const props = world->setModelProperties<MyHomogeneousModel>(
-      Medium::AirDry1Atm, Vector(rootCS, 0_T, 0_T, 0_T), 1_kg / (1_m * 1_m * 1_m),
-      NuclearComposition({Code::Proton}, {1.}));
+      media::Medium::AirDry1Atm, Vector(rootCS, 0_T, 0_T, 0_T), 1_kg / (1_m * 1_m * 1_m),
+      media::NuclearComposition({Code::Proton}, {1.}));
 
   // add a "target" sphere with 5km readius at 0,0,0
   auto target = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5_km);

@@ -11,20 +11,20 @@
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/IMagneticFieldModel.hpp>
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/IMediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMagneticFieldModel.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/interfaces/IMediumPropertyModel.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 
 #include <limits>
 
 namespace corsika {
 
   using DummyEnvironmentInterface =
-      IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-  using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+      media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+  using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
   namespace setup::testing {
 
@@ -52,12 +52,14 @@ namespace corsika {
       /**
        * construct suited environment medium model:
        */
-      using MyHomogeneousModel = MediumPropertyModel<
-          UniformMagneticField<HomogeneousMedium<DummyEnvironmentInterface>>>;
+      using MyHomogeneousModel = media::MediumPropertyModel<media::UniformMagneticField<
+          media::HomogeneousMedium<DummyEnvironmentInterface>>>;
 
       world->setModelProperties<MyHomogeneousModel>(
-          Medium::AirDry1Atm, Vector(cs, 0_T, 0_T, BfieldZ), 1_kg / (1_m * 1_m * 1_m),
-          NuclearComposition(std::vector<Code>{vTargetCode}, std::vector<double>{1.}));
+          media::Medium::AirDry1Atm, Vector(cs, 0_T, 0_T, BfieldZ),
+          1_kg / (1_m * 1_m * 1_m),
+          media::NuclearComposition(std::vector<Code>{vTargetCode},
+                                    std::vector<double>{1.}));
 
       DummyEnvironment::BaseNodeType* nodePtr = world.get();
       universe.addChild(std::move(world));

@@ -20,13 +20,13 @@
 namespace corsika {
 
   template <typename TOutput>
-  inline LongitudinalWriter<TOutput>::LongitudinalWriter(ShowerAxis const& axis,
+  inline LongitudinalWriter<TOutput>::LongitudinalWriter(media::ShowerAxis const& axis,
                                                          GrammageType dX)
       : LongitudinalWriter<TOutput>{
             axis, static_cast<unsigned int>(axis.getMaximumX() / dX) + 1, dX} {}
 
   template <typename TOutput>
-  inline LongitudinalWriter<TOutput>::LongitudinalWriter(ShowerAxis const& axis,
+  inline LongitudinalWriter<TOutput>::LongitudinalWriter(media::ShowerAxis const& axis,
                                                          size_t nbins, GrammageType dX)
       : TOutput(number_profile::ProfileIndexNames)
       , showerAxis_(axis)

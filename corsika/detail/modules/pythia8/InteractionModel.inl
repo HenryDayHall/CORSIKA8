@@ -22,7 +22,7 @@
 #include <corsika/framework/utility/CrossSectionTable.hpp>
 #include <corsika/framework/core/EnergyMomentumOperations.hpp>
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 
 namespace corsika::pythia8 {
 

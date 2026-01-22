@@ -21,8 +21,9 @@ using namespace corsika;
 using namespace corsika::epos;
 using Catch::Approx;
 
-using DummyEnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-using DummyEnvironment = Environment<DummyEnvironmentInterface>;
+using DummyEnvironmentInterface =
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
 TEST_CASE("EposBasics", "module,process") {
 
@@ -83,9 +84,9 @@ TEST_CASE("EposBasics", "module,process") {
 #include <SetupTestStack.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/NuclearComposition.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
 
 template <typename TStackView>
 auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {

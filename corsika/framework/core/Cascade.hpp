@@ -71,7 +71,7 @@ namespace corsika {
     Cascade(Cascade&&) = default;
     ~Cascade() = default;
     Cascade& operator=(Cascade const&) = default;
-    Cascade(Environment<medium_interface_type> const& env, TTracking& tr,
+    Cascade(media::Environment<medium_interface_type> const& env, TTracking& tr,
             TProcessList& pl, TOutput& out, TStack& stack);
     //! @}
 
@@ -118,12 +118,12 @@ namespace corsika {
 
     ProcessReturn decay(stack_view_type& view, InverseTimeType initial_inv_decay_time);
     ProcessReturn interaction(stack_view_type& view, FourMomentum const& projectileP4,
-                              NuclearComposition const& composition,
+                              media::NuclearComposition const& composition,
                               CrossSectionType const initial_cross_section);
     void setEventType(stack_view_type& view, history::EventType);
 
     // data members
-    Environment<medium_interface_type> const& environment_;
+    media::Environment<medium_interface_type> const& environment_;
     TTracking& tracking_;
     TProcessList& sequence_;
     TOutput& output_;

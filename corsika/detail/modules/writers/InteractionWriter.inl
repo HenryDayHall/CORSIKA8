@@ -13,7 +13,7 @@ namespace corsika {
 
   template <typename TTracking, typename TOutput>
   inline InteractionWriter<TTracking, TOutput>::InteractionWriter(
-      ShowerAxis const& axis, ObservationPlane<TTracking, TOutput> const& obsPlane)
+      media::ShowerAxis const& axis, ObservationPlane<TTracking, TOutput> const& obsPlane)
       : obsPlane_(obsPlane)
       , showerAxis_(axis)
       , interactionCounter_(0)

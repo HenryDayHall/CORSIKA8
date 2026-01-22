@@ -14,9 +14,9 @@
 #include <corsika/stack/history/HistorySecondaryProducer.hpp>
 #include <corsika/stack/history/HistoryStackExtension.hpp>
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/IMagneticFieldModel.hpp>
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/IMediumPropertyModel.hpp>
+#include <corsika/media/interfaces/IMagneticFieldModel.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/interfaces/IMediumPropertyModel.hpp>
 
 namespace corsika {
 

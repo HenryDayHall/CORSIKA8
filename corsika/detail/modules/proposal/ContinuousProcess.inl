@@ -8,7 +8,7 @@
 
 #include <PROPOSAL/PROPOSAL.h>
 
-#include <corsika/media/IMediumModel.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
 #include <corsika/modules/proposal/ContinuousProcess.hpp>
 #include <corsika/modules/proposal/InteractionModel.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>

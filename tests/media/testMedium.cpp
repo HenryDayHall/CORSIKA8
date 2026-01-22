@@ -9,13 +9,13 @@
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
-#include <corsika/media/FlatExponential.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/InhomogeneousMedium.hpp>
-#include <corsika/media/NuclearComposition.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/MediumProperties.hpp>
+#include <corsika/media/density_and_composition/FlatExponential.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/density_and_composition/InhomogeneousMedium.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
+#include <corsika/media/medium/MediumProperties.hpp>
 
 #include <catch2/catch_all.hpp>
 
@@ -23,6 +23,7 @@
 #include <corsika/setup/SetupTrajectory.hpp>
 
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
 TEST_CASE("MediumProperties") {
@@ -52,16 +53,16 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
 
   // setup our interface types
   using IModelInterface = IMediumPropertyModel<IMediumModel>;
-  using AtmModel = MediumPropertyModel<HomogeneousMedium<IModelInterface>>;
+  using AtmModel = media::MediumPropertyModel<media::HomogeneousMedium<IModelInterface>>;
 
   // the constant density
   const auto density{19.2_g / cube(1_cm)};
 
   // the composition we use for the homogenous medium
-  NuclearComposition const protonComposition({Code::Proton}, {1.});
+  media::NuclearComposition const protonComposition({Code::Proton}, {1.});
 
   // the refrative index that we use
-  const Medium type = corsika::Medium::AirDry1Atm;
+  const Medium type = Medium::AirDry1Atm;
 
   // create the atmospheric model
   AtmModel medium(type, density, protonComposition);
@@ -70,7 +71,7 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
   CHECK(type == medium.getMedium());
 
   // a new refractive index
-  const Medium type2 = corsika::Medium::StandardRock;
+  const Medium type2 = Medium::StandardRock;
 
   // update the refractive index of this atmospheric model
   medium.setMedium(type2);

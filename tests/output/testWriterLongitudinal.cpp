@@ -11,7 +11,7 @@
 
 #include <corsika/modules/writers/LongitudinalWriter.hpp>
 
-#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 
 #include <corsika/framework/geometry/StraightTrajectory.hpp>
@@ -25,6 +25,7 @@
 #include <string>
 
 using namespace corsika;
+using namespace corsika::media;
 using Catch::Approx;
 
 const auto density = 1_kg / (1_m * 1_m * 1_m);
@@ -50,7 +51,7 @@ auto setupEnvironment2(Code vTargetCode) {
 
 class TestLongitudinal : public corsika::LongitudinalWriter<> {
 public:
-  TestLongitudinal(corsika::ShowerAxis const& axis)
+  TestLongitudinal(ShowerAxis const& axis)
       : LongitudinalWriter(axis) {}
 };
 
@@ -69,9 +70,9 @@ TEST_CASE("LongitudinalWriter") {
   Point const showerCore{cs, 0_m, 0_m, observationHeight};
   Point const injectionPos = showerCore + DirectionVector{cs, {0, 0, 1}} * t;
 
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
-                              false, // -> throw exceptions
-                              1000}; // -> number of bins
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
+                                     false, // -> throw exceptions
+                                     1000}; // -> number of bins
 
   // preparation
   if (boost::filesystem::exists("./output_dir_long")) {

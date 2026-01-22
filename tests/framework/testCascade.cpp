@@ -21,8 +21,8 @@
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 
 #include <corsika/output/DummyOutputManager.hpp>
 
@@ -32,6 +32,7 @@
 #include <catch2/catch_all.hpp>
 
 using namespace corsika;
+using namespace corsika::media;
 
 #include <limits>
 using namespace std;
@@ -56,7 +57,7 @@ auto make_dummy_env() {
       Point{env.getCoordinateSystem(), 0_m, 0_m, 0_m},
       1_km * std::numeric_limits<double>::infinity());
 
-  NuclearComposition const composition({Code::Proton}, {1.});
+  media::NuclearComposition const composition({Code::Proton}, {1.});
   world->setModelProperties<TestEnvironmentInterface>(19.2_g / cube(1_cm), composition);
 
   universe.addChild(std::move(world));

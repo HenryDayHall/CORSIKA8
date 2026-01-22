@@ -6,10 +6,10 @@
  */
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/IMediumModel.hpp>
-#include <corsika/media/MediumProperties.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMediumModel.hpp>
+#include <corsika/media/medium/MediumProperties.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
 
 using namespace corsika;
 
@@ -19,9 +19,9 @@ using namespace corsika;
 // Here, we construct our base class with IMediumModel and IMediumPropertyModel:
 // the former allow us define a density profile and nuclear composite,
 // the later is used to determine energy losses parameters.
-using MyMediumInterface = IMediumPropertyModel<IMediumModel>;
+using MyMediumInterface = media::IMediumPropertyModel<media::IMediumModel>;
 
-using MyEnvType = Environment<MyMediumInterface>;
+using MyEnvType = media::Environment<MyMediumInterface>;
 
 int main() {
   // create environment and universe, empty so far
@@ -34,25 +34,26 @@ int main() {
   auto sphere = std::make_unique<Sphere>(center, radius);
 
   // create node from geometry object
-  auto node = std::make_unique<VolumeTreeNode<MyMediumInterface>>(std::move(sphere));
+  auto node =
+      std::make_unique<media::VolumeTreeNode<MyMediumInterface>>(std::move(sphere));
 
   // set medium properties to our node, say it is water
-  NuclearComposition const nucl_comp{{Code::Hydrogen, Code::Oxygen}, {0.11, 0.89}};
+  media::NuclearComposition const nucl_comp{{Code::Hydrogen, Code::Oxygen}, {0.11, 0.89}};
   MassDensityType const density = 1_g / (1_cm * 1_cm * 1_cm);
 
   // create concrete implementation of MyMediumInterface by combining parts that
   // implement the corresponding interfaces. HomogeneousMedium implements IMediumModel,
   // MediumPropertyModel implements IMediumPropertyModel.
-  auto const medium =
-      std::make_shared<MediumPropertyModel<HomogeneousMedium<MyMediumInterface>>>(
-          Medium::WaterLiquid, density, nucl_comp);
+  auto const medium = std::make_shared<
+      media::MediumPropertyModel<media::HomogeneousMedium<MyMediumInterface>>>(
+      media::Medium::WaterLiquid, density, nucl_comp);
   node->setModelProperties(medium);
 
   // put our node into universe
   // note: this has to be done after setting node model properties, since
   // std::move will make our previous defined node, which is a unique pointer
   // un-referenceable in the context
-  VolumeTreeNode<MyMediumInterface>* const universe = env.getUniverse().get();
+  media::VolumeTreeNode<MyMediumInterface>* const universe = env.getUniverse().get();
   universe->addChild(std::move(node));
 
   // example to explore the media properties of the node
@@ -61,7 +62,7 @@ int main() {
     MyMediumInterface const& media_prop =
         env.getUniverse()->getContainingNode(ptest)->getModelProperties();
     MassDensityType const rho = media_prop.getMassDensity(ptest);
-    NuclearComposition const& nuc_comp = media_prop.getNuclearComposition();
+    media::NuclearComposition const& nuc_comp = media_prop.getNuclearComposition();
     std::vector<Code> const& nuclei = nuc_comp.getComponents();
     std::vector<double> const& fractions = nuc_comp.getFractions();
     CORSIKA_LOG_INFO(

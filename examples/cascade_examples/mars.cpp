@@ -34,15 +34,15 @@
 #include <corsika/output/OutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/FlatExponential.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/IMagneticFieldModel.hpp>
+#include <corsika/media/density_and_composition/FlatExponential.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMagneticFieldModel.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 #include <corsika/media/ShowerAxis.hpp>
-#include <corsika/media/SlidingPlanarExponential.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/density_and_composition/SlidingPlanarExponential.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
@@ -73,8 +73,9 @@
 using namespace corsika;
 using namespace std;
 
-using EnvironmentInterface = IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>;
-using EnvType = Environment<EnvironmentInterface>;
+using EnvironmentInterface =
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using EnvType = media::Environment<EnvironmentInterface>;
 using StackType = setup::Stack<EnvType>;
 using TrackingType = setup::Tracking;
 using Particle = StackType::particle_type;
@@ -126,7 +127,7 @@ void registerRandomStreams(int seed) {
 }
 
 template <typename T>
-using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
+using MyExtraEnv = media::MediumPropertyModel<media::UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
@@ -220,11 +221,11 @@ int main(int argc, char** argv) {
   Point const center{rootCS, 0_m, 0_m, 0_m};
   LengthType const radiusMars = 3389.5_km;
   auto builder =
-      make_layered_spherical_atmosphere_builder<EnvironmentInterface, MyExtraEnv>::create(
-          center,
-          radiusMars,                                   // Mars
-          Medium::AirDry1Atm,                           // Mars, close enough
-          MagneticFieldVector{rootCS, 0_T, 0_uT, 0_T}); // Mars
+      media::make_layered_spherical_atmosphere_builder<EnvironmentInterface, MyExtraEnv>::
+          create(center,
+                 radiusMars,                                   // Mars
+                 media::Medium::AirDry1Atm,                    // Mars, close enough
+                 MagneticFieldVector{rootCS, 0_T, 0_uT, 0_T}); // Mars
 
   builder.setNuclearComposition(                   // Mars
       {{Code::Carbon, Code::Oxygen,                // 95.97 CO2
@@ -308,7 +309,8 @@ int main(int argc, char** argv) {
   // create the output manager that we then register outputs with
   OutputManager output(app["--filename"]->as<std::string>());
 
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2,
+                                     env};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
 
   EnergyLossWriter dEdX{showerAxis, dX};
@@ -329,7 +331,7 @@ int main(int argc, char** argv) {
   set_energy_production_threshold(Code::TauPlus, std::min({emcut, hadcut}));
 
   /* === START: SETUP PROCESS LIST === */
-  auto const all_elements = corsika::get_all_elements_in_universe(env);
+  auto const all_elements = corsika::media::get_all_elements_in_universe(env);
   corsika::sibyll::Interaction sibyll(all_elements, corsika::setup::C7trackedParticles);
   InteractionCounter sibyllCounted(sibyll);
 

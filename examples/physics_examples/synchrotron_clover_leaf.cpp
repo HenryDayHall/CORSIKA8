@@ -17,12 +17,12 @@
 #include <corsika/output/OutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/IMagneticFieldModel.hpp>
-#include <corsika/media/NuclearComposition.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
-#include <corsika/media/UniformRefractiveIndex.hpp>
+#include <corsika/media/density_and_composition/HomogeneousMedium.hpp>
+#include <corsika/media/interfaces/IMagneticFieldModel.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
+#include <corsika/media/medium/MediumPropertyModel.hpp>
+#include <corsika/media/magnetic/UniformMagneticField.hpp>
+#include <corsika/media/refractivity/UniformRefractiveIndex.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -68,25 +68,25 @@ int main() {
   OutputManager output("clover_leaf_outputs");
 
   // create a suitable environment
-  using IModelInterface =
-      IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-  using AtmModel = UniformRefractiveIndex<
-      MediumPropertyModel<UniformMagneticField<HomogeneousMedium<IModelInterface>>>>;
-  using EnvType = Environment<AtmModel>;
+  using IModelInterface = media::IRefractiveIndexModel<
+      media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+  using AtmModel = media::UniformRefractiveIndex<media::MediumPropertyModel<
+      media::UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+  using EnvType = media::Environment<AtmModel>;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
   // a refractive index for the vacuum
   const double ri_{1.};
   // the composition we use for the homogeneous medium
-  NuclearComposition const Composition({Code::Nitrogen}, {1.});
+  media::NuclearComposition const Composition({Code::Nitrogen}, {1.});
   // create magnetic field vector
   auto const Bmag{0.00005_T};
   MagneticFieldVector B(rootCS, 0_T, Bmag, 0_T);
   // create a Sphere for the medium
   auto world = EnvType::createNode<Sphere>(center, 150_km);
   // set the environment properties
-  world->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B,
+  world->setModelProperties<AtmModel>(ri_, media::Medium::AirDry1Atm, B,
                                       1_kg / (1_m * 1_m * 1_m), Composition);
   // bind things together
   env.getUniverse()->addChild(std::move(world));

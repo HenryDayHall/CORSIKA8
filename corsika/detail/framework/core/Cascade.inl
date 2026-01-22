@@ -23,7 +23,7 @@
 #include <corsika/framework/utility/COMBoost.hpp>
 
 #include <corsika/media/Environment.hpp>
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/composition/NuclearComposition.hpp>
 
 #include <cassert>
 #include <cmath>
@@ -35,8 +35,8 @@ namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   inline Cascade<TTracking, TProcessList, TOutput, TStack>::Cascade(
-      Environment<medium_interface_type> const& env, TTracking& tr, TProcessList& pl,
-      TOutput& out, TStack& stack)
+      media::Environment<medium_interface_type> const& env, TTracking& tr,
+      TProcessList& pl, TOutput& out, TStack& stack)
       : environment_(env)
       , tracking_(tr)
       , sequence_(pl)
@@ -127,7 +127,7 @@ namespace corsika {
             environment_.getUniverse()->hasModelProperties()) &&
            "FATAL: The environment model has no valid properties set!");
 
-    NuclearComposition const& composition =
+    media::NuclearComposition const& composition =
         currentLogicalNode->getModelProperties().getNuclearComposition();
 
     // determine projectile
@@ -383,7 +383,7 @@ namespace corsika {
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   inline ProcessReturn Cascade<TTracking, TProcessList, TOutput, TStack>::interaction(
       stack_view_type& view, FourMomentum const& projectileP4,
-      NuclearComposition const& composition,
+      media::NuclearComposition const& composition,
       CrossSectionType const initial_cross_section) {
 
     CORSIKA_LOG_DEBUG("collide");
