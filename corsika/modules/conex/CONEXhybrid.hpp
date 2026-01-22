@@ -69,9 +69,10 @@ namespace corsika {
      * @param outputE object to initialized SubWriter<TOutputE>
      * @param outputN object to initialized SubWriter<TOutputN>
      */
-    CONEXhybrid(Point const& center, media::ShowerAxis const& showerAxis, LengthType groundDist,
-                LengthType injectionHeight, HEPEnergyType primaryEnergy, PDGCode pdg,
-                TOutputE& outputE, TOutputN& outputN);
+    CONEXhybrid(Point const& center, media::ShowerAxis const& showerAxis,
+                LengthType groundDist, LengthType injectionHeight,
+                HEPEnergyType primaryEnergy, PDGCode pdg, TOutputE& outputE,
+                TOutputN& outputN);
 
     template <typename TStackView>
     void doSecondaries(TStackView&);

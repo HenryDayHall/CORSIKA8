@@ -119,14 +119,14 @@ namespace corsika {
       } /// return significnat figures of weight
       const int& weight_error_last_digit() const {
         return weight_error_last_digit_;
-      } /// return error of weight
+      }                                                    /// return error of weight
       const double& Z_over_A() const { return Z_over_A_; } /// Z_over_A_
       double getSternheimerDensity() const {
         return sternheimer_density_;
       } /// Sternheimer density
       double getCorrectedDensity() const {
         return corrected_density_;
-      } /// corrected density
+      }                                                         /// corrected density
       StateOfMatter getStateOfMatter() const { return state_; } /// state
       MediumType getType() const { return type_; }              /// type
       std::string getSymbol() const { return symbol_; }         /// symbol

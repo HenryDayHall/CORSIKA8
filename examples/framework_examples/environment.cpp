@@ -34,7 +34,8 @@ int main() {
   auto sphere = std::make_unique<Sphere>(center, radius);
 
   // create node from geometry object
-  auto node = std::make_unique<media::VolumeTreeNode<MyMediumInterface>>(std::move(sphere));
+  auto node =
+      std::make_unique<media::VolumeTreeNode<MyMediumInterface>>(std::move(sphere));
 
   // set medium properties to our node, say it is water
   media::NuclearComposition const nucl_comp{{Code::Hydrogen, Code::Oxygen}, {0.11, 0.89}};
@@ -43,9 +44,9 @@ int main() {
   // create concrete implementation of MyMediumInterface by combining parts that
   // implement the corresponding interfaces. HomogeneousMedium implements IMediumModel,
   // MediumPropertyModel implements IMediumPropertyModel.
-  auto const medium =
-      std::make_shared<media::MediumPropertyModel<media::HomogeneousMedium<MyMediumInterface>>>(
-          media::Medium::WaterLiquid, density, nucl_comp);
+  auto const medium = std::make_shared<
+      media::MediumPropertyModel<media::HomogeneousMedium<MyMediumInterface>>>(
+      media::Medium::WaterLiquid, density, nucl_comp);
   node->setModelProperties(medium);
 
   // put our node into universe

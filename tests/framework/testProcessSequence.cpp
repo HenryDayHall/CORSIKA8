@@ -447,20 +447,20 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
 
     CHECK(std::is_reference_v<decltype(sequence2.getProcess1())>);  // Process1&
     CHECK(!std::is_reference_v<decltype(sequence2.getProcess2())>); // ProcessSequence
-    CHECK(std::is_reference_v<decltype(
-              sequence2.getProcess2().getProcess1())>); // Process2&
-    CHECK(std::is_reference_v<decltype(
-              sequence2.getProcess2().getProcess2())>); // Process3&
+    CHECK(std::is_reference_v<
+          decltype(sequence2.getProcess2().getProcess1())>); // Process2&
+    CHECK(std::is_reference_v<
+          decltype(sequence2.getProcess2().getProcess2())>); // Process3&
 
     // and now with rvalue initialization
 
     auto sequence2_rv = make_sequence(Process1(0), m2, Process3(0));
     CHECK(!std::is_reference_v<decltype(sequence2_rv.getProcess1())>); // Process1
     CHECK(!std::is_reference_v<decltype(sequence2_rv.getProcess2())>); // ProcessSequence
-    CHECK(std::is_reference_v<decltype(
-              sequence2_rv.getProcess2().getProcess1())>); // Process2&
-    CHECK(!std::is_reference_v<decltype(
-              sequence2_rv.getProcess2().getProcess2())>); // Process3
+    CHECK(std::is_reference_v<
+          decltype(sequence2_rv.getProcess2().getProcess1())>); // Process2&
+    CHECK(!std::is_reference_v<
+          decltype(sequence2_rv.getProcess2().getProcess2())>); // Process3
   }
 
   SECTION("lifetime") {

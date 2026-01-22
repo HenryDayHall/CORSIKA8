@@ -16,8 +16,8 @@ namespace corsika {
   namespace media {
 
     template <typename T>
-    inline HomogeneousMedium<T>::HomogeneousMedium(MassDensityType density,
-                                                   media::NuclearComposition const& nuclComp)
+    inline HomogeneousMedium<T>::HomogeneousMedium(
+        MassDensityType density, media::NuclearComposition const& nuclComp)
         : density_(density)
         , nuclComp_(nuclComp) {}
 
@@ -27,7 +27,8 @@ namespace corsika {
     }
 
     template <typename T>
-    inline media::NuclearComposition const& HomogeneousMedium<T>::getNuclearComposition() const {
+    inline media::NuclearComposition const& HomogeneousMedium<T>::getNuclearComposition()
+        const {
       return nuclComp_;
     }
 

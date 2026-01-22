@@ -52,12 +52,14 @@ namespace corsika {
       /**
        * construct suited environment medium model:
        */
-      using MyHomogeneousModel = media::MediumPropertyModel<
-          media::UniformMagneticField<media::HomogeneousMedium<DummyEnvironmentInterface>>>;
+      using MyHomogeneousModel = media::MediumPropertyModel<media::UniformMagneticField<
+          media::HomogeneousMedium<DummyEnvironmentInterface>>>;
 
       world->setModelProperties<MyHomogeneousModel>(
-          media::Medium::AirDry1Atm, Vector(cs, 0_T, 0_T, BfieldZ), 1_kg / (1_m * 1_m * 1_m),
-          media::NuclearComposition(std::vector<Code>{vTargetCode}, std::vector<double>{1.}));
+          media::Medium::AirDry1Atm, Vector(cs, 0_T, 0_T, BfieldZ),
+          1_kg / (1_m * 1_m * 1_m),
+          media::NuclearComposition(std::vector<Code>{vTargetCode},
+                                    std::vector<double>{1.}));
 
       DummyEnvironment::BaseNodeType* nodePtr = world.get();
       universe.addChild(std::move(world));

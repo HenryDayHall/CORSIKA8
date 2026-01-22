@@ -32,7 +32,8 @@ using namespace corsika;
 using namespace corsika::urqmd;
 using Catch::Approx;
 
-using DummyEnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using DummyEnvironmentInterface =
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
 using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
 template <typename TStackView>

@@ -29,9 +29,9 @@ namespace corsika {
 
     template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
               typename... TModelArgs>
-    inline void LayeredSphericalAtmosphereBuilder<
-        TMediumInterface, TMediumModelExtra,
-        TModelArgs...>::setNuclearComposition(media::NuclearComposition const& composition) {
+    inline void LayeredSphericalAtmosphereBuilder<TMediumInterface, TMediumModelExtra,
+                                                  TModelArgs...>::
+        setNuclearComposition(media::NuclearComposition const& composition) {
       composition_ = std::make_unique<NuclearComposition>(composition);
     }
 
@@ -94,7 +94,8 @@ namespace corsika {
       if constexpr (detail::has_extra_models<TMediumModelExtra>::value) {
         // helper lambda in which the last 2 arguments to make_shared<...> are bound
         auto lastBound = [&](auto... argPack) {
-          return std::make_shared<TMediumModelExtra<media::HomogeneousMedium<TMediumInterface>>>(
+          return std::make_shared<
+              TMediumModelExtra<media::HomogeneousMedium<TMediumInterface>>>(
               argPack..., rho0, *composition_);
         };
 

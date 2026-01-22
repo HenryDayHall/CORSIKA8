@@ -9,7 +9,7 @@
 
 namespace corsika {
   namespace media {
-    
+
     template <typename TDerived>
     inline SlidingPlanarExponential<TDerived>::SlidingPlanarExponential(
         Point const& p0, MassDensityType const rho0, LengthType const lambda,

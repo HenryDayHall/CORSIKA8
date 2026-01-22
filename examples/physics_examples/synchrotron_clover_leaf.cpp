@@ -68,10 +68,10 @@ int main() {
   OutputManager output("clover_leaf_outputs");
 
   // create a suitable environment
-  using IModelInterface =
-      media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
-  using AtmModel = media::UniformRefractiveIndex<
-      media::MediumPropertyModel<media::UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+  using IModelInterface = media::IRefractiveIndexModel<
+      media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+  using AtmModel = media::UniformRefractiveIndex<media::MediumPropertyModel<
+      media::UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
   using EnvType = media::Environment<AtmModel>;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();

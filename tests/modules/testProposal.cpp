@@ -16,7 +16,8 @@
 using namespace corsika;
 using namespace corsika::proposal;
 
-using DummyEnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using DummyEnvironmentInterface =
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
 using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
 #include <corsika/media/Environment.hpp>

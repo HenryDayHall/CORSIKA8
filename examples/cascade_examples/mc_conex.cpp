@@ -142,7 +142,8 @@ private:
 /**
  * Selection of environment interface implementation:
  */
-using EnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using EnvironmentInterface =
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
 using EnvType = media::Environment<EnvironmentInterface>;
 template <typename T>
 using MyExtraEnv = media::MediumPropertyModel<media::UniformMagneticField<T>>;
@@ -204,8 +205,8 @@ int main(int argc, char** argv) {
       showerCore +
       Vector<dimensionless_d>{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
-  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
-                              false, 1000};
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02,
+                                     env, false, 1000};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
 
   CORSIKA_LOG_INFO("Primary particle:   {}", beamCode);

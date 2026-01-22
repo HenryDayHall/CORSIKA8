@@ -32,7 +32,7 @@
 
 namespace corsika {
 
-  class COMBoost;           // fwd-decl
+  class COMBoost; // fwd-decl
   namespace media {
     class NuclearComposition; // fwd-decl
   }

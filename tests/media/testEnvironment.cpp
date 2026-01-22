@@ -46,12 +46,14 @@ TEST_CASE("VolumeTree") {
   logging::set_level(logging::level::info);
   media::Environment<IEmpty> env;
   auto& universe = *(env.getUniverse());
-  auto world = media::Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 0_m}, 150_km);
+  auto world =
+      media::Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 0_m}, 150_km);
   // volume cut partly by "world"
   auto vol1 =
       media::Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 140_km}, 20_km);
   // partly overlap with "vol1"
-  auto vol2 = media::Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 120_km}, 5_km);
+  auto vol2 =
+      media::Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 120_km}, 5_km);
 
   vol1->excludeOverlapWith(vol2);
   world->addChild(std::move(vol1));
@@ -111,8 +113,10 @@ TEST_CASE("HomogeneousMedium") {
 
   logging::set_level(logging::level::info);
 
-  media::NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
-  HomogeneousMedium<media::IMediumModel> const medium(19.2_g / cube(1_cm), protonComposition);
+  media::NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                                    {1.});
+  HomogeneousMedium<media::IMediumModel> const medium(19.2_g / cube(1_cm),
+                                                      protonComposition);
 
   CHECK_THROWS(NuclearComposition({Code::Proton}, {1.1}));
   CHECK_THROWS(NuclearComposition({Code::Proton}, {0.99}));
@@ -128,7 +132,7 @@ TEST_CASE("FlatExponential") {
   LengthType const lambda = 3_m;
   auto const rho0 = 1_g / cube(1_cm);
   FlatExponential<media::IMediumModel> const medium(gOrigin, axis, rho0, lambda,
-                                             protonComposition);
+                                                    protonComposition);
   SpeedType const speed = 20_m / second;
   LengthType const length = 2_m;
   TimeType const tEnd = length / speed;
@@ -201,14 +205,15 @@ TEST_CASE("SlidingPlanarExponential") {
 
   logging::set_level(logging::level::info);
 
-  media::NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
+  media::NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                                    {1.});
 
   LengthType const lambda = 3_m;
   auto const rho0 = 1_g / static_pow<3>(1_cm);
   auto const tEnd = 5_s;
 
   SlidingPlanarExponential<media::IMediumModel> const medium(gOrigin, rho0, lambda,
-                                                      protonComposition);
+                                                             protonComposition);
 
   SECTION("density") {
     CHECK(medium.getMassDensity({gCS, {0_m, 0_m, 3_m}}) /
@@ -219,7 +224,7 @@ TEST_CASE("SlidingPlanarExponential") {
   SECTION("vertical") {
     Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
     FlatExponential<media::IMediumModel> const flat(gOrigin, axis, rho0, lambda,
-                                             protonComposition);
+                                                    protonComposition);
     Line const line({gCS, {0_m, 0_m, 1_m}},
                     Vector<SpeedType::dimension_type>(
                         gCS, {0_m / second, 0_m / second, 5_m / second}));
@@ -283,11 +288,12 @@ TEST_CASE("SlidingPlanarTabular") {
 
   logging::set_level(logging::level::info);
 
-  media::NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
+  media::NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                                    {1.});
 
   RhoFuncConst rhoFunc;
   SlidingPlanarTabular<media::IMediumModel> const medium(gOrigin, rhoFunc, 1000, 10_m,
-                                                  protonComposition);
+                                                         protonComposition);
 
   SECTION("not possible") {
     CHECK_THROWS(medium.getMassDensity({gCS, {0_m, 1e10_m, 0_m}}));
@@ -424,8 +430,8 @@ TEST_CASE("SlidingPlanarTabular") {
    */
 
   RhoFuncExp rhoFuncExp;
-  SlidingPlanarTabular<media::IMediumModel> const mediumExp(gOrigin, rhoFuncExp, 1000, 10_m,
-                                                     protonComposition, 1000_km);
+  SlidingPlanarTabular<media::IMediumModel> const mediumExp(
+      gOrigin, rhoFuncExp, 1000, 10_m, protonComposition, 1000_km);
 
   SECTION("exponential") {
 
@@ -631,14 +637,16 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
   using ModelInterface = media::IMagneticFieldModel<media::IMediumModel>;
 
   // the composition we use for the homogenous medium
-  media::NuclearComposition const protonComposition(std::vector<Code>{Code::Proton}, {1.});
+  media::NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                                    {1.});
 
   // create magnetic field vectors
   Vector B0(gCS, 0_T, 0_T, 1_T);
 
-  LayeredSphericalAtmosphereBuilder builder = media::make_layered_spherical_atmosphere_builder<
-      ModelInterface, UniformMagneticField>::create(gOrigin, constants::EarthRadius::Mean,
-                                                    B0);
+  LayeredSphericalAtmosphereBuilder builder =
+      media::make_layered_spherical_atmosphere_builder<
+          ModelInterface, UniformMagneticField>::create(gOrigin,
+                                                        constants::EarthRadius::Mean, B0);
 
   builder.setNuclearComposition({{{Code::Nitrogen, Code::Oxygen}}, {{.6, .4}}});
   builder.addLinearLayer(1_g / (1_cm * 1_cm), 1_km, 10_km);
@@ -687,7 +695,8 @@ TEST_CASE("media", "LayeredSphericalAtmosphereBuilder USStd") {
   media::Environment<media::IMediumModel> env;
   builder.assemble(env);
 
-  typedef typename media::Environment<media::IMediumModel>::BaseNodeType::VTN_type node_type;
+  typedef
+      typename media::Environment<media::IMediumModel>::BaseNodeType::VTN_type node_type;
   node_type const* universe = env.getUniverse().get();
 
   // far out there is the universe

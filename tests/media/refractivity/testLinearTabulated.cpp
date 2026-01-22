@@ -58,8 +58,8 @@ TEST_CASE("Linear Tabulated Refractive Index Profile") {
   // earth's radius
 
   // create the atmospheric model and check refractive index
-  const auto transformer = PlanarTransformer(
-      make_translation(gCS, {0_m, 0_m, constants::EarthRadius::Mean})); //, center_, radius_);
+  const auto transformer = PlanarTransformer(make_translation(
+      gCS, {0_m, 0_m, constants::EarthRadius::Mean})); //, center_, radius_);
   AtmModel medium(corsika_data("CHERENKOV/atmosphere/atmprof1.dat").string(), transformer,
                   density, protonComposition);
 

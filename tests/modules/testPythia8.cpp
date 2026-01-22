@@ -20,7 +20,8 @@
 using namespace corsika;
 using Catch::Approx;
 
-using DummyEnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using DummyEnvironmentInterface =
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
 using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
 TEST_CASE("Pythia8", "modules") {

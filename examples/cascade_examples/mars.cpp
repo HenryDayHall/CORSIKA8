@@ -73,7 +73,8 @@
 using namespace corsika;
 using namespace std;
 
-using EnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using EnvironmentInterface =
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
 using EnvType = media::Environment<EnvironmentInterface>;
 using StackType = setup::Stack<EnvType>;
 using TrackingType = setup::Tracking;
@@ -220,11 +221,11 @@ int main(int argc, char** argv) {
   Point const center{rootCS, 0_m, 0_m, 0_m};
   LengthType const radiusMars = 3389.5_km;
   auto builder =
-      media::make_layered_spherical_atmosphere_builder<EnvironmentInterface, MyExtraEnv>::create(
-          center,
-          radiusMars,                                   // Mars
-          media::Medium::AirDry1Atm,                           // Mars, close enough
-          MagneticFieldVector{rootCS, 0_T, 0_uT, 0_T}); // Mars
+      media::make_layered_spherical_atmosphere_builder<EnvironmentInterface, MyExtraEnv>::
+          create(center,
+                 radiusMars,                                   // Mars
+                 media::Medium::AirDry1Atm,                    // Mars, close enough
+                 MagneticFieldVector{rootCS, 0_T, 0_uT, 0_T}); // Mars
 
   builder.setNuclearComposition(                   // Mars
       {{Code::Carbon, Code::Oxygen,                // 95.97 CO2
@@ -308,7 +309,8 @@ int main(int argc, char** argv) {
   // create the output manager that we then register outputs with
   OutputManager output(app["--filename"]->as<std::string>());
 
-  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2,
+                                     env};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
 
   EnergyLossWriter dEdX{showerAxis, dX};

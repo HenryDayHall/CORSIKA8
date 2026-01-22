@@ -34,7 +34,8 @@
 using namespace corsika;
 using Catch::Approx;
 
-using DummyEnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using DummyEnvironmentInterface =
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
 using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
 const std::string refDataDir = std::string(REFDATADIR); // from cmake
@@ -93,7 +94,8 @@ TEST_CASE("CONEX") {
   Point const injectionPos =
       showerCore + DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
-  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env};
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02,
+                                     env};
 
   inisibyll_();
 

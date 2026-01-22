@@ -33,7 +33,8 @@ namespace corsika {
     }
 
     template <typename T>
-    inline media::NuclearComposition const& FlatExponential<T>::getNuclearComposition() const {
+    inline media::NuclearComposition const& FlatExponential<T>::getNuclearComposition()
+        const {
       return nuclComp_;
     }
 

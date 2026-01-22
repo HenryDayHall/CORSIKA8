@@ -97,8 +97,8 @@ TEST_CASE("Radio", "[processes]") {
     // Environment
     using IModelInterface =
         IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-    using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using AtmModel = UniformRefractiveIndex<MediumPropertyModel<
+        UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
     using EnvType = Environment<AtmModel>;
     EnvType envCoREAS;
     CoordinateSystemPtr const& rootCS = envCoREAS.getCoordinateSystem();
@@ -236,8 +236,8 @@ TEST_CASE("Radio", "[processes]") {
   SECTION("CoREAS Edge Cases") {
     using IModelInterface =
         IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-    using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using AtmModel = UniformRefractiveIndex<MediumPropertyModel<
+        UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
     using EnvType = Environment<AtmModel>;
     EnvType envCoREAS;
     CoordinateSystemPtr const& rootCS = envCoREAS.getCoordinateSystem();
@@ -339,8 +339,8 @@ TEST_CASE("Radio", "[processes]") {
     // Environment
     using IModelInterface =
         IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-    using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using AtmModel = UniformRefractiveIndex<MediumPropertyModel<
+        UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
     using EnvType = Environment<AtmModel>;
     EnvType envZHS;
     CoordinateSystemPtr const& rootCS = envZHS.getCoordinateSystem();
@@ -455,8 +455,8 @@ TEST_CASE("Radio", "[processes]") {
     // Environment
     using IModelInterface =
         IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-    using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using AtmModel = UniformRefractiveIndex<MediumPropertyModel<
+        UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
     using EnvType = Environment<AtmModel>;
     EnvType envRadio;
     CoordinateSystemPtr const& rootCSRadio = envRadio.getCoordinateSystem();
@@ -616,8 +616,8 @@ TEST_CASE("Radio", "[processes]") {
   SECTION("Process Library") {
     using IModelInterface =
         IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-    using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using AtmModel = UniformRefractiveIndex<MediumPropertyModel<
+        UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
     using EnvType = Environment<AtmModel>;
     EnvType envCoREAS;
     CoordinateSystemPtr const& rootCS = envCoREAS.getCoordinateSystem();
@@ -980,8 +980,8 @@ TEST_CASE("observers") {
     using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
     EnvType env6;
 
-    using UniRIndex =
-        UniformRefractiveIndex<media::HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
+    using UniRIndex = UniformRefractiveIndex<
+        media::HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
 
     // the observer location
     const auto point1{Point(env6.getCoordinateSystem(), 1_m, 2_m, 3_m)};
@@ -1086,8 +1086,8 @@ TEST_CASE("Propagators") {
     // create a suitable environment
     using IModelInterface =
         IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-    using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using AtmModel = UniformRefractiveIndex<MediumPropertyModel<
+        UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
     using EnvType = Environment<AtmModel>;
     EnvType env;
     CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
@@ -1175,8 +1175,8 @@ TEST_CASE("Propagators") {
     // create a suitable environment
     using IModelInterface =
         IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-    using AtmModel = UniformRefractiveIndex<
-        MediumPropertyModel<UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+    using AtmModel = UniformRefractiveIndex<MediumPropertyModel<
+        UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
     using EnvType = Environment<AtmModel>;
     EnvType env;
     CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();

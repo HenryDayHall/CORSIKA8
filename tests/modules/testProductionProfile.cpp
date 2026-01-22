@@ -23,7 +23,8 @@
 
 using namespace corsika;
 
-using DummyEnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using DummyEnvironmentInterface =
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
 using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
 TEST_CASE("ProductionProfile", "process,secondary") {
@@ -139,8 +140,8 @@ TEST_CASE("ProductionWriter") {
   Point const injectionPos = showerCore + DirectionVector{cs, {0, 0, 1}} * t;
 
   media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
-                              false, // -> throw exceptions
-                              1000}; // -> number of bins
+                                     false, // -> throw exceptions
+                                     1000}; // -> number of bins
 
   // preparation
   if (boost::filesystem::exists("./output_dir_prod")) {

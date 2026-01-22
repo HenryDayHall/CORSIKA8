@@ -22,9 +22,7 @@ namespace corsika {
       CylindricalTransformer(LengthType radius);
       ~CylindricalTransformer() = default;
 
-      LengthType getEffectiveHeight(Point const& position) const {
-        return position.z();
-      }
+      LengthType getEffectiveHeight(Point const& position) const { return position.z(); }
     };
 
   } // namespace media

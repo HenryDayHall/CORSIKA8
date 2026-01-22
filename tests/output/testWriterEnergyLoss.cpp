@@ -69,8 +69,8 @@ TEST_CASE("EnergyLossWriter") {
   Point const injectionPos = showerCore + DirectionVector{cs, {0, 0, 1}} * t;
 
   media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
-                              false, // -> throw exceptions
-                              1000}; // -> number of bins
+                                     false, // -> throw exceptions
+                                     1000}; // -> number of bins
 
   std::string const outputDir = "./output_dir_eloss";
 

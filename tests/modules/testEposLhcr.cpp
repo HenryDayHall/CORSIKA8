@@ -21,7 +21,8 @@ using namespace corsika;
 using namespace corsika::EPOS_LHCR;
 using Catch::Approx;
 
-using DummyEnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using DummyEnvironmentInterface =
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
 using DummyEnvironment = media::Environment<DummyEnvironmentInterface>;
 
 /* These tests do not explicitly depend on the interaction model. No initialization

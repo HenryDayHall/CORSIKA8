@@ -87,12 +87,12 @@ void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().setSeed(seed);
 }
 
-using EnvironmentInterface =
-    media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+using EnvironmentInterface = media::IRefractiveIndexModel<
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
 using EnvType = media::Environment<EnvironmentInterface>;
 template <typename TInterface>
-using MyExtraEnv =
-    media::UniformRefractiveIndex<media::MediumPropertyModel<media::UniformMagneticField<TInterface>>>;
+using MyExtraEnv = media::UniformRefractiveIndex<
+    media::MediumPropertyModel<media::UniformMagneticField<TInterface>>>;
 using StackType = setup::Stack<EnvType>;
 using TrackingType = setup::Tracking;
 
@@ -121,8 +121,8 @@ int main(int argc, char** argv) {
   double const refractive_index = 1.000327;
   MagneticFieldVector const bField{rootCS, 50_uT, 0_T, 0_T};
   media::create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-      env, media::AtmosphereId::LinsleyUSStd, center, refractive_index, media::Medium::AirDry1Atm,
-      bField);
+      env, media::AtmosphereId::LinsleyUSStd, center, refractive_index,
+      media::Medium::AirDry1Atm, bField);
 
   std::unordered_map<Code, HEPEnergyType> energy_resolution = {
       {Code::Electron, 5_MeV},
@@ -155,8 +155,8 @@ int main(int argc, char** argv) {
   Point const injectionPos =
       showerCore + DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
-  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
-                              false, 1000};
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02,
+                                     env, false, 1000};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
 
   // setup the radio observers

@@ -31,7 +31,6 @@ using namespace corsika;
 using namespace corsika::media;
 using Catch::Approx;
 
-
 template <typename TInterface2>
 using MyExtraEnv2 =
     GladstoneDaleRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface2>>>;
@@ -47,7 +46,8 @@ TEST_CASE("GladstoneDaleRefractiveIndex w/ Homogeneous medium") {
 
   // setup interface types
   using IModelInterface = IRefractiveIndexModel<IMediumModel>;
-  using AtmModel = GladstoneDaleRefractiveIndex<media::HomogeneousMedium<IModelInterface>>;
+  using AtmModel =
+      GladstoneDaleRefractiveIndex<media::HomogeneousMedium<IModelInterface>>;
 
   // the constant density
   const auto density{19.2_g / cube(1_cm)};

@@ -16,7 +16,8 @@
 #include <corsika/stack/GeometryNodeStackExtension.hpp>
 #include <corsika/stack/VectorStack.hpp>
 
-using TestEnvironmentInterface = corsika::media::HomogeneousMedium<corsika::media::IMediumModel>;
+using TestEnvironmentInterface =
+    corsika::media::HomogeneousMedium<corsika::media::IMediumModel>;
 using TestEnvironmentType = corsika::media::Environment<TestEnvironmentInterface>;
 
 template <typename T>

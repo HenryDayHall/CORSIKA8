@@ -31,7 +31,6 @@ using namespace corsika;
 using namespace corsika::media;
 using Catch::Approx;
 
-
 TEST_CASE("UniformRefractiveIndex w/ Homogeneous medium") {
 
   logging::set_level(logging::level::info);

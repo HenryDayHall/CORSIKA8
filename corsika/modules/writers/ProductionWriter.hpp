@@ -132,8 +132,8 @@ namespace corsika {
 
   private:
     media::ShowerAxis const& showerAxis_; ///< conversion between geometry and grammage
-    GrammageType const dX_;        ///< binning of profile.
-    size_t const nBins_;           ///< number of profile bins.
+    GrammageType const dX_;               ///< binning of profile.
+    size_t const nBins_;                  ///< number of profile bins.
     std::vector<production_profile::ProfileData> profile_; // longitudinal profile
     YAML::Node summary_;
   };

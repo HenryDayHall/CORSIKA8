@@ -142,24 +142,25 @@ namespace corsika {
            interpol_height < static_cast<size_t>(this->max_height_ + 0.5f);
            interpol_height++) {
 
-          if (interpol_height > data2.altitude) {
-            if (data_idx < refractive_index_data.size()) { // Load new data points if possible 
-              data1 = data2;
-              data2 = refractive_index_data[data_idx];
-              data_idx++;
-            } 
-            else  // No new data points available, use last known refractive index
-            {
-              refractive_index_profile_[interpol_height] = data2.refractive_index;
-              continue;
-            }
-          } 
+        if (interpol_height > data2.altitude) {
+          if (data_idx <
+              refractive_index_data.size()) { // Load new data points if possible
+            data1 = data2;
+            data2 = refractive_index_data[data_idx];
+            data_idx++;
+          } else // No new data points available, use last known refractive index
+          {
+            refractive_index_profile_[interpol_height] = data2.refractive_index;
+            continue;
+          }
+        }
 
-        if (interpol_height < data1.altitude) { // Before first data point, fill with first value
+        if (interpol_height <
+            data1.altitude) { // Before first data point, fill with first value
           refractive_index_profile_[interpol_height] = data1.refractive_index;
           continue;
         }
-        
+
         // Default case: interpolate between data1 and data2
 
         double interpolated_value = this->log_interpolate_between(

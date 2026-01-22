@@ -18,8 +18,7 @@ namespace corsika {
     private:
       const LengthType radius_ // Radius of the Earth
 
-    public:
-      SphericalTransformer(LengthType radius);
+          public : SphericalTransformer(LengthType radius);
       ~SphericalTransformer() = default;
 
       LengthType getEffectiveHeight(Point const& position) const;

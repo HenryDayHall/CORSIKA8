@@ -96,8 +96,8 @@
 using namespace corsika;
 using namespace std;
 
-using EnvironmentInterface =
-    media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+using EnvironmentInterface = media::IRefractiveIndexModel<
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
 using EnvType = media::Environment<EnvironmentInterface>;
 using StackType = setup::Stack<EnvType>;
 using TrackingType = setup::Tracking;
@@ -138,8 +138,8 @@ long registerRandomStreams(long seed) {
 }
 
 template <typename T>
-using MyExtraEnv =
-    media::GladstoneDaleRefractiveIndex<media::MediumPropertyModel<media::UniformMagneticField<T>>>;
+using MyExtraEnv = media::GladstoneDaleRefractiveIndex<
+    media::MediumPropertyModel<media::UniformMagneticField<T>>>;
 
 int main(int argc, char** argv) {
 
@@ -352,8 +352,8 @@ int main(int argc, char** argv) {
   // build an atmosphere with Keilhauer's parametrization of the
   // US standard atmosphere into `env`
   media::create_5layer_atmosphere<EnvironmentInterface, MyExtraEnv>(
-      env, media::AtmosphereId::USStdBK, center, 1.000327, surface_, media::Medium::AirDry1Atm,
-      MagneticFieldVector{rootCS, 50_uT, 0_T, 0_T});
+      env, media::AtmosphereId::USStdBK, center, 1.000327, surface_,
+      media::Medium::AirDry1Atm, MagneticFieldVector{rootCS, 50_uT, 0_T, 0_T});
 
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
@@ -424,7 +424,8 @@ int main(int argc, char** argv) {
 
   // we make the axis much longer than the inj-core distance since the
   // profile will go beyond the core, depending on zenith angle
-  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
+  media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2,
+                                     env};
   auto const dX = 10_g / square(1_cm); // Binning of the writers along the shower axis
   /* === END: CONSTRUCT GEOMETRY === */
 

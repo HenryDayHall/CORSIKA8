@@ -24,7 +24,8 @@ namespace corsika {
     class HomogeneousMedium : public T {
 
     public:
-      HomogeneousMedium(MassDensityType density, media::NuclearComposition const& nuclComp);
+      HomogeneousMedium(MassDensityType density,
+                        media::NuclearComposition const& nuclComp);
 
       MassDensityType getMassDensity(Point const&) const override;
 

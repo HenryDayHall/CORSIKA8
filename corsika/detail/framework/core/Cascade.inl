@@ -35,8 +35,8 @@ namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   inline Cascade<TTracking, TProcessList, TOutput, TStack>::Cascade(
-      media::Environment<medium_interface_type> const& env, TTracking& tr, TProcessList& pl,
-      TOutput& out, TStack& stack)
+      media::Environment<medium_interface_type> const& env, TTracking& tr,
+      TProcessList& pl, TOutput& out, TStack& stack)
       : environment_(env)
       , tracking_(tr)
       , sequence_(pl)

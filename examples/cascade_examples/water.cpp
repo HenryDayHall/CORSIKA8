@@ -170,12 +170,12 @@ int main(int argc, char** argv) {
     auto sphere = std::make_unique<Sphere>(center, 100_m);
     auto node = std::make_unique<media::VolumeTreeNode<IMediumType>>(std::move(sphere));
     media::NuclearComposition const nuclearComposition{{Code::Hydrogen, Code::Oxygen},
-                                                {2.0 / 3.0, 1.0 / 3.0}};
+                                                       {2.0 / 3.0, 1.0 / 3.0}};
     // density of sea water
     auto density = 1.02_g / (1_cm * 1_cm * 1_cm);
-    auto water_medium =
-        std::make_shared<media::MediumPropertyModel<media::HomogeneousMedium<IMediumType>>>(
-            media::Medium::WaterLiquid, density, nuclearComposition);
+    auto water_medium = std::make_shared<
+        media::MediumPropertyModel<media::HomogeneousMedium<IMediumType>>>(
+        media::Medium::WaterLiquid, density, nuclearComposition);
     node->setModelProperties(water_medium);
     universe->addChild(std::move(node));
   }

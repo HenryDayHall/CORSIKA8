@@ -24,5 +24,5 @@ namespace corsika {
       struct has_extra_models<NoExtraModel> : std::false_type {};
 
     } // namespace detail
-  } // namespace media
+  }   // namespace media
 } // namespace corsika

@@ -144,19 +144,24 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
     MagneticFieldVector magneticfield(cs, 0_T, 0_T, Bfield);
     target->setModelProperties<MyHomogeneousModel>(
         Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
-        media::NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
+        media::NuclearComposition(std::vector<Code>{Code::Oxygen},
+                                  std::vector<double>{1.}));
     target_neutral->setModelProperties<MyHomogeneousModel>(
         Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
-        media::NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
+        media::NuclearComposition(std::vector<Code>{Code::Oxygen},
+                                  std::vector<double>{1.}));
     target_2->setModelProperties<MyHomogeneousModel>(
         Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
-        media::NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
+        media::NuclearComposition(std::vector<Code>{Code::Oxygen},
+                                  std::vector<double>{1.}));
     target_2_behind->setModelProperties<MyHomogeneousModel>(
         Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
-        media::NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
+        media::NuclearComposition(std::vector<Code>{Code::Oxygen},
+                                  std::vector<double>{1.}));
     target_2_partly_behind->setModelProperties<MyHomogeneousModel>(
         Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
-        media::NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
+        media::NuclearComposition(std::vector<Code>{Code::Oxygen},
+                                  std::vector<double>{1.}));
     auto* targetPtr = target.get();
     auto* targetPtr_2 = target_2.get();
     auto* targetPtr_neutral = target_neutral.get();
@@ -290,7 +295,8 @@ TEST_CASE("TrackingLeapFrogCurved") {
     MagneticFieldVector magneticfield(cs, 100_T, 0_T, 0_uT);
     target->setModelProperties<MyHomogeneousModel>(
         Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
-        media::NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<double>{1.}));
+        media::NuclearComposition(std::vector<Code>{Code::Oxygen},
+                                  std::vector<double>{1.}));
     auto* targetPtr = target.get();
     worldPtr->addChild(std::move(target));
 

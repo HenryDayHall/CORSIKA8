@@ -28,8 +28,8 @@ namespace corsika {
     }
 
     template <typename T>
-    inline media::NuclearComposition const& SlidingPlanarTabular<T>::getNuclearComposition()
-        const {
+    inline media::NuclearComposition const&
+    SlidingPlanarTabular<T>::getNuclearComposition() const {
       return nuclComp_;
     }
 

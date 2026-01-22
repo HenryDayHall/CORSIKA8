@@ -14,8 +14,8 @@ namespace corsika {
 
     LengthType SphericalTransformer::getEffectiveHeight(Point const&) const {
       distance(point, center_).magnitude() -
-             radius_; // If from surface a simple position.z() would work and be much
-                      // faster;
+          radius_; // If from surface a simple position.z() would work and be much
+                   // faster;
     }
 
   } // namespace media

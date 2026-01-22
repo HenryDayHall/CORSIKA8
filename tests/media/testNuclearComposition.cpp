@@ -30,17 +30,17 @@ TEST_CASE("NuclearComposition") {
   logging::set_level(logging::level::info);
 
   // incompatible input: wrong vectors
-  CHECK_THROWS(
-      media::NuclearComposition({Code::Oxygen, Code::Carbon}, {0.20, 0.05, 1 - 0.20 - 0.05}));
+  CHECK_THROWS(media::NuclearComposition({Code::Oxygen, Code::Carbon},
+                                         {0.20, 0.05, 1 - 0.20 - 0.05}));
   // incompatible input: wrong fractions
-  CHECK_THROWS(
-      media::NuclearComposition({Code::Oxygen, Code::Carbon}, {0.21, 0.05, 1 - 0.20 - 0.05}));
+  CHECK_THROWS(media::NuclearComposition({Code::Oxygen, Code::Carbon},
+                                         {0.21, 0.05, 1 - 0.20 - 0.05}));
   // incompatible input: wrong fractions
-  CHECK_THROWS(
-      media::NuclearComposition({Code::Oxygen, Code::Carbon}, {0.19, 0.05, 1 - 0.20 - 0.05}));
+  CHECK_THROWS(media::NuclearComposition({Code::Oxygen, Code::Carbon},
+                                         {0.19, 0.05, 1 - 0.20 - 0.05}));
 
-  media::NuclearComposition const testComposition({Code::Oxygen, Code::Carbon, Code::Nitrogen},
-                                           {0.20, 0.05, 1 - 0.20 - 0.05});
+  media::NuclearComposition const testComposition(
+      {Code::Oxygen, Code::Carbon, Code::Nitrogen}, {0.20, 0.05, 1 - 0.20 - 0.05});
 
   CHECK(testComposition.getSize() == 3);
   CHECK(testComposition.getFractions() == std::vector<double>{0.2, 0.05, 1 - 0.2 - 0.05});

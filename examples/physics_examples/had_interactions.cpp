@@ -39,7 +39,8 @@
 
 using namespace corsika;
 
-using EnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+using EnvironmentInterface =
+    media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
 using EnvType = media::Environment<EnvironmentInterface>;
 
 template <typename TModel>
@@ -64,8 +65,8 @@ void create_events(TModel& model, std::string const& model_name, Code const proj
   auto& universe = *(env.getUniverse());
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
-  using MyHomogeneousModel =
-      media::MediumPropertyModel<media::UniformMagneticField<media::HomogeneousMedium<EnvironmentInterface>>>;
+  using MyHomogeneousModel = media::MediumPropertyModel<
+      media::UniformMagneticField<media::HomogeneousMedium<EnvironmentInterface>>>;
   auto const props = world->setModelProperties<MyHomogeneousModel>(
       media::Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 0_T),
       1_kg / (1_m * 1_m * 1_m), media::NuclearComposition({targetId}, {1.}));

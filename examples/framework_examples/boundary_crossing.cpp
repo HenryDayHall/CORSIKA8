@@ -82,7 +82,8 @@ int main() {
   RNGManager<>::getInstance().registerRandomStream("cascade");
 
   // setup environment, geometry
-  using EnvironmentInterface = media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
+  using EnvironmentInterface =
+      media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>;
   using EnvType = media::Environment<EnvironmentInterface>;
   EnvType env;
   auto& universe = *(env.getUniverse());
@@ -92,8 +93,8 @@ int main() {
   // create "world" as infinite sphere filled with protons
   auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 100_km);
 
-  using MyHomogeneousModel =
-      media::MediumPropertyModel<media::UniformMagneticField<media::HomogeneousMedium<EnvironmentInterface>>>;
+  using MyHomogeneousModel = media::MediumPropertyModel<
+      media::UniformMagneticField<media::HomogeneousMedium<EnvironmentInterface>>>;
 
   auto const props = world->setModelProperties<MyHomogeneousModel>(
       media::Medium::AirDry1Atm, Vector(rootCS, 0_T, 0_T, 0_T), 1_kg / (1_m * 1_m * 1_m),

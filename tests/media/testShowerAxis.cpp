@@ -62,8 +62,8 @@ TEST_CASE("Homogeneous Density") {
   Point const injectionPos = showerCore + Vector<dimensionless_d>{cs, {0, 0, 1}} * t;
 
   media::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
-                              true, // -> throw exceptions
-                              20};  // -> number of bins
+                                     true, // -> throw exceptions
+                                     20};  // -> number of bins
 
   CHECK(showerAxis.getSteplength() == 500_m);
 
@@ -84,9 +84,10 @@ TEST_CASE("Homogeneous Density") {
   CHECK_THROWS(showerAxis.getX(-1_m));
   CHECK_THROWS(showerAxis.getX((injectionPos - showerCore).getNorm() + 1_m));
 
-  media::ShowerAxis const showerAxisNoThrow{injectionPos, (showerCore - injectionPos), *env,
-                                     false, // -> do not throw exceptions
-                                     20};   // -> number of bins
+  media::ShowerAxis const showerAxisNoThrow{injectionPos, (showerCore - injectionPos),
+                                            *env,
+                                            false, // -> do not throw exceptions
+                                            20};   // -> number of bins
   CHECK(showerAxisNoThrow.getX(-1_m) == showerAxis.getMinimumX());
   CHECK(showerAxisNoThrow.getX((injectionPos - showerCore).getNorm() + 1_m) ==
         showerAxis.getMaximumX());
@@ -124,8 +125,8 @@ TEST_CASE("Exponential Density") {
   auto const totalLength = 5 * abs(lambda);
   auto const end = start + axis * totalLength;
   media::ShowerAxis const showerAxis{start, end, *env,
-                              true, // -> throw exceptions
-                              50};  // -> number of bins
+                                     true, // -> throw exceptions
+                                     50};  // -> number of bins
 
   CHECK(showerAxis.getSteplength() == totalLength / 50.0);
   CHECK(showerAxis.getMinimumX() == 0_g / square(1_m));
@@ -152,8 +153,8 @@ auto setupEnvironmentHardBoundary(Code vTargetCode) {
   theMedium->setModelProperties<MyHomogeneousModel>(
       density, NuclearComposition({vTargetCode}, {1.}));
 
-  auto notDenseMedium =
-      media::Environment<media::IMediumModel>::createNode<Sphere>(Point{cs, 0_m, 0_m, 0_m}, 1_m);
+  auto notDenseMedium = media::Environment<media::IMediumModel>::createNode<Sphere>(
+      Point{cs, 0_m, 0_m, 0_m}, 1_m);
   using MyHomogeneousModel = HomogeneousMedium<media::IMediumModel>;
   notDenseMedium->setModelProperties<MyHomogeneousModel>(
       density * 1e-9, NuclearComposition({vTargetCode}, {1.}));
@@ -171,8 +172,8 @@ TEST_CASE("Hard Boundary") {
   Point const start(cs, 0_m, 0_m, 0_m);
   Point const end(cs, 0_m, 0_m, 2_m);
   media::ShowerAxis const showerAxis{start, end, *env,
-                              true, // -> throw exceptions
-                              50};  // -> number of bins
+                                     true, // -> throw exceptions
+                                     50};  // -> number of bins
 
   auto const units = 1_kg / square(1_m);
   // Integrate out to the hard boundary to confirm not-dense region's existance

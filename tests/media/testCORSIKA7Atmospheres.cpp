@@ -26,9 +26,11 @@ TEST_CASE("CORSIKA7Atmospheres") {
   media::Environment<media::IMediumModel> env;
 
   // build a Linsley US Standard atmosphere into `env`
-  media::create_5layer_atmosphere<media::IMediumModel>(env, media::AtmosphereId::LinsleyUSStd, gOrigin);
+  media::create_5layer_atmosphere<media::IMediumModel>(
+      env, media::AtmosphereId::LinsleyUSStd, gOrigin);
 
-  typedef typename media::Environment<media::IMediumModel>::BaseNodeType::VTN_type node_type;
+  typedef
+      typename media::Environment<media::IMediumModel>::BaseNodeType::VTN_type node_type;
   node_type const* universe = env.getUniverse().get();
 
   Point const p(gCS, {constants::EarthRadius::Mean, 0_m, 0_m});

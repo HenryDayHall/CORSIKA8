@@ -44,10 +44,10 @@ using namespace std;
 int main() {
 
   // create a suitable environment
-  using IModelInterface =
-      media::IRefractiveIndexModel<media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
-  using AtmModel = media::UniformRefractiveIndex<
-      media::MediumPropertyModel<media::UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
+  using IModelInterface = media::IRefractiveIndexModel<
+      media::IMediumPropertyModel<media::IMagneticFieldModel<media::IMediumModel>>>;
+  using AtmModel = media::UniformRefractiveIndex<media::MediumPropertyModel<
+      media::UniformMagneticField<media::HomogeneousMedium<IModelInterface>>>>;
   using EnvType = media::Environment<AtmModel>;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
@@ -64,8 +64,8 @@ int main() {
   auto Medium =
       EnvType::createNode<Sphere>(center, 1_km * std::numeric_limits<double>::infinity());
   // set the environment properties
-  auto const props = Medium->setModelProperties<AtmModel>(ri_, media::Medium::AirDry1Atm, B1,
-                                                          density, Composition);
+  auto const props = Medium->setModelProperties<AtmModel>(ri_, media::Medium::AirDry1Atm,
+                                                          B1, density, Composition);
   // bind things together
   env.getUniverse()->addChild(std::move(Medium));
   auto const& node_ = env.getUniverse()->getChildNodes().front();
