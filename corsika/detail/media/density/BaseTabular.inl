@@ -47,8 +47,7 @@ namespace corsika {
       if (bin >= int(nBins_ - 1)) {
         CORSIKA_LOG_ERROR(
             "invalid height {} (corrected {}) in BaseTabular atmosphere. Min 0, max {}. "
-            "If "
-            "max is too low: increase!",
+            "If max is too low: increase!",
             height, height - referenceHeight_, nBins_ * deltaHeight_);
         throw std::runtime_error("invalid height");
       }
