@@ -185,7 +185,7 @@ namespace corsika {
       X += binGrammage;
 
       // the following bins (along trajectory)
-      for (bin += sign; bin < int(nBins_) && bin >= 0; bin += sign) {
+      for (bin += sign; bin < int(nBins_ - 1) && bin >= 0; bin += sign) {
 
         binGrammage = deltaDistance * (density_[bin] + density_[bin + 1]) / 2;
         if (X + binGrammage > grammage) {
