@@ -109,7 +109,7 @@ printf "[ conan-install | info > conan2 home: ${CONAN2_HOME}\n"
 # Conan2 commands 
 CONAN2_DEFAULT_PROFILE_COMMAND="conan profile detect --force"
 CONAN2_PROFILE_COMMAND="conan profile detect --name ${CONAN2_PROFILE_NAME} --force"
-CONAN2_INSTALL_COMMAND="conan install ${CORSIKA_DIR} --output-folder=${CORSIKA_DIR}/${CONAN2_OUTPUT_FOLDER_NAME} --build=missing  --settings=build_type=${BUILD_TYPE} --profile=${CONAN2_PROFILE_NAME}"
+CONAN2_INSTALL_COMMAND="conan install ${CORSIKA_DIR} --output-folder=${CORSIKA_DIR}/${CONAN2_OUTPUT_FOLDER_NAME} --build="b2*" --build="m4*" --build=missing  --settings=build_type=${BUILD_TYPE} --profile=${CONAN2_PROFILE_NAME}"
 CONAN2_SHOW_PROFLE_COMMAND="conan profile show -pr ${CONAN2_PROFILE_NAME}"
 
 printf "[ conan-install | info > Creating default profile...\n\n"
@@ -119,8 +119,13 @@ if [ ! $? -eq 0 ]; then
 	exit 126
 fi	
 
-printf "[ conan-install | info > Creating '${CONAN2_PROFILE_NAME}' profile...\n\n"
-eval $CONAN2_PROFILE_COMMAND
+PROFILE_PATH="${CONAN2_HOME}/profiles/${CONAN2_PROFILE_NAME}"
+if [ -f "${PROFILE_PATH}" ]; then
+        printf "[ conan-install | info > Profile '${CONAN2_PROFILE_NAME}' already exists. Skipping detection.\n"
+else
+        printf "[ conan-install | info > Creating '${CONAN2_PROFILE_NAME}' profile...\n\n"
+        eval $CONAN2_PROFILE_COMMAND
+fi
 if [ ! $? -eq 0 ]; then 
 	printf "[ conan-install | error > Exit code 126 (Command invoked cannot execute):\n ${CONAN2_PROFILE_COMMAND}.\n"
 	exit 126
