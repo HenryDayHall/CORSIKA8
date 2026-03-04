@@ -192,6 +192,7 @@ namespace corsika {
     bool operator!=(const ConstStackIteratorInterface<
                     TStackData, TParticleInterface, MSecondaryProducer,
                     stack_type>& rhs) const; // implemented below
+                                             //
 
     /**
      * Convert iterator to value type, where value type is the user-provided particle

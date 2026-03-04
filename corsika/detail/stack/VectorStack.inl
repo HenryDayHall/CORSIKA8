@@ -24,6 +24,7 @@ namespace corsika {
   template <typename StackIteratorInterface>
   inline void ParticleInterface<StackIteratorInterface>::setParticleData(
       particle_data_type const& v) {
+    this->setLabel(0);
     this->setPID(std::get<0>(v));
     this->setKineticEnergy(std::get<1>(v));
     this->setDirection(std::get<2>(v));
@@ -35,6 +36,7 @@ namespace corsika {
   inline void ParticleInterface<StackIteratorInterface>::setParticleData(
       ParticleInterface<StackIteratorInterface> const& parent,
       secondary_data_type const& v) {
+    this->setLabel(0);
     this->setPID(std::get<0>(v));
     this->setKineticEnergy(std::get<1>(v));
     this->setDirection(std::get<2>(v));
@@ -46,6 +48,7 @@ namespace corsika {
   inline void ParticleInterface<StackIteratorInterface>::setParticleData(
       ParticleInterface<StackIteratorInterface> const& parent,
       secondary_extended_data_type const& v) {
+    this->setLabel(0);
     this->setPID(std::get<0>(v));
     this->setKineticEnergy(std::get<1>(v));
     this->setDirection(std::get<2>(v));
@@ -60,6 +63,7 @@ namespace corsika {
   }
 
   inline void VectorStackImpl::clear() {
+    dataLabel_.clear();
     dataPID_.clear();
     dataEkin_.clear();
     direction_.clear();
@@ -74,6 +78,7 @@ namespace corsika {
       err << "VectorStackImpl: trying to access data beyond size of stack !";
       throw std::runtime_error(err.str());
     }
+    dataLabel_[i2] = dataLabel_[i1];
     dataPID_[i2] = dataPID_[i1];
     dataEkin_[i2] = dataEkin_[i1];
     direction_[i2] = direction_[i1];
@@ -88,6 +93,7 @@ namespace corsika {
       err << "VectorStackImpl: trying to access data beyond size of stack !";
       throw std::runtime_error(err.str());
     }
+    std::swap(dataLabel_[i2], dataLabel_[i1]);
     std::swap(dataPID_[i2], dataPID_[i1]);
     std::swap(dataEkin_[i2], dataEkin_[i1]);
     std::swap(direction_[i2], direction_[i1]);
@@ -96,6 +102,7 @@ namespace corsika {
   }
 
   inline void VectorStackImpl::incrementSize() {
+    dataLabel_.push_back(0);
     dataPID_.push_back(Code::Unknown);
     dataEkin_.push_back(0 * electronvolt);
 
@@ -109,6 +116,7 @@ namespace corsika {
 
   inline void VectorStackImpl::decrementSize() {
     if (dataEkin_.size() > 0) {
+      dataLabel_.pop_back();
       dataPID_.pop_back();
       dataEkin_.pop_back();
       direction_.pop_back();

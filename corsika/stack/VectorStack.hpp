@@ -21,6 +21,7 @@
 #include <vector>
 
 namespace corsika {
+  typedef unsigned int label_type;
 
   /**
    * Example of a particle object on the stack.
@@ -84,6 +85,10 @@ namespace corsika {
     void setParticleData(ParticleInterface<TStackIterator> const& parent,
                          secondary_extended_data_type const& v);
 
+    //! Set unique id
+    void setLabel(label_type const& label) {
+      super_type::getStackData().setLabel(super_type::getIndex(), label);
+    }
     ///! Set particle corsika::Code
     void setPID(Code const id) {
       super_type::getStackData().setPID(super_type::getIndex(), id);
@@ -111,6 +116,11 @@ namespace corsika {
     //! Set time
     void setTime(TimeType const& v) {
       super_type::getStackData().setTime(super_type::getIndex(), v);
+    }
+
+    //! Get unique id
+    label_type getLabel() const {
+      return super_type::getStackData().getLabel(super_type::getIndex());
     }
 
     //! Get corsika::Code
@@ -173,6 +183,7 @@ namespace corsika {
   class VectorStackImpl {
 
   public:
+    typedef std::vector<label_type> label_vector_type;
     typedef std::vector<Code> code_vector_type;
     typedef std::vector<HEPEnergyType> kinetic_energy_vector_type;
     typedef std::vector<Point> point_vector_type;
@@ -196,12 +207,14 @@ namespace corsika {
     unsigned int getSize() const { return dataPID_.size(); }
     unsigned int getCapacity() const { return dataPID_.size(); }
 
+    void setLabel(size_t i, label_type const& label) { dataLabel_[i] = label; }
     void setPID(size_t i, Code const id) { dataPID_[i] = id; }
     void setKineticEnergy(size_t i, HEPEnergyType const& e) { dataEkin_[i] = e; }
     void setDirection(size_t i, DirectionVector const& v) { direction_[i] = v; }
     void setPosition(size_t i, Point const& v) { position_[i] = v; }
     void setTime(size_t i, TimeType const& v) { time_[i] = v; }
 
+    label_type getLabel(size_t i) const { return dataLabel_[i]; }
     Code getPID(size_t i) const { return dataPID_[i]; }
     HEPEnergyType getKineticEnergy(size_t i) const { return dataEkin_[i]; }
     DirectionVector const& getDirection(size_t i) const { return direction_[i]; }
@@ -223,6 +236,7 @@ namespace corsika {
 
   private:
     /// the actual memory to store particle data
+    label_vector_type dataLabel_;
     code_vector_type dataPID_;
     kinetic_energy_vector_type dataEkin_;
     direction_vector_type direction_;
